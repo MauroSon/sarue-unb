@@ -51,10 +51,10 @@ export const SelectedClassesCard: React.FC<SelectedClassesCardProps> = ({
             variant="ghost"
             size="sm"
             onClick={onClearGrade}
-            className="text-red-600 hover:text-red-700 hover:bg-red-50 text-[11px] h-7 px-2 rounded-lg shadow-none hover:shadow-none"
+            className="text-neo-danger hover:text-neo-dangerHover hover:bg-pastel-red text-[11px] h-7 px-2 rounded-lg shadow-none hover:shadow-none"
           >
             <Trash2 className="w-3 h-3 stroke-[2.5]" />
-            Limpar
+            Limpar grade
           </Button>
         ) : null}
       </div>
@@ -62,7 +62,7 @@ export const SelectedClassesCard: React.FC<SelectedClassesCardProps> = ({
       {/* Ações do Gerador Automático de Horários */}
       <div className="pb-4 border-b-2 border-neutral-400 space-y-3">
         <div>
-          <span className="text-[11px] font-black uppercase tracking-wider text-neutral-500 block mb-1.5">
+          <span className="text-[11px] font-black uppercase tracking-wider text-neutral-600 block mb-1.5">
             Preferência de turno
           </span>
           <Tabs
@@ -83,7 +83,7 @@ export const SelectedClassesCard: React.FC<SelectedClassesCardProps> = ({
             disabled={selectedClasses.length === 0 || isSolving}
             isLoading={isSolving}
             className="flex-1"
-            title="O solver troca as turmas de cada disciplina por combinações sem conflito"
+            title="Troca as turmas de cada disciplina até achar horários sem conflito"
           >
             <Sparkles className="w-3.5 h-3.5 stroke-[2.5]" />
             <span>Gerar combinações</span>
@@ -152,7 +152,7 @@ export const SelectedClassesCard: React.FC<SelectedClassesCardProps> = ({
                   size="icon"
                   onClick={() => onRemoveClass(cls.id)}
                   title="Remover da grade"
-                  className="h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-50 shrink-0"
+                  className="h-9 w-9 text-neo-danger hover:text-neo-dangerHover hover:bg-pastel-red shrink-0"
                 >
                   <Trash2 className="w-3.5 h-3.5 stroke-[2.5]" />
                 </Button>

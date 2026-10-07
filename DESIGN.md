@@ -301,7 +301,7 @@ A distinção se lê de longe: o que tem sombra 2px e raio 16px afunda quando cl
 - **Shadow Strategy:** Adesivo de card (4px 4px #000).
 - **Card clicável** (ex.: disciplina na lista de Disciplinas): corpo de conteúdo (raio 8px, sombra 4px) com comportamento de ação — cursor, foco visível, física de afundar na escala 4px (hover +2px/sombra 2px, active +4px/shadow-none) e semântica de botão (`role="button"`, `tabIndex`, Enter/Espaço).
 - **Border:** preta, 2px.
-- **Internal Padding:** 24px (p-6); footer de card com borda superior black/10.
+- **Internal Padding:** 24px (p-6) no card padrão; cards de trabalho da Grade (filtros, Minha Grade, Catálogo) usam 16px (p-4) — densidade de ferramenta, decisão válida onde a tela é o buffer de trabalho; footer de card com borda superior black/10.
 
 ### Inputs / Fields
 - **Style:** fundo branco, borda preta 2px, raio 12px, padding 10px 16px, texto 0.875rem/500; label acima em 0.75rem/700.
@@ -345,7 +345,7 @@ A distinção se lê de longe: o que tem sombra 2px e raio 16px afunda quando cl
 **A Regra do Bloco Sem Borda.** Skeleton é conteúdo à espera de tinta: bloco neutro pulsante, nunca adesivo — borda e sombra pertencem ao Card que o contém. Bloco de loading com risco preto finge ser conteúdo.
 
 ### Signature: Grade Horária (ScheduleTimetable)
-O componente mais identitário: tabela de 7 colunas (Seg–Sáb) × 15 linhas de horário (turnos M/T/N), cabeçalhos de dia como mini-adesivos (Cinza Papel, borda preta 1px, sombra 1px), células de aula em uma de 6 cores de disciplina (par fundo-pastel + borda de tinta + texto escuro da mesma família: azul, verde, amarelo, roxo, laranja, céu). Cabeçalho institucional em uppercase font-black **Azul Caneta Ação**. Exporta como PNG.
+O componente mais identitário: tabela de 7 colunas (Seg–Sáb) × 15 linhas de horário (turnos M/T/N), cabeçalhos de dia como mini-adesivos (Cinza Papel, borda preta 2px, sem sombra), células de aula em uma de 6 cores de disciplina (par fundo-pastel + borda de tinta + texto escuro da mesma família: azul, verde, amarelo, roxo, laranja, céu). Célula vazia é cavidade tracejada (`border-dashed` black/15 sobre Cinza Papel); conflito é borda **Vermelho Correção Forte** + **Vermelho Pastel** com texto **Vermelho Erro** e sombra micro. Cabeçalho institucional em uppercase font-black **Azul Caneta Ação**. Container rolável é região focável por teclado; células de aula e conflito são focáveis com `aria-label` (mesmo conteúdo do `title`). Exporta como PNG.
 
 ## Do's and Don'ts
 

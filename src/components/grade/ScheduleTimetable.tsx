@@ -1,4 +1,4 @@
-import { forwardRef, useMemo, useState } from "react";
+import { forwardRef, memo, useMemo, useState } from "react";
 import { Card, Button, Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui";
 import {
   Download,
@@ -29,7 +29,7 @@ export interface ScheduleTimetableProps {
 const semesterLabel = (year: string, period: string) =>
   period === "1" ? `1º semestre de ${year}` : `2º semestre de ${year}`;
 
-export const ScheduleTimetable = forwardRef<
+export const ScheduleTimetable = memo(forwardRef<
   HTMLDivElement,
   ScheduleTimetableProps
 >(
@@ -59,7 +59,13 @@ export const ScheduleTimetable = forwardRef<
     );
 
     return (
-      <Card className="p-4 overflow-x-auto" ref={ref}>
+      <Card
+        className="p-4 overflow-x-auto focus:outline-hidden focus-visible:ring-2 focus-visible:ring-neo-blue"
+        role="region"
+        aria-label="Grade horária semanal (rolável na horizontal)"
+        tabIndex={0}
+        ref={ref}
+      >
         <div className="min-w-[620px] space-y-3">
           {/* Cabeçalho institucional (integrante do PNG exportado) */}
           <div className="flex items-center justify-between gap-3 pb-2">
@@ -168,14 +174,14 @@ export const ScheduleTimetable = forwardRef<
                 {!isExportingPng && (
                   <Download className="w-3.5 h-3.5 stroke-[2.5]" />
                 )}
-                <span>PNG</span>
+                <span>Baixar PNG</span>
               </Button>
             </div>
           </div>
 
           {/* Cabeçalho dos Dias da Semana */}
           <div className="grid grid-cols-[88px_repeat(6,minmax(0,1fr))] gap-1.5 pb-2 border-b-2 border-neutral-400 text-center text-xs font-black uppercase text-black">
-            <div className="p-1.5 text-[11px] font-black uppercase tracking-wider text-neutral-500">
+            <div className="p-1.5 text-[11px] font-black uppercase tracking-wider text-neutral-600">
               Horário
             </div>
             {DAYS_HEADER.map((day) => (
@@ -227,7 +233,7 @@ export const ScheduleTimetable = forwardRef<
                       return (
                         <div
                           key={day.id}
-                          className="h-11 rounded-lg border border-dashed border-black/15 bg-neutral-50/50"
+                          className="h-11 rounded-lg border border-dashed border-black/15 bg-neutral-50"
                         />
                       );
                     }
@@ -237,7 +243,10 @@ export const ScheduleTimetable = forwardRef<
                       return (
                         <div
                           key={day.id}
-                          className="h-11 p-1 rounded-lg border-2 border-red-600 bg-red-100 text-red-700 shadow-[1px_1px_0px_0px_#000] flex flex-col justify-center items-center text-center"
+                          className="h-11 p-1 rounded-lg border-2 border-neo-danger bg-pastel-red text-ink-error shadow-[1px_1px_0px_0px_#000] flex flex-col justify-center items-center text-center focus:outline-hidden focus-visible:ring-2 focus-visible:ring-neo-danger"
+                          role="status"
+                          aria-label={`Conflito entre ${classesInSlot.map((c) => c.disciplineCode).join(" e ")}`}
+                          tabIndex={0}
                           title={`Conflito: ${classesInSlot.map((c) => c.disciplineCode).join(" vs ")}`}
                         >
                           <span className="text-[11px] font-black uppercase">
@@ -260,7 +269,10 @@ export const ScheduleTimetable = forwardRef<
                     return (
                       <div
                         key={day.id}
-                        className={`h-11 p-1 rounded-lg border-2 ${color.border} ${color.bg} flex flex-col justify-between overflow-hidden`}
+                        className={`h-11 p-1 rounded-lg border-2 ${color.border} ${color.bg} flex flex-col justify-between overflow-hidden focus:outline-hidden focus-visible:ring-2 focus-visible:ring-neo-blue`}
+                        tabIndex={0}
+                        role="img"
+                        aria-label={`${c.disciplineCode}, Turma ${c.classCode}, ${c.disciplineName}, Sala ${c.classroom}`}
                         title={`${c.disciplineCode} - ${c.disciplineName} (Turma ${c.classCode}) - Sala: ${c.classroom}`}
                       >
                         <div className="flex items-center justify-between text-[11px] font-black leading-none">
@@ -319,6 +331,6 @@ export const ScheduleTimetable = forwardRef<
       </Card>
     );
   },
-);
+));
 
 ScheduleTimetable.displayName = "ScheduleTimetable";

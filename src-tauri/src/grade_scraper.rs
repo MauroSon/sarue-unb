@@ -217,16 +217,23 @@ impl SigaaGradeScraper {
         }
     }
 
-    /// Obtém as turmas ofertadas filtrando pelo ID do departamento
+    /// Obtém as turmas ofertadas filtrando pelo ID do departamento (ou todas se department_id for "ALL" ou vazio)
     pub async fn scrape_department_classes(
         department_id: &str,
         _year: &str,
         _period: &str,
     ) -> Result<Vec<ScrapedDiscipline>, String> {
+        let is_all = department_id.is_empty()
+            || department_id.eq_ignore_ascii_case("all")
+            || department_id == "*";
+
         // 1. Tenta cache em memória primeiro
         {
             let lock = get_classes_lock().read().await;
             if let Some(cached) = &*lock {
+                if is_all {
+                    return Ok(cached.clone());
+                }
                 let filtered: Vec<ScrapedDiscipline> = cached
                     .iter()
                     .filter(|d| d.department_id == department_id)
@@ -245,17 +252,21 @@ impl SigaaGradeScraper {
 
         match fetch_result {
             Ok(all_disciplines) => {
-                let filtered: Vec<ScrapedDiscipline> = all_disciplines
-                    .iter()
-                    .filter(|d| d.department_id == department_id)
-                    .cloned()
-                    .collect();
+                let filtered: Vec<ScrapedDiscipline> = if is_all {
+                    all_disciplines.clone()
+                } else {
+                    all_disciplines
+                        .iter()
+                        .filter(|d| d.department_id == department_id)
+                        .cloned()
+                        .collect()
+                };
 
                 // Armazena no cache
                 let mut lock = get_classes_lock().write().await;
                 *lock = Some(all_disciplines);
 
-                if filtered.is_empty() {
+                if filtered.is_empty() && !is_all {
                     Ok(Self::fallback_disciplines_for_dept(department_id))
                 } else {
                     Ok(filtered)
@@ -593,5 +604,13 @@ mod tests {
         println!("Loaded CIC disciplines count: {}", disc.len());
         // Com o arquivo classes.json presente no disco, CIC possui 57 disciplinas
         assert_eq!(disc.len(), 57);
+    }
+
+    #[tokio::test]
+    async fn test_scrape_department_classes_all() {
+        let disc = SigaaGradeScraper::scrape_department_classes("ALL", "2026", "2").await.unwrap();
+        assert!(!disc.is_empty());
+        println!("Loaded ALL disciplines count: {}", disc.len());
+        assert_eq!(disc.len(), 4439);
     }
 }

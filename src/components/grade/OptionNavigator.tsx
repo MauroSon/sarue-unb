@@ -42,7 +42,7 @@ export const OptionNavigator: React.FC<OptionNavigatorProps> = ({
           onClick={() => onApplyOption(currentIndex - 1)}
           title="Opção anterior"
           aria-label="Ver opção anterior"
-          className="h-7 w-7 rounded-lg"
+          className="h-9 w-9 rounded-lg"
         >
           <ChevronLeft className="w-3.5 h-3.5 stroke-[2.5]" />
         </Button>
@@ -59,7 +59,7 @@ export const OptionNavigator: React.FC<OptionNavigatorProps> = ({
           onClick={() => onApplyOption(currentIndex + 1)}
           title="Próxima opção"
           aria-label="Ver próxima opção"
-          className="h-7 w-7 rounded-lg"
+          className="h-9 w-9 rounded-lg"
         >
           <ChevronRight className="w-3.5 h-3.5 stroke-[2.5]" />
         </Button>

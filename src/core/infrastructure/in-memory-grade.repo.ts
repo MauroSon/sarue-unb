@@ -416,6 +416,9 @@ export class InMemoryGradeRepository implements IGradeRepository {
     }
 
     if (this.classesCache) {
+      if (!deptId || deptId.toUpperCase() === 'ALL' || deptId === '*') {
+        return this.classesCache;
+      }
       const filtered = this.classesCache.filter((d) => d.departmentId === deptId);
       if (filtered.length > 0) {
         return filtered;

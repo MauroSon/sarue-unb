@@ -22,19 +22,19 @@ const normalizeText = (text: string) =>
     .toLowerCase()
     .trim();
 
+export const ALL_DEPARTMENTS_ITEM: Department = {
+  id: 'ALL',
+  name: 'Todos os departamentos (UnB Geral)',
+};
+
 export function useGrade() {
   const container = useContainer();
 
   const [departments, setDepartments] = useState<Department[]>([]);
+  const [allDisciplines, setAllDisciplines] = useState<ScrapedDiscipline[]>([]);
 
-  // Carrega seleção prévia do localStorage para manter filtros entre abas
-  const [selectedDeptId, setSelectedDeptIdState] = useState<string>(() => {
-    try {
-      return localStorage.getItem('unb_grade_deptId') || '508';
-    } catch {
-      return '508';
-    }
-  });
+  // Sempre abre em "Todos os departamentos" — sem persistir a escolha de departamento
+  const [selectedDeptId, setSelectedDeptIdState] = useState<string>('ALL');
 
   const [year, setYearState] = useState<string>(() => {
     try {
@@ -54,10 +54,11 @@ export function useGrade() {
 
   const setSelectedDeptId = useCallback((id: string) => {
     setSelectedDeptIdState(id);
-    try {
-      localStorage.setItem('unb_grade_deptId', id);
-    } catch {}
   }, []);
+
+  const clearDeptFilter = useCallback(() => {
+    setSelectedDeptId('ALL');
+  }, [setSelectedDeptId]);
 
   const setYear = useCallback((y: string) => {
     setYearState(y);
@@ -73,12 +74,19 @@ export function useGrade() {
     } catch {}
   }, []);
 
-  // Inicializa disciplinas a partir do cache se já disponíveis
   const [disciplines, setDisciplines] = useState<ScrapedDiscipline[]>(() => {
-    const initialKey = `${selectedDeptId}-${year}-${period}`;
-    return disciplinesCache.get(initialKey) || [];
+    const initialKey = `all-${year}-${period}`;
+    const all = disciplinesCache.get(initialKey);
+    if (all) {
+      return selectedDeptId === 'ALL' ? all : all.filter((d) => d.departmentId === selectedDeptId);
+    }
+    return [];
   });
   const [searchQuery, setSearchQuery] = useState<string>('');
+  const [hasSearched, setHasSearched] = useState<boolean>(false);
+  const [activeSearchQuery, setActiveSearchQuery] = useState<string>('');
+  const [activeDeptId, setActiveDeptId] = useState<string>(selectedDeptId);
+  const [isSearching, setIsSearching] = useState<boolean>(false);
 
   // Restaura instantaneamente da visita anterior da sessão (evita flash de empty state)
   const [selectedClasses, setSelectedClasses] = useState<ScrapedClass[]>(
@@ -102,7 +110,10 @@ export function useGrade() {
       try {
         const depts = await container.useCases.getDepartments.execute();
         if (isMounted) {
-          setDepartments(depts);
+          setDepartments([
+            ALL_DEPARTMENTS_ITEM,
+            ...depts.filter((d) => d.id !== 'ALL'),
+          ]);
         }
 
         // Tenta carregar grade salva do SQLite (inclusive grade vazia salva de propósito)
@@ -123,23 +134,37 @@ export function useGrade() {
     };
   }, [container]);
 
-  // Coleta turmas do departamento selecionado com suporte a cache
+  // Mapa de departamentos para lookup O(1) de nomes
+  const departmentsMap = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const d of departments) {
+      map.set(d.id, d.name);
+    }
+    return map;
+  }, [departments]);
+
+  // Coleta todas as turmas da UnB com suporte a cache global em memória
   const fetchClasses = useCallback(
     async (deptId = selectedDeptId, y = year, p = period, force = false) => {
-      const key = `${deptId}-${y}-${p}`;
+      const allKey = `all-${y}-${p}`;
 
-      // Se temos em cache e não foi forçado recarregamento, usa cache imediatamente
-      if (!force && disciplinesCache.has(key)) {
-        const cached = disciplinesCache.get(key)!;
-        setDisciplines(cached);
+      if (!force && disciplinesCache.has(allKey)) {
+        const all = disciplinesCache.get(allKey)!;
+        setAllDisciplines(all);
+        const deptList =
+          deptId === 'ALL' ? all : all.filter((d) => d.departmentId === deptId);
+        setDisciplines(deptList);
         return;
       }
 
       setIsScraping(true);
       try {
-        const result = await container.useCases.scrapeClasses.execute(deptId, y, p);
-        disciplinesCache.set(key, result);
-        setDisciplines(result);
+        const result = await container.useCases.scrapeClasses.execute('ALL', y, p);
+        disciplinesCache.set(allKey, result);
+        setAllDisciplines(result);
+        const deptList =
+          deptId === 'ALL' ? result : result.filter((d) => d.departmentId === deptId);
+        setDisciplines(deptList);
       } catch (err) {
         setFeedbackMessage(`Aviso: ${errMsg(err)}`);
       } finally {
@@ -151,14 +176,16 @@ export function useGrade() {
 
   // Atualiza ou carrega disciplinas ao alterar departamento ou semestre
   useEffect(() => {
-    const key = `${selectedDeptId}-${year}-${period}`;
-    if (disciplinesCache.has(key)) {
-      setDisciplines(disciplinesCache.get(key)!);
-      setFeedbackMessage(null);
+    if (allDisciplines.length > 0) {
+      const deptList =
+        selectedDeptId === 'ALL'
+          ? allDisciplines
+          : allDisciplines.filter((d) => d.departmentId === selectedDeptId);
+      setDisciplines(deptList);
     } else {
       fetchClasses(selectedDeptId, year, period, false);
     }
-  }, [selectedDeptId, year, period, fetchClasses]);
+  }, [selectedDeptId, year, period, allDisciplines, fetchClasses]);
 
   // Recalcula conflitos sempre que as turmas selecionadas mudarem
   useEffect(() => {
@@ -185,14 +212,93 @@ export function useGrade() {
     };
   }, [selectedClasses, container]);
 
-  // Filtro de disciplinas por busca
+  // Executa busca ativa (ao pressionar Enter ou clicar no botão Buscar)
+  const executeSearch = useCallback(
+    async (customQuery?: string, customDeptId?: string) => {
+      const q = customQuery !== undefined ? customQuery : searchQuery;
+      const dept = customDeptId !== undefined ? customDeptId : selectedDeptId;
+
+      if (customQuery !== undefined) {
+        setSearchQuery(customQuery);
+      }
+      if (customDeptId !== undefined) {
+        setSelectedDeptId(customDeptId);
+      }
+
+      setIsSearching(true);
+      setActiveSearchQuery(q);
+      setActiveDeptId(dept);
+      setHasSearched(true);
+
+      try {
+        const allKey = `all-${year}-${period}`;
+        if (!disciplinesCache.has(allKey) || allDisciplines.length === 0) {
+          await fetchClasses(dept, year, period, false);
+        }
+      } finally {
+        setIsSearching(false);
+      }
+    },
+    [searchQuery, selectedDeptId, setSelectedDeptId, year, period, allDisciplines.length, fetchClasses]
+  );
+
+  const resetSearch = useCallback(() => {
+    setHasSearched(false);
+    setSearchQuery('');
+    setActiveSearchQuery('');
+    setActiveDeptId(selectedDeptId);
+  }, [selectedDeptId]);
+
+  // Filtro e busca de disciplinas ativados sob demanda (Enter / botão Buscar)
   const filteredDisciplines = useMemo(() => {
-    if (!searchQuery.trim()) return disciplines;
-    const q = normalizeText(searchQuery);
-    return disciplines.filter(
+    if (!hasSearched) return [];
+
+    const q = normalizeText(activeSearchQuery);
+    const pool = allDisciplines.length > 0 ? allDisciplines : disciplines;
+
+    if (!q) {
+      if (activeDeptId === 'ALL') {
+        // Sem texto e UnB Geral: exibe as primeiras 50 para fluidez de renderização
+        return pool.slice(0, 50);
+      }
+      return pool.filter((d) => d.departmentId === activeDeptId);
+    }
+
+    // Busca com query de texto
+    if (activeDeptId === 'ALL') {
+      return pool.filter(
+        (d) => normalizeText(d.code).includes(q) || normalizeText(d.name).includes(q)
+      );
+    }
+
+    // Com departamento específico selecionado
+    const inDept = pool.filter(
+      (d) =>
+        d.departmentId === activeDeptId &&
+        (normalizeText(d.code).includes(q) || normalizeText(d.name).includes(q))
+    );
+
+    if (inDept.length > 0) {
+      return inDept;
+    }
+
+    // Fallback inteligente: se não encontrou no departamento selecionado, busca em toda a UnB
+    return pool.filter(
       (d) => normalizeText(d.code).includes(q) || normalizeText(d.name).includes(q)
     );
-  }, [disciplines, searchQuery]);
+  }, [hasSearched, activeSearchQuery, activeDeptId, allDisciplines, disciplines]);
+
+  const isFallbackSearch = useMemo(() => {
+    if (!hasSearched || activeDeptId === 'ALL' || !activeSearchQuery.trim()) return false;
+    const q = normalizeText(activeSearchQuery);
+    const pool = allDisciplines.length > 0 ? allDisciplines : disciplines;
+    const inDept = pool.some(
+      (d) =>
+        d.departmentId === activeDeptId &&
+        (normalizeText(d.code).includes(q) || normalizeText(d.name).includes(q))
+    );
+    return !inDept && filteredDisciplines.length > 0;
+  }, [hasSearched, activeDeptId, activeSearchQuery, allDisciplines, disciplines, filteredDisciplines]);
 
   // Adiciona ou remove turma
   const toggleClass = useCallback((cls: ScrapedClass) => {
@@ -232,11 +338,12 @@ export function useGrade() {
       setFeedbackMessage(null);
 
       try {
-        // Pega todas as turmas disponíveis para as disciplinas atualmente selecionadas
+        // Pega todas as turmas disponíveis para as disciplinas atualmente selecionadas na base completa
         const targetDisciplineCodes = new Set(selectedClasses.map((c) => c.disciplineCode));
         const candidateClasses: ScrapedClass[] = [];
 
-        for (const disc of disciplines) {
+        const poolSource = allDisciplines.length > 0 ? allDisciplines : disciplines;
+        for (const disc of poolSource) {
           if (targetDisciplineCodes.has(disc.code)) {
             candidateClasses.push(...disc.classes);
           }
@@ -263,7 +370,7 @@ export function useGrade() {
         setIsSolving(false);
       }
     },
-    [container, selectedClasses, disciplines]
+    [container, selectedClasses, allDisciplines, disciplines]
   );
 
   const applyOption = useCallback(
@@ -300,16 +407,26 @@ export function useGrade() {
 
   return {
     departments,
+    departmentsMap,
     selectedDeptId,
     setSelectedDeptId,
+    clearDeptFilter,
     year,
     setYear,
     period,
     setPeriod,
     disciplines,
+    allDisciplines,
     filteredDisciplines,
     searchQuery,
     setSearchQuery,
+    hasSearched,
+    activeSearchQuery,
+    activeDeptId,
+    isFallbackSearch,
+    isSearching,
+    executeSearch,
+    resetSearch,
     selectedClasses,
     conflicts,
     scheduleOptions,

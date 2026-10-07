@@ -14,6 +14,7 @@ import { DISCIPLINE_COLORS } from "../components/grade/types";
 export const GradeBuilderScreen: React.FC = () => {
   const {
     departments,
+    departmentsMap,
     selectedDeptId,
     setSelectedDeptId,
     year,
@@ -22,8 +23,16 @@ export const GradeBuilderScreen: React.FC = () => {
     setPeriod,
     filteredDisciplines,
     disciplines,
+    allDisciplines,
     searchQuery,
     setSearchQuery,
+    hasSearched,
+    activeSearchQuery,
+    activeDeptId,
+    isFallbackSearch,
+    isSearching,
+    executeSearch,
+    resetSearch,
     selectedClasses,
     conflicts,
     scheduleOptions,
@@ -32,7 +41,6 @@ export const GradeBuilderScreen: React.FC = () => {
     isSolving,
     isSaving,
     feedbackMessage,
-    fetchClasses,
     toggleClass,
     removeClass,
     clearGrade,
@@ -50,12 +58,12 @@ export const GradeBuilderScreen: React.FC = () => {
   const [isExportingPng, setIsExportingPng] = useState(false);
   const scheduleGridRef = useRef<HTMLDivElement>(null);
 
-  const toggleExpand = (code: string) => {
+  const toggleExpand = React.useCallback((code: string) => {
     setExpandedDisciplines((prev) => ({
       ...prev,
       [code]: !prev[code],
     }));
-  };
+  }, []);
 
   // Mapeia disciplinas para cores distintas no grid
   const disciplineColorMap = useMemo(() => {
@@ -90,7 +98,7 @@ export const GradeBuilderScreen: React.FC = () => {
     if (lastToastRef.current === feedbackMessage) return;
     lastToastRef.current = feedbackMessage;
 
-    const msg = feedbackMessage;
+    const msg = feedbackMessage.replace(/^Aviso:\s*/i, "");
     if (/^(exibindo|coleta|busca)/i.test(msg)) return; // busca silenciosa de turmas
     if (/^erro/i.test(msg)) {
       toast.add({ title: 'Algo deu errado', description: msg, type: 'error', timeout: 7000 });
@@ -129,8 +137,8 @@ export const GradeBuilderScreen: React.FC = () => {
       document.body.removeChild(link);
     } catch {
       toast.add({
-        title: 'Exportação',
-        description: 'Não foi possível exportar a grade para imagem.',
+        title: 'Exportação da grade',
+        description: 'Não foi possível gerar a imagem. Tente novamente.',
         type: 'error',
       });
     } finally {
@@ -145,7 +153,7 @@ export const GradeBuilderScreen: React.FC = () => {
         <PageHeader icon={CalendarDays} title="Montar Grade Horária" />
       </div>
 
-      {/* Seção de busca: parâmetros e coleta do SIGAA */}
+      {/* Seção de busca: parâmetros e busca de turmas */}
       <GradeFilters
         departments={departments}
         selectedDeptId={selectedDeptId}
@@ -154,11 +162,14 @@ export const GradeBuilderScreen: React.FC = () => {
         onSelectYear={setYear}
         period={period}
         onSelectPeriod={setPeriod}
+        searchQuery={searchQuery}
+        onSearchQueryChange={setSearchQuery}
+        onSearch={() => executeSearch()}
+        isSearching={isSearching}
         isScraping={isScraping}
-        onFetchClasses={() => fetchClasses(selectedDeptId, year, period, true)}
       />
 
-      {/* Grid Principal: 2 Colunas */}
+      {/* Grid Principal: filtros acima; catálogo à esquerda (5/12) e resultado à direita (7/12) a partir de lg */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         {/* Coluna Esquerda: montar a grade (5 colunas) */}
         <div className="lg:col-span-5 space-y-4">
@@ -185,9 +196,14 @@ export const GradeBuilderScreen: React.FC = () => {
             expandedDisciplines={expandedDisciplines}
             onToggleExpand={toggleExpand}
             onToggleClass={toggleClass}
-            searchQuery={searchQuery}
-            onSearchChange={setSearchQuery}
-            isCatalogLoaded={disciplines.length > 0}
+            hasSearched={hasSearched}
+            activeSearchQuery={activeSearchQuery}
+            activeDeptId={activeDeptId}
+            isFallbackSearch={isFallbackSearch}
+            isCatalogLoaded={allDisciplines.length > 0 || disciplines.length > 0}
+            departmentsMap={departmentsMap}
+            onResetSearch={resetSearch}
+            onSearchAllUnb={() => executeSearch(activeSearchQuery, 'ALL')}
           />
         </div>
 
