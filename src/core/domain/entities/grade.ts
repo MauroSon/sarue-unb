@@ -27,11 +27,21 @@ export interface ScrapedClass {
   occupied?: number;
 }
 
+export interface SemesterOption {
+  value: string;
+  year: string;
+  period: string;
+  label: string;
+  isCurrent?: boolean;
+}
+
 export interface ScrapedDiscipline {
   code: string;
   name: string;
   departmentId: string;
   classes: ScrapedClass[];
+  acronym?: string;
+  acronyms?: string[];
 }
 
 export interface ScheduleOption {

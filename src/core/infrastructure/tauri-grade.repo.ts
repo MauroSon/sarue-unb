@@ -1,11 +1,13 @@
 import type {
   Department,
+  SemesterOption,
   ScrapedClass,
   ScrapedDiscipline,
   ScheduleOption,
   ScheduleSlot,
   SavedGrade,
 } from '../domain/entities/grade';
+import { generateAcronyms } from '../domain/grade-acronym';
 import type {
   CourseCatalogItem,
   CurriculumStructure,
@@ -59,6 +61,10 @@ export class TauriGradeRepository implements IGradeRepository {
       // Degradação elegante com fallback
     }
     return this.fallbackRepo.getDepartments();
+  }
+
+  async getSemesters(): Promise<SemesterOption[]> {
+    return this.fallbackRepo.getSemesters();
   }
 
   async getCoursesCatalog(): Promise<CourseCatalogItem[]> {
@@ -159,11 +165,15 @@ export class TauriGradeRepository implements IGradeRepository {
 
       if (rawDisciplines && rawDisciplines.length > 0) {
         // Mapeia snake_case para camelCase
-        return rawDisciplines.map((d) => ({
-          code: d.code,
-          name: d.name,
-          departmentId: d.department_id || deptId,
-          classes: (d.classes || []).map((c: RawScrapedClass) => ({
+        return rawDisciplines.map((d) => {
+          const gen = generateAcronyms(d.name);
+          return {
+            code: d.code,
+            name: d.name,
+            departmentId: d.department_id || deptId,
+            acronym: d.acronym || gen.acronym || undefined,
+            acronyms: d.acronyms || (gen.acronyms.length > 0 ? gen.acronyms : undefined),
+            classes: (d.classes || []).map((c: RawScrapedClass) => ({
             id: c.id,
             disciplineCode: c.discipline_code,
             disciplineName: c.discipline_name,
@@ -184,7 +194,8 @@ export class TauriGradeRepository implements IGradeRepository {
             vacancies: c.vacancies ?? undefined,
             occupied: c.occupied ?? undefined,
           })),
-        }));
+        };
+      });
       }
     } catch {
       // Degradação elegante com fallback

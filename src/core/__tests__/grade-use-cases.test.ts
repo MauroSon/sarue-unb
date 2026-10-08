@@ -134,4 +134,63 @@ describe('Clean Architecture Grade & Web Scraping Use Cases', () => {
     const afterClear = await container.useCases.manageGrade.get();
     expect(afterClear).toBeNull();
   });
+
+  it('deve gerar siglas automáticas ignorando preposições e tratando números/romanos', async () => {
+    const { generateAcronyms } = await import('../domain/grade-acronym');
+
+    expect(generateAcronyms('Cálculo 1')).toEqual({
+      acronym: 'C1',
+      acronyms: ['C1', 'CI'],
+    });
+
+    expect(generateAcronyms('Cálculo I')).toEqual({
+      acronym: 'C1',
+      acronyms: ['C1', 'CI'],
+    });
+
+    expect(generateAcronyms('Organização e Arquitetura de Computadores')).toEqual({
+      acronym: 'OAC',
+      acronyms: ['OAC'],
+    });
+
+    expect(generateAcronyms('Sistemas Digitais')).toEqual({
+      acronym: 'SD',
+      acronyms: ['SD'],
+    });
+
+    expect(generateAcronyms('Introdução a Sociologia')).toEqual({
+      acronym: 'IS',
+      acronyms: ['IS'],
+    });
+
+    expect(generateAcronyms('Algoritmos e Programação de Computadores')).toEqual({
+      acronym: 'APC',
+      acronyms: ['APC'],
+    });
+  });
+
+  it('deve retornar opções de semestres incluindo períodos de verão (Sem 4)', async () => {
+    const semesters = await container.useCases.getSemesters.execute();
+    expect(semesters.length).toBeGreaterThan(0);
+    const summer = semesters.find((s) => s.period === '4' || s.label.includes('Sem 4'));
+    expect(summer).toBeDefined();
+    expect(summer?.label).toMatch(/\d{4}\s*-\s*Sem\s*4/);
+  });
+
+  it('deve carregar turmas com siglas preenchidas e vagas ocupadas consistentes', async () => {
+    const disciplines = await container.useCases.scrapeClasses.execute('508', '2026', '1');
+    const apc = disciplines.find((d) => d.code === 'CIC0004');
+    expect(apc).toBeDefined();
+    expect(apc?.acronym).toBe('APC');
+    expect(apc?.acronyms).toContain('APC');
+
+    // Verifica que as vagas de cada turma não têm ocupadas > vagas totais absurdamente ou vagas 0 com 50 ocupadas
+    for (const cls of apc?.classes || []) {
+      if (cls.vacancies !== undefined && cls.occupied !== undefined) {
+        expect(cls.vacancies).toBeGreaterThan(0);
+        expect(cls.occupied).toBeLessThanOrEqual(cls.vacancies);
+      }
+    }
+  });
 });
+

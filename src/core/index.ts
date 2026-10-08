@@ -3,6 +3,7 @@ export * from './domain/entities/feed-item';
 export * from './domain/entities/credential';
 export * from './domain/entities/course';
 export * from './domain/entities/grade';
+export * from './domain/grade-acronym';
 
 // Interfaces / Ports
 export * from './domain/interfaces/credentials-repo.interface';
@@ -17,6 +18,7 @@ export * from './application/sync-platforms.use-case';
 export * from './application/get-feed.use-case';
 export * from './application/get-courses.use-case';
 export * from './application/get-departments.use-case';
+export * from './application/get-semesters.use-case';
 export * from './application/scrape-classes.use-case';
 export * from './application/solve-schedule.use-case';
 export * from './application/manage-grade.use-case';

@@ -2,11 +2,13 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useContainer } from '../context/ContainerContext';
 import type {
   Department,
+  SemesterOption,
   ScrapedDiscipline,
   ScrapedClass,
   ScheduleOption,
   SavedGrade,
 } from '@/core';
+import { generateAcronyms } from '@/core';
 
 // Cache em memória de disciplinas por depto-ano-período
 const disciplinesCache = new Map<string, ScrapedDiscipline[]>();
@@ -22,6 +24,28 @@ const normalizeText = (text: string) =>
     .toLowerCase()
     .trim();
 
+const matchesDiscipline = (d: ScrapedDiscipline, q: string): boolean => {
+  if (normalizeText(d.code).includes(q)) return true;
+  if (normalizeText(d.name).includes(q)) return true;
+
+  // Busca via sigla (ex.: C1 para Cálculo 1, OAC para Organização e Arquitetura de Computadores)
+  const acronym = d.acronym || generateAcronyms(d.name).acronym;
+  if (acronym && normalizeText(acronym) === q) return true;
+
+  const acronyms =
+    d.acronyms && d.acronyms.length > 0
+      ? d.acronyms
+      : generateAcronyms(d.name).acronyms;
+
+  for (const ac of acronyms) {
+    const normAc = normalizeText(ac);
+    if (normAc === q) return true;
+    if (q.length >= 2 && normAc.includes(q)) return true;
+  }
+
+  return false;
+};
+
 export const ALL_DEPARTMENTS_ITEM: Department = {
   id: 'ALL',
   name: 'Todos os departamentos (UnB Geral)',
@@ -31,6 +55,12 @@ export function useGrade() {
   const container = useContainer();
 
   const [departments, setDepartments] = useState<Department[]>([]);
+  const [semesters, setSemesters] = useState<SemesterOption[]>([
+    { value: '2026-2', year: '2026', period: '2', label: '2026 • 2º semestre', isCurrent: true },
+    { value: '2026-4', year: '2026', period: '4', label: '2026 - Sem 4' },
+    { value: '2026-1', year: '2026', period: '1', label: '2026 • 1º semestre' },
+    { value: '2027-1', year: '2027', period: '1', label: '2027 • 1º semestre' },
+  ]);
   const [allDisciplines, setAllDisciplines] = useState<ScrapedDiscipline[]>([]);
 
   // Sempre abre em "Todos os departamentos" — sem persistir a escolha de departamento
@@ -102,18 +132,25 @@ export function useGrade() {
   const [isSaving, setIsSaving] = useState<boolean>(false);
   const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null);
 
-  // Carrega departamentos e grade salva no início
+  // Carrega departamentos, semestres e grade salva no início
   useEffect(() => {
     let isMounted = true;
 
     async function init() {
       try {
-        const depts = await container.useCases.getDepartments.execute();
+        const [depts, sems] = await Promise.all([
+          container.useCases.getDepartments.execute(),
+          container.useCases.getSemesters.execute().catch(() => []),
+        ]);
+
         if (isMounted) {
           setDepartments([
             ALL_DEPARTMENTS_ITEM,
             ...depts.filter((d) => d.id !== 'ALL'),
           ]);
+          if (sems && sems.length > 0) {
+            setSemesters(sems);
+          }
         }
 
         // Tenta carregar grade salva do SQLite (inclusive grade vazia salva de propósito)
@@ -264,18 +301,14 @@ export function useGrade() {
       return pool.filter((d) => d.departmentId === activeDeptId);
     }
 
-    // Busca com query de texto
+    // Busca com query de texto (nome, código ou sigla)
     if (activeDeptId === 'ALL') {
-      return pool.filter(
-        (d) => normalizeText(d.code).includes(q) || normalizeText(d.name).includes(q)
-      );
+      return pool.filter((d) => matchesDiscipline(d, q));
     }
 
     // Com departamento específico selecionado
     const inDept = pool.filter(
-      (d) =>
-        d.departmentId === activeDeptId &&
-        (normalizeText(d.code).includes(q) || normalizeText(d.name).includes(q))
+      (d) => d.departmentId === activeDeptId && matchesDiscipline(d, q)
     );
 
     if (inDept.length > 0) {
@@ -283,9 +316,7 @@ export function useGrade() {
     }
 
     // Fallback inteligente: se não encontrou no departamento selecionado, busca em toda a UnB
-    return pool.filter(
-      (d) => normalizeText(d.code).includes(q) || normalizeText(d.name).includes(q)
-    );
+    return pool.filter((d) => matchesDiscipline(d, q));
   }, [hasSearched, activeSearchQuery, activeDeptId, allDisciplines, disciplines]);
 
   const isFallbackSearch = useMemo(() => {
@@ -293,9 +324,7 @@ export function useGrade() {
     const q = normalizeText(activeSearchQuery);
     const pool = allDisciplines.length > 0 ? allDisciplines : disciplines;
     const inDept = pool.some(
-      (d) =>
-        d.departmentId === activeDeptId &&
-        (normalizeText(d.code).includes(q) || normalizeText(d.name).includes(q))
+      (d) => d.departmentId === activeDeptId && matchesDiscipline(d, q)
     );
     return !inDept && filteredDisciplines.length > 0;
   }, [hasSearched, activeDeptId, activeSearchQuery, allDisciplines, disciplines, filteredDisciplines]);
@@ -408,6 +437,7 @@ export function useGrade() {
   return {
     departments,
     departmentsMap,
+    semesters,
     selectedDeptId,
     setSelectedDeptId,
     clearDeptFilter,

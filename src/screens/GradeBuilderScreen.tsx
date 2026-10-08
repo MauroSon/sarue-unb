@@ -15,6 +15,7 @@ export const GradeBuilderScreen: React.FC = () => {
   const {
     departments,
     departmentsMap,
+    semesters,
     selectedDeptId,
     setSelectedDeptId,
     year,
@@ -156,6 +157,7 @@ export const GradeBuilderScreen: React.FC = () => {
       {/* Seção de busca: parâmetros e busca de turmas */}
       <GradeFilters
         departments={departments}
+        semesters={semesters}
         selectedDeptId={selectedDeptId}
         onSelectDeptId={setSelectedDeptId}
         year={year}
@@ -203,6 +205,7 @@ export const GradeBuilderScreen: React.FC = () => {
             isCatalogLoaded={allDisciplines.length > 0 || disciplines.length > 0}
             departmentsMap={departmentsMap}
             onResetSearch={resetSearch}
+            onQuickSearch={(query) => executeSearch(query)}
             onSearchAllUnb={() => executeSearch(activeSearchQuery, 'ALL')}
           />
         </div>

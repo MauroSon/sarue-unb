@@ -73,6 +73,10 @@ pub struct ScrapedDiscipline {
     pub name: String,
     pub department_id: String,
     pub classes: Vec<ScrapedClass>,
+    #[serde(default)]
+    pub acronym: Option<String>,
+    #[serde(default)]
+    pub acronyms: Vec<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, specta::Type)]
@@ -381,6 +385,8 @@ impl SigaaGradeScraper {
                     code: "CIC0004".into(),
                     name: "ALGORITMOS E PROGRAMAÇÃO DE COMPUTADORES".into(),
                     department_id: "508".into(),
+                    acronym: Some("APC".into()),
+                    acronyms: vec!["APC".into()],
                     classes: vec![
                         ScrapedClass {
                             id: "CIC0004-01".into(),
@@ -407,6 +413,8 @@ impl SigaaGradeScraper {
                     code: "CIC0090".into(),
                     name: "ESTRUTURAS DE DADOS".into(),
                     department_id: "508".into(),
+                    acronym: Some("ED".into()),
+                    acronyms: vec!["ED".into()],
                     classes: vec![
                         ScrapedClass {
                             id: "CIC0090-01".into(),
@@ -435,6 +443,8 @@ impl SigaaGradeScraper {
                     code: "MAT0025".into(),
                     name: "CÁLCULO 1".into(),
                     department_id: "518".into(),
+                    acronym: Some("C1".into()),
+                    acronyms: vec!["C1".into(), "CI".into()],
                     classes: vec![
                         ScrapedClass {
                             id: "MAT0025-01".into(),
@@ -465,6 +475,8 @@ impl SigaaGradeScraper {
                     code: "EST0023".into(),
                     name: "PROBABILIDADE E ESTATÍSTICA".into(),
                     department_id: dept_id.to_string(),
+                    acronym: Some("PE".into()),
+                    acronyms: vec!["PE".into()],
                     classes: vec![
                         ScrapedClass {
                             id: "EST0023-01".into(),

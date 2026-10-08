@@ -9,11 +9,12 @@ import {
   SelectItem,
 } from "@/components/ui";
 import { Search, X } from "lucide-react";
-import type { Department } from "@/core";
+import type { Department, SemesterOption } from "@/core";
 import { DepartmentSelect } from "./DepartmentSelect";
 
 export interface GradeFiltersProps {
   departments: Department[];
+  semesters: SemesterOption[];
   selectedDeptId: string;
   onSelectDeptId: (id: string) => void;
   year: string;
@@ -29,6 +30,7 @@ export interface GradeFiltersProps {
 
 export const GradeFilters: React.FC<GradeFiltersProps> = ({
   departments,
+  semesters,
   selectedDeptId,
   onSelectDeptId,
   year,
@@ -41,22 +43,22 @@ export const GradeFilters: React.FC<GradeFiltersProps> = ({
   isSearching = false,
   isScraping = false,
 }) => {
-  // Apenas o semestre atual e o seguinte (ex.: hoje = out/2026 -> 2026.2 e 2027.1)
+  // Opções de semestres obtidas do scraping do SIGAA (incluindo turmas de verão no formato "2026 - Sem 4")
   const semesterOptions = React.useMemo(() => {
-    const now = new Date();
-    const y = now.getFullYear();
-    const p = now.getMonth() <= 5 ? "1" : "2";
-    const current = `${y}-${p}`;
-    const next = p === "1" ? `${y}-2` : `${y + 1}-1`;
+    if (semesters && semesters.length > 0) {
+      return semesters.map((s) => ({
+        value: `${s.year}-${s.period}`,
+        label: s.label,
+      }));
+    }
     const stored = `${year}-${period}`;
-    return Array.from(new Set([stored, current, next])).map((v) => {
-      const [yy, pp] = v.split("-");
-      return {
-        value: v,
-        label: `${yy} • ${pp === "1" ? "1º sem." : "2º sem."}`,
-      };
-    });
-  }, [year, period]);
+    return [
+      {
+        value: stored,
+        label: `${year} • ${period === "1" ? "1º sem." : period === "4" ? "Sem 4" : "2º sem."}`,
+      },
+    ];
+  }, [semesters, year, period]);
 
   return (
     <Card className="p-4 space-y-4">
@@ -71,16 +73,16 @@ export const GradeFilters: React.FC<GradeFiltersProps> = ({
               Filtrar turmas da UnB
             </h3>
             <p className="text-[11px] font-semibold text-neutral-600">
-              Busque por nome ou código, navegue por departamento, ou combine os
-              dois. Deixe a busca vazia para listar as disciplinas.
+              Busque por nome, código ou sigla, filtre por departamento e monte
+              sua grade.
             </p>
           </div>
         </div>
       </div>
 
-      {/* Parâmetros da busca: semestre letivo (contexto) + unidade de busca (texto e escopo independentes) */}
+      {/* Parâmetros da busca: semestre letivo (contexto) + unidade de busca */}
       <div className="flex flex-col lg:flex-row lg:items-end gap-3">
-        {/* Semestre letivo: contexto dos dados, independente da busca */}
+        {/* Semestre letivo: contexto dos dados, vindo do scraping */}
         <div className="flex flex-col gap-1.5 shrink-0">
           <span className="text-[11px] font-black uppercase tracking-wider text-neutral-600">
             Semestre
@@ -95,7 +97,7 @@ export const GradeFilters: React.FC<GradeFiltersProps> = ({
               onSelectPeriod(p);
             }}
           >
-            <SelectTrigger className="w-full lg:w-36">
+            <SelectTrigger className="w-full lg:w-44">
               <SelectValue placeholder="Semestre">
                 {
                   semesterOptions.find((o) => o.value === `${year}-${period}`)
@@ -113,7 +115,7 @@ export const GradeFilters: React.FC<GradeFiltersProps> = ({
           </Select>
         </div>
 
-        {/* Unidade de busca: texto e departamento são independentes — texto vazio lista as disciplinas do escopo */}
+        {/* Unidade de busca: texto (nome, código ou sigla) e departamento */}
         <div className="flex flex-col gap-1.5 flex-1 min-w-0">
           <span className="text-[11px] font-black uppercase tracking-wider text-neutral-600">
             Disciplina
@@ -133,9 +135,9 @@ export const GradeFilters: React.FC<GradeFiltersProps> = ({
                       onSearch();
                     }
                   }}
-                  placeholder="Ex.: Cálculo 1, APC, CIC0004…"
-                  aria-label="Buscar disciplina por código ou nome"
-                  className="w-full bg-transparent pl-9 pr-8 h-9 text-xs font-semibold text-black rounded-l-xl shadow-none focus:outline-hidden placeholder:text-neutral-600"
+                  placeholder="Ex.: Cálculo 1, C1, CIC0004..."
+                  aria-label="Buscar disciplina por código, nome ou sigla"
+                  className="w-full bg-transparent pl-9 pr-8 h-9 text-xs font-semibold text-black rounded-l-xl shadow-none focus:outline-hidden placeholder:text-neutral-500"
                 />
                 {searchQuery ? (
                   <button
@@ -149,7 +151,7 @@ export const GradeFilters: React.FC<GradeFiltersProps> = ({
                 ) : null}
               </div>
 
-              {/* Escopo de departamento: segmento da mesma unidade, opcional por natureza (Todos = UnB inteira) */}
+              {/* Escopo de departamento */}
               <div className="shrink-0 border-l-2 border-black/15">
                 <DepartmentSelect
                   departments={departments}
@@ -161,7 +163,7 @@ export const GradeFilters: React.FC<GradeFiltersProps> = ({
               </div>
             </div>
 
-            {/* Ação principal: adesivo de busca ao lado da cavidade */}
+            {/* Ação principal: botão de busca */}
             <Button
               type="button"
               variant="primary"

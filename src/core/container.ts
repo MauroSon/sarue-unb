@@ -9,6 +9,7 @@ import { SyncPlatformsUseCase } from './application/sync-platforms.use-case';
 import { GetFeedUseCase } from './application/get-feed.use-case';
 import { GetCoursesUseCase } from './application/get-courses.use-case';
 import { GetDepartmentsUseCase } from './application/get-departments.use-case';
+import { GetSemestersUseCase } from './application/get-semesters.use-case';
 import { ScrapeClassesUseCase } from './application/scrape-classes.use-case';
 import { SolveScheduleUseCase } from './application/solve-schedule.use-case';
 import { ManageGradeUseCase } from './application/manage-grade.use-case';
@@ -39,6 +40,7 @@ export interface UseCases {
   getFeed: GetFeedUseCase;
   getCourses: GetCoursesUseCase;
   getDepartments: GetDepartmentsUseCase;
+  getSemesters: GetSemestersUseCase;
   scrapeClasses: ScrapeClassesUseCase;
   solveSchedule: SolveScheduleUseCase;
   manageGrade: ManageGradeUseCase;
@@ -85,6 +87,7 @@ export function createContainer(overrides?: ContainerOverrides): Container {
     getFeed: new GetFeedUseCase(feedRepo),
     getCourses: new GetCoursesUseCase(feedRepo),
     getDepartments: new GetDepartmentsUseCase(gradeRepo),
+    getSemesters: new GetSemestersUseCase(gradeRepo),
     scrapeClasses: new ScrapeClassesUseCase(gradeRepo),
     solveSchedule: new SolveScheduleUseCase(gradeRepo),
     manageGrade: new ManageGradeUseCase(gradeRepo),

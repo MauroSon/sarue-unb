@@ -27,6 +27,7 @@ export interface DisciplineCatalogProps {
   departmentsMap?: Map<string, string>;
   isFallbackSearch?: boolean;
   onResetSearch: () => void;
+  onQuickSearch?: (query: string) => void;
   onSearchAllUnb?: () => void;
 }
 
@@ -42,7 +43,6 @@ const getDeptLabel = (name?: string) => {
     .replace(/^FACULDADE DE\s+/i, "")
     .replace(/^INSTITUTO DE\s+/i, "");
 };
-
 
 interface DisciplineRowProps {
   discipline: ScrapedDiscipline;
@@ -191,9 +191,23 @@ const ClassCard = React.memo<ClassCardProps>(function ClassCard({
       </div>
 
       <div className="pt-2 mt-2 border-t border-black/10 flex items-center justify-between">
-        <span className="text-[11px] font-bold text-neutral-600">
-          Vagas: {cls.occupied ?? 0}/{cls.vacancies ?? 0}
-        </span>
+        {(() => {
+          const rawOcc = cls.occupied ?? 0;
+          const rawVac = cls.vacancies ?? 0;
+          const hasRealVac = rawVac > 0;
+          const occupied = hasRealVac ? rawOcc : 0;
+          const vacancies = hasRealVac ? rawVac : rawOcc;
+
+          return (
+            <span className="text-[11px] font-bold text-neutral-600">
+              {hasRealVac
+                ? `Vagas: ${occupied}/${vacancies}`
+                : vacancies > 0
+                  ? `Vagas: ${vacancies} ofertadas`
+                  : "Vagas a definir"}
+            </span>
+          );
+        })()}
 
         <Button
           type="button"
@@ -223,6 +237,7 @@ export const DisciplineCatalog: React.FC<DisciplineCatalogProps> = ({
   departmentsMap,
   isFallbackSearch = false,
   onResetSearch,
+  onQuickSearch,
   onSearchAllUnb,
 }) => {
   // Set de ids das turmas na grade: lookup O(1) por linha memoizada
@@ -325,9 +340,9 @@ export const DisciplineCatalog: React.FC<DisciplineCatalogProps> = ({
               Pesquise turmas da UnB
             </p>
             <p className="text-xs font-semibold text-neutral-600 max-w-sm mx-auto">
-              Digite o nome ou código da matéria, escolha um departamento para
-              navegar, ou deixe tudo em branco e clique em{" "}
-              <strong>Buscar</strong> para listar as disciplinas.
+              Digite o nome, código ou sigla da matéria, escolha um
+              departamento, ou clique em <strong>Buscar</strong> para listar
+              tudo.
             </p>
           </div>
         </div>

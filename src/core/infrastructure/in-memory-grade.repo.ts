@@ -1,11 +1,13 @@
 import type {
   Department,
+  SemesterOption,
   ScrapedClass,
   ScrapedDiscipline,
   ScheduleOption,
   ScheduleSlot,
   SavedGrade,
 } from '../domain/entities/grade';
+import { generateAcronyms } from '../domain/grade-acronym';
 import type {
   CourseCatalogItem,
   CurriculumStructure,
@@ -316,6 +318,7 @@ let inMemorySavedGrade: SavedGrade | null = null;
 
 export class InMemoryGradeRepository implements IGradeRepository {
   private departmentsCache: Department[] | null = null;
+  private semestersCache: SemesterOption[] | null = null;
   private classesCache: ScrapedDiscipline[] | null = null;
   private coursesCache: CourseCatalogItem[] | null = null;
   private curriculaCache: CurriculumStructure[] | null = null;
@@ -341,6 +344,33 @@ export class InMemoryGradeRepository implements IGradeRepository {
     return DEMO_DEPARTMENTS;
   }
 
+  async getSemesters(): Promise<SemesterOption[]> {
+    if (this.semestersCache && this.semestersCache.length > 0) {
+      return this.semestersCache;
+    }
+
+    if (typeof fetch !== 'undefined') {
+      try {
+        const res = await fetch('/data/semesters.json');
+        if (res.ok) {
+          const data = (await res.json()) as SemesterOption[];
+          if (Array.isArray(data) && data.length > 0) {
+            this.semestersCache = data;
+            return data;
+          }
+        }
+      } catch {}
+    }
+
+    return [
+      { value: '2026-2', year: '2026', period: '2', label: '2026 • 2º semestre', isCurrent: true },
+      { value: '2026-4', year: '2026', period: '4', label: '2026 - Sem 4' },
+      { value: '2026-1', year: '2026', period: '1', label: '2026 • 1º semestre' },
+      { value: '2026-3', year: '2026', period: '3', label: '2026 - Sem 3' },
+      { value: '2027-1', year: '2027', period: '1', label: '2027 • 1º semestre' },
+    ];
+  }
+
   async scrapeDepartmentClasses(
     deptId: string,
     _year: string,
@@ -354,6 +384,8 @@ export class InMemoryGradeRepository implements IGradeRepository {
             code: string;
             name: string;
             department_id: string;
+            acronym?: string;
+            acronyms?: string[];
             classes: Array<{
               id: string;
               discipline_code: string;
@@ -381,35 +413,52 @@ export class InMemoryGradeRepository implements IGradeRepository {
           }>;
 
           if (Array.isArray(raw)) {
-            this.classesCache = raw.map((d) => ({
-              code: d.code,
-              name: d.name,
-              departmentId: d.department_id || deptId,
-              classes: (d.classes || []).map((c) => ({
-                id: c.id,
-                disciplineCode: c.discipline_code,
-                disciplineName: c.discipline_name,
-                classCode: c.class_code,
-                teachers: c.teachers || [],
-                classroom: c.classroom || 'A definir',
-                scheduleCode: c.schedule_code,
-                scheduleDescription: c.schedule_description,
-                dateRange: c.date_range,
-                scheduleSlots: (c.schedule_slots || []).map((s) => ({
-                  day: s.day,
-                  dayName: s.dayName || s.day_name || '',
-                  shift: s.shift,
-                  period: s.period,
-                  timeRange: s.timeRange || s.time_range || '',
-                  globalSlotIndex:
-                    s.globalSlotIndex !== undefined
-                      ? s.globalSlotIndex
-                      : s.global_slot_index || 0,
-                })),
-                vacancies: c.vacancies,
-                occupied: c.occupied,
-              })),
-            }));
+            this.classesCache = raw.map((d) => {
+              const gen = generateAcronyms(d.name);
+              return {
+                code: d.code,
+                name: d.name,
+                departmentId: d.department_id || deptId,
+                acronym: d.acronym || gen.acronym || undefined,
+                acronyms: d.acronyms || (gen.acronyms.length > 0 ? gen.acronyms : undefined),
+                classes: (d.classes || []).map((c) => {
+                  // Suporte tanto ao novo formato do scraper quanto ao formato antigo
+                  const vacancies =
+                    c.vacancies !== undefined
+                      ? c.vacancies
+                      : c.occupied !== undefined
+                      ? c.occupied
+                      : undefined;
+                  const occupied =
+                    c.vacancies !== undefined ? c.occupied : c.occupied !== undefined ? 0 : undefined;
+
+                  return {
+                    id: c.id,
+                    disciplineCode: c.discipline_code,
+                    disciplineName: c.discipline_name,
+                    classCode: c.class_code,
+                    teachers: c.teachers || [],
+                    classroom: c.classroom || 'A definir',
+                    scheduleCode: c.schedule_code,
+                    scheduleDescription: c.schedule_description,
+                    dateRange: c.date_range,
+                    scheduleSlots: (c.schedule_slots || []).map((s) => ({
+                      day: s.day,
+                      dayName: s.dayName || s.day_name || '',
+                      shift: s.shift,
+                      period: s.period,
+                      timeRange: s.timeRange || s.time_range || '',
+                      globalSlotIndex:
+                        s.globalSlotIndex !== undefined
+                          ? s.globalSlotIndex
+                          : s.global_slot_index || 0,
+                    })),
+                    vacancies,
+                    occupied,
+                  };
+                }),
+              };
+            });
           }
         }
       } catch {}
@@ -425,29 +474,36 @@ export class InMemoryGradeRepository implements IGradeRepository {
       }
     }
 
-    return (
-      DEMO_DISCIPLINES[deptId] || [
-        {
-          code: 'EST0023',
-          name: 'PROBABILIDADE E ESTATÍSTICA',
-          departmentId: deptId,
-          classes: [
-            {
-              id: 'EST0023-01',
-              disciplineCode: 'EST0023',
-              disciplineName: 'PROBABILIDADE E ESTATÍSTICA',
-              classCode: '01',
-              teachers: ['Prof. Maria Antonia'],
-              classroom: 'ICC ALA SUL AT 30',
-              scheduleCode: '24T45',
-              scheduleSlots: parseScheduleCodeTS('24T45'),
-              vacancies: 45,
-              occupied: 40,
-            },
-          ],
-        },
-      ]
-    );
+    const fallbackList = DEMO_DISCIPLINES[deptId] || [
+      {
+        code: 'EST0023',
+        name: 'PROBABILIDADE E ESTATÍSTICA',
+        departmentId: deptId,
+        classes: [
+          {
+            id: 'EST0023-01',
+            disciplineCode: 'EST0023',
+            disciplineName: 'PROBABILIDADE E ESTATÍSTICA',
+            classCode: '01',
+            teachers: ['Prof. Maria Antonia'],
+            classroom: 'ICC ALA SUL AT 30',
+            scheduleCode: '24T45',
+            scheduleSlots: parseScheduleCodeTS('24T45'),
+            vacancies: 45,
+            occupied: 40,
+          },
+        ],
+      },
+    ];
+
+    return fallbackList.map((d) => {
+      const gen = generateAcronyms(d.name);
+      return {
+        ...d,
+        acronym: d.acronym || gen.acronym || undefined,
+        acronyms: d.acronyms || (gen.acronyms.length > 0 ? gen.acronyms : undefined),
+      };
+    });
   }
 
   async checkConflicts(classes: ScrapedClass[]): Promise<string[]> {

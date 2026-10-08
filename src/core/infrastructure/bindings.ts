@@ -142,6 +142,8 @@ export type ScrapedDiscipline = {
 	name: string,
 	department_id: string,
 	classes: ScrapedClass[],
+	acronym?: string | null,
+	acronyms?: string[],
 };
 
 export type SigaaCreds = {

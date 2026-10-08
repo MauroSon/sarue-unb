@@ -15,6 +15,14 @@ export interface Department {
   name: string;
 }
 
+export interface SemesterOption {
+  value: string;
+  year: string;
+  period: string;
+  label: string;
+  is_current?: boolean;
+}
+
 export interface ScrapedClass {
   id: string;
   discipline_code: string;
@@ -35,6 +43,92 @@ export interface ScrapedDiscipline {
   name: string;
   department_id: string;
   classes: ScrapedClass[];
+  acronym?: string;
+  acronyms?: string[];
+}
+
+const STOPWORDS = new Set([
+  'de', 'da', 'do', 'das', 'dos',
+  'e',
+  'a', 'o', 'as', 'os',
+  'em', 'no', 'na', 'nos', 'nas',
+  'para', 'por', 'com', 'sob', 'sobre',
+  'ao', 'aos', 'à', 'às',
+]);
+
+const ROMAN_TO_ARABIC: Record<string, string> = {
+  I: '1', II: '2', III: '3', IV: '4', V: '5', VI: '6', VII: '7', VIII: '8', IX: '9', X: '10',
+};
+
+const ARABIC_TO_ROMAN: Record<string, string> = {
+  '1': 'I', '2': 'II', '3': 'III', '4': 'IV', '5': 'V', '6': 'VI', '7': 'VII', '8': 'VIII', '9': 'IX', '10': 'X',
+};
+
+/**
+ * Cria siglas associadas para disciplinas removendo preposições e tratando números/algarismos romanos.
+ * Ex: "Cálculo 1" -> { acronym: "C1", acronyms: ["C1", "CI"] }
+ *     "Organização e Arquitetura de Computações" -> { acronym: "OAC", acronyms: ["OAC"] }
+ *     "Sistemas Digitais" -> { acronym: "SD", acronyms: ["SD"] }
+ *     "Introdução a Sociologia" -> { acronym: "IS", acronyms: ["IS"] }
+ */
+export function generateAcronyms(name: string): { acronym: string; acronyms: string[] } {
+  const cleaned = name
+    .replace(/\s*\(\d+h\).*$/i, '')
+    .replace(/[-–—/\\()]/g, ' ')
+    .trim();
+
+  const tokens = cleaned.split(/\s+/).filter((t) => t.length > 0);
+  const filtered = tokens.filter((t) => {
+    const norm = t
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '');
+    return !STOPWORDS.has(norm);
+  });
+
+  if (filtered.length < 2) {
+    if (filtered.length === 1 && /^\w+\d+$/i.test(filtered[0])) {
+      const ac = filtered[0].toUpperCase();
+      return { acronym: ac, acronyms: [ac] };
+    }
+    return { acronym: '', acronyms: [] };
+  }
+
+  const mainLetters: string[] = [];
+  const altLetters: string[] = [];
+
+  for (const t of filtered) {
+    if (/^\d+$/.test(t)) {
+      mainLetters.push(t);
+      const roman = ARABIC_TO_ROMAN[t];
+      altLetters.push(roman || t);
+    } else if (/^(I|II|III|IV|V|VI|VII|VIII|IX|X)$/i.test(t)) {
+      const upper = t.toUpperCase();
+      const arabic = ROMAN_TO_ARABIC[upper];
+      mainLetters.push(arabic || upper);
+      altLetters.push(upper);
+    } else {
+      const ch = t[0]
+        .toUpperCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '');
+      if (/[A-Z0-9]/.test(ch)) {
+        mainLetters.push(ch);
+        altLetters.push(ch);
+      }
+    }
+  }
+
+  const primary = mainLetters.join('');
+  const secondary = altLetters.join('');
+  const set = new Set<string>();
+  if (primary) set.add(primary);
+  if (secondary) set.add(secondary);
+
+  return {
+    acronym: primary,
+    acronyms: Array.from(set),
+  };
 }
 
 const SIGAA_HOME_URL = 'https://sigaa.unb.br/sigaa/public/home.jsf';
@@ -78,6 +172,72 @@ export class GradeScraper {
     }
 
     return departments;
+  }
+
+  parseSemesters(html: string): SemesterOption[] {
+    const anoMatch = html.match(/<input[^>]+name="formTurma:inputAno"[^>]+value="([^"]+)"/i);
+    const currentYear = anoMatch ? anoMatch[1].trim() : String(new Date().getFullYear());
+    const yNum = parseInt(currentYear, 10) || new Date().getFullYear();
+
+    const periodoMatch = html.match(/<select[^>]+name="formTurma:inputPeriodo"[^>]*>([\s\S]*?)<\/select>/i);
+    const periods: Array<{ value: string; selected: boolean }> = [];
+
+    if (periodoMatch) {
+      const optRegex = /<option[^>]+value="([^"]+)"([^>]*)>([^<]*)<\/option>/g;
+      let m: RegExpExecArray | null;
+      while ((m = optRegex.exec(periodoMatch[1])) !== null) {
+        periods.push({
+          value: m[1].trim(),
+          selected: m[2].includes('selected'),
+        });
+      }
+    }
+
+    const periodList = periods.length > 0 ? periods.map((p) => p.value) : ['1', '2', '3', '4'];
+    const currentPeriod = periods.find((p) => p.selected)?.value || (new Date().getMonth() <= 5 ? '1' : '2');
+
+    const formatLabel = (y: string | number, p: string) => {
+      if (p === '1') return `${y} • 1º semestre`;
+      if (p === '2') return `${y} • 2º semestre`;
+      if (p === '4') return `${y} - Sem 4`;
+      if (p === '3') return `${y} - Sem 3`;
+      return `${y} - Sem ${p}`;
+    };
+
+    const options: SemesterOption[] = [];
+    const seen = new Set<string>();
+
+    const addOption = (yearStr: string, pStr: string) => {
+      const key = `${yearStr}-${pStr}`;
+      if (seen.has(key)) return;
+      seen.add(key);
+      const isCur = yearStr === currentYear && pStr === currentPeriod;
+      options.push({
+        value: key,
+        year: yearStr,
+        period: pStr,
+        label: formatLabel(yearStr, pStr),
+        is_current: isCur,
+      });
+    };
+
+    // Ordem: período atual, seguido dos outros períodos disponíveis para o ano atual
+    const preferredOrder = [currentPeriod, '2', '4', '1', '3'].filter((p, i, a) => a.indexOf(p) === i);
+    for (const p of preferredOrder) {
+      if (periodList.includes(p)) {
+        addOption(currentYear, p);
+      }
+    }
+
+    // Próximo ano (1º semestre)
+    const nextYear = String(yNum + 1);
+    addOption(nextYear, '1');
+
+    // Ano anterior (2º semestre) para histórico recente
+    const prevYear = String(yNum - 1);
+    addOption(prevYear, '2');
+
+    return options;
   }
 
   async scrapeDepartment(
@@ -148,11 +308,14 @@ export class GradeScraper {
       const titleMatch = rowContent.match(/<span[^>]+class="tituloDisciplina"[^>]*>([\s\S]*?)<\/span>/i);
       if (titleMatch) {
         if (currentCode && currentClasses.length > 0) {
+          const { acronym, acronyms } = generateAcronyms(currentName);
           disciplines.push({
             code: currentCode,
             name: currentName,
             department_id: deptId,
             classes: currentClasses,
+            acronym: acronym || undefined,
+            acronyms: acronyms.length > 0 ? acronyms : undefined,
           });
           currentClasses = [];
         }
@@ -183,10 +346,38 @@ export class GradeScraper {
           const classCode = tds[0].replace(/<[^>]+>/g, '').trim();
           const teachersRaw = tds[2].replace(/<[^>]+>/g, '').trim();
           const scheduleRaw = tds[3].replace(/<[^>]+>/g, '').trim();
-          const classroom = tds.length >= 8 ? tds[7].replace(/<[^>]+>/g, '').trim() || 'A definir' : 'A definir';
 
-          const vacancies = tds[4] ? parseInt(tds[4].replace(/<[^>]+>/g, '').trim(), 10) : undefined;
-          const occupied = tds[5] ? parseInt(tds[5].replace(/<[^>]+>/g, '').trim(), 10) : undefined;
+          // No SIGAA:
+          // tds[0]: Código da turma
+          // tds[1]: Ano-Período
+          // tds[2]: Docente
+          // tds[3]: Horário (código e horários brutos)
+          // tds[4]: Célula auxiliar (devido a colspan="2" no cabeçalho)
+          // tds[5]: Qtde Vagas Ofertadas (capacidade total)
+          // tds[6]: Qtde Vagas Ocupadas (vagas ocupadas reais)
+          // tds[7]: Local
+          let vacancies: number | undefined;
+          let occupied: number | undefined;
+          let classroom = 'A definir';
+
+          if (tds.length >= 7) {
+            const v5 = parseInt(tds[5].replace(/<[^>]+>/g, '').trim(), 10);
+            const v6 = parseInt(tds[6].replace(/<[^>]+>/g, '').trim(), 10);
+            if (!isNaN(v5) && !isNaN(v6)) {
+              vacancies = v5;
+              occupied = v6;
+              classroom = tds.length >= 8 ? tds[7].replace(/<[^>]+>/g, '').trim() || 'A definir' : 'A definir';
+            } else {
+              // Fallback caso a tabela não tenha a coluna vazia de colspan
+              const v4 = parseInt(tds[4].replace(/<[^>]+>/g, '').trim(), 10);
+              const v5Alt = parseInt(tds[5].replace(/<[^>]+>/g, '').trim(), 10);
+              if (!isNaN(v4) && !isNaN(v5Alt)) {
+                vacancies = v4;
+                occupied = v5Alt;
+                classroom = tds.length >= 7 ? tds[6].replace(/<[^>]+>/g, '').trim() || 'A definir' : 'A definir';
+              }
+            }
+          }
 
           // Professores
           const teachers = teachersRaw
@@ -218,11 +409,14 @@ export class GradeScraper {
     }
 
     if (currentCode && currentClasses.length > 0) {
+      const { acronym, acronyms } = generateAcronyms(currentName);
       disciplines.push({
         code: currentCode,
         name: currentName,
         department_id: deptId,
         classes: currentClasses,
+        acronym: acronym || undefined,
+        acronyms: acronyms.length > 0 ? acronyms : undefined,
       });
     }
 
@@ -271,14 +465,22 @@ async function main() {
 
   const scraper = new GradeScraper();
   let departments: Department[] = [];
+  let semesters: SemesterOption[] = [];
 
   try {
     const initialHtml = await scraper.initSession();
     departments = scraper.parseDepartments(initialHtml);
-    console.log(`[GradeScraper] ${departments.length} departamentos obtidos do SIGAA.`);
+    semesters = scraper.parseSemesters(initialHtml);
+    console.log(`[GradeScraper] ${departments.length} departamentos e ${semesters.length} opções de semestres obtidos do SIGAA.`);
   } catch (err) {
-    console.warn(`[GradeScraper] Falha ao coletar lista ao vivo de departamentos: ${err}. Usando fallback.`);
+    console.warn(`[GradeScraper] Falha ao coletar lista ao vivo de departamentos/semestres: ${err}. Usando fallback.`);
     departments = FALLBACK_DEPARTMENTS;
+    semesters = [
+      { value: '2026-2', year: '2026', period: '2', label: '2026 • 2º semestre', is_current: true },
+      { value: '2026-4', year: '2026', period: '4', label: '2026 - Sem 4' },
+      { value: '2026-1', year: '2026', period: '1', label: '2026 • 1º semestre' },
+      { value: '2027-1', year: '2027', period: '1', label: '2027 • 1º semestre' },
+    ];
   }
 
   if (departments.length === 0) {
@@ -289,6 +491,11 @@ async function main() {
   const deptPath = path.join(outDir, 'departments.json');
   await fs.writeFile(deptPath, JSON.stringify(departments, null, 2), 'utf-8');
   console.log(`[GradeScraper] Salvo: ${deptPath} (${departments.length} registros)`);
+
+  // Salva semestres
+  const semPath = path.join(outDir, 'semesters.json');
+  await fs.writeFile(semPath, JSON.stringify(semesters, null, 2), 'utf-8');
+  console.log(`[GradeScraper] Salvo: ${semPath} (${semesters.length} semestres)`);
 
   let deptsToScrape = targetDept ? departments.filter((d) => d.id === targetDept) : departments;
   if (limit && limit > 0) {
@@ -324,6 +531,7 @@ async function main() {
     scraped_at: new Date().toISOString(),
     year,
     period,
+    semesters,
     total_departments: departments.length,
     total_disciplines: allDisciplines.length,
     total_classes: allDisciplines.reduce((acc, d) => acc + d.classes.length, 0),
@@ -338,6 +546,7 @@ async function main() {
       await fs.mkdir(publicDataDir, { recursive: true });
       await fs.copyFile(classesPath, path.join(publicDataDir, 'classes.json'));
       await fs.copyFile(deptPath, path.join(publicDataDir, 'departments.json'));
+      await fs.copyFile(semPath, path.join(publicDataDir, 'semesters.json'));
       await fs.copyFile(metaPath, path.join(publicDataDir, 'grade-meta.json'));
       console.log(`[GradeScraper] Sincronizado para ${publicDataDir}`);
     } catch {}
