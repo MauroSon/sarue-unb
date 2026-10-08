@@ -344,6 +344,21 @@ export const DisciplineCatalog: React.FC<DisciplineCatalogProps> = ({
               departamento, ou clique em <strong>Buscar</strong> para listar
               tudo.
             </p>
+            {onQuickSearch && (
+              <div className="flex flex-wrap items-center justify-center gap-1.5 pt-2">
+                <span className="text-[10px] font-bold text-neutral-500 uppercase">Sugestões:</span>
+                {['C1', 'OAC', 'APC', 'SD', 'IS'].map((acr) => (
+                  <button
+                    key={acr}
+                    type="button"
+                    onClick={() => onQuickSearch(acr)}
+                    className="px-2 py-0.5 text-[11px] font-extrabold bg-neutral-100 hover:bg-neo-yellow border border-black rounded shadow-[1px_1px_0px_0px_#000] transition-colors cursor-pointer"
+                  >
+                    {acr}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       ) : filteredDisciplines.length === 0 ? (

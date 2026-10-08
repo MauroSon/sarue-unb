@@ -57,8 +57,6 @@ export function useGrade() {
   const [departments, setDepartments] = useState<Department[]>([]);
   const [semesters, setSemesters] = useState<SemesterOption[]>([
     { value: '2026-2', year: '2026', period: '2', label: '2026 • 2º semestre', isCurrent: true },
-    { value: '2026-4', year: '2026', period: '4', label: '2026 - Sem 4' },
-    { value: '2026-1', year: '2026', period: '1', label: '2026 • 1º semestre' },
     { value: '2027-1', year: '2027', period: '1', label: '2027 • 1º semestre' },
   ]);
   const [allDisciplines, setAllDisciplines] = useState<ScrapedDiscipline[]>([]);
@@ -68,7 +66,8 @@ export function useGrade() {
 
   const [year, setYearState] = useState<string>(() => {
     try {
-      return localStorage.getItem('unb_grade_year') || '2026';
+      const stored = localStorage.getItem('unb_grade_year');
+      return stored && /^\d{4}$/.test(stored) ? stored : '2026';
     } catch {
       return '2026';
     }
@@ -76,7 +75,9 @@ export function useGrade() {
 
   const [period, setPeriodState] = useState<string>(() => {
     try {
-      return localStorage.getItem('unb_grade_period') || '2';
+      const stored = localStorage.getItem('unb_grade_period');
+      // Apenas períodos válidos (1 ou 2) são aceitos; corrige seleções legadas como '3' ou '4'
+      return stored === '1' || stored === '2' ? stored : '2';
     } catch {
       return '2';
     }
@@ -150,6 +151,33 @@ export function useGrade() {
           ]);
           if (sems && sems.length > 0) {
             setSemesters(sems);
+            setYearState((currYear) => {
+              setPeriodState((currPeriod) => {
+                const isValid = sems.some((s) => s.year === currYear && s.period === currPeriod);
+                if (!isValid) {
+                  const defaultSem = sems.find((s) => s.isCurrent) || sems[0];
+                  if (defaultSem) {
+                    try {
+                      localStorage.setItem('unb_grade_period', defaultSem.period);
+                    } catch {}
+                    return defaultSem.period;
+                  }
+                }
+                return currPeriod;
+              });
+
+              const isValidYear = sems.some((s) => s.year === currYear);
+              if (!isValidYear) {
+                const defaultSem = sems.find((s) => s.isCurrent) || sems[0];
+                if (defaultSem) {
+                  try {
+                    localStorage.setItem('unb_grade_year', defaultSem.year);
+                  } catch {}
+                  return defaultSem.year;
+                }
+              }
+              return currYear;
+            });
           }
         }
 

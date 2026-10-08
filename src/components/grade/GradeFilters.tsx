@@ -43,7 +43,7 @@ export const GradeFilters: React.FC<GradeFiltersProps> = ({
   isSearching = false,
   isScraping = false,
 }) => {
-  // Opções de semestres obtidas do scraping do SIGAA (incluindo turmas de verão no formato "2026 - Sem 4")
+  // Opções de semestres letivos (foco no semestre atual e no próximo)
   const semesterOptions = React.useMemo(() => {
     if (semesters && semesters.length > 0) {
       return semesters.map((s) => ({
@@ -55,7 +55,7 @@ export const GradeFilters: React.FC<GradeFiltersProps> = ({
     return [
       {
         value: stored,
-        label: `${year} • ${period === "1" ? "1º sem." : period === "4" ? "Sem 4" : "2º sem."}`,
+        label: `${year} • ${period === "1" ? "1º semestre" : "2º semestre"}`,
       },
     ];
   }, [semesters, year, period]);
@@ -101,7 +101,7 @@ export const GradeFilters: React.FC<GradeFiltersProps> = ({
               <SelectValue placeholder="Semestre">
                 {
                   semesterOptions.find((o) => o.value === `${year}-${period}`)
-                    ?.label
+                    ?.label || semesterOptions[0]?.label || `${year} • 2º semestre`
                 }
               </SelectValue>
             </SelectTrigger>

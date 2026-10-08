@@ -169,12 +169,25 @@ describe('Clean Architecture Grade & Web Scraping Use Cases', () => {
     });
   });
 
-  it('deve retornar opções de semestres incluindo períodos de verão (Sem 4)', async () => {
+  it('deve retornar opções de semestres priorizando o atual e o próximo sem incluir período 3', async () => {
     const semesters = await container.useCases.getSemesters.execute();
-    expect(semesters.length).toBeGreaterThan(0);
-    const summer = semesters.find((s) => s.period === '4' || s.label.includes('Sem 4'));
-    expect(summer).toBeDefined();
-    expect(summer?.label).toMatch(/\d{4}\s*-\s*Sem\s*4/);
+    expect(semesters.length).toBeGreaterThanOrEqual(2);
+
+    // Semestre atual (2026.2) e próximo (2027.1)
+    const current = semesters.find((s) => s.isCurrent);
+    expect(current).toBeDefined();
+    expect(current?.period).toBe('2');
+    expect(current?.label).toContain('2º semestre');
+
+    const next = semesters.find((s) => !s.isCurrent);
+    expect(next).toBeDefined();
+    expect(next?.year).toBe('2027');
+    expect(next?.period).toBe('1');
+    expect(next?.label).toContain('1º semestre');
+
+    // Período 3 não existe na UnB e nunca deve estar presente
+    const invalidPeriod3 = semesters.find((s) => s.period === '3');
+    expect(invalidPeriod3).toBeUndefined();
   });
 
   it('deve carregar turmas com siglas preenchidas e vagas ocupadas consistentes', async () => {
@@ -191,6 +204,38 @@ describe('Clean Architecture Grade & Web Scraping Use Cases', () => {
         expect(cls.occupied).toBeLessThanOrEqual(cls.vacancies);
       }
     }
+  });
+
+  it('deve extrair semestres no scraper garantindo apenas semestre atual e o próximo', async () => {
+    const { GradeScraper } = await import('../../scrapers/grade-scraper');
+    const scraper = new GradeScraper();
+
+    const mockHtml = `
+      <input id="formTurma:inputAno" name="formTurma:inputAno" value="2026" />
+      <select id="formTurma:inputPeriodo" name="formTurma:inputPeriodo">
+        <option value="1">1</option>
+        <option value="2" selected="selected">2</option>
+        <option value="3">3</option>
+        <option value="4">4</option>
+      </select>
+    `;
+
+    const options = scraper.parseSemesters(mockHtml);
+    expect(options).toHaveLength(2);
+    expect(options[0]).toEqual({
+      value: '2026-2',
+      year: '2026',
+      period: '2',
+      label: '2026 • 2º semestre',
+      is_current: true,
+    });
+    expect(options[1]).toEqual({
+      value: '2027-1',
+      year: '2027',
+      period: '1',
+      label: '2027 • 1º semestre',
+      is_current: false,
+    });
   });
 });
 

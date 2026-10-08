@@ -180,64 +180,54 @@ export class GradeScraper {
     const yNum = parseInt(currentYear, 10) || new Date().getFullYear();
 
     const periodoMatch = html.match(/<select[^>]+name="formTurma:inputPeriodo"[^>]*>([\s\S]*?)<\/select>/i);
-    const periods: Array<{ value: string; selected: boolean }> = [];
+    let selectedPeriod = '2';
 
     if (periodoMatch) {
       const optRegex = /<option[^>]+value="([^"]+)"([^>]*)>([^<]*)<\/option>/g;
       let m: RegExpExecArray | null;
       while ((m = optRegex.exec(periodoMatch[1])) !== null) {
-        periods.push({
-          value: m[1].trim(),
-          selected: m[2].includes('selected'),
-        });
+        if (m[2].includes('selected')) {
+          selectedPeriod = m[1].trim();
+        }
       }
     }
 
-    const periodList = periods.length > 0 ? periods.map((p) => p.value) : ['1', '2', '3', '4'];
-    const currentPeriod = periods.find((p) => p.selected)?.value || (new Date().getMonth() <= 5 ? '1' : '2');
+    // Na UnB:
+    // - Semestres regulares são apenas 1 e 2.
+    // - Semestre 3 NÃO existe na instituição.
+    // - Semestre 4 (férias de verão) só entra quando divulgado e ativo.
+    // - Regra: sempre exibir o semestre atual e o próximo se possível (ex: 2026 • 2º semestre e 2027 • 1º semestre).
+    const currentPeriod = selectedPeriod === '1' || selectedPeriod === '2' ? selectedPeriod : '2';
 
-    const formatLabel = (y: string | number, p: string) => {
-      if (p === '1') return `${y} • 1º semestre`;
-      if (p === '2') return `${y} • 2º semestre`;
-      if (p === '4') return `${y} - Sem 4`;
-      if (p === '3') return `${y} - Sem 3`;
-      return `${y} - Sem ${p}`;
+    const currentOption: SemesterOption = {
+      value: `${currentYear}-${currentPeriod}`,
+      year: currentYear,
+      period: currentPeriod,
+      label: `${currentYear} • ${currentPeriod}º semestre`,
+      is_current: true,
     };
 
-    const options: SemesterOption[] = [];
-    const seen = new Set<string>();
-
-    const addOption = (yearStr: string, pStr: string) => {
-      const key = `${yearStr}-${pStr}`;
-      if (seen.has(key)) return;
-      seen.add(key);
-      const isCur = yearStr === currentYear && pStr === currentPeriod;
-      options.push({
-        value: key,
-        year: yearStr,
-        period: pStr,
-        label: formatLabel(yearStr, pStr),
-        is_current: isCur,
-      });
-    };
-
-    // Ordem: período atual, seguido dos outros períodos disponíveis para o ano atual
-    const preferredOrder = [currentPeriod, '2', '4', '1', '3'].filter((p, i, a) => a.indexOf(p) === i);
-    for (const p of preferredOrder) {
-      if (periodList.includes(p)) {
-        addOption(currentYear, p);
-      }
+    let nextOption: SemesterOption;
+    if (currentPeriod === '1') {
+      nextOption = {
+        value: `${currentYear}-2`,
+        year: currentYear,
+        period: '2',
+        label: `${currentYear} • 2º semestre`,
+        is_current: false,
+      };
+    } else {
+      const nextYear = String(yNum + 1);
+      nextOption = {
+        value: `${nextYear}-1`,
+        year: nextYear,
+        period: '1',
+        label: `${nextYear} • 1º semestre`,
+        is_current: false,
+      };
     }
 
-    // Próximo ano (1º semestre)
-    const nextYear = String(yNum + 1);
-    addOption(nextYear, '1');
-
-    // Ano anterior (2º semestre) para histórico recente
-    const prevYear = String(yNum - 1);
-    addOption(prevYear, '2');
-
-    return options;
+    return [currentOption, nextOption];
   }
 
   async scrapeDepartment(

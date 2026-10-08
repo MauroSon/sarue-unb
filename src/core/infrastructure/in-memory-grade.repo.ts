@@ -353,10 +353,29 @@ export class InMemoryGradeRepository implements IGradeRepository {
       try {
         const res = await fetch('/data/semesters.json');
         if (res.ok) {
-          const data = (await res.json()) as SemesterOption[];
-          if (Array.isArray(data) && data.length > 0) {
-            this.semestersCache = data;
-            return data;
+          const raw = (await res.json()) as Array<{
+            value: string;
+            year: string;
+            period: string;
+            label: string;
+            isCurrent?: boolean;
+            is_current?: boolean;
+          }>;
+          if (Array.isArray(raw) && raw.length > 0) {
+            // Remove períodos inválidos como 3 (inexistente na UnB)
+            const clean = raw
+              .filter((d) => d.period !== '3')
+              .map((d) => ({
+                value: d.value,
+                year: d.year,
+                period: d.period,
+                label: d.label,
+                isCurrent: d.isCurrent ?? d.is_current ?? false,
+              }));
+            if (clean.length > 0) {
+              this.semestersCache = clean;
+              return clean;
+            }
           }
         }
       } catch {}
@@ -364,9 +383,6 @@ export class InMemoryGradeRepository implements IGradeRepository {
 
     return [
       { value: '2026-2', year: '2026', period: '2', label: '2026 • 2º semestre', isCurrent: true },
-      { value: '2026-4', year: '2026', period: '4', label: '2026 - Sem 4' },
-      { value: '2026-1', year: '2026', period: '1', label: '2026 • 1º semestre' },
-      { value: '2026-3', year: '2026', period: '3', label: '2026 - Sem 3' },
       { value: '2027-1', year: '2027', period: '1', label: '2027 • 1º semestre' },
     ];
   }
