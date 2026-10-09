@@ -131,6 +131,24 @@ pub async fn get_course_curriculum(
 
 #[command]
 #[specta::specta]
+pub async fn get_all_curricula() -> Result<Vec<crate::grade_scraper::CurriculumStructure>, String> {
+    crate::grade_scraper::SigaaGradeScraper::fetch_all_curricula().await
+}
+
+#[command]
+#[specta::specta]
+pub async fn fetch_sigaa_academic_history(
+    matricula: String,
+    senha: String,
+) -> Result<crate::models::DiscenteAcademicHistoryPayload, String> {
+    let client = crate::sigaa::SigaaClient::new();
+    client
+        .fetch_discente_profile_and_historico(&matricula, &senha)
+        .await
+}
+
+#[command]
+#[specta::specta]
 pub fn solve_schedules(
     candidate_classes: Vec<crate::grade_scraper::ScrapedClass>,
     preference_shift: Option<char>,

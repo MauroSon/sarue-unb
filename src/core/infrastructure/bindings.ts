@@ -19,6 +19,8 @@ export const commands = {
 	scrapeSigaaClasses: (departmentId: string, year: string, period: string) => typedError<ScrapedDiscipline[], string>(__TAURI_INVOKE("scrape_sigaa_classes", { departmentId, year, period })),
 	getCoursesCatalog: () => typedError<CourseCatalogItem[], string>(__TAURI_INVOKE("get_courses_catalog")),
 	getCourseCurriculum: (courseId: string) => typedError<CurriculumStructure[], string>(__TAURI_INVOKE("get_course_curriculum", { courseId })),
+	getAllCurricula: () => typedError<CurriculumStructure[], string>(__TAURI_INVOKE("get_all_curricula")),
+	fetchSigaaAcademicHistory: (matricula: string, senha: string) => typedError<DiscenteAcademicHistoryPayload, string>(__TAURI_INVOKE("fetch_sigaa_academic_history", { matricula, senha })),
 	solveSchedules: (candidateClasses: ScrapedClass[], preferenceShift: string | null) => typedError<ScheduleOption[], string>(__TAURI_INVOKE("solve_schedules", { candidateClasses, preferenceShift })),
 	checkScheduleConflicts: (classes: ScrapedClass[]) => typedError<string[], string>(__TAURI_INVOKE("check_schedule_conflicts", { classes })),
 	openExternalUrl: (url: string) => typedError<null, string>(__TAURI_INVOKE("open_external_url", { url })),
@@ -84,6 +86,28 @@ export type CurriculumStructure = {
 export type Department = {
 	id: string,
 	name: string,
+};
+
+export type DiscenteAcademicHistoryPayload = {
+	profile: DiscenteProfile,
+	pdfBase64: string | null,
+};
+
+export type DiscenteProfile = {
+	matricula: string,
+	nome: string | null,
+	curso: string,
+	nivel: string,
+	status: string,
+	entrada: string,
+	email: string | null,
+	ira: number | null,
+	mp: number | null,
+	chObrigatoriaPendente: number | null,
+	chOptativaPendente: number | null,
+	chTotalCurriculo: number | null,
+	chComplementarPendente: number | null,
+	percentualIntegralizado: number | null,
 };
 
 export type FeedItem = {

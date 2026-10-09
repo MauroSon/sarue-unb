@@ -87,3 +87,29 @@ pub struct VaultStatus {
     pub encryption: String,
     pub zero_telemetry: bool,
 }
+
+#[derive(Debug, Clone, Serialize, Deserialize, specta::Type)]
+#[serde(rename_all = "camelCase")]
+pub struct DiscenteProfile {
+    pub matricula: String,
+    pub nome: Option<String>,
+    pub curso: String,
+    pub nivel: String,
+    pub status: String,
+    pub entrada: String,
+    pub email: Option<String>,
+    pub ira: Option<f64>,
+    pub mp: Option<f64>,
+    pub ch_obrigatoria_pendente: Option<u32>,
+    pub ch_optativa_pendente: Option<u32>,
+    pub ch_total_curriculo: Option<u32>,
+    pub ch_complementar_pendente: Option<u32>,
+    pub percentual_integralizado: Option<f64>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, specta::Type)]
+#[serde(rename_all = "camelCase")]
+pub struct DiscenteAcademicHistoryPayload {
+    pub profile: DiscenteProfile,
+    pub pdf_base64: Option<String>,
+}

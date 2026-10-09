@@ -1,4 +1,6 @@
-use crate::models::{Course, FeedItem, FeedItemType, PlatformType};
+use crate::models::{
+    Course, DiscenteAcademicHistoryPayload, DiscenteProfile, FeedItem, FeedItemType, PlatformType,
+};
 use chrono::Datelike;
 use regex::Regex;
 use reqwest::header::{HeaderMap, HeaderValue, CONTENT_TYPE, REFERER, USER_AGENT};
@@ -30,11 +32,12 @@ impl SigaaClient {
 
     /// Sincroniza o SIGAA realizando o login CAS SSO, avançando por telas de aviso (telaAvisoLogon.jsf)
     /// e extraindo as disciplinas matriculadas, atividades e avisos do portal discente.
-    pub async fn sync_sigaa(
+    /// Realiza a autenticação CAS SSO, contorna eventuais telas de aviso e garante que o portal discente esteja carregado
+    pub async fn login_to_portal(
         &self,
         matricula: &str,
         senha: &str,
-    ) -> Result<(Vec<FeedItem>, Vec<Course>), String> {
+    ) -> Result<(String, Option<FeedItem>), String> {
         let clean_matricula = matricula.trim();
         let clean_senha = senha.trim();
 
@@ -51,15 +54,24 @@ impl SigaaClient {
             .await
             .map_err(|e| format!("Falha de conexão com CAS SSO UnB: {}", e))?;
 
+        let cas_url = res_cas.url().to_string();
         let cas_html = res_cas
             .text()
             .await
             .map_err(|e| format!("Falha ao ler resposta do CAS SSO: {}", e))?;
 
+        if cas_html.contains("form_acessarTurmaVirtual")
+            || cas_html.contains("Turmas do Semestre")
+            || cas_html.contains("verPortalDiscente.do")
+            || cas_url.contains("discente.jsf")
+        {
+            log::info!("[SigaaClient] Sessão já autenticada no SIGAA.");
+            return Ok((cas_html, None));
+        }
+
         // 2. Extrair campos de segurança do formulário CAS
         let (action_url, lt, execution, event_id) = Self::extract_cas_form_params(&cas_html)?;
 
-        // 3. Submeter credenciais ao CAS SSO
         // 3. Submeter credenciais ao CAS SSO
         let clean_action_log = action_url.split('?').next().unwrap_or(&action_url);
         log::info!("[SigaaClient] Submetendo credenciais para {}", clean_action_log);
@@ -94,18 +106,16 @@ impl SigaaClient {
             return Err("Credenciais inválidas ou falha de login no SIGAA. Verifique matrícula e senha (lembre-se de respeitar maiúsculas/minúsculas).".into());
         }
 
-        let mut feed_items = Vec::new();
+        let mut aviso_item = None;
 
         // 4. Verificar se caímos na tela de aviso institucional (telaAvisoLogon.jsf)
-        if landing_url.contains("telaAvisoLogon.jsf") || page_html.contains("telaAvisoLogon.jsf") || page_html.contains("Continuar >>") {
+        if landing_url.contains("telaAvisoLogon.jsf")
+            || page_html.contains("telaAvisoLogon.jsf")
+            || page_html.contains("Continuar >>")
+        {
             log::info!("[SigaaClient] Detectada tela intermediária de avisos institucionais (telaAvisoLogon.jsf).");
-            
-            // Extrai o comunicado institucional da tela de aviso para o feed
-            if let Some(aviso_item) = Self::extract_aviso_logon(&page_html) {
-                feed_items.push(aviso_item);
-            }
+            aviso_item = Self::extract_aviso_logon(&page_html);
 
-            // Submete o formulário com ViewState para avançar para o portal
             if let Ok((action, params)) = Self::extract_aviso_form_submit(&page_html, &landing_url) {
                 log::info!("[SigaaClient] Submetendo confirmação do aviso para {}", action);
                 let res_aviso = self
@@ -146,7 +156,21 @@ impl SigaaClient {
             return Err("Login SIGAA não concluído — portal discente não foi carregado.".into());
         }
 
-        // 6. Fazer o parse completo do portal discente
+        Ok((page_html, aviso_item))
+    }
+
+    /// Sincroniza o SIGAA realizando o login CAS SSO, avançando por avisos e extraindo turmas e avisos
+    pub async fn sync_sigaa(
+        &self,
+        matricula: &str,
+        senha: &str,
+    ) -> Result<(Vec<FeedItem>, Vec<Course>), String> {
+        let (page_html, aviso_item) = self.login_to_portal(matricula, senha).await?;
+        let mut feed_items = Vec::new();
+        if let Some(aviso) = aviso_item {
+            feed_items.push(aviso);
+        }
+
         let (extracted_items, courses) = Self::parse_discente_html(&page_html)?;
         feed_items.extend(extracted_items);
 
@@ -157,6 +181,183 @@ impl SigaaClient {
         );
 
         Ok((feed_items, courses))
+    }
+
+    /// Realiza o parse das informações cadastrais do aluno da caixa institucional (agenda-docente)
+    pub fn parse_discente_profile(html: &str, default_matricula: &str) -> DiscenteProfile {
+        let clean_html = decode_html_entities(html);
+
+        let nome_re = Regex::new(r#"class="nome_usuario"[^>]*>([^<]+)</span>"#).unwrap();
+        let nome_alt_re = Regex::new(r#"class="usuario"[^>]*>([^<]+)</span>"#).unwrap();
+        let nome = nome_re
+            .captures(&clean_html)
+            .or_else(|| nome_alt_re.captures(&clean_html))
+            .map(|c| c.get(1).unwrap().as_str().trim().to_string());
+
+        let mat_re = Regex::new(r#"Matr[íi]cula:\s*</td>\s*<td>\s*(\d+)\s*</td>"#).unwrap();
+        let matricula = mat_re
+            .captures(&clean_html)
+            .map(|c| c.get(1).unwrap().as_str().trim().to_string())
+            .unwrap_or_else(|| default_matricula.to_string());
+
+        let curso_re = Regex::new(r#"(?s)<td[^>]*valign="top"[^>]*>\s*Curso:\s*</td>\s*<td>\s*([^\n\r<]+)"#).unwrap();
+        let curso_alt_re = Regex::new(r#"Curso:\s*</td>\s*<td>\s*([^<]+)</td>"#).unwrap();
+        let raw_curso = curso_re
+            .captures(&clean_html)
+            .or_else(|| curso_alt_re.captures(&clean_html))
+            .map(|c| c.get(1).unwrap().as_str().trim().to_string())
+            .unwrap_or_else(|| "Graduação UnB".to_string());
+
+        // Limpa o nome do curso removendo sufixos após '/' ou '-'
+        let curso = raw_curso
+            .split('/')
+            .next()
+            .unwrap_or(&raw_curso)
+            .trim()
+            .to_string();
+
+        let nivel_re = Regex::new(r#"N[íi]vel:\s*</td>\s*<td>\s*([^<]+)</td>"#).unwrap();
+        let nivel = nivel_re
+            .captures(&clean_html)
+            .map(|c| c.get(1).unwrap().as_str().trim().to_string())
+            .unwrap_or_else(|| "GRADUAÇÃO".to_string());
+
+        let status_re = Regex::new(r#"Status:\s*</td>\s*<td>\s*([^<]+)</td>"#).unwrap();
+        let status = status_re
+            .captures(&clean_html)
+            .map(|c| c.get(1).unwrap().as_str().trim().to_string())
+            .unwrap_or_else(|| "ATIVO".to_string());
+
+        let entrada_re = Regex::new(r#"Entrada:\s*</td>\s*<td>\s*(\d{4}(?:\.[12])?)\s*</td>"#).unwrap();
+        let entrada = entrada_re
+            .captures(&clean_html)
+            .map(|c| c.get(1).unwrap().as_str().trim().to_string())
+            .unwrap_or_default();
+
+        let email_re = Regex::new(r#"E-Mail:\s*</td>\s*<td>\s*([^<]+)</td>"#).unwrap();
+        let email = email_re
+            .captures(&clean_html)
+            .map(|c| c.get(1).unwrap().as_str().trim().to_string());
+
+        let ira_re = Regex::new(r#"IRA:\s*</acronym></td>\s*<td[^>]*><div[^>]*>([\d.]+)"#).unwrap();
+        let ira = ira_re
+            .captures(&clean_html)
+            .and_then(|c| c.get(1).unwrap().as_str().parse::<f64>().ok());
+
+        let mp_re = Regex::new(r#"MP:\s*</acronym></td>\s*<td[^>]*><div[^>]*>([\d.]+)"#).unwrap();
+        let mp = mp_re
+            .captures(&clean_html)
+            .and_then(|c| c.get(1).unwrap().as_str().parse::<f64>().ok());
+
+        let ch_obrig_re = Regex::new(r#"CH\.\s*Obrigat[óo]ria\s*Pendente\s*</td>\s*<td[^>]*>\s*(\d+)"#).unwrap();
+        let ch_obrigatoria_pendente = ch_obrig_re
+            .captures(&clean_html)
+            .and_then(|c| c.get(1).unwrap().as_str().parse::<u32>().ok());
+
+        let ch_opt_re = Regex::new(r#"CH\.\s*Optativa\s*Pendente\s*</td>\s*<td[^>]*>\s*(\d+)"#).unwrap();
+        let ch_optativa_pendente = ch_opt_re
+            .captures(&clean_html)
+            .and_then(|c| c.get(1).unwrap().as_str().parse::<u32>().ok());
+
+        let ch_tot_re = Regex::new(r#"CH\.\s*Total\s*Curr[íi]culo\s*</td>\s*<td[^>]*>\s*(\d+)"#).unwrap();
+        let ch_total_curriculo = ch_tot_re
+            .captures(&clean_html)
+            .and_then(|c| c.get(1).unwrap().as_str().parse::<u32>().ok());
+
+        let ch_comp_re = Regex::new(r#"CH\.\s*Complementar\s*Pendente\s*</td>\s*<td[^>]*>\s*(\d+)"#).unwrap();
+        let ch_complementar_pendente = ch_comp_re
+            .captures(&clean_html)
+            .and_then(|c| c.get(1).unwrap().as_str().parse::<u32>().ok());
+
+        let perc_re = Regex::new(r#"([\d.,]+)%\s*Integralizado"#).unwrap();
+        let percentual_integralizado = perc_re
+            .captures(&clean_html)
+            .and_then(|c| {
+                let s = c.get(1).unwrap().as_str().replace(',', ".");
+                s.parse::<f64>().ok()
+            });
+
+        DiscenteProfile {
+            matricula,
+            nome,
+            curso,
+            nivel,
+            status,
+            entrada,
+            email,
+            ira,
+            mp,
+            ch_obrigatoria_pendente,
+            ch_optativa_pendente,
+            ch_total_curriculo,
+            ch_complementar_pendente,
+            percentual_integralizado,
+        }
+    }
+
+    /// Emite o Histórico Escolar oficial do discente e extrai os dados cadastrais
+    pub async fn fetch_discente_profile_and_historico(
+        &self,
+        matricula: &str,
+        senha: &str,
+    ) -> Result<DiscenteAcademicHistoryPayload, String> {
+        let (page_html, _) = self.login_to_portal(matricula, senha).await?;
+        let profile = Self::parse_discente_profile(&page_html, matricula);
+
+        let vs_re = Regex::new(r#"id="javax\.faces\.ViewState"[^>]*value="([^"]+)""#)
+            .map_err(|e| e.to_string())?;
+        let id_re = Regex::new(r#"<input type="hidden" name="id" value="([^"]+)""#)
+            .map_err(|e| e.to_string())?;
+
+        let vs = vs_re
+            .captures(&page_html)
+            .map(|c| c.get(1).unwrap().as_str().to_string())
+            .unwrap_or_else(|| "j_id1".into());
+
+        let id_val = id_re
+            .captures(&page_html)
+            .map(|c| c.get(1).unwrap().as_str().to_string())
+            .unwrap_or_default();
+
+        let mut form_data = HashMap::new();
+        form_data.insert("menu:form_menu_discente", "menu:form_menu_discente");
+        form_data.insert("id", &id_val);
+        form_data.insert(
+            "jscook_action",
+            "menu_form_menu_discente_discente_menu:A]#{ portalDiscente.historico }",
+        );
+        form_data.insert("javax.faces.ViewState", &vs);
+
+        log::info!("[SigaaClient] Submetendo requisição de emissão do Histórico Escolar oficial...");
+        let res_hist = self
+            .client
+            .post(DISCENTE_URL)
+            .header(REFERER, DISCENTE_URL)
+            .form(&form_data)
+            .send()
+            .await
+            .map_err(|e| format!("Falha ao conectar para emitir histórico escolar: {}", e))?;
+
+        let bytes = res_hist
+            .bytes()
+            .await
+            .map_err(|e| format!("Falha ao baixar PDF do histórico: {}", e))?;
+
+        let pdf_base64 = if bytes.starts_with(b"%PDF") {
+            log::info!(
+                "[SigaaClient] Histórico escolar obtido com sucesso em formato PDF ({} bytes).",
+                bytes.len()
+            );
+            Some(base64_encode(&bytes))
+        } else {
+            log::warn!("[SigaaClient] Resposta do histórico não iniciou com %PDF.");
+            None
+        };
+
+        Ok(DiscenteAcademicHistoryPayload {
+            profile,
+            pdf_base64,
+        })
     }
 
     /// Extrai parâmetros do formulário de autenticação CAS SSO
@@ -547,6 +748,31 @@ fn decode_html_entities(input: &str) -> String {
         .replace("&amp;", "&")
 }
 
+/// Codifica bytes em base64 padrão (RFC 4648)
+pub fn base64_encode(data: &[u8]) -> String {
+    const CHARSET: &[u8; 64] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+    let mut out = String::with_capacity((data.len() + 2) / 3 * 4);
+    for chunk in data.chunks(3) {
+        let b0 = chunk[0];
+        let b1 = if chunk.len() > 1 { chunk[1] } else { 0 };
+        let b2 = if chunk.len() > 2 { chunk[2] } else { 0 };
+
+        out.push(CHARSET[(b0 >> 2) as usize] as char);
+        out.push(CHARSET[(((b0 & 0x03) << 4) | (b1 >> 4)) as usize] as char);
+        if chunk.len() > 1 {
+            out.push(CHARSET[(((b1 & 0x0f) << 2) | (b2 >> 6)) as usize] as char);
+        } else {
+            out.push('=');
+        }
+        if chunk.len() > 2 {
+            out.push(CHARSET[(b2 & 0x3f) as usize] as char);
+        } else {
+            out.push('=');
+        }
+    }
+    out
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -669,14 +895,85 @@ mod tests {
     async fn test_live_sync_sigaa() {
         if let (Ok(mat), Ok(pwd)) = (std::env::var("SIGAA_MATRICULA"), std::env::var("SIGAA_SENHA")) {
             let client = SigaaClient::new();
-            let res = client.sync_sigaa(&mat, &pwd).await;
-            assert!(res.is_ok(), "Erro na sincronização real: {:?}", res.err());
-            let (items, courses) = res.unwrap();
-            println!("Turmas extraídas: {}", courses.len());
-            for c in &courses {
-                println!("- {} ({:?}) - {:?}", c.name, c.classroom, c.schedule);
-            }
-            println!("Itens de feed extraídos: {}", items.len());
+            let (page_html, _) = client.login_to_portal(&mat, &pwd).await.unwrap();
+            std::fs::write("/tmp/discente_portal.html", &page_html).ok();
+
+            let payload = client.fetch_discente_profile_and_historico(&mat, &pwd).await.unwrap();
+            println!("Profile: {:?}", payload.profile);
+            println!("Has PDF: {}", payload.pdf_base64.is_some());
         }
     }
+
+    #[test]
+    fn test_parse_discente_profile() {
+        let html = r##"
+            <div id="agenda-docente">
+                <h4> Dados Institucionais </h4>
+                <table>
+                    <tr>
+                        <td> Matrícula: </td>
+                        <td> 221020904 </td>
+                    </tr>
+                    <tr>
+                        <td valign="top"> Curso: </td>
+                        <td> ENGENHARIA DE COMPUTAÇÃO/CIC - Bacharelado - MT </td>
+                    </tr>
+                    <tr>
+                        <td> Nível: </td>
+                        <td> GRADUAÇÃO </td>
+                    </tr>
+                    <tr>
+                        <td> Status: </td>
+                        <td> ATIVO </td>
+                    </tr>
+                    <tr>
+                        <td> Entrada: </td>
+                        <td> 2022.1</td>
+                    </tr>
+                </table>
+                <table>
+                    <tr>
+                        <td><acronym title="IRA">IRA:</acronym></td>
+                        <td><div>3.6238</div></td>
+                        <td><acronym title="MP">MP:</acronym></td>
+                        <td><div>3.5493</div></td>
+                    </tr>
+                    <tr>
+                        <td> CH. Obrigatória Pendente </td>
+                        <td align="right"> 990 </td>
+                    </tr>
+                    <tr>
+                        <td> CH. Optativa Pendente </td>
+                        <td align="right"> 240 </td>
+                    </tr>
+                    <tr>
+                        <td> CH. Total Currículo </td>
+                        <td align="right"> 3480 </td>
+                    </tr>
+                    <tr>
+                        <td> CH. Complementar Pendente </td>
+                        <td align="right"> 0 </td>
+                    </tr>
+                    <tr>
+                        <td colspan="2"> 65% Integralizado </td>
+                    </tr>
+                </table>
+            </div>
+        "##;
+
+        let profile = SigaaClient::parse_discente_profile(html, "221020904");
+        assert_eq!(profile.matricula, "221020904");
+        assert_eq!(profile.curso, "ENGENHARIA DE COMPUTAÇÃO");
+        assert_eq!(profile.nivel, "GRADUAÇÃO");
+        assert_eq!(profile.status, "ATIVO");
+        assert_eq!(profile.entrada, "2022.1");
+        assert_eq!(profile.ira, Some(3.6238));
+        assert_eq!(profile.mp, Some(3.5493));
+        assert_eq!(profile.ch_obrigatoria_pendente, Some(990));
+        assert_eq!(profile.ch_optativa_pendente, Some(240));
+        assert_eq!(profile.ch_total_curriculo, Some(3480));
+        assert_eq!(profile.ch_complementar_pendente, Some(0));
+        assert_eq!(profile.percentual_integralizado, Some(65.0));
+    }
 }
+

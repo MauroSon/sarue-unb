@@ -355,6 +355,28 @@ impl SigaaGradeScraper {
         }
     }
 
+    /// Obtém todas as estruturas curriculares catalogadas da UnB
+    pub async fn fetch_all_curricula() -> Result<Vec<CurriculumStructure>, String> {
+        {
+            let lock = get_curricula_lock().read().await;
+            if let Some(cached) = &*lock {
+                return Ok(cached.clone());
+            }
+        }
+
+        match Self::fetch_static_json::<Vec<CurriculumStructure>>("curricula.json").await {
+            Ok(all_curricula) => {
+                let mut lock = get_curricula_lock().write().await;
+                *lock = Some(all_curricula.clone());
+                Ok(all_curricula)
+            }
+            Err(e) => {
+                log::warn!("[SigaaData] Erro ao carregar todos os currículos: {}", e);
+                Ok(vec![])
+            }
+        }
+    }
+
     /// Lista padrão de departamentos UnB para contingência offline
     pub fn fallback_departments() -> Vec<Department> {
         vec![

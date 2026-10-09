@@ -1,7 +1,7 @@
 import React from 'react';
-import { Home, BookOpen, CalendarDays, Settings, PanelLeftClose, PanelLeftOpen, RefreshCw } from 'lucide-react';
+import { Home, BookOpen, CalendarDays, Settings, PanelLeftClose, PanelLeftOpen, RefreshCw, GraduationCap } from 'lucide-react';
 
-export type NavTab = 'home' | 'courses' | 'grade' | 'settings';
+export type NavTab = 'home' | 'courses' | 'grade' | 'my-course' | 'settings';
 
 export interface SidebarProps {
   currentTab: NavTab;
@@ -28,6 +28,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     { id: 'home' as NavTab, label: 'Home', icon: Home },
     { id: 'courses' as NavTab, label: 'Disciplinas', icon: BookOpen },
     { id: 'grade' as NavTab, label: 'Montar Grade', icon: CalendarDays },
+    { id: 'my-course' as NavTab, label: 'Meu Curso', icon: GraduationCap },
     { id: 'settings' as NavTab, label: 'Configurações', icon: Settings },
   ];
 

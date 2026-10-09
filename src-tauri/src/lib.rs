@@ -19,6 +19,8 @@ pub fn builder() -> Builder<tauri::Wry> {
         commands::scrape_sigaa_classes,
         commands::get_courses_catalog,
         commands::get_course_curriculum,
+        commands::get_all_curricula,
+        commands::fetch_sigaa_academic_history,
         commands::solve_schedules,
         commands::check_schedule_conflicts,
         commands::open_external_url,

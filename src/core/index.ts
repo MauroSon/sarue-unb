@@ -3,6 +3,7 @@ export * from './domain/entities/feed-item';
 export * from './domain/entities/credential';
 export * from './domain/entities/course';
 export * from './domain/entities/grade';
+export * from './domain/entities/academic-profile';
 export * from './domain/grade-acronym';
 
 // Interfaces / Ports
@@ -10,6 +11,7 @@ export * from './domain/interfaces/credentials-repo.interface';
 export * from './domain/interfaces/sync-repo.interface';
 export * from './domain/interfaces/feed-repo.interface';
 export * from './domain/interfaces/grade-repo.interface';
+export * from './domain/interfaces/academic-profile-repo.interface';
 
 // Use Cases
 export * from './application/save-credentials.use-case';
@@ -22,6 +24,9 @@ export * from './application/get-semesters.use-case';
 export * from './application/scrape-classes.use-case';
 export * from './application/solve-schedule.use-case';
 export * from './application/manage-grade.use-case';
+export * from './application/manage-academic-profile.use-case';
+export * from './application/get-flowchart.use-case';
+export * from './application/parse-historico.use-case';
 
 // DI Container
 // Nota: repositórios concretos (adapters) não são exportados aqui de propósito.

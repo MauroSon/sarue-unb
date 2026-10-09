@@ -152,12 +152,17 @@ export class CoursesScraper {
     if (!tableLtMatch) return [];
 
     const curricula: CurriculumStructure[] = [];
-    const blockRegex = /<tr class="campos">([\s\S]*?)<\/tr>\s*<tr class="(?:linha_par|linha_impar)">([\s\S]*?)<\/tr>/gi;
-    let blockMatch: RegExpExecArray | null;
+    const rows = tableLtMatch[1].match(/<tr[^>]*>[\s\S]*?<\/tr>/gi) || [];
+    let currentShift = '';
 
-    while ((blockMatch = blockRegex.exec(tableLtMatch[1])) !== null) {
-      const shiftText = decodeHtmlEntities(blockMatch[1].replace(/<[^>]+>/g, '').trim());
-      const rowContent = blockMatch[2];
+    for (const rowContent of rows) {
+      if (rowContent.includes('class="campos"')) {
+        currentShift = decodeHtmlEntities(rowContent.replace(/<[^>]+>/g, '').trim());
+        continue;
+      }
+      if (!rowContent.includes('linha_par') && !rowContent.includes('linha_impar')) {
+        continue;
+      }
 
       const tdRegex = /<td[^>]*>([\s\S]*?)<\/td>/gi;
       const tds: string[] = [];
@@ -217,7 +222,7 @@ export class CoursesScraper {
             course.name,
             structureCode,
             status,
-            shiftText,
+            currentShift,
             createdYear
           );
 
