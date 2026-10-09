@@ -46,19 +46,15 @@ export function useMyCourse() {
           matched = curricula.find((c) => c.code === currentProfile.curriculumCode);
         }
 
-        // Se o perfil foi gravado anteriormente com 1741/3 por engano, mas pertence a Engenharia de Computação (2022.1 / 3480h / matrícula do aluno)
-        const isEngCompKaleb =
-          currentProfile.matricula === '221020904' ||
-          (currentProfile.courseName?.toUpperCase().includes('COMPUTAÇÃO') &&
-            (currentProfile.admissionYear === '2022.1' || currentProfile.chTotalCurriculo === 3480));
-
-        if ((!matched || currentProfile.curriculumCode === '1741/3') && isEngCompKaleb) {
-          const c1741_1 = curricula.find((c) => c.code === '1741/1');
-          if (c1741_1) {
-            matched = c1741_1;
-            if (currentProfile.curriculumCode !== '1741/1') {
-              useCases.manageAcademicProfile.setCurriculum(c1741_1).catch(() => {});
-            }
+        // Dentro do mesmo prefixo, a versão cuja CH total bate com o histórico oficial do
+        // SIGAA ganha da versão gravada por engano no perfil (ex.: 1741/3 vs 1741/1)
+        if (matched && currentProfile.chTotalCurriculo) {
+          const prefix = currentProfile.curriculumCode!.split('/')[0];
+          const byHours = curricula.find(
+            (c) => c.code.startsWith(`${prefix}/`) && c.totalHours === currentProfile.chTotalCurriculo,
+          );
+          if (byHours && matched.totalHours !== currentProfile.chTotalCurriculo) {
+            matched = byHours;
           }
         }
 
@@ -120,6 +116,25 @@ export function useMyCourse() {
     if (!selectedCurriculum || !profile) return null;
     return useCases.getFlowchart.execute(selectedCurriculum, profile);
   }, [selectedCurriculum, profile, useCases]);
+
+  // Mapa código → nome de disciplina: matriz (obrigatórias, optativas, complementares)
+  // + histórico cursado, para exibir nomes reais onde hoje só há códigos
+  const disciplineNames: Map<string, string> = useMemo(() => {
+    const map = new Map<string, string>();
+    if (selectedCurriculum) {
+      for (const d of [
+        ...selectedCurriculum.mandatoryDisciplines,
+        ...selectedCurriculum.electiveDisciplines,
+        ...selectedCurriculum.complementaryDisciplines,
+      ]) {
+        map.set(d.code, d.name);
+      }
+    }
+    for (const d of profile?.completedDisciplines || []) {
+      if (!map.has(d.code)) map.set(d.code, d.name);
+    }
+    return map;
+  }, [selectedCurriculum, profile]);
 
   // Alterna uma disciplina manualmente
   const toggleDiscipline = useCallback(async (code: string) => {
@@ -275,6 +290,7 @@ export function useMyCourse() {
     curriculum: selectedCurriculum,
     allCurricula,
     flowchartData,
+    disciplineNames,
     isLoading,
     isSyncing,
     hoveredCode,

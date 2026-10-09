@@ -9,6 +9,8 @@ export interface FlowchartStatsProps {
 export const FlowchartStats: React.FC<FlowchartStatsProps> = ({ metrics }) => {
   const percentual = metrics.percentualIntegralizado ?? metrics.mandatoryProgressPercentage;
   const totalCurriculo = metrics.chTotalCurriculo ?? metrics.totalHours;
+  // CH obrigatória da própria matriz (soma das disciplinas obrigatórias), não um número fixo
+  const obrigatoriaTotal = metrics.chObrigatoriaTotal;
   const obrigatoriaPendente = metrics.chObrigatoriaPendente;
   const optativaPendente = metrics.chOptativaPendente;
 
@@ -20,7 +22,7 @@ export const FlowchartStats: React.FC<FlowchartStatsProps> = ({ metrics }) => {
           <span className="text-xs font-black uppercase tracking-wider text-neutral-600">
             Integralização SIGAA
           </span>
-          <div className="w-8 h-8 rounded-lg bg-pastel-green border-2 border-black flex items-center justify-center text-black shadow-[1px_1px_0_0_#000]">
+          <div className="w-8 h-8 rounded-lg bg-pastel-green border-2 border-black flex items-center justify-center text-black shadow-neo-xs">
             <Award className="w-4 h-4 stroke-[2.5]" />
           </div>
         </div>
@@ -36,7 +38,14 @@ export const FlowchartStats: React.FC<FlowchartStatsProps> = ({ metrics }) => {
           </div>
 
           {/* Barra de progresso neo-brutalista */}
-          <div className="w-full h-3.5 bg-neutral-100 border-2 border-black rounded-full overflow-hidden p-0.5 shadow-[1px_1px_0_0_#000]">
+          <div
+            role="progressbar"
+            aria-label="Percentual de integralização do curso"
+            aria-valuenow={Math.round(percentual)}
+            aria-valuemin={0}
+            aria-valuemax={100}
+            className="w-full h-3.5 bg-neutral-100 border-2 border-black rounded-full overflow-hidden p-0.5 shadow-neo-xs"
+          >
             <div
               className="h-full bg-neo-green border border-black rounded-full transition-all duration-500"
               style={{ width: `${Math.min(100, Math.max(0, percentual))}%` }}
@@ -55,17 +64,19 @@ export const FlowchartStats: React.FC<FlowchartStatsProps> = ({ metrics }) => {
           <span className="text-xs font-black uppercase tracking-wider text-neutral-600">
             CH Obrigatória
           </span>
-          <div className="w-8 h-8 rounded-lg bg-pastel-blue border-2 border-black flex items-center justify-center text-neo-blue shadow-[1px_1px_0_0_#000]">
+          <div className="w-8 h-8 rounded-lg bg-pastel-blue border-2 border-black flex items-center justify-center text-neo-blue shadow-neo-xs">
             <Clock className="w-4 h-4 stroke-[2.5]" />
           </div>
         </div>
 
         <div className="flex items-baseline gap-2 mb-1">
           <span className="text-3xl font-black text-black">
-            {obrigatoriaPendente != null ? `${1980 - obrigatoriaPendente}h` : `${metrics.completedHours}h`}
+            {obrigatoriaPendente != null && obrigatoriaTotal != null
+              ? `${obrigatoriaTotal - obrigatoriaPendente}h`
+              : `${metrics.completedHours}h`}
           </span>
           <span className="text-xs font-bold text-neutral-600">
-            de 1980h
+            de {obrigatoriaTotal ?? metrics.totalHours}h
           </span>
         </div>
 
@@ -80,7 +91,7 @@ export const FlowchartStats: React.FC<FlowchartStatsProps> = ({ metrics }) => {
           <span className="text-xs font-black uppercase tracking-wider text-neutral-600">
             CH Total do Curso
           </span>
-          <div className="w-8 h-8 rounded-lg bg-pastel-yellow border-2 border-black flex items-center justify-center text-black shadow-[1px_1px_0_0_#000]">
+          <div className="w-8 h-8 rounded-lg bg-pastel-yellow border-2 border-black flex items-center justify-center text-black shadow-neo-xs">
             <Sparkles className="w-4 h-4 stroke-[2.5]" />
           </div>
         </div>
@@ -105,7 +116,7 @@ export const FlowchartStats: React.FC<FlowchartStatsProps> = ({ metrics }) => {
           <span className="text-xs font-black uppercase tracking-wider text-neutral-600">
             Índices Acadêmicos
           </span>
-          <div className="w-8 h-8 rounded-lg bg-pastel-purple border-2 border-black flex items-center justify-center text-neo-purple shadow-[1px_1px_0_0_#000]">
+          <div className="w-8 h-8 rounded-lg bg-pastel-purple border-2 border-black flex items-center justify-center text-neo-purple shadow-neo-xs">
             <BookOpen className="w-4 h-4 stroke-[2.5]" />
           </div>
         </div>

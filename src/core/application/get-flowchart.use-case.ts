@@ -204,6 +204,7 @@ export class GetFlowchartUseCase {
       inProgressCount,
       ira: profile.ira,
       mp: profile.mp,
+      chObrigatoriaTotal: totalHours,
       chObrigatoriaPendente: profile.chObrigatoriaPendente,
       chOptativaPendente: profile.chOptativaPendente,
       chTotalCurriculo: profile.chTotalCurriculo,

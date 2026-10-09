@@ -68,6 +68,7 @@ export interface FlowchartMetrics {
   inProgressCount: number;
   ira?: number;
   mp?: number;
+  chObrigatoriaTotal?: number;
   chObrigatoriaPendente?: number;
   chOptativaPendente?: number;
   chTotalCurriculo?: number;

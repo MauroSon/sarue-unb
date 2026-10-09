@@ -26,6 +26,7 @@ export const MyCourseScreen: React.FC = () => {
     curriculum,
     allCurricula,
     flowchartData,
+    disciplineNames,
     isLoading,
     isSyncing,
     toggleDiscipline,
@@ -153,9 +154,6 @@ export const MyCourseScreen: React.FC = () => {
               </span>
             </div>
 
-            {/* Adesivos de Informação */}
-            <div className="flex flex-wrap items-center gap-2 text-xs font-bold text-neutral-700">
-            </div>
           </div>
 
           {/* Botão de resetar marcações manuais */}
@@ -182,7 +180,7 @@ export const MyCourseScreen: React.FC = () => {
       {flowchartData && <FlowchartStats metrics={flowchartData.metrics} />}
 
       {/* Painel "Cursando agora" — resposta direta a "o que estou fazendo neste semestre?" */}
-      <CurrentlyEnrolledPanel disciplines={inProgressDisciplines} onToggle={toggleDiscipline} />
+      <CurrentlyEnrolledPanel disciplines={inProgressDisciplines} searchQuery={searchQuery} />
 
       {/* Barra de Controles: Busca, Filtros e Alternância de Vista */}
       <div className="bg-white border-2 border-black rounded-xl p-3 mb-6 shadow-neo flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
@@ -193,6 +191,7 @@ export const MyCourseScreen: React.FC = () => {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Buscar por código ou nome (ex: APC, Cálculo, CIC0004)..."
+            aria-label="Buscar disciplina por código ou nome"
             className="pl-9 h-9 text-xs bg-white"
           />
         </div>
@@ -202,9 +201,10 @@ export const MyCourseScreen: React.FC = () => {
           <button
             type="button"
             onClick={() => setActiveFilter("all")}
-            className={`cursor-pointer px-2.5 py-1 rounded-lg border-2 transition-all shadow-[2px_2px_0_0_#000] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0_0_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none ${
+            aria-pressed={activeFilter === "all"}
+            className={`cursor-pointer px-2.5 py-1 rounded-lg border-2 transition-all shadow-neo-sm hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-neo-xs active:translate-x-[2px] active:translate-y-[2px] active:shadow-none ${
               activeFilter === "all"
-                ? "bg-black text-white border-black shadow-[2px_2px_0_0_#000]"
+                ? "bg-black text-white border-black shadow-neo-sm"
                 : "bg-white text-black border-black hover:bg-neutral-100"
             }`}
           >
@@ -214,9 +214,10 @@ export const MyCourseScreen: React.FC = () => {
           <button
             type="button"
             onClick={() => setActiveFilter("completed")}
-            className={`cursor-pointer px-2.5 py-1 rounded-lg border-2 transition-all flex items-center gap-1 shadow-[2px_2px_0_0_#000] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0_0_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none ${
+            aria-pressed={activeFilter === "completed"}
+            className={`cursor-pointer px-2.5 py-1 rounded-lg border-2 transition-all flex items-center gap-1 shadow-neo-sm hover:shadow-neo-xs hover:translate-x-[1px] hover:translate-y-[1px] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none ${
               activeFilter === "completed"
-                ? "bg-neo-green text-black border-black shadow-[2px_2px_0_0_#000]"
+                ? "bg-neo-green text-black border-black shadow-neo-sm"
                 : "bg-pastel-green text-black border-black hover:bg-neutral-100"
             }`}
           >
@@ -227,9 +228,10 @@ export const MyCourseScreen: React.FC = () => {
           <button
             type="button"
             onClick={() => setActiveFilter("in_progress")}
-            className={`cursor-pointer px-2.5 py-1 rounded-lg border-2 transition-all flex items-center gap-1 shadow-[2px_2px_0_0_#000] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0_0_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none ${
+            aria-pressed={activeFilter === "in_progress"}
+            className={`cursor-pointer px-2.5 py-1 rounded-lg border-2 transition-all flex items-center gap-1 shadow-neo-sm hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-neo-xs active:translate-x-[2px] active:translate-y-[2px] active:shadow-none ${
               activeFilter === "in_progress"
-                ? "bg-neo-blue text-white border-black shadow-[2px_2px_0_0_#000]"
+                ? "bg-neo-blue text-white border-black shadow-neo-sm"
                 : "bg-pastel-blue text-black border-black hover:bg-neutral-100"
             }`}
           >
@@ -240,9 +242,10 @@ export const MyCourseScreen: React.FC = () => {
           <button
             type="button"
             onClick={() => setActiveFilter("available")}
-            className={`cursor-pointer px-2.5 py-1 rounded-lg border-2 transition-all flex items-center gap-1 shadow-[2px_2px_0_0_#000] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0_0_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none ${
+            aria-pressed={activeFilter === "available"}
+            className={`cursor-pointer px-2.5 py-1 rounded-lg border-2 transition-all flex items-center gap-1 shadow-neo-sm hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-neo-xs active:translate-x-[2px] active:translate-y-[2px] active:shadow-none ${
               activeFilter === "available"
-                ? "bg-neo-yellow text-black border-black shadow-[2px_2px_0_0_#000]"
+                ? "bg-neo-yellow text-black border-black shadow-neo-sm"
                 : "bg-pastel-yellow text-black border-black hover:bg-neo-yellow/40"
             }`}
           >
@@ -258,6 +261,7 @@ export const MyCourseScreen: React.FC = () => {
         <FlowchartList
           semesters={flowchartData.semesters}
           visibleCodes={filteredCodesSet}
+          disciplineNames={disciplineNames}
           onToggle={toggleDiscipline}
         />
       )}
@@ -277,7 +281,7 @@ export const MyCourseScreen: React.FC = () => {
             {flowchartData?.electiveCompletedDisciplines.map((d) => (
               <div
                 key={d.code}
-                className="bg-neutral-50 border-2 border-black rounded-lg p-2.5 shadow-[2px_2px_0_0_#000] flex items-center justify-between"
+                className="bg-neutral-50 border-2 border-black rounded-lg p-2.5 shadow-neo-sm flex items-center justify-between"
               >
                 <div className="min-w-0 pr-2">
                   <div className="flex items-center gap-1.5 mb-0.5">

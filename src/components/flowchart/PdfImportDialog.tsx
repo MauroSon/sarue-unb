@@ -55,7 +55,7 @@ export const PdfImportDialog: React.FC<PdfImportDialogProps> = ({
       <DialogContent showCloseButton={true} className="sm:max-w-md">
         <DialogHeader>
           <div className="flex items-center gap-2 mb-1">
-            <div className="w-8 h-8 rounded-lg bg-pastel-green border-2 border-black flex items-center justify-center shadow-[2px_2px_0_0_#000]">
+            <div className="w-8 h-8 rounded-lg bg-pastel-green border-2 border-black flex items-center justify-center shadow-neo-sm">
               <FileUp className="w-4 h-4 stroke-[2.5] text-black" />
             </div>
             <DialogTitle>Importar Histórico Escolar (PDF)</DialogTitle>
@@ -100,7 +100,7 @@ export const PdfImportDialog: React.FC<PdfImportDialogProps> = ({
             </div>
           ) : (
             <div className="flex flex-col items-center gap-2 text-neutral-600">
-              <div className="w-12 h-12 rounded-xl bg-white border-2 border-black flex items-center justify-center shadow-[2px_2px_0_0_#000]">
+              <div className="w-12 h-12 rounded-xl bg-white border-2 border-black flex items-center justify-center shadow-neo-sm">
                 <UploadCloud className="w-6 h-6 stroke-[2] text-black" />
               </div>
               <p className="text-xs font-extrabold text-black mt-1">

@@ -5,36 +5,50 @@ import { FlowchartCard } from './FlowchartCard';
 
 export interface CurrentlyEnrolledPanelProps {
   disciplines: FlowchartDiscipline[];
-  onToggle: (code: string) => void;
+  /** Busca ativa na página: cards sem correspondência ficam esmaecidos */
+  searchQuery?: string;
 }
 
-// Memoizado: a busca na tela re-renderiza o pai a cada tecla, mas disciplines/onToggle são estáveis
-export const CurrentlyEnrolledPanel: React.FC<CurrentlyEnrolledPanelProps> = React.memo(({
-  disciplines,
-  onToggle,
-}) => {
-  if (disciplines.length === 0) return null;
+const norm = (v: string) =>
+  v
+    .toUpperCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '');
 
-  return (
-    <div className="bg-pastel-blue border-2 border-black rounded-lg p-4 shadow-neo mb-6">
-      <div className="flex items-center gap-2 mb-3">
-        <span className="w-8 h-8 rounded-lg bg-neo-blue border-2 border-black flex items-center justify-center text-white shadow-neo-sm">
-          <Clock className="w-4 h-4 stroke-[2.5]" />
-        </span>
-        <h3 className="font-black text-sm text-black">Cursando agora</h3>
-        <span className="text-[11px] font-black px-2 py-0.5 bg-neo-blue text-white border border-black rounded-md">
-          {disciplines.length}
-        </span>
-        <span className="text-[11px] font-bold text-neutral-700">
-          disciplinas neste semestre
-        </span>
-      </div>
+// Painel "Cursando agora": leitura (dashboard) — concluir disciplina acontece na lista/fluxograma
+export const CurrentlyEnrolledPanel: React.FC<CurrentlyEnrolledPanelProps> = React.memo(
+  ({ disciplines, searchQuery = '' }) => {
+    const query = norm(searchQuery.trim());
+    const matches = (d: FlowchartDiscipline) =>
+      query === '' || norm(d.code).includes(query) || norm(d.name).includes(query);
+    const matchCount = disciplines.filter(matches).length;
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
-        {disciplines.map((d) => (
-          <FlowchartCard key={d.code} discipline={d} onToggle={onToggle} />
-        ))}
+    return (
+      <div className="bg-pastel-blue border-2 border-black rounded-lg p-4 shadow-neo mb-6" aria-live="polite">
+        <div className="flex items-baseline gap-2 mb-3">
+          <Clock className="w-4 h-4 stroke-[2.5] text-neo-blue self-center shrink-0" />
+          <h3 className="font-black text-sm text-black">Cursando agora</h3>
+          <span className="text-[11px] font-bold text-neutral-600">
+            {query !== ''
+              ? `${matchCount} de ${disciplines.length} correspondem à busca`
+              : `${disciplines.length} disciplinas neste semestre`}
+          </span>
+        </div>
+
+        {disciplines.length === 0 ? (
+          <p className="text-xs font-bold text-neutral-700 py-2">
+            Nenhuma disciplina matriculada neste semestre — sincronize o SIGAA ou importe o histórico atualizado.
+          </p>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+            {disciplines.map((d) => (
+              <div key={d.code} className={matches(d) ? '' : 'opacity-40'}>
+                <FlowchartCard discipline={d} />
+              </div>
+            ))}
+          </div>
+        )}
       </div>
-    </div>
-  );
-});
+    );
+  },
+);

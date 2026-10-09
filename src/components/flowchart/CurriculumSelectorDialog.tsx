@@ -6,7 +6,6 @@ import {
   DialogHeader,
   DialogTitle,
   DialogDescription,
-  DialogFooter,
   Button,
   Badge,
 } from "@/components/ui";
@@ -85,7 +84,7 @@ export const CurriculumSelectorDialog: React.FC<
               <div
                 key={curr.id}
                 onClick={() => handleSelectStructure(curr)}
-                className={`cursor-pointer border-2 border-black rounded-lg p-3 flex items-center justify-between gap-2 transition-all duration-150 select-none shadow-neo-sm hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0_0_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none ${
+                className={`cursor-pointer border-2 border-black rounded-lg p-3 flex items-center justify-between gap-2 transition-all duration-150 select-none shadow-neo-sm hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-neo-xs active:translate-x-[2px] active:translate-y-[2px] active:shadow-none ${
                   isSelected
                     ? "bg-pastel-green"
                     : "bg-white hover:bg-neutral-50"
