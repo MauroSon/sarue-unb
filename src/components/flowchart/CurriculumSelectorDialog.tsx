@@ -83,11 +83,10 @@ export const CurriculumSelectorDialog: React.FC<
             return (
               <div
                 key={curr.id}
-                onClick={() => handleSelectStructure(curr)}
-                className={`cursor-pointer border-2 border-black rounded-lg p-3 flex items-center justify-between gap-2 transition-all duration-150 select-none shadow-neo-sm hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-neo-xs active:translate-x-[2px] active:translate-y-[2px] active:shadow-none ${
+                className={`border-2 border-black rounded-lg p-3 flex items-center justify-between gap-2 select-none shadow-neo-sm ${
                   isSelected
                     ? "bg-pastel-green"
-                    : "bg-white hover:bg-neutral-50"
+                    : "bg-white"
                 }`}
               >
                 <div className="min-w-0">
@@ -135,10 +134,7 @@ export const CurriculumSelectorDialog: React.FC<
                     variant="outline"
                     size="sm"
                     className="h-8 text-xs font-bold shrink-0"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleSelectStructure(curr);
-                    }}
+                    onClick={() => handleSelectStructure(curr)}
                   >
                     Selecionar
                   </Button>

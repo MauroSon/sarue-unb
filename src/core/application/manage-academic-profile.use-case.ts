@@ -21,6 +21,10 @@ export class ManageAcademicProfileUseCase {
     await this.repo.saveProfile(profile);
   }
 
+  async clearProfile(): Promise<void> {
+    await this.repo.clearProfile();
+  }
+
   async toggleDiscipline(code: string): Promise<StudentAcademicProfile> {
     const current = await this.repo.getProfile();
     if (!current) {
@@ -131,26 +135,6 @@ export class ManageAcademicProfileUseCase {
 
     const currentProfile = await this.repo.getProfile();
     // Preserva eventuais marcações manuais anteriores
-    if (currentProfile) {
-      parseResult.profile.manualCompletedCodes = currentProfile.manualCompletedCodes || [];
-      parseResult.profile.manualUncompletedCodes = currentProfile.manualUncompletedCodes || [];
-    }
-
-    await this.repo.saveProfile(parseResult.profile);
-    return parseResult;
-  }
-
-  async importPdfFile(pdfBytes: Uint8Array): Promise<{
-    profile: StudentAcademicProfile;
-    matchedCurriculum?: CurriculumStructure;
-  }> {
-    const curriculaCatalog = await this.repo.getAllCurricula();
-    const parseResult = await this.parseHistoricoUseCase.execute({
-      pdfData: pdfBytes,
-      curriculaCatalog,
-    });
-
-    const currentProfile = await this.repo.getProfile();
     if (currentProfile) {
       parseResult.profile.manualCompletedCodes = currentProfile.manualCompletedCodes || [];
       parseResult.profile.manualUncompletedCodes = currentProfile.manualUncompletedCodes || [];

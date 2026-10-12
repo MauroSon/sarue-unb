@@ -120,7 +120,7 @@ export class CoursesScraper {
 
   async fetchCourseCurricula(
     course: CourseCatalogItem,
-    enrichLimit = 25
+    enrichLimit = 0
   ): Promise<CurriculumStructure[]> {
     // 1. Visita o portal do curso para carregar o bean do curso na sessão JSF
     const portalUrl = `https://sigaa.unb.br/sigaa/public/curso/portal.jsf?id=${course.id}&lc=pt_BR&nivel=G`;
@@ -333,14 +333,14 @@ export class CoursesScraper {
   async enrichComponentsWithDetails(
     reportHtml: string,
     structure: CurriculumStructure,
-    maxEnrich = 25
+    maxEnrich = 0
   ): Promise<void> {
     const vsMatch = reportHtml.match(/name="javax\.faces\.ViewState"[^>]*value="([^"]+)"/i);
     const viewState = vsMatch ? vsMatch[1] : 'j_id1';
 
     let count = 0;
     for (const disc of structure.mandatory_disciplines) {
-      if (count >= maxEnrich) break;
+      if (maxEnrich > 0 && count >= maxEnrich) break;
       if (!disc._action_params) continue;
 
       const postData = new URLSearchParams({
@@ -439,8 +439,8 @@ async function main() {
   const limitStr = getArg('--limit', '');
   const limit = limitStr ? parseInt(limitStr, 10) : undefined;
   const targetCourseId = getArg('--course', '');
-  const enrichLimitStr = getArg('--enrich-limit', '20');
-  const enrichLimit = parseInt(enrichLimitStr, 10) || 20;
+  const enrichLimitStr = getArg('--enrich-limit', '0');
+  const enrichLimit = parseInt(enrichLimitStr, 10) || 0;
 
   console.log(`[CoursesScraper] Iniciando coleta de cursos e estruturas curriculares.`);
   console.log(`[CoursesScraper] Diretório de saída: ${outDir}`);
@@ -498,8 +498,18 @@ async function main() {
   console.log(`[CoursesScraper] Salvo: ${coursesPath} (${allCourses.length} cursos catalogados)`);
 
   const curriculaPath = path.join(outDir, 'curricula.json');
-  await fs.writeFile(curriculaPath, JSON.stringify(allCurricula, null, 2), 'utf-8');
-  console.log(`[CoursesScraper] Salvo: ${curriculaPath} (${allCurricula.length} estruturas curriculares salvas)`);
+  let finalCurricula = allCurricula;
+  if (targetCourseId) {
+    try {
+      const existingRaw = await fs.readFile(curriculaPath, 'utf-8');
+      const existingList: CurriculumStructure[] = JSON.parse(existingRaw);
+      const remaining = existingList.filter((c) => c.course_id !== targetCourseId);
+      finalCurricula = [...remaining, ...allCurricula];
+    } catch {}
+  }
+
+  await fs.writeFile(curriculaPath, JSON.stringify(finalCurricula, null, 2), 'utf-8');
+  console.log(`[CoursesScraper] Salvo: ${curriculaPath} (${finalCurricula.length} estruturas curriculares salvas)`);
 
   const metaPath = path.join(outDir, 'courses-meta.json');
   const meta = {

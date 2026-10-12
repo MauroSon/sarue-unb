@@ -40,6 +40,60 @@ export function normalizeName(str: string): string {
     .trim();
 }
 
+/**
+ * Extrai o nome da disciplina a partir das linhas que antecedem o registro
+ * compactado no histórico escolar da UnB (ex.: linha com "2026.2 SINAIS E SISTEMAS EM TEMPO CONTÍNUO").
+ */
+export function extractPrecedingDisciplineName(fullText: string, matchIndex: number): string | undefined {
+  const windowStart = Math.max(0, matchIndex - 350);
+  const textBefore = fullText.slice(windowStart, matchIndex);
+  const lines = textBefore.split(/\r?\n/);
+
+  // 1. Caso esteja na mesma linha: ex.: "2026.2 SINAIS E SISTEMAS EM TEMPO CONTÍNUO 01 "
+  const currentLinePrefix = lines[lines.length - 1];
+  const sameLineMatch = currentLinePrefix.match(/\b\d{4}\.[12]\s+([A-ZÁÉÍÓÚÂÊÔÃÕÇ0-9–\-\s/]+?)(?:\s+\d{1,3})?\s*$/i);
+  if (sameLineMatch && sameLineMatch[1].trim()) {
+    const raw = sameLineMatch[1].trim();
+    if (raw.length >= 3 && !/^(APR|REP|MATR|TR|DISP)\b/i.test(raw)) {
+      return raw;
+    }
+  }
+
+  // 2. Linhas anteriores retrocedendo a partir da linha imediatamente anterior
+  const nameParts: string[] = [];
+  for (let i = lines.length - 2; i >= 0; i--) {
+    const rawLine = lines[i].trim();
+    if (!rawLine) continue;
+
+    // Se encontramos uma linha que pertence a outra disciplina (contém código ou situação anterior), paramos
+    if (/(APR|REP|REPF|REPN|TR|MATR|DISP|CANC)\b/i.test(rawLine) || /[A-Z]{3}\d{4}/.test(rawLine)) {
+      break;
+    }
+
+    // Linha com semestre e nome da disciplina: ex.: "2026.2 SINAIS E SISTEMAS EM TEMPO CONTÍNUO"
+    const semMatch = rawLine.match(/^(\d{4}\.[12])\s+(.+)$/);
+    if (semMatch) {
+      nameParts.unshift(semMatch[2].trim());
+      break;
+    } else {
+      // Linha de continuação do nome da disciplina (caso quebre linha no PDF)
+      if (/Histórico|Componentes|Dados|Curso|Currículo|Status|Matrícula|Nome|SAA|DEG/i.test(rawLine)) {
+        break;
+      }
+      nameParts.unshift(rawLine);
+    }
+  }
+
+  if (nameParts.length > 0) {
+    const combined = nameParts.join(' ').replace(/\s+/g, ' ').trim();
+    if (combined.length >= 3 && !/^(APR|REP|MATR|TR|DISP)\b/i.test(combined)) {
+      return combined;
+    }
+  }
+
+  return undefined;
+}
+
 export class ParseHistoricoUseCase {
   async execute(input: ParseHistoricoInput): Promise<ParseHistoricoResult> {
     let fullText = input.rawText || '';
@@ -107,53 +161,120 @@ export class ParseHistoricoUseCase {
     // 3. Extração das disciplinas cursadas e em andamento
     const completedMap = new Map<string, CompletedDiscipline>();
 
-    // Padrão 1 (UnB oficial comprimido do iText): 08 APRCIC0004 90 90,0 MS
-    // Suporta notas com sufixos comuns do histórico: SS*, MSe, --#, MI& etc.
-    const patternCompact = /(APR|REP|TR|MATR|DISP|CANC)([A-Z]{3}\d{4})\s+(\d+)\s+([\d,]+|-+)\s+([A-Z0-9&*\-–#e]+)/g;
+    const setOrUpdateDiscipline = (entry: CompletedDiscipline) => {
+      const existing = completedMap.get(entry.code);
+      if (!existing) {
+        completedMap.set(entry.code, entry);
+        return;
+      }
+
+      // Preserva o nome real se a nova entrada tiver só o código
+      const resolvedName = (entry.name && entry.name !== entry.code)
+        ? entry.name
+        : (existing.name && existing.name !== existing.code)
+        ? existing.name
+        : entry.name || existing.name;
+
+      // Se a nova entrada representa conclusão efetiva e a anterior não:
+      if (!existing.isCompleted && entry.isCompleted) {
+        completedMap.set(entry.code, { ...entry, name: resolvedName });
+        return;
+      }
+
+      // Se a existente já é concluída (APR/DISP):
+      if (existing.isCompleted) {
+        if (entry.situation === 'APR' && existing.situation !== 'APR') {
+          completedMap.set(entry.code, { ...entry, name: resolvedName });
+        } else if (resolvedName !== existing.name) {
+          existing.name = resolvedName;
+        }
+        return;
+      }
+
+      // Ambas não concluídas (REP, TR, CANC, MATR):
+      // MATR representa matrícula ativa atual -> tem precedência sobre reprovações/trancamentos anteriores!
+      if (entry.situation === 'MATR' || entry.situation === 'MATRICULADO') {
+        completedMap.set(entry.code, {
+          ...entry,
+          name: resolvedName,
+          situation: 'MATR',
+          isCompleted: false,
+        });
+        return;
+      }
+
+      // Se a existente não for MATR e a nova tiver APR:
+      if (existing.situation !== 'MATR' && entry.situation === 'APR') {
+        completedMap.set(entry.code, { ...entry, name: resolvedName });
+      } else if (resolvedName !== existing.name) {
+        existing.name = resolvedName;
+      }
+    };
+
+    // Padrão 1 (UnB oficial comprimido do iText): 08 APRCIC0004 90 90,0 MS ou 01 MATRCIC0099 60 100,0 -
+    // Suporta espaços opcionais entre situação e código, notas com sufixos ou traços:
+    const patternCompact = /(APR|REP|REPF|REPN|TR|MATR|DISP|CANC)\s*([A-Z]{3}\d{4})\s+(\d+)(?:\s+([\d,]+|-+))?(?:\s+([A-Z0-9&*\-–#e]+))?/gi;
     let match: RegExpExecArray | null;
     while ((match = patternCompact.exec(fullText)) !== null) {
-      const situation = match[1];
+      const rawSit = match[1].toUpperCase();
       const code = match[2].toUpperCase();
       const ch = parseInt(match[3], 10);
-      const rawGrade = match[5].trim();
+      const rawGrade = (match[5] || '').trim();
       const cleanGrade = rawGrade.replace(/[^A-Z0-9-]/gi, '').toUpperCase();
 
+      const situation = rawSit.startsWith('MATR') ? 'MATR' : rawSit;
       const isCompleted = situation === 'APR'
         || situation === 'DISP'
-        || ['SS', 'MS', 'MM', 'AP', 'CC'].some(g => cleanGrade.startsWith(g));
+        || ['SS', 'MS', 'MM', 'AP', 'CC'].some((g) => cleanGrade.startsWith(g));
 
-      const existing = completedMap.get(code);
-      if (!existing || (!existing.isCompleted && isCompleted) || (existing.situation !== 'APR' && situation === 'APR')) {
-        completedMap.set(code, {
-          code,
-          name: code,
-          workloadHours: ch,
-          grade: cleanGrade || rawGrade,
-          situation,
-          isCompleted,
-        });
-      }
+      const parsedName = extractPrecedingDisciplineName(fullText, match.index);
+
+      setOrUpdateDiscipline({
+        code,
+        name: parsedName || code,
+        workloadHours: ch,
+        grade: cleanGrade || rawGrade || (situation === 'MATR' ? '-' : undefined),
+        situation,
+        isCompleted: situation === 'MATR' ? false : isCompleted,
+      });
     }
 
-    // Padrão 2 (Tabelado ou padrão com código separado): [A-Z]{3}\d{4} ... APROVADO|DISPENSADO
-    const patternStandard = /([A-Z]{3}\d{4})\s+([A-ZÁÉÍÓÚÂÊÔÃÕÇ\s0-9–-]+?)\s+(\d{2,3})\s+(?:\d{2}\s+)?([A-Z]{2})\s+(APROVADO|DISPENSADO|REPROVADO|TRANCADO|MATRICULADO)/gi;
+    // Padrão 2 (Tabelado ou padrão com código separado): [A-Z]{3}\d{4} ... APROVADO|DISPENSADO|MATRICULADO
+    const patternStandard = /([A-Z]{3}\d{4})\s+([A-ZÁÉÍÓÚÂÊÔÃÕÇ\s0-9–-]+?)\s+(\d{2,3})\s+(?:[\d,]+|-+|\s+)*(?:([A-Z]{2})\s+)?(APROVADO|DISPENSADO|REPROVADO|TRANCADO|CANCELADO|MATRICULADO|MATR|APR|REP|TR|DISP|CANC)\b/gi;
     while ((match = patternStandard.exec(fullText)) !== null) {
       const code = match[1].toUpperCase();
       const name = match[2].trim();
       const ch = parseInt(match[3], 10);
-      const grade = match[4].toUpperCase();
-      const situation = match[5].toUpperCase();
-      const isCompleted = situation.includes('APROV') || situation.includes('DISP') || ['SS', 'MS', 'MM', 'AP'].includes(grade);
+      const grade = (match[4] || '').toUpperCase();
+      const rawSit = match[5].toUpperCase();
 
-      const existing = completedMap.get(code);
-      if (!existing || (!existing.isCompleted && isCompleted)) {
-        completedMap.set(code, {
+      const isMatr = rawSit.includes('MATR');
+      const situation = isMatr ? 'MATR' : rawSit.includes('APROV') || rawSit === 'APR' ? 'APR' : rawSit;
+      const isCompleted = !isMatr && (situation.includes('APROV') || situation.includes('DISP') || ['SS', 'MS', 'MM', 'AP'].includes(grade));
+
+      setOrUpdateDiscipline({
+        code,
+        name: name || code,
+        workloadHours: ch,
+        grade: grade || (isMatr ? '-' : undefined),
+        situation,
+        isCompleted,
+      });
+    }
+
+    // Fallback de segurança: qualquer linha contendo código de disciplina acompanhado de MATR/MATRICULADO
+    const patternMatrFallback = /(?:^|\n)[^\n\r]*?\b([A-Z]{3}\d{4})\b[^\n\r]*?\b(MATRICULADO|MATR)\b|(?:^|\n)[^\n\r]*?\b(MATRICULADO|MATR)\b[^\n\r]*?\b([A-Z]{3}\d{4})\b/gi;
+    while ((match = patternMatrFallback.exec(fullText)) !== null) {
+      const code = (match[1] || match[4] || '').toUpperCase();
+      if (code) {
+        const parsedName = extractPrecedingDisciplineName(fullText, match.index);
+        setOrUpdateDiscipline({
           code,
-          name: name || code,
-          workloadHours: ch,
-          grade,
-          situation,
-          isCompleted,
+          name: parsedName || code,
+          workloadHours: 60,
+          grade: '-',
+          situation: 'MATR',
+          isCompleted: false,
         });
       }
     }
@@ -225,23 +346,62 @@ export class ParseHistoricoUseCase {
       }
     }
 
-    // Se encontramos a matriz curricular, enriquece o nome das disciplinas cursadas
+    // 5. Enriquecimento de nomes das disciplinas com o catálogo de currículos
+    // a) Da matriz curricular correspondente (prioridade máxima)
+    const matchedMap = new Map<string, string>();
     if (matchedCurriculum) {
-      const allDiscs = [
+      const allMatchedDiscs = [
         ...(matchedCurriculum.mandatoryDisciplines || []),
         ...(matchedCurriculum.electiveDisciplines || []),
         ...(matchedCurriculum.complementaryDisciplines || []),
       ];
-      const discMap = new Map<string, string>();
-      for (const d of allDiscs) {
-        discMap.set(d.code, d.name);
+      for (const d of allMatchedDiscs) {
+        if (d.code && d.name) matchedMap.set(d.code, d.name);
       }
+    }
 
-      for (const [code, item] of completedMap.entries()) {
-        const officialName = discMap.get(code);
-        if (officialName) {
-          item.name = officialName;
+    // b) De outras matrizes do mesmo curso (prioridade secundária, ex.: 1741/3 quando o aluno é 1741/1)
+    const sameCourseMap = new Map<string, string>();
+    const normCourse = courseName ? normalizeName(courseName) : '';
+    for (const curr of curricula) {
+      if (curr === matchedCurriculum) continue;
+      if (normCourse && normalizeName(curr.courseName).includes(normCourse)) {
+        for (const d of [
+          ...(curr.mandatoryDisciplines || []),
+          ...(curr.electiveDisciplines || []),
+          ...(curr.complementaryDisciplines || []),
+        ]) {
+          if (d.code && d.name && !sameCourseMap.has(d.code)) {
+            sameCourseMap.set(d.code, d.name);
+          }
         }
+      }
+    }
+
+    // c) De qualquer matriz do catálogo (fallback global para optativas/módulos livres de outros departamentos)
+    const globalCatalogMap = new Map<string, string>();
+    for (const curr of curricula) {
+      if (curr === matchedCurriculum) continue;
+      for (const d of [
+        ...(curr.mandatoryDisciplines || []),
+        ...(curr.electiveDisciplines || []),
+        ...(curr.complementaryDisciplines || []),
+      ]) {
+        if (d.code && d.name && !globalCatalogMap.has(d.code)) {
+          globalCatalogMap.set(d.code, d.name);
+        }
+      }
+    }
+
+    // Aplica os nomes enriquecidos:
+    for (const [code, item] of completedMap.entries()) {
+      const officialName =
+        matchedMap.get(code) ||
+        sameCourseMap.get(code) ||
+        globalCatalogMap.get(code);
+
+      if (officialName && (!item.name || item.name === item.code || matchedMap.has(code))) {
+        item.name = officialName;
       }
     }
 

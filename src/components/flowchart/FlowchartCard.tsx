@@ -10,7 +10,7 @@ export interface FlowchartCardProps {
 export const FlowchartCard: React.FC<FlowchartCardProps> = React.memo(
   ({ discipline }) => {
     return (
-      <div className="border-2 border-black rounded-lg p-3 flex flex-col gap-2 bg-white select-none min-h-20">
+      <div className="border-2 border-black rounded-lg p-3 flex flex-col gap-2 bg-white select-none min-h-28">
         <div className="flex items-center gap-1 min-w-0">
           <span className="font-mono text-[11px] font-black px-1.5 py-0.5 bg-white border border-black rounded-md text-black truncate">
             {discipline.code}

@@ -150,6 +150,115 @@ describe('Meu Curso - Casos de Uso e Domínio', () => {
       expect(matriculada?.situation).toBe('MATR');
       expect(matriculada?.isCompleted).toBe(false);
     });
+
+    it('deve priorizar situação MATR sobre reprovação ou trancamento anterior (REP/TR)', async () => {
+      const historicoComRepEMatr = `
+Histórico Escolar
+Matrícula: 221020904
+Nome: Aluno Teste
+Curso: ENGENHARIA DE COMPUTAÇÃO
+Ano / Período Letivo Inicial: 2022.1
+Currículo: 1741/1
+2024.1 CÁLCULO 1
+06 REPMAT0025 90 100,0 MI&
+2026.2 CÁLCULO 1
+01 MATR MAT0025 90 - -
+`;
+      const result = await parseUseCase.execute({
+        rawText: historicoComRepEMatr,
+        curriculaCatalog: [MOCK_CURRICULUM],
+      });
+
+      const mat0025 = result.profile.completedDisciplines.find((d) => d.code === 'MAT0025');
+      expect(mat0025).toBeDefined();
+      expect(mat0025?.situation).toBe('MATR');
+      expect(mat0025?.isCompleted).toBe(false);
+    });
+
+    it('deve capturar disciplinas MATR com variações de espaço e traços', async () => {
+      const historicoComVariacoes = `
+Histórico Escolar
+Matrícula: 221020904
+Curso: ENGENHARIA DE COMPUTAÇÃO
+2026.2 PROJETO INTEGRADOR
+01 MATRCIC0099 60 100,0 -
+2026.2 TÓPICOS EM ENGENHARIA
+02 MATR CIC0105 60 -- -
+2026.2 ESTÁGIO SUPERVISIONADO
+CIC0291 ESTÁGIO 120 MATRICULADO
+`;
+      const result = await parseUseCase.execute({
+        rawText: historicoComVariacoes,
+        curriculaCatalog: [MOCK_CURRICULUM],
+      });
+
+      const cic0099 = result.profile.completedDisciplines.find((d) => d.code === 'CIC0099');
+      const cic0105 = result.profile.completedDisciplines.find((d) => d.code === 'CIC0105');
+      const cic0291 = result.profile.completedDisciplines.find((d) => d.code === 'CIC0291');
+
+      expect(cic0099?.situation).toBe('MATR');
+      expect(cic0105?.situation).toBe('MATR');
+      expect(cic0291?.situation).toBe('MATR');
+    });
+
+    it('deve extrair o nome da disciplina a partir da linha de período que antecede o código compactado', async () => {
+      const historicoComNome = `
+Histórico Escolar
+Matrícula: 221020904
+Curso: ENGENHARIA DE COMPUTAÇÃO
+Currículo: 1741/1
+2026.2 SINAIS E SISTEMAS EM TEMPO CONTÍNUO
+01 MATRENE0067 60 100,0 -
+`;
+      const result = await parseUseCase.execute({
+        rawText: historicoComNome,
+        curriculaCatalog: [MOCK_CURRICULUM],
+      });
+
+      const ene0067 = result.profile.completedDisciplines.find((d) => d.code === 'ENE0067');
+      expect(ene0067).toBeDefined();
+      expect(ene0067?.situation).toBe('MATR');
+      expect(ene0067?.name).toBe('SINAIS E SISTEMAS EM TEMPO CONTÍNUO');
+    });
+
+    it('deve resolver o nome da disciplina a partir de outras matrizes do catálogo se a linha não trouxer o nome', async () => {
+      const outraMatrizComEne: CurriculumStructure = {
+        id: '19804668',
+        courseId: '6335',
+        courseName: 'ENGENHARIA ELÉTRICA',
+        code: '6335/3',
+        status: 'Ativa',
+        mandatoryDisciplines: [
+          {
+            code: 'ENE0067',
+            name: 'SINAIS E SISTEMAS EM TEMPO CONTÍNUO',
+            workloadHours: 60,
+            nature: 'Obrigatória',
+            prerequisites: [],
+            equivalences: [],
+          },
+        ],
+        electiveDisciplines: [],
+        complementaryDisciplines: [],
+      };
+
+      const historicoCompactoSemNome = `
+Histórico Escolar
+Matrícula: 221020904
+Curso: ENGENHARIA DE COMPUTAÇÃO
+Currículo: 1741/1
+01 MATRENE0067 60 100,0 -
+`;
+      const result = await parseUseCase.execute({
+        rawText: historicoCompactoSemNome,
+        curriculaCatalog: [MOCK_CURRICULUM, outraMatrizComEne],
+      });
+
+      const ene0067 = result.profile.completedDisciplines.find((d) => d.code === 'ENE0067');
+      expect(ene0067).toBeDefined();
+      expect(ene0067?.situation).toBe('MATR');
+      expect(ene0067?.name).toBe('SINAIS E SISTEMAS EM TEMPO CONTÍNUO');
+    });
   });
 
   describe('GetFlowchartUseCase', () => {
@@ -209,6 +318,185 @@ describe('Meu Curso - Casos de Uso e Domínio', () => {
       expect(flowchart.metrics.inProgressCount).toBe(1); // CIC0099
       expect(flowchart.metrics.availableCount).toBe(1); // MAT0026
     });
+
+    it('deve liberar disciplina quando pelo menos um pré-requisito com OU for satisfeito', () => {
+      const curriculumComOu: CurriculumStructure = {
+        ...MOCK_CURRICULUM,
+        mandatoryDisciplines: [
+          {
+            code: 'ADM0192',
+            name: 'MÉTODOS QUANTITATIVOS',
+            workloadHours: 60,
+            level: 2,
+            nature: 'Obrigatória',
+            prerequisitesRaw: '( ( MAT0025 ) OU ( MAT0022 ) )',
+            prerequisites: ['MAT0025', 'MAT0022'],
+            equivalences: [],
+          },
+        ],
+      };
+
+      // Discente cursou apenas MAT0022 (MAT0025 não cursado)
+      const profile: StudentAcademicProfile = {
+        matricula: '221020904',
+        courseName: 'ADM',
+        level: 'GRADUAÇÃO',
+        admissionYear: '2022.1',
+        completedDisciplines: [
+          { code: 'MAT0022', name: 'Cálculo 1 Alternativo', workloadHours: 90, grade: 'MM', situation: 'APR', isCompleted: true },
+        ],
+        manualCompletedCodes: [],
+        manualUncompletedCodes: [],
+        updatedAt: new Date().toISOString(),
+      };
+
+      const flowchart = flowchartUseCase.execute(curriculumComOu, profile);
+      const adm = flowchart.semesters[0].disciplines.find((d) => d.code === 'ADM0192');
+
+      // Com OU, ter feito MAT0022 é suficiente para liberar ADM0192!
+      expect(adm?.status).toBe('available');
+      expect(adm?.missingPrerequisites).toEqual([]);
+    });
+
+    it('deve bloquear disciplina e listar opções quando nenhum pré-requisito com OU for satisfeito', () => {
+      const curriculumComOu: CurriculumStructure = {
+        ...MOCK_CURRICULUM,
+        mandatoryDisciplines: [
+          {
+            code: 'ADM0192',
+            name: 'MÉTODOS QUANTITATIVOS',
+            workloadHours: 60,
+            level: 2,
+            nature: 'Obrigatória',
+            prerequisitesRaw: '( ( MAT0025 ) OU ( MAT0022 ) )',
+            prerequisites: ['MAT0025', 'MAT0022'],
+            equivalences: [],
+          },
+        ],
+      };
+
+      const profileVazio: StudentAcademicProfile = {
+        matricula: '221020904',
+        courseName: 'ADM',
+        level: 'GRADUAÇÃO',
+        admissionYear: '2022.1',
+        completedDisciplines: [],
+        manualCompletedCodes: [],
+        manualUncompletedCodes: [],
+        updatedAt: new Date().toISOString(),
+      };
+
+      const flowchart = flowchartUseCase.execute(curriculumComOu, profileVazio);
+      const adm = flowchart.semesters[0].disciplines.find((d) => d.code === 'ADM0192');
+
+      expect(adm?.status).toBe('locked');
+      expect(adm?.missingPrerequisites.length).toBeGreaterThan(0);
+      expect(adm?.missingPrerequisites[0]).toContain('ou');
+    });
+
+    it('deve avaliar corretamente expressões complexas com E e OU aninhados', () => {
+      const curriculumComplexo: CurriculumStructure = {
+        ...MOCK_CURRICULUM,
+        mandatoryDisciplines: [
+          {
+            code: 'ADM0187',
+            name: 'MACROECONOMIA 2',
+            workloadHours: 60,
+            level: 3,
+            nature: 'Obrigatória',
+            prerequisitesRaw: '( ( ECO0019 E MAT0025 ) OU ( ECO0019 E MAT0022 ) )',
+            prerequisites: ['ECO0019', 'MAT0025', 'MAT0022'],
+            equivalences: [],
+          },
+        ],
+      };
+
+      // Aluno fez ECO0019 e MAT0022 (caminho alternativo do OU)
+      const profile: StudentAcademicProfile = {
+        matricula: '221020904',
+        courseName: 'ADM',
+        level: 'GRADUAÇÃO',
+        admissionYear: '2022.1',
+        completedDisciplines: [
+          { code: 'ECO0019', name: 'INTRODUÇÃO À ECONOMIA', workloadHours: 60, grade: 'SS', situation: 'APR', isCompleted: true },
+          { code: 'MAT0022', name: 'CÁLCULO 1 ALT', workloadHours: 90, grade: 'MS', situation: 'APR', isCompleted: true },
+        ],
+        manualCompletedCodes: [],
+        manualUncompletedCodes: [],
+        updatedAt: new Date().toISOString(),
+      };
+
+      const flowchart = flowchartUseCase.execute(curriculumComplexo, profile);
+      const disc = flowchart.semesters[0].disciplines.find((d) => d.code === 'ADM0187');
+      expect(disc?.status).toBe('available');
+    });
+
+    it('deve incluir matérias optativas matriculadas (MATR) em inProgressDisciplines', () => {
+      const profileComOptativaMatr: StudentAcademicProfile = {
+        matricula: '221020904',
+        courseName: 'ENGENHARIA DE COMPUTAÇÃO',
+        level: 'GRADUAÇÃO',
+        admissionYear: '2022.1',
+        completedDisciplines: [
+          // Obrigatória matriculada
+          { code: 'CIC0099', name: 'OAC', workloadHours: 60, situation: 'MATR', isCompleted: false },
+          // Optativa matriculada (fora da grade obrigatória)
+          { code: 'CIC0205', name: 'APRENDIZADO DE MÁQUINA', workloadHours: 60, situation: 'MATR', isCompleted: false },
+        ],
+        manualCompletedCodes: [],
+        manualUncompletedCodes: [],
+        updatedAt: new Date().toISOString(),
+      };
+
+      const flowchart = flowchartUseCase.execute(MOCK_CURRICULUM, profileComOptativaMatr);
+
+      // Deve incluir tanto a obrigatória CIC0099 quanto a optativa CIC0205
+      expect(flowchart.inProgressDisciplines).toBeDefined();
+      expect(flowchart.inProgressDisciplines?.length).toBe(2);
+      expect(flowchart.inProgressDisciplines?.some((d) => d.code === 'CIC0099')).toBe(true);
+      expect(flowchart.inProgressDisciplines?.some((d) => d.code === 'CIC0205')).toBe(true);
+      expect(flowchart.metrics.inProgressCount).toBe(2);
+    });
+
+    it('deve enriquecer o nome de disciplinas em andamento fora da matriz usando allCurricula', () => {
+      const outraMatrizComEne: CurriculumStructure = {
+        id: '19804668',
+        courseId: '6335',
+        courseName: 'ENGENHARIA ELÉTRICA',
+        code: '6335/3',
+        status: 'Ativa',
+        mandatoryDisciplines: [
+          {
+            code: 'ENE0067',
+            name: 'SINAIS E SISTEMAS EM TEMPO CONTÍNUO',
+            workloadHours: 60,
+            nature: 'Obrigatória',
+            prerequisites: [],
+            equivalences: [],
+          },
+        ],
+        electiveDisciplines: [],
+        complementaryDisciplines: [],
+      };
+
+      const profileComEneSemNome: StudentAcademicProfile = {
+        matricula: '221020904',
+        courseName: 'ENGENHARIA DE COMPUTAÇÃO',
+        level: 'GRADUAÇÃO',
+        admissionYear: '2022.1',
+        completedDisciplines: [
+          { code: 'ENE0067', name: 'ENE0067', workloadHours: 60, situation: 'MATR', isCompleted: false },
+        ],
+        manualCompletedCodes: [],
+        manualUncompletedCodes: [],
+        updatedAt: new Date().toISOString(),
+      };
+
+      const flowchart = flowchartUseCase.execute(MOCK_CURRICULUM, profileComEneSemNome, [MOCK_CURRICULUM, outraMatrizComEne]);
+      const ene = flowchart.inProgressDisciplines?.find((d) => d.code === 'ENE0067');
+      expect(ene).toBeDefined();
+      expect(ene?.name).toBe('SINAIS E SISTEMAS EM TEMPO CONTÍNUO');
+    });
   });
 
   describe('ManageAcademicProfileUseCase', () => {
@@ -253,6 +541,30 @@ describe('Meu Curso - Casos de Uso e Domínio', () => {
       const reset = await manageUseCase.resetManualOverrides();
       expect(reset.manualCompletedCodes).toEqual([]);
       expect(reset.manualUncompletedCodes).toEqual([]);
+    });
+
+    it('deve apagar completamente o perfil acadêmico ao chamar clearProfile', async () => {
+      const initialProfile: StudentAcademicProfile = {
+        matricula: '221020904',
+        courseName: 'ENGENHARIA DE COMPUTAÇÃO',
+        level: 'GRADUAÇÃO',
+        admissionYear: '2022.1',
+        completedDisciplines: [
+          { code: 'CIC0004', name: 'APC', workloadHours: 90, grade: 'MS', situation: 'APR', isCompleted: true },
+        ],
+        manualCompletedCodes: [],
+        manualUncompletedCodes: [],
+        updatedAt: new Date().toISOString(),
+      };
+
+      await repo.saveProfile(initialProfile);
+      const saved = await manageUseCase.getProfile();
+      expect(saved).not.toBeNull();
+      expect(saved?.matricula).toBe('221020904');
+
+      await manageUseCase.clearProfile();
+      const cleared = await manageUseCase.getProfile();
+      expect(cleared).toBeNull();
     });
   });
 });

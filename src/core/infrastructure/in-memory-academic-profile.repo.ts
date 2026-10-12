@@ -39,51 +39,7 @@ export class InMemoryAcademicProfileRepository implements IAcademicProfileReposi
       } catch {}
     }
 
-    // Perfil inicial de demonstração (Engenharia de Computação)
-    return {
-      matricula: '221020904',
-      studentName: 'Discente UnB',
-      courseName: 'ENGENHARIA DE COMPUTAÇÃO',
-      degree: 'Bacharelado',
-      shift: 'DIURNO',
-      level: 'GRADUAÇÃO',
-      admissionYear: '2022.1',
-      curriculumCode: '1741/1',
-      curriculumId: '354',
-      completedDisciplines: [
-        { code: 'CIC0004', name: 'ALGORITMOS E PROGRAMAÇÃO DE COMPUTADORES', workloadHours: 90, grade: 'MS', situation: 'APR', isCompleted: true },
-        { code: 'CIC0188', name: 'INTRODUÇÃO À ENGENHARIA DE COMPUTAÇÃO', workloadHours: 30, grade: 'SS', situation: 'APR', isCompleted: true },
-        { code: 'MAT0025', name: 'CÁLCULO 1', workloadHours: 90, grade: 'MS', situation: 'APR', isCompleted: true },
-        { code: 'MAT0031', name: 'INTRODUCAO A ALGEBRA LINEAR', workloadHours: 60, grade: 'MS', situation: 'APR', isCompleted: true },
-        { code: 'IFD0171', name: 'FISICA 1', workloadHours: 60, grade: 'MM', situation: 'APR', isCompleted: true },
-        { code: 'IFD0173', name: 'FISICA 1 EXPERIMENTAL', workloadHours: 30, grade: 'MM', situation: 'APR', isCompleted: true },
-        { code: 'CIC0090', name: 'ESTRUTURAS DE DADOS', workloadHours: 60, grade: 'MM', situation: 'APR', isCompleted: true },
-        { code: 'EST0023', name: 'PROBABILIDADE E ESTATÍSTICA', workloadHours: 60, grade: 'MM', situation: 'APR', isCompleted: true },
-        { code: 'MAT0026', name: 'CÁLCULO 2', workloadHours: 90, grade: 'MM', situation: 'APR', isCompleted: true },
-        { code: 'CIC0234', name: 'MÉTODOS DE PROGRAMAÇÃO', workloadHours: 60, grade: 'SS', situation: 'APR', isCompleted: true },
-        { code: 'MAT0027', name: 'CÁLCULO 3', workloadHours: 90, grade: 'MM', situation: 'APR', isCompleted: true },
-        { code: 'ENE0039', name: 'SISTEMAS DIGITAIS', workloadHours: 60, grade: 'SS', situation: 'APR', isCompleted: true },
-        { code: 'ENE0040', name: 'LABORATÓRIO DE SISTEMAS DIGITAIS', workloadHours: 30, grade: 'SS', situation: 'APR', isCompleted: true },
-        { code: 'CIC0197', name: 'TÉCNICAS DE PROGRAMAÇÃO 1', workloadHours: 60, grade: 'MS', situation: 'APR', isCompleted: true },
-        { code: 'CIC0093', name: 'LINGUAGENS DE PROGRAMAÇÃO', workloadHours: 60, grade: 'MS', situation: 'APR', isCompleted: true },
-        { code: 'CIC0105', name: 'ENGENHARIA DE SOFTWARE', workloadHours: 60, grade: 'MM', situation: 'APR', isCompleted: true },
-        { code: 'CIC0189', name: 'PROJETO E ANÁLISE DE ALGORITMOS', workloadHours: 60, grade: 'MS', situation: 'APR', isCompleted: true },
-        { code: 'CIC0235', name: 'TELEINFORMÁTICA E REDES 1', workloadHours: 60, grade: 'MM', situation: 'APR', isCompleted: true },
-        { code: 'ENE0056', name: 'SISTEMAS MICROPROCESSADOS', workloadHours: 60, grade: 'MM', situation: 'APR', isCompleted: true },
-        { code: 'CIC0099', name: 'ORGANIZAÇÃO E ARQUITETURA DE COMPUTADORES', workloadHours: 60, situation: 'MATR', isCompleted: false },
-        { code: 'MAT0053', name: 'CÁLCULO NUMÉRICO', workloadHours: 60, situation: 'MATR', isCompleted: false },
-      ],
-      manualCompletedCodes: [],
-      manualUncompletedCodes: [],
-      updatedAt: new Date().toISOString(),
-      ira: 3.6238,
-      mp: 3.5493,
-      chObrigatoriaPendente: 990,
-      chOptativaPendente: 240,
-      chTotalCurriculo: 3480,
-      chComplementarPendente: 0,
-      percentualIntegralizado: 65.0,
-    };
+    return null;
   }
 
   async saveProfile(profile: StudentAcademicProfile): Promise<void> {

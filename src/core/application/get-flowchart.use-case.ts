@@ -8,7 +8,11 @@ import type {
 import type { CurriculumStructure } from '../domain/entities/course';
 
 export class GetFlowchartUseCase {
-  execute(curriculum: CurriculumStructure, profile: StudentAcademicProfile): FlowchartData {
+  execute(
+    curriculum: CurriculumStructure,
+    profile: StudentAcademicProfile,
+    allCurricula?: CurriculumStructure[]
+  ): FlowchartData {
     // 1. Constrói conjunto de disciplinas efetivamente concluídas
     const manualCompleted = new Set(profile.manualCompletedCodes || []);
     const manualUncompleted = new Set(profile.manualUncompletedCodes || []);
@@ -95,6 +99,7 @@ export class GetFlowchartUseCase {
     let availableCount = 0;
     let inProgressCount = 0;
 
+    // Avaliador de expressões lógicas de pré-requisitos
     for (const disc of mandatoryList) {
       const code = disc.code;
       const hours = disc.workloadHours || 60;
@@ -104,16 +109,25 @@ export class GetFlowchartUseCase {
       const isEnrolled = inProgressCodes.has(code);
       const details = disciplineDetailsMap.get(code);
 
-      // Avaliação de pré-requisitos pendentes
-      const missingPrereqs: string[] = [];
-      for (const prereq of disc.prerequisites || []) {
-        const prereqObj = mandatoryList.find((m) => m.code === prereq);
+      // Avaliação booleana de pré-requisitos (E / OU / parênteses)
+      const isPrereqSatisfied = (prereqCode: string): boolean => {
+        const prereqObj = mandatoryList.find((m) => m.code === prereqCode);
         const prereqEquivs = prereqObj?.equivalences || [];
-        if (!isCompletedOrEquivalent(prereq, prereqEquivs)) {
-          // Busca o nome do pré-requisito no currículo se disponível
-          missingPrereqs.push(prereqObj ? `${prereq} (${prereqObj.name})` : prereq);
-        }
-      }
+        return isCompletedOrEquivalent(prereqCode, prereqEquivs);
+      };
+
+      const getPrereqLabel = (prereqCode: string): string => {
+        const prereqObj = mandatoryList.find((m) => m.code === prereqCode)
+          || (curriculum.electiveDisciplines || []).find((m) => m.code === prereqCode);
+        return prereqObj ? `${prereqCode} (${prereqObj.name})` : prereqCode;
+      };
+
+      const evalPrereqs = evaluatePrerequisiteExpression(
+        disc.prerequisitesRaw,
+        disc.prerequisites || [],
+        isPrereqSatisfied,
+        getPrereqLabel,
+      );
 
       let status: FlowchartDiscipline['status'];
       if (isCompleted) {
@@ -122,8 +136,7 @@ export class GetFlowchartUseCase {
         completedHours += hours;
       } else if (isEnrolled) {
         status = 'in_progress';
-        inProgressCount++;
-      } else if (missingPrereqs.length === 0) {
+      } else if (evalPrereqs.isSatisfied) {
         status = 'available';
         availableCount++;
       } else {
@@ -143,7 +156,7 @@ export class GetFlowchartUseCase {
         grade: details?.grade,
         situation: details?.situation,
         prerequisites: disc.prerequisites || [],
-        missingPrerequisites: missingPrereqs,
+        missingPrerequisites: evalPrereqs.missing,
         equivalences: disc.equivalences || [],
         unlockedDisciplines: unlocked,
         isManuallyToggled,
@@ -172,9 +185,63 @@ export class GetFlowchartUseCase {
       };
     });
 
-    // 6. Métricas de integralização
-    // A integralização oficial do SIGAA refere-se à matriz nativa do discente; ao
-    // explorar outra estrutura curricular, as métricas são recalculadas nela.
+    // 6. Disciplinas cursando (in_progress) - une obrigatórias da grade + optativas/complementares matriculadas
+    const allInProgressDisciplines: FlowchartDiscipline[] = [];
+    const inProgressCodeSet = new Set<string>();
+
+    for (const disc of enrichedMandatory) {
+      if (disc.status === 'in_progress') {
+        allInProgressDisciplines.push(disc);
+        inProgressCodeSet.add(disc.code);
+      }
+    }
+
+    for (const d of profile.completedDisciplines || []) {
+      if (d.situation === 'MATR' && !inProgressCodeSet.has(d.code)) {
+        const fromMandatory = (curriculum.mandatoryDisciplines || []).find((m) => m.code === d.code);
+        const fromElective = (curriculum.electiveDisciplines || []).find((e) => e.code === d.code);
+        const fromComplementary = (curriculum.complementaryDisciplines || []).find((c) => c.code === d.code);
+        let catDisc = fromMandatory || fromElective || fromComplementary;
+
+        // Se não constar na matriz selecionada, busca nas outras matrizes passadas
+        if (!catDisc && allCurricula) {
+          for (const curr of allCurricula) {
+            const found = [
+              ...(curr.mandatoryDisciplines || []),
+              ...(curr.electiveDisciplines || []),
+              ...(curr.complementaryDisciplines || []),
+            ].find((cd) => cd.code === d.code);
+            if (found) {
+              catDisc = found;
+              break;
+            }
+          }
+        }
+
+        const discName = d.name && d.name !== d.code ? d.name : catDisc?.name || d.name || d.code;
+        const hours = d.workloadHours || catDisc?.workloadHours || 60;
+        const nature = fromComplementary ? 'Complementar' : (catDisc?.nature || 'Optativa');
+
+        allInProgressDisciplines.push({
+          code: d.code,
+          name: discName,
+          workloadHours: hours,
+          level: catDisc?.level || 0,
+          nature,
+          status: 'in_progress',
+          grade: d.grade,
+          situation: 'MATR',
+          prerequisites: catDisc?.prerequisites || [],
+          missingPrerequisites: [],
+          equivalences: catDisc?.equivalences || [],
+          unlockedDisciplines: [],
+          isManuallyToggled: false,
+        });
+        inProgressCodeSet.add(d.code);
+      }
+    }
+
+    // 7. Métricas de integralização
     const isNativeCurriculum =
       !profile.curriculumCode || profile.curriculumCode === curriculum.code;
 
@@ -201,7 +268,7 @@ export class GetFlowchartUseCase {
       completedHours: officialCompletedHours,
       remainingHours: officialRemainingHours,
       availableCount,
-      inProgressCount,
+      inProgressCount: allInProgressDisciplines.length,
       ira: profile.ira,
       mp: profile.mp,
       chObrigatoriaTotal: totalHours,
@@ -212,11 +279,28 @@ export class GetFlowchartUseCase {
       percentualIntegralizado: profile.percentualIntegralizado,
     };
 
-    // 7. Disciplinas cursadas pelo aluno que são optativas / fora da grade obrigatória
+    // 8. Disciplinas cursadas pelo aluno que são optativas / fora da grade obrigatória
     const mandatoryCodeSet = new Set(mandatoryList.map((m) => m.code));
-    const electiveCompletedDisciplines = (profile.completedDisciplines || []).filter(
-      (d) => d.isCompleted && !mandatoryCodeSet.has(d.code)
-    );
+    const electiveCompletedDisciplines = (profile.completedDisciplines || [])
+      .filter((d) => d.isCompleted && !mandatoryCodeSet.has(d.code))
+      .map((d) => {
+        if (d.name && d.name !== d.code) return d;
+        let resolvedName = d.name;
+        if (allCurricula) {
+          for (const curr of allCurricula) {
+            const found = [
+              ...(curr.mandatoryDisciplines || []),
+              ...(curr.electiveDisciplines || []),
+              ...(curr.complementaryDisciplines || []),
+            ].find((cd) => cd.code === d.code);
+            if (found?.name) {
+              resolvedName = found.name;
+              break;
+            }
+          }
+        }
+        return { ...d, name: resolvedName || d.code };
+      });
 
     return {
       profile,
@@ -224,6 +308,151 @@ export class GetFlowchartUseCase {
       semesters,
       metrics,
       electiveCompletedDisciplines,
+      inProgressDisciplines: allInProgressDisciplines,
     };
   }
+}
+
+/**
+ * Avalia expressões de pré-requisitos lógicos do SIGAA com suporte a 'E', 'OU' e '()'.
+ */
+export function evaluatePrerequisiteExpression(
+  exprRaw: string | undefined,
+  fallbackCodes: string[],
+  isSatisfiedFn: (code: string) => boolean,
+  getDisciplineLabelFn: (code: string) => string = (c) => c,
+): { isSatisfied: boolean; missing: string[] } {
+  const cleanExpr = (exprRaw || '').trim();
+
+  if (!cleanExpr || cleanExpr === '-') {
+    if (!fallbackCodes || fallbackCodes.length === 0) {
+      return { isSatisfied: true, missing: [] };
+    }
+    const missing: string[] = [];
+    for (const code of fallbackCodes) {
+      if (!isSatisfiedFn(code)) {
+        missing.push(getDisciplineLabelFn(code));
+      }
+    }
+    return { isSatisfied: missing.length === 0, missing };
+  }
+
+  // Tokenização da expressão
+  const tokenRegex = /(\(|\)|(?:\bE\b)|(?:\bOU\b)|(?:[A-Z]{3}\d{4}))/gi;
+  const tokens: string[] = [];
+  let m: RegExpExecArray | null;
+  while ((m = tokenRegex.exec(cleanExpr)) !== null) {
+    tokens.push(m[1].toUpperCase());
+  }
+
+  if (tokens.length === 0) {
+    if (fallbackCodes.length === 0) return { isSatisfied: true, missing: [] };
+    const missing = fallbackCodes.filter((c) => !isSatisfiedFn(c)).map(getDisciplineLabelFn);
+    return { isSatisfied: missing.length === 0, missing };
+  }
+
+  let pos = 0;
+
+  type ASTNode =
+    | { type: 'CODE'; code: string }
+    | { type: 'AND'; left: ASTNode; right: ASTNode }
+    | { type: 'OR'; left: ASTNode; right: ASTNode };
+
+  function parseOr(): ASTNode | null {
+    let node = parseAnd();
+    if (!node) return null;
+    while (pos < tokens.length && tokens[pos] === 'OU') {
+      pos++;
+      const right = parseAnd();
+      if (right) {
+        node = { type: 'OR', left: node, right };
+      }
+    }
+    return node;
+  }
+
+  function parseAnd(): ASTNode | null {
+    let node = parseFactor();
+    if (!node) return null;
+    while (pos < tokens.length && (tokens[pos] === 'E' || (tokens[pos] !== 'OU' && tokens[pos] !== ')'))) {
+      if (tokens[pos] === 'E') {
+        pos++;
+      }
+      const right = parseFactor();
+      if (right) {
+        node = { type: 'AND', left: node, right };
+      }
+    }
+    return node;
+  }
+
+  function parseFactor(): ASTNode | null {
+    if (pos >= tokens.length) return null;
+    const token = tokens[pos];
+    if (token === '(') {
+      pos++;
+      const node = parseOr();
+      if (pos < tokens.length && tokens[pos] === ')') {
+        pos++;
+      }
+      return node;
+    } else if (token !== ')' && token !== 'OU' && token !== 'E') {
+      pos++;
+      return { type: 'CODE', code: token };
+    }
+    return null;
+  }
+
+  const ast = parseOr();
+  if (!ast) {
+    return { isSatisfied: true, missing: [] };
+  }
+
+  function evalNode(node: ASTNode): { satisfied: boolean; missingList: string[] } {
+    if (node.type === 'CODE') {
+      const ok = isSatisfiedFn(node.code);
+      return {
+        satisfied: ok,
+        missingList: ok ? [] : [getDisciplineLabelFn(node.code)],
+      };
+    }
+
+    if (node.type === 'AND') {
+      const leftRes = evalNode(node.left);
+      const rightRes = evalNode(node.right);
+      return {
+        satisfied: leftRes.satisfied && rightRes.satisfied,
+        missingList: [...leftRes.missingList, ...rightRes.missingList],
+      };
+    }
+
+    if (node.type === 'OR') {
+      const leftRes = evalNode(node.left);
+      const rightRes = evalNode(node.right);
+      if (leftRes.satisfied || rightRes.satisfied) {
+        return { satisfied: true, missingList: [] };
+      }
+
+      if (node.left.type === 'CODE' && node.right.type === 'CODE') {
+        return {
+          satisfied: false,
+          missingList: [`${leftRes.missingList[0]} ou ${rightRes.missingList[0]}`],
+        };
+      }
+
+      if (leftRes.missingList.length <= rightRes.missingList.length) {
+        return { satisfied: false, missingList: leftRes.missingList };
+      } else {
+        return { satisfied: false, missingList: rightRes.missingList };
+      }
+    }
+
+    return { satisfied: true, missingList: [] };
+  }
+
+  const result = evalNode(ast);
+  return {
+    isSatisfied: result.satisfied,
+    missing: result.satisfied ? [] : result.missingList,
+  };
 }

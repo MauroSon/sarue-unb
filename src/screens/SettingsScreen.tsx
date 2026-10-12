@@ -15,6 +15,7 @@ import {
 } from "@/components/ui";
 import { useCredentials } from "../hooks/useCredentials";
 import { useFeed } from "../hooks/useFeed";
+import { notifyMyCourseListeners } from "../hooks/useMyCourse";
 import { useContainer } from "../context/ContainerContext";
 import {
   Settings,
@@ -90,13 +91,13 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
 
   const [isWiping, setIsWiping] = useState(false);
   const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
-  const [countdown, setCountdown] = useState(5);
+  const [countdown, setCountdown] = useState(3);
 
-  // Efeito de contagem regressiva de 5 segundos para liberação do botão de confirmação
+  // Efeito de contagem regressiva de 3 segundos para liberação do botão de confirmação
   useEffect(() => {
     let intervalId: ReturnType<typeof setInterval> | null = null;
     if (isConfirmDialogOpen) {
-      setCountdown(5);
+      setCountdown(3);
       intervalId = setInterval(() => {
         setCountdown((prev) => {
           if (prev <= 1) {
@@ -107,7 +108,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
         });
       }, 1000);
     } else {
-      setCountdown(5);
+      setCountdown(3);
     }
 
     return () => {
@@ -224,13 +225,17 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
       await clearFeedData();
       // 3. Apaga rascunhos de grade horária (SQLite + memória)
       await useCases.manageGrade.clear();
-      // 4. Limpa preferências auxiliares do localStorage
+      // 4. Apaga perfil acadêmico e histórico escolar (Meu Curso)
+      await useCases.manageAcademicProfile.clearProfile();
+      notifyMyCourseListeners();
+      // 5. Limpa preferências auxiliares e perfil do localStorage
       try {
         localStorage.removeItem("unb_grade_deptId");
         localStorage.removeItem("unb_grade_year");
         localStorage.removeItem("unb_grade_period");
+        localStorage.removeItem("unb_aggregator_academic_profile_v1");
       } catch {}
-      // 5. Fecha o diálogo e redireciona
+      // 6. Fecha o diálogo e redireciona
       setIsConfirmDialogOpen(false);
       onResetCredentials();
     } catch (err) {
@@ -482,7 +487,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
         </div>
       </Card>
 
-      {/* Diálogo de Confirmação com Contagem Regressiva de 5 segundos */}
+      {/* Diálogo de Confirmação com Contagem Regressiva de 3 segundos */}
       <Dialog
         open={isConfirmDialogOpen}
         onOpenChange={(open) => {

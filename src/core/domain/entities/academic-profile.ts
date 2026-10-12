@@ -82,4 +82,5 @@ export interface FlowchartData {
   semesters: FlowchartSemester[];
   metrics: FlowchartMetrics;
   electiveCompletedDisciplines: CompletedDiscipline[];
+  inProgressDisciplines?: FlowchartDiscipline[];
 }

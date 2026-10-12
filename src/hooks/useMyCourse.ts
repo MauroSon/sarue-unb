@@ -36,9 +36,66 @@ export function useMyCourse() {
       ]);
 
       setAllCurricula(curricula);
-      setProfile(currentProfile);
 
       if (currentProfile && curricula.length > 0) {
+        // Auto-cura: se alguma disciplina salva no perfil tem nome igual ao código ou vazio,
+        // recupera o nome real a partir do catálogo de matrizes carregadas
+        let healed = false;
+        const catalogNameMap = new Map<string, string>();
+        for (const c of curricula) {
+          for (const d of [
+            ...(c.mandatoryDisciplines || []),
+            ...(c.electiveDisciplines || []),
+            ...(c.complementaryDisciplines || []),
+          ]) {
+            if (d.code && d.name && !catalogNameMap.has(d.code)) {
+              catalogNameMap.set(d.code, d.name);
+            }
+          }
+        }
+
+        for (const cd of currentProfile.completedDisciplines) {
+          if (!cd.name || cd.name === cd.code) {
+            const realName = catalogNameMap.get(cd.code);
+            if (realName) {
+              cd.name = realName;
+              healed = true;
+            }
+          }
+        }
+
+        // Se ainda houver alguma disciplina sem nome oficial, tenta recuperar do classes.json
+        const stillMissing = currentProfile.completedDisciplines.some((cd) => !cd.name || cd.name === cd.code);
+        if (stillMissing && typeof fetch !== 'undefined') {
+          try {
+            const res = await fetch('/data/classes.json');
+            if (res.ok) {
+              const classesData = (await res.json()) as Array<{ code: string; name: string }>;
+              const classMap = new Map<string, string>();
+              for (const cl of classesData) {
+                if (cl.code && cl.name && !classMap.has(cl.code)) {
+                  classMap.set(cl.code, cl.name);
+                }
+              }
+              for (const cd of currentProfile.completedDisciplines) {
+                if (!cd.name || cd.name === cd.code) {
+                  const realName = classMap.get(cd.code);
+                  if (realName) {
+                    cd.name = realName;
+                    healed = true;
+                  }
+                }
+              }
+            }
+          } catch {}
+        }
+
+        if (healed) {
+          await useCases.manageAcademicProfile.saveProfile(currentProfile);
+        }
+
+        setProfile(currentProfile);
+
         // Encontra a matriz correspondente
         let matched: CurriculumStructure | undefined;
 
@@ -83,8 +140,11 @@ export function useMyCourse() {
         }
 
         setSelectedCurriculum(matched || curricula[0]);
-      } else if (curricula.length > 0) {
-        setSelectedCurriculum(curricula[0]);
+      } else {
+        setProfile(currentProfile);
+        if (curricula.length > 0) {
+          setSelectedCurriculum(curricula[0]);
+        }
       }
     } catch (e) {
       console.error('[useMyCourse] Erro ao carregar dados:', e);
@@ -114,27 +174,36 @@ export function useMyCourse() {
   // Calcula o fluxograma quando houver perfil e matriz
   const flowchartData: FlowchartData | null = useMemo(() => {
     if (!selectedCurriculum || !profile) return null;
-    return useCases.getFlowchart.execute(selectedCurriculum, profile);
-  }, [selectedCurriculum, profile, useCases]);
+    return useCases.getFlowchart.execute(selectedCurriculum, profile, allCurricula);
+  }, [selectedCurriculum, profile, allCurricula, useCases]);
 
-  // Mapa código → nome de disciplina: matriz (obrigatórias, optativas, complementares)
-  // + histórico cursado, para exibir nomes reais onde hoje só há códigos
+  // Mapa código → nome de disciplina: todas as matrizes carregadas
+  // + matriz selecionada + histórico cursado, garantindo nomes reais para qualquer código
   const disciplineNames: Map<string, string> = useMemo(() => {
     const map = new Map<string, string>();
+    for (const c of allCurricula) {
+      for (const d of [
+        ...(c.mandatoryDisciplines || []),
+        ...(c.electiveDisciplines || []),
+        ...(c.complementaryDisciplines || []),
+      ]) {
+        if (!map.has(d.code)) map.set(d.code, d.name);
+      }
+    }
     if (selectedCurriculum) {
       for (const d of [
-        ...selectedCurriculum.mandatoryDisciplines,
-        ...selectedCurriculum.electiveDisciplines,
-        ...selectedCurriculum.complementaryDisciplines,
+        ...(selectedCurriculum.mandatoryDisciplines || []),
+        ...(selectedCurriculum.electiveDisciplines || []),
+        ...(selectedCurriculum.complementaryDisciplines || []),
       ]) {
         map.set(d.code, d.name);
       }
     }
     for (const d of profile?.completedDisciplines || []) {
-      if (!map.has(d.code)) map.set(d.code, d.name);
+      if (d.name && d.name !== d.code) map.set(d.code, d.name);
     }
     return map;
-  }, [selectedCurriculum, profile]);
+  }, [allCurricula, selectedCurriculum, profile]);
 
   // Alterna uma disciplina manualmente
   const toggleDiscipline = useCallback(async (code: string) => {
@@ -217,35 +286,6 @@ export function useMyCourse() {
     }
   }, [allCredentials.sigaa, useCases]);
 
-  // Importa arquivo PDF de histórico
-  const importPdf = useCallback(async (file: File) => {
-    setIsSyncing(true);
-    try {
-      const arrayBuffer = await file.arrayBuffer();
-      const bytes = new Uint8Array(arrayBuffer);
-      const res = await useCases.manageAcademicProfile.importPdfFile(bytes);
-      setProfile(res.profile);
-      if (res.matchedCurriculum) {
-        setSelectedCurriculum(res.matchedCurriculum);
-      }
-      notifyMyCourseListeners();
-      toast.add({
-        title: 'PDF importado com sucesso!',
-        description: `Matriz ${res.profile.curriculumCode || ''} (${res.profile.completedDisciplines.length} matérias).`,
-        type: 'success',
-      });
-    } catch (e: unknown) {
-      const msg = e instanceof Error ? e.message : 'Falha ao processar arquivo PDF';
-      toast.add({
-        title: 'Erro ao importar PDF',
-        description: msg,
-        type: 'error',
-      });
-    } finally {
-      setIsSyncing(false);
-    }
-  }, [useCases]);
-
   // Troca manualmente a matriz curricular ativa
   const selectCurriculum = useCallback(async (curr: CurriculumStructure) => {
     try {
@@ -299,7 +339,6 @@ export function useMyCourse() {
     toggleDiscipline,
     resetOverrides,
     syncSigaa,
-    importPdf,
     selectCurriculum,
     reload: loadData,
   };
