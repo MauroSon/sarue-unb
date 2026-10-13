@@ -15,26 +15,39 @@ export function notifyMyCourseListeners() {
   myCourseListeners.forEach((fn) => fn());
 }
 
+// Cache de sessão: voltar à aba remonta o hook e hidrata daqui, sem tela de
+// carregamento — o catálogo de matrizes é estático na sessão e o perfil vem de
+// leitura local barata. `undefined` = nunca carregado (primeira carga da sessão).
+let cachedCurricula: CurriculumStructure[] | null = null;
+let cachedProfile: StudentAcademicProfile | null | undefined;
+// Matriz resolvida: sem ela o primeiro render pós-cache renderia a página sem
+// stats e sem lista, e o conteúdo inteiro entraria de uma vez depois (layout shift)
+let cachedSelectedCurriculum: CurriculumStructure | null = null;
+
 export function useMyCourse() {
   const { useCases } = useContainer();
   const { allCredentials } = useCredentials();
 
-  const [profile, setProfile] = useState<StudentAcademicProfile | null>(null);
-  const [allCurricula, setAllCurricula] = useState<CurriculumStructure[]>([]);
-  const [selectedCurriculum, setSelectedCurriculum] = useState<CurriculumStructure | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [profile, setProfile] = useState<StudentAcademicProfile | null>(() => cachedProfile ?? null);
+  const [allCurricula, setAllCurricula] = useState<CurriculumStructure[]>(() => cachedCurricula ?? []);
+  const [selectedCurriculum, setSelectedCurriculum] = useState<CurriculumStructure | null>(
+    () => cachedSelectedCurriculum,
+  );
+  const [isLoading, setIsLoading] = useState<boolean>(() => cachedProfile === undefined);
   const [isSyncing, setIsSyncing] = useState<boolean>(false);
   const [hoveredCode, setHoveredCode] = useState<string | null>(null);
 
-  // Carrega currículos e perfil
+  // Carrega currículos e perfil. Com cache quente, só o perfil é relido (barato):
+  // conteúdo troca no lugar, sem skeleton intermediário (@DESIGN.md — piscar é shift).
   const loadData = useCallback(async () => {
-    setIsLoading(true);
     try {
       const [curricula, currentProfile] = await Promise.all([
-        useCases.manageAcademicProfile.getAllCurricula(),
+        cachedCurricula ?? useCases.manageAcademicProfile.getAllCurricula(),
         useCases.manageAcademicProfile.getProfile(),
       ]);
 
+      cachedCurricula = curricula;
+      cachedProfile = currentProfile;
       setAllCurricula(curricula);
 
       if (currentProfile && curricula.length > 0) {
@@ -139,11 +152,13 @@ export function useMyCourse() {
           }
         }
 
-        setSelectedCurriculum(matched || curricula[0]);
+        cachedSelectedCurriculum = matched || curricula[0];
+        setSelectedCurriculum(cachedSelectedCurriculum);
       } else {
         setProfile(currentProfile);
         if (curricula.length > 0) {
-          setSelectedCurriculum(curricula[0]);
+          cachedSelectedCurriculum = curricula[0];
+          setSelectedCurriculum(cachedSelectedCurriculum);
         }
       }
     } catch (e) {
@@ -209,6 +224,7 @@ export function useMyCourse() {
   const toggleDiscipline = useCallback(async (code: string) => {
     try {
       const updated = await useCases.manageAcademicProfile.toggleDiscipline(code);
+      cachedProfile = updated;
       setProfile(updated);
       notifyMyCourseListeners();
       toast.add({
@@ -231,6 +247,7 @@ export function useMyCourse() {
   const resetOverrides = useCallback(async () => {
     try {
       const updated = await useCases.manageAcademicProfile.resetManualOverrides();
+      cachedProfile = updated;
       setProfile(updated);
       notifyMyCourseListeners();
       toast.add({
@@ -262,9 +279,11 @@ export function useMyCourse() {
     setIsSyncing(true);
     try {
       const res = await useCases.manageAcademicProfile.syncWithSigaa(creds);
+      cachedProfile = res.profile;
       setProfile(res.profile);
       if (res.matchedCurriculum) {
-        setSelectedCurriculum(res.matchedCurriculum);
+        cachedSelectedCurriculum = res.matchedCurriculum || null;
+        setSelectedCurriculum(cachedSelectedCurriculum);
       }
       notifyMyCourseListeners();
       toast.add({
@@ -290,7 +309,9 @@ export function useMyCourse() {
   const selectCurriculum = useCallback(async (curr: CurriculumStructure) => {
     try {
       const updated = await useCases.manageAcademicProfile.setCurriculum(curr);
+      cachedProfile = updated;
       setProfile(updated);
+      cachedSelectedCurriculum = curr;
       setSelectedCurriculum(curr);
       notifyMyCourseListeners();
       toast.add({

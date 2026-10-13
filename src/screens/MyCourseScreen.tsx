@@ -4,6 +4,7 @@ import { FlowchartStats } from "../components/flowchart/FlowchartStats";
 import { FlowchartList } from "../components/flowchart/FlowchartList";
 import { CurrentlyEnrolledPanel } from "../components/flowchart/CurrentlyEnrolledPanel";
 import { CurriculumSelectorDialog } from "../components/flowchart/CurriculumSelectorDialog";
+import { MyCourseSkeleton } from "../components/flowchart/MyCourseSkeleton";
 import { PageContainer, PageHeader, Button, Input } from "@/components/ui";
 import {
   GraduationCap,
@@ -99,12 +100,7 @@ export const MyCourseScreen: React.FC = () => {
   if (isLoading && !profile) {
     return (
       <PageContainer>
-        <div className="p-12 text-center bg-white border-2 border-black rounded-lg shadow-neo">
-          <div className="inline-block animate-spin border-2 border-black border-t-transparent rounded-full h-8 w-8 mb-3" />
-          <p className="text-sm font-black text-black">
-            Carregando Meu Curso e Matriz Curricular...
-          </p>
-        </div>
+        <MyCourseSkeleton />
       </PageContainer>
     );
   }
@@ -134,15 +130,17 @@ export const MyCourseScreen: React.FC = () => {
               </Button>
             )}
 
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setIsCurriculumDialogOpen(true)}
-              title="Trocar ou explorar outra matriz curricular da UnB"
-            >
-              <SlidersHorizontal className="w-4 h-4 stroke-[2.5]" />
-              Trocar Matriz
-            </Button>
+            {profile && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsCurriculumDialogOpen(true)}
+                title="Trocar ou explorar outra matriz curricular da UnB"
+              >
+                <SlidersHorizontal className="w-4 h-4 stroke-[2.5]" />
+                Trocar Matriz
+              </Button>
+            )}
           </div>
         }
       />
