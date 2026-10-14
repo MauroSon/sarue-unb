@@ -32,3 +32,7 @@ export * from './application/parse-historico.use-case';
 // Nota: repositórios concretos (adapters) não são exportados aqui de propósito.
 // O único lugar que os conhece é o container.
 export * from './container';
+
+// Seeds
+export * from './seeds/academic-profile.seed';
+

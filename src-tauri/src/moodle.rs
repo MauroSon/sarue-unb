@@ -174,7 +174,7 @@ impl MoodleClient {
                 "methodname": "core_calendar_get_action_events_by_timesort",
                 "args": {
                     "timesortfrom": 0,
-                    "limitnum": 50
+                    "limitnum": 200
                 }
             }
         ]);
@@ -192,16 +192,17 @@ impl MoodleClient {
             }
         }
 
-        // Atualiza a contagem de tarefas pendentes em cada turma
+        // Atualiza a contagem de tarefas pendentes em cada turma (apenas não concluídas)
         for course in &mut courses {
             let count = feed_items
                 .iter()
                 .filter(|item| {
-                    if let Some(code) = &item.course_code {
+                    let matches_course = if let Some(code) = &item.course_code {
                         code.to_lowercase().contains(&course.code.to_lowercase())
                     } else {
                         item.course_name.to_lowercase().contains(&course.name.to_lowercase())
-                    }
+                    };
+                    matches_course && item.is_completed != Some(true)
                 })
                 .count() as u32;
 
@@ -400,6 +401,14 @@ pub fn scrape_courses_html(html: &str) -> Vec<Course> {
 }
 
 pub fn parse_moodle_calendar_events(json_val: &Value) -> Vec<FeedItem> {
+    let now_epoch = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .map(|d| d.as_secs() as i64)
+        .unwrap_or(0);
+    parse_moodle_calendar_events_with_now(json_val, now_epoch)
+}
+
+pub fn parse_moodle_calendar_events_with_now(json_val: &Value, now_epoch: i64) -> Vec<FeedItem> {
     let mut items = Vec::new();
     let events_arr = match json_val
         .get(0)
@@ -483,6 +492,27 @@ pub fn parse_moodle_calendar_events(json_val: &Value) -> Vec<FeedItem> {
                 .unwrap_or_else(|| timesort.saturating_sub(86400)),
         );
 
+        // 1. Prazo já expirado no passado
+        let is_past_due = timesort > 0 && timesort < now_epoch;
+
+        // 2. Ação já enviada / não requer mais envio pelo aluno
+        let is_submitted = if let Some(action) = ev.get("action") {
+            let actionable = action.get("actionable").and_then(|a| a.as_bool()).unwrap_or(true);
+            let name = action.get("name").and_then(|n| n.as_str()).unwrap_or("");
+            let itemcount = action.get("itemcount").and_then(|c| c.as_i64()).unwrap_or(1);
+
+            !actionable
+                || itemcount == 0
+                || name.contains("Editar envio")
+                || name.contains("Ver envio")
+                || name.contains("Remover envio")
+                || name.contains("Enviado")
+        } else {
+            false
+        };
+
+        let is_completed = is_past_due || is_submitted;
+
         items.push(FeedItem {
             id: format!("aprender-event-{}", id),
             platform: PlatformType::Aprender3,
@@ -494,7 +524,7 @@ pub fn parse_moodle_calendar_events(json_val: &Value) -> Vec<FeedItem> {
             item_type: FeedItemType::Assignment,
             created_at: created_at_iso,
             due_date: due_date_iso,
-            is_completed: Some(false),
+            is_completed: Some(is_completed),
             external_url: url,
         });
     }
@@ -540,8 +570,8 @@ mod tests {
 
     #[test]
     fn test_clean_cpf() {
-        assert_eq!(clean_cpf("078.534.661-96"), "07853466196");
-        assert_eq!(clean_cpf("07853466196"), "07853466196");
+        assert_eq!(clean_cpf("123.456.789-00"), "12345678900");
+        assert_eq!(clean_cpf("12345678900"), "12345678900");
         assert_eq!(clean_cpf("  123 456  "), "123456");
     }
 
@@ -641,6 +671,83 @@ mod tests {
         assert_eq!(courses.len(), 1);
         assert_eq!(courses[0].id, "aprender-31429");
         assert_eq!(courses[0].code, "CIC0099");
+    }
+
+    #[test]
+    fn test_parse_moodle_calendar_events_status() {
+        let reference_now: i64 = 1700000000; // Timestamp de referência
+
+        let events_json = serde_json::json!([
+            {
+                "data": {
+                    "events": [
+                        {
+                            "id": 101,
+                            "name": "Trabalho 1: Compiladores",
+                            "description": "Entrega do analisador léxico",
+                            "course": {
+                                "fullname": "CIC0099 - Compiladores",
+                                "shortname": "CIC0099"
+                            },
+                            "timesort": reference_now - 3600, // Prazo expirado (1h atrás)
+                            "action": {
+                                "name": "Adicionar envio",
+                                "actionable": true,
+                                "itemcount": 1,
+                                "url": "/mod/assign/view.php?id=101"
+                            }
+                        },
+                        {
+                            "id": 102,
+                            "name": "Lista 2: Grafos",
+                            "description": "Resolução de exercícios",
+                            "course": {
+                                "fullname": "CIC0090 - Estruturas de Dados",
+                                "shortname": "CIC0090"
+                            },
+                            "timesort": reference_now + 86400, // Prazo futuro (amanhã)
+                            "action": {
+                                "name": "Editar envio", // Já enviado pelo aluno
+                                "actionable": false,
+                                "itemcount": 0,
+                                "url": "/mod/assign/view.php?id=102"
+                            }
+                        },
+                        {
+                            "id": 103,
+                            "name": "Projeto Final: Arquitetura",
+                            "description": "Entrega do relatório final",
+                            "course": {
+                                "fullname": "CIC0105 - Arquitetura de Computadores",
+                                "shortname": "CIC0105"
+                            },
+                            "timesort": reference_now + 172800, // Prazo futuro (em 2 dias)
+                            "action": {
+                                "name": "Adicionar envio",
+                                "actionable": true,
+                                "itemcount": 1,
+                                "url": "/mod/assign/view.php?id=103"
+                            }
+                        }
+                    ]
+                }
+            }
+        ]);
+
+        let items = parse_moodle_calendar_events_with_now(&events_json, reference_now);
+        assert_eq!(items.len(), 3);
+
+        // 1. Trabalho 1 (prazo vencido) -> Concluído
+        let t1 = items.iter().find(|i| i.id == "aprender-event-101").unwrap();
+        assert_eq!(t1.is_completed, Some(true));
+
+        // 2. Lista 2 (já enviado / actionable == false) -> Concluído
+        let t2 = items.iter().find(|i| i.id == "aprender-event-102").unwrap();
+        assert_eq!(t2.is_completed, Some(true));
+
+        // 3. Projeto Final (prazo futuro e pendente) -> NÃO concluído
+        let t3 = items.iter().find(|i| i.id == "aprender-event-103").unwrap();
+        assert_eq!(t3.is_completed, Some(false));
     }
 
     #[tokio::test]

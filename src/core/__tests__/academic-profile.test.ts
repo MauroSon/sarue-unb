@@ -19,8 +19,8 @@ Curso:
 Currículo: 1741/1 - 2016.1
 Ano / Período Letivo Inicial: 2022.1
 Status: ATIVO
-Matrícula: 221020904
-Nome: Kaleb Henrique Silva Pereira
+Matrícula: 202000000
+Nome: Discente Demonstração
 
 Componentes Curriculares Cursados/Cursando
 2022.1 ALGORITMOS E PROGRAMAÇÃO DE COMPUTADORES
@@ -127,8 +127,8 @@ describe('Meu Curso - Casos de Uso e Domínio', () => {
         curriculaCatalog: [MOCK_CURRICULUM],
       });
 
-      expect(result.profile.matricula).toBe('221020904');
-      expect(result.profile.studentName).toContain('Kaleb');
+      expect(result.profile.matricula).toBe('202000000');
+      expect(result.profile.studentName).toContain('Demonstração');
       expect(result.profile.courseName).toBe('ENGENHARIA DE COMPUTAÇÃO');
       expect(result.profile.admissionYear).toBe('2022.1');
       expect(result.profile.curriculumCode).toBe('1741/1');
@@ -154,7 +154,7 @@ describe('Meu Curso - Casos de Uso e Domínio', () => {
     it('deve priorizar situação MATR sobre reprovação ou trancamento anterior (REP/TR)', async () => {
       const historicoComRepEMatr = `
 Histórico Escolar
-Matrícula: 221020904
+Matrícula: 202000000
 Nome: Aluno Teste
 Curso: ENGENHARIA DE COMPUTAÇÃO
 Ano / Período Letivo Inicial: 2022.1
@@ -178,7 +178,7 @@ Currículo: 1741/1
     it('deve capturar disciplinas MATR com variações de espaço e traços', async () => {
       const historicoComVariacoes = `
 Histórico Escolar
-Matrícula: 221020904
+Matrícula: 202000000
 Curso: ENGENHARIA DE COMPUTAÇÃO
 2026.2 PROJETO INTEGRADOR
 01 MATRCIC0099 60 100,0 -
@@ -204,7 +204,7 @@ CIC0291 ESTÁGIO 120 MATRICULADO
     it('deve extrair o nome da disciplina a partir da linha de período que antecede o código compactado', async () => {
       const historicoComNome = `
 Histórico Escolar
-Matrícula: 221020904
+Matrícula: 202000000
 Curso: ENGENHARIA DE COMPUTAÇÃO
 Currículo: 1741/1
 2026.2 SINAIS E SISTEMAS EM TEMPO CONTÍNUO
@@ -244,7 +244,7 @@ Currículo: 1741/1
 
       const historicoCompactoSemNome = `
 Histórico Escolar
-Matrícula: 221020904
+Matrícula: 202000000
 Curso: ENGENHARIA DE COMPUTAÇÃO
 Currículo: 1741/1
 01 MATRENE0067 60 100,0 -
@@ -266,7 +266,7 @@ Currículo: 1741/1
 
     it('deve calcular corretamente status, equivalências, pré-requisitos e métricas', () => {
       const profile: StudentAcademicProfile = {
-        matricula: '221020904',
+        matricula: '202000000',
         courseName: 'ENGENHARIA DE COMPUTAÇÃO',
         level: 'GRADUAÇÃO',
         admissionYear: '2022.1',
@@ -338,7 +338,7 @@ Currículo: 1741/1
 
       // Discente cursou apenas MAT0022 (MAT0025 não cursado)
       const profile: StudentAcademicProfile = {
-        matricula: '221020904',
+        matricula: '202000000',
         courseName: 'ADM',
         level: 'GRADUAÇÃO',
         admissionYear: '2022.1',
@@ -376,7 +376,7 @@ Currículo: 1741/1
       };
 
       const profileVazio: StudentAcademicProfile = {
-        matricula: '221020904',
+        matricula: '202000000',
         courseName: 'ADM',
         level: 'GRADUAÇÃO',
         admissionYear: '2022.1',
@@ -413,7 +413,7 @@ Currículo: 1741/1
 
       // Aluno fez ECO0019 e MAT0022 (caminho alternativo do OU)
       const profile: StudentAcademicProfile = {
-        matricula: '221020904',
+        matricula: '202000000',
         courseName: 'ADM',
         level: 'GRADUAÇÃO',
         admissionYear: '2022.1',
@@ -433,7 +433,7 @@ Currículo: 1741/1
 
     it('deve incluir matérias optativas matriculadas (MATR) em inProgressDisciplines', () => {
       const profileComOptativaMatr: StudentAcademicProfile = {
-        matricula: '221020904',
+        matricula: '202000000',
         courseName: 'ENGENHARIA DE COMPUTAÇÃO',
         level: 'GRADUAÇÃO',
         admissionYear: '2022.1',
@@ -480,7 +480,7 @@ Currículo: 1741/1
       };
 
       const profileComEneSemNome: StudentAcademicProfile = {
-        matricula: '221020904',
+        matricula: '202000000',
         courseName: 'ENGENHARIA DE COMPUTAÇÃO',
         level: 'GRADUAÇÃO',
         admissionYear: '2022.1',
@@ -511,7 +511,7 @@ Currículo: 1741/1
 
     it('deve permitir marcar e desmarcar matérias manualmente', async () => {
       const initialProfile: StudentAcademicProfile = {
-        matricula: '221020904',
+        matricula: '202000000',
         courseName: 'ENGENHARIA DE COMPUTAÇÃO',
         level: 'GRADUAÇÃO',
         admissionYear: '2022.1',
@@ -545,7 +545,7 @@ Currículo: 1741/1
 
     it('deve apagar completamente o perfil acadêmico ao chamar clearProfile', async () => {
       const initialProfile: StudentAcademicProfile = {
-        matricula: '221020904',
+        matricula: '202000000',
         courseName: 'ENGENHARIA DE COMPUTAÇÃO',
         level: 'GRADUAÇÃO',
         admissionYear: '2022.1',
@@ -560,7 +560,7 @@ Currículo: 1741/1
       await repo.saveProfile(initialProfile);
       const saved = await manageUseCase.getProfile();
       expect(saved).not.toBeNull();
-      expect(saved?.matricula).toBe('221020904');
+      expect(saved?.matricula).toBe('202000000');
 
       await manageUseCase.clearProfile();
       const cleared = await manageUseCase.getProfile();

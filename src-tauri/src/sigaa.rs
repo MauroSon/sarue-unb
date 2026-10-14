@@ -165,14 +165,9 @@ impl SigaaClient {
         matricula: &str,
         senha: &str,
     ) -> Result<(Vec<FeedItem>, Vec<Course>), String> {
-        let (page_html, aviso_item) = self.login_to_portal(matricula, senha).await?;
-        let mut feed_items = Vec::new();
-        if let Some(aviso) = aviso_item {
-            feed_items.push(aviso);
-        }
-
-        let (extracted_items, courses) = Self::parse_discente_html(&page_html)?;
-        feed_items.extend(extracted_items);
+        let (page_html, _aviso_item) = self.login_to_portal(matricula, senha).await?;
+        // O aviso institucional de logon ("Aviso Geral UnB") é intencionalmente ignorado no feed
+        let (feed_items, courses) = Self::parse_discente_html(&page_html)?;
 
         log::info!(
             "[SigaaClient] Sincronização concluída com sucesso: {} turmas e {} itens de feed.",
@@ -618,42 +613,8 @@ impl SigaaClient {
             });
         }
 
-        // 5. Extração de Notícias Gerais da Instituição (fcontent)
-        let fcontent_re = Regex::new(r#"fcontent\[\d+\]\s*=\s*"(.*?)";"#).unwrap();
-        let news_title_re = Regex::new(r#"class=\\"noticia[^"]*\\"[^>]*>.*?id=\\"([^"]+)\\"[^>]*>([^<]+)</a>"#).unwrap();
-        let news_desc_re = Regex::new(r#"class=\\"descricao\\"[^>]*>.*?id=\\"[^"]+\\"[^>]*>([^<]+)</a>"#).unwrap();
-
-        for cap in fcontent_re.captures_iter(html) {
-            let raw_entry = cap.get(1).map(|m| m.as_str()).unwrap_or("");
-            if let Some(t_cap) = news_title_re.captures(raw_entry) {
-                let news_id = t_cap.get(1).map(|m| m.as_str()).unwrap_or("");
-                let raw_title = t_cap.get(2).map(|m| m.as_str()).unwrap_or("");
-
-                let raw_desc = news_desc_re
-                    .captures(raw_entry)
-                    .and_then(|c| c.get(1))
-                    .map(|m| m.as_str())
-                    .unwrap_or(raw_title);
-
-                let title = decode_html_entities(raw_title.trim());
-                let content = decode_html_entities(raw_desc.trim());
-
-                items.push(FeedItem {
-                    id: format!("sigaa-news-{}", news_id),
-                    platform: PlatformType::Sigaa,
-                    title,
-                    content,
-                    course_name: "Mural SIGAA".into(),
-                    course_code: Some("SIGAA".into()),
-                    author: Some("Coordenação / DAA".into()),
-                    item_type: FeedItemType::Post,
-                    created_at: chrono::Utc::now().to_rfc3339(),
-                    due_date: None,
-                    is_completed: Some(false),
-                    external_url: Some(DISCENTE_URL.into()),
-                });
-            }
-        }
+        // 5. Notícias gerais da instituição ("Mural SIGAA") foram desativadas
+        // para manter o feed focado exclusivamente nas turmas e atividades do discente.
 
         // Ordena itens do feed por data decrescente
         items.sort_by(|a, b| b.created_at.cmp(&a.created_at));
@@ -872,6 +833,22 @@ mod tests {
         assert_eq!(ativ.course_name, "FISICA 2");
         assert_eq!(ativ.title, "Avaliação: 1ª Avaliação");
         assert_eq!(ativ.due_date.as_deref(), Some("2026-09-22T23:59:59Z"));
+        // Garante que nenhum item de Mural SIGAA foi extraído
+        assert!(!items.iter().any(|i| i.course_name == "Mural SIGAA"));
+    }
+
+    #[test]
+    fn test_parse_discente_html_ignores_mural_sigaa() {
+        let html_with_mural = r##"
+            <script type="text/javascript">
+                var fcontent = new Array();
+                fcontent[0] = "<span class=\"noticia-destaque\"><a id=\"noticia_1\" href=\"#\">Comunicado Importante</a></span><br><span class=\"descricao\"><a id=\"noticia_desc_1\" href=\"#\">Texto da noticia geral da UnB</a></span>";
+            </script>
+        "##;
+        let (items, courses) = SigaaClient::parse_discente_html(html_with_mural).unwrap();
+        assert_eq!(courses.len(), 0);
+        assert_eq!(items.len(), 0);
+        assert!(!items.iter().any(|i| i.course_name == "Mural SIGAA"));
     }
 
     #[test]
@@ -912,7 +889,7 @@ mod tests {
                 <table>
                     <tr>
                         <td> Matrícula: </td>
-                        <td> 221020904 </td>
+                        <td> 202000000 </td>
                     </tr>
                     <tr>
                         <td valign="top"> Curso: </td>
@@ -961,8 +938,8 @@ mod tests {
             </div>
         "##;
 
-        let profile = SigaaClient::parse_discente_profile(html, "221020904");
-        assert_eq!(profile.matricula, "221020904");
+        let profile = SigaaClient::parse_discente_profile(html, "202000000");
+        assert_eq!(profile.matricula, "202000000");
         assert_eq!(profile.curso, "ENGENHARIA DE COMPUTAÇÃO");
         assert_eq!(profile.nivel, "GRADUAÇÃO");
         assert_eq!(profile.status, "ATIVO");

@@ -22,17 +22,6 @@ export class InMemoryAcademicProfileRepository implements IAcademicProfileReposi
         const raw = localStorage.getItem(STORAGE_KEY);
         if (raw) {
           const parsed = JSON.parse(raw) as StudentAcademicProfile;
-          // Corrige perfil anteriormente salvo com 1741/3
-          if (
-            (parsed.matricula === '221020904' || parsed.courseName?.toUpperCase().includes('COMPUTAÇÃO')) &&
-            parsed.curriculumCode === '1741/3'
-          ) {
-            parsed.curriculumCode = '1741/1';
-            parsed.curriculumId = '354';
-            try {
-              localStorage.setItem(STORAGE_KEY, JSON.stringify(parsed));
-            } catch {}
-          }
           this.profileInMemory = parsed;
           return parsed;
         }

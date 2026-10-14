@@ -97,7 +97,6 @@ export class GetFlowchartUseCase {
     let completedHours = 0;
     let totalHours = 0;
     let availableCount = 0;
-    let inProgressCount = 0;
 
     // Avaliador de expressões lógicas de pré-requisitos
     for (const disc of mandatoryList) {
