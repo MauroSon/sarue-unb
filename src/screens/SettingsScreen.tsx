@@ -37,7 +37,7 @@ export interface SettingsScreenProps {
 
 type FeedbackState = { type: "success" | "error"; message: string } | null;
 
-const FEEDBACK_TIMEOUT_MS = 3000;
+const FEEDBACK_TIMEOUT_MS = 6000;
 
 const FeedbackMessage: React.FC<{ feedback: FeedbackState }> = ({
   feedback,
@@ -45,18 +45,18 @@ const FeedbackMessage: React.FC<{ feedback: FeedbackState }> = ({
   <div
     role="status"
     aria-live="polite"
-    className={`${feedback ? "mt-2" : ""} text-xs font-bold flex items-center gap-1 ${
+    className={`${feedback ? "mt-2" : ""} text-xs font-bold flex items-center gap-1.5 ${
       feedback?.type === "error" ? "text-ink-error" : "text-ink-success"
     }`}
   >
     {feedback ? (
       <>
         {feedback.type === "success" ? (
-          <CheckCircle2 className="w-3.5 h-3.5 stroke-[2.5]" />
+          <CheckCircle2 className="w-4 h-4 stroke-[2.5] shrink-0" />
         ) : (
-          <AlertCircle className="w-3.5 h-3.5 stroke-[2.5]" />
+          <AlertCircle className="w-4 h-4 stroke-[2.5] shrink-0" />
         )}
-        <span>{feedback.message}</span>
+        <span className="leading-tight">{feedback.message}</span>
       </>
     ) : null}
   </div>
@@ -81,10 +81,12 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
   const [sigaaMat, setSigaaMat] = useState("");
   const [sigaaPass, setSigaaPass] = useState("");
   const [sigaaFeedback, setSigaaFeedback] = useState<FeedbackState>(null);
+  const [isVerifyingSigaa, setIsVerifyingSigaa] = useState(false);
 
   const [aprenderCpf, setAprenderCpf] = useState("");
   const [aprenderPass, setAprenderPass] = useState("");
   const [aprenderFeedback, setAprenderFeedback] = useState<FeedbackState>(null);
+  const [isVerifyingAprender, setIsVerifyingAprender] = useState(false);
 
   const [teamsEmail, setTeamsEmail] = useState("");
   const [teamsFeedback, setTeamsFeedback] = useState<FeedbackState>(null);
@@ -161,33 +163,79 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
   const handleSaveSigaa = async () => {
     setSigaaFeedback(null);
     const senha = sigaaPass || sigaaPassRef.current;
-    const ok = await saveSigaa({ matricula: sigaaMat, senha });
-    if (ok) sigaaPassRef.current = senha;
-    setTimedFeedback(
-      setSigaaFeedback,
-      ok
-        ? {
-            type: "success",
-            message: "Credenciais do SIGAA atualizadas com sucesso!",
-          }
-        : { type: "error", message: "Falha ao salvar SIGAA" },
-    );
+    if (!sigaaMat.trim()) {
+      setTimedFeedback(setSigaaFeedback, {
+        type: "error",
+        message: "Informe sua matrícula do SIGAA.",
+      });
+      return;
+    }
+    if (!senha) {
+      setTimedFeedback(setSigaaFeedback, {
+        type: "error",
+        message: "Informe sua senha do SIGAA.",
+      });
+      return;
+    }
+
+    setIsVerifyingSigaa(true);
+    try {
+      const res = await saveSigaa({ matricula: sigaaMat.trim(), senha });
+      if (res.success) {
+        sigaaPassRef.current = senha;
+        setSigaaPass("");
+        setTimedFeedback(setSigaaFeedback, {
+          type: "success",
+          message: res.detail || "Conectado ao SIGAA com sucesso!",
+        });
+      } else {
+        setTimedFeedback(setSigaaFeedback, {
+          type: "error",
+          message: res.error || "Falha na autenticação do SIGAA.",
+        });
+      }
+    } finally {
+      setIsVerifyingSigaa(false);
+    }
   };
 
   const handleSaveAprender3 = async () => {
     setAprenderFeedback(null);
     const senha = aprenderPass || aprenderPassRef.current;
-    const ok = await saveAprender3({ cpf: aprenderCpf, senha });
-    if (ok) aprenderPassRef.current = senha;
-    setTimedFeedback(
-      setAprenderFeedback,
-      ok
-        ? {
-            type: "success",
-            message: "Credenciais do Aprender 3 atualizadas com sucesso!",
-          }
-        : { type: "error", message: "Falha ao salvar Aprender 3" },
-    );
+    if (!aprenderCpf.trim()) {
+      setTimedFeedback(setAprenderFeedback, {
+        type: "error",
+        message: "Informe seu CPF do Aprender 3.",
+      });
+      return;
+    }
+    if (!senha) {
+      setTimedFeedback(setAprenderFeedback, {
+        type: "error",
+        message: "Informe sua senha do Aprender 3.",
+      });
+      return;
+    }
+
+    setIsVerifyingAprender(true);
+    try {
+      const res = await saveAprender3({ cpf: aprenderCpf.trim(), senha });
+      if (res.success) {
+        aprenderPassRef.current = senha;
+        setAprenderPass("");
+        setTimedFeedback(setAprenderFeedback, {
+          type: "success",
+          message: res.detail || "Conectado ao Aprender 3 com sucesso!",
+        });
+      } else {
+        setTimedFeedback(setAprenderFeedback, {
+          type: "error",
+          message: res.error || "Falha na autenticação do Aprender 3.",
+        });
+      }
+    } finally {
+      setIsVerifyingAprender(false);
+    }
   };
 
   const handleToggleTeams = async () => {
@@ -281,6 +329,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
                 label="Matrícula"
                 placeholder="Ex: 202012345"
                 value={sigaaMat}
+                disabled={isVerifyingSigaa}
                 onChange={(e) => setSigaaMat(e.target.value)}
               />
               <Input
@@ -292,6 +341,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
                     : "Senha do SIGAA"
                 }
                 value={sigaaPass}
+                disabled={isVerifyingSigaa}
                 onChange={(e) => setSigaaPass(e.target.value)}
               />
             </div>
@@ -304,10 +354,12 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
               type="button"
               variant="primary"
               size="md"
+              isLoading={isVerifyingSigaa}
+              disabled={isVerifyingSigaa}
               onClick={handleSaveSigaa}
             >
               <Save className="w-3.5 h-3.5 stroke-[2.5]" />
-              <span>Salvar SIGAA</span>
+              <span>{isVerifyingSigaa ? "Validando..." : "Salvar SIGAA"}</span>
             </Button>
           </div>
         </Card>
@@ -341,6 +393,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
                 label="CPF"
                 placeholder="Ex: 000.000.000-00"
                 value={aprenderCpf}
+                disabled={isVerifyingAprender}
                 onChange={(e) => setAprenderCpf(e.target.value)}
               />
               <Input
@@ -352,6 +405,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
                     : "Senha do Aprender 3"
                 }
                 value={aprenderPass}
+                disabled={isVerifyingAprender}
                 onChange={(e) => setAprenderPass(e.target.value)}
               />
             </div>
@@ -364,10 +418,12 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
               type="button"
               variant="primary"
               size="md"
+              isLoading={isVerifyingAprender}
+              disabled={isVerifyingAprender}
               onClick={handleSaveAprender3}
             >
               <Save className="w-3.5 h-3.5 stroke-[2.5]" />
-              <span>Salvar Aprender 3</span>
+              <span>{isVerifyingAprender ? "Validando..." : "Salvar Aprender 3"}</span>
             </Button>
           </div>
         </Card>

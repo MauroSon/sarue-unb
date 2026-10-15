@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { Badge, Button, DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator } from '@/components/ui';
 import type { Discipline, FeedItem } from '@/core';
-import { Archive, ArchiveRestore, Circle, CheckCircle, ClipboardList, ExternalLink, FileText, MoreHorizontal } from 'lucide-react';
+import { Archive, ArchiveRestore, Circle, CheckCircle, Check, ClipboardList, ExternalLink, FileText, MoreHorizontal } from 'lucide-react';
 import { openExternalUrl } from '../../lib/utils';
 
 export interface FeedListProps {
@@ -91,8 +91,26 @@ export const FeedList: React.FC<FeedListProps> = ({
                 : 'hover:bg-neutral-50'
             }`}
           >
-            {/* Tipo: ícone à esquerda, como o ícone de PR do GitHub */}
-            <TypeIcon className="w-4 h-4 stroke-[2.5] shrink-0 text-neutral-700" aria-hidden />
+            {/* Indicador interativo de conclusão para tarefas ou ícone de tipo para avisos */}
+            {isAssignment && onToggleComplete ? (
+              <button
+                type="button"
+                onClick={() => onToggleComplete(item.id, item.isCompleted)}
+                title={item.isCompleted ? 'Marcar como não concluído' : 'Marcar como concluído'}
+                aria-label={item.isCompleted ? 'Marcar como não concluído' : 'Marcar como concluído'}
+                className={`w-5 h-5 rounded-md border-2 border-black flex items-center justify-center shrink-0 cursor-pointer transition-[transform,box-shadow,background-color] duration-150 ease-out shadow-[1px_1px_0px_0px_#000] hover:translate-x-[0.5px] hover:translate-y-[0.5px] hover:shadow-none active:translate-x-[1px] active:translate-y-[1px] ${
+                  item.isCompleted
+                    ? 'bg-neo-green text-black'
+                    : 'bg-white hover:bg-neutral-100 text-neutral-400'
+                }`}
+              >
+                {item.isCompleted ? (
+                  <Check className="w-3.5 h-3.5 stroke-[3]" />
+                ) : null}
+              </button>
+            ) : (
+              <TypeIcon className="w-4 h-4 stroke-[2.5] shrink-0 text-neutral-700" aria-hidden />
+            )}
 
             {/* Título + meta */}
             <div className="min-w-0 flex-1">

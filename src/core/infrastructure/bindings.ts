@@ -24,6 +24,8 @@ export const commands = {
 	solveSchedules: (candidateClasses: ScrapedClass[], preferenceShift: string | null) => typedError<ScheduleOption[], string>(__TAURI_INVOKE("solve_schedules", { candidateClasses, preferenceShift })),
 	checkScheduleConflicts: (classes: ScrapedClass[]) => typedError<string[], string>(__TAURI_INVOKE("check_schedule_conflicts", { classes })),
 	openExternalUrl: (url: string) => typedError<null, string>(__TAURI_INVOKE("open_external_url", { url })),
+	validateSigaaCredentials: (matricula: string, senha: string) => typedError<string, string>(__TAURI_INVOKE("validate_sigaa_credentials", { matricula, senha })),
+	validateAprender3Credentials: (cpf: string, senha: string) => typedError<string, string>(__TAURI_INVOKE("validate_aprender3_credentials", { cpf, senha })),
 };
 
 /* Types */

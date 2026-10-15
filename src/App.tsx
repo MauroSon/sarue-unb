@@ -9,43 +9,17 @@ import { SettingsScreen } from './screens/SettingsScreen';
 import { Sidebar, type NavTab } from './components/Sidebar';
 import { TooltipProvider, Toaster } from '@/components/ui';
 import { useCredentials } from './hooks/useCredentials';
-import { useFeed } from './hooks/useFeed';
-import { useContainer } from './context/ContainerContext';
-import { notifyMyCourseListeners } from './hooks/useMyCourse';
+import { SyncProvider, useSync } from './context/SyncContext';
 
 type AppStep = 'onboarding' | 'credentials' | 'main';
 
 const AppShell: React.FC = () => {
-  const { hasCredentials, allCredentials, isLoading: isCheckingAuth } = useCredentials();
-  const { sync: syncFeed, isSyncing: isFeedSyncing, lastSyncedAt } = useFeed();
-  const { useCases } = useContainer();
+  const { hasCredentials, isLoading: isCheckingAuth } = useCredentials();
+  const { syncAll, isSyncing, lastSyncedAt, steps: syncSteps } = useSync();
 
   const [step, setStep] = useState<AppStep>('onboarding');
   const [currentTab, setCurrentTab] = useState<NavTab>('home');
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState<boolean>(false);
-  const [isSyncingGlobal, setIsSyncingGlobal] = useState<boolean>(false);
-
-  // Sincronização unificada da aplicação (Feed + Plataformas + Meu Curso)
-  const handleGlobalSync = React.useCallback(async () => {
-    setIsSyncingGlobal(true);
-    try {
-      // 1. Sincroniza feed e plataformas (SIGAA turmas e avisos, Aprender3)
-      await syncFeed();
-
-      // 2. Sincroniza Meu Curso / Histórico com SIGAA se credenciais configuradas
-      const creds = allCredentials.sigaa;
-      if (creds && creds.matricula && creds.senha) {
-        try {
-          await useCases.manageAcademicProfile.syncWithSigaa(creds);
-          notifyMyCourseListeners();
-        } catch (e) {
-          console.warn('[GlobalSync] Erro ao sincronizar Meu Curso:', e);
-        }
-      }
-    } finally {
-      setIsSyncingGlobal(false);
-    }
-  }, [syncFeed, allCredentials.sigaa, useCases]);
 
   // Inicializa a sincronização quando o usuário entra na tela principal com credenciais existentes
   React.useEffect(() => {
@@ -86,7 +60,7 @@ const AppShell: React.FC = () => {
         onExplore={() => setStep('main')}
         onSuccess={() => {
           setStep('main');
-          handleGlobalSync();
+          syncAll();
         }}
       />
     );
@@ -101,10 +75,11 @@ const AppShell: React.FC = () => {
         onSelectTab={setCurrentTab}
         isCollapsed={isSidebarCollapsed}
         onToggleCollapse={() => setIsSidebarCollapsed((prev) => !prev)}
-        isSyncing={isSyncingGlobal || isFeedSyncing}
-        onSync={handleGlobalSync}
+        isSyncing={isSyncing}
+        onSync={syncAll}
         lastSyncedAt={lastSyncedAt}
         hasConnectedAccounts={Boolean(hasCredentials)}
+        syncSteps={syncSteps}
       />
 
       {/* Área Central de Conteúdo (Sem Header global, títulos direto no corpo) */}
@@ -129,10 +104,12 @@ const AppShell: React.FC = () => {
 };
 
 const App: React.FC = () => (
-  <TooltipProvider delay={150}>
-    <Toaster />
-    <AppShell />
-  </TooltipProvider>
+  <SyncProvider>
+    <TooltipProvider delay={150}>
+      <Toaster />
+      <AppShell />
+    </TooltipProvider>
+  </SyncProvider>
 );
 
 export { App };

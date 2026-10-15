@@ -66,13 +66,15 @@ export function useCredentials() {
         setHasCredentials(true);
         await loadAll();
         notifyListeners();
-        return true;
+        return { success: true, detail: res.detail };
       }
-      setError(res.error || 'Erro ao salvar credenciais do SIGAA');
-      return false;
+      const err = res.error || 'Erro ao validar credenciais do SIGAA';
+      setError(err);
+      return { success: false, error: err };
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Erro inesperado');
-      return false;
+      const err = e instanceof Error ? e.message : 'Erro inesperado';
+      setError(err);
+      return { success: false, error: err };
     } finally {
       setIsLoading(false);
     }
@@ -90,13 +92,15 @@ export function useCredentials() {
         setHasCredentials(true);
         await loadAll();
         notifyListeners();
-        return true;
+        return { success: true, detail: res.detail };
       }
-      setError(res.error || 'Erro ao salvar credenciais do Aprender 3');
-      return false;
+      const err = res.error || 'Erro ao validar credenciais do Aprender 3';
+      setError(err);
+      return { success: false, error: err };
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Erro inesperado');
-      return false;
+      const err = e instanceof Error ? e.message : 'Erro inesperado';
+      setError(err);
+      return { success: false, error: err };
     } finally {
       setIsLoading(false);
     }
@@ -114,13 +118,15 @@ export function useCredentials() {
         setHasCredentials(true);
         await loadAll();
         notifyListeners();
-        return true;
+        return { success: true, detail: 'Microsoft Teams conectado com sucesso!' };
       }
-      setError(res.error || 'Erro ao conectar conta do Teams');
-      return false;
+      const err = res.error || 'Erro ao conectar conta do Teams';
+      setError(err);
+      return { success: false, error: err };
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Erro inesperado');
-      return false;
+      const err = e instanceof Error ? e.message : 'Erro inesperado';
+      setError(err);
+      return { success: false, error: err };
     } finally {
       setIsLoading(false);
     }

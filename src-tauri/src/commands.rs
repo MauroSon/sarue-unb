@@ -196,4 +196,36 @@ fn chrono_like_timestamp() -> String {
     chrono::Utc::now().to_rfc3339()
 }
 
+#[command]
+#[specta::specta]
+pub async fn validate_sigaa_credentials(
+    matricula: String,
+    senha: String,
+) -> Result<String, String> {
+    let clean_matricula = matricula.trim();
+    if clean_matricula.is_empty() || senha.is_empty() {
+        return Err("Informe a matrícula e senha do SIGAA.".into());
+    }
+    let client = SigaaClient::new();
+    let (html, _) = client.login_to_portal(clean_matricula, &senha).await?;
+    let profile = SigaaClient::parse_discente_profile(&html, clean_matricula);
+    let discente_name = profile.nome.unwrap_or_else(|| "Discente".into());
+    Ok(format!("Conectado como {} ({})", discente_name, profile.curso))
+}
+
+#[command]
+#[specta::specta]
+pub async fn validate_aprender3_credentials(
+    cpf: String,
+    senha: String,
+) -> Result<String, String> {
+    let clean_cpf = crate::moodle::clean_cpf(&cpf);
+    if clean_cpf.is_empty() || senha.is_empty() {
+        return Err("Informe o CPF e senha do Aprender 3.".into());
+    }
+    let client = MoodleClient::new();
+    let (_items, courses) = client.sync_aprender3(&clean_cpf, &senha).await?;
+    Ok(format!("Conectado ao Aprender 3 ({} turmas encontradas)", courses.len()))
+}
+
 

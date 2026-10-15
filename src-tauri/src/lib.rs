@@ -24,6 +24,8 @@ pub fn builder() -> Builder<tauri::Wry> {
         commands::solve_schedules,
         commands::check_schedule_conflicts,
         commands::open_external_url,
+        commands::validate_sigaa_credentials,
+        commands::validate_aprender3_credentials,
     ])
 }
 

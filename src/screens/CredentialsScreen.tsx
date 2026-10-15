@@ -37,17 +37,20 @@ export const CredentialsScreen: React.FC<CredentialsScreenProps> = ({
   const [sigaaMatricula, setSigaaMatricula] = useState('');
   const [sigaaSenha, setSigaaSenha] = useState('');
   const [sigaaSaved, setSigaaSaved] = useState(false);
+  const [sigaaSuccessMsg, setSigaaSuccessMsg] = useState<string | null>(null);
 
   // Campos Aprender 3
   const [aprenderCpf, setAprenderCpf] = useState('');
   const [aprenderSenha, setAprenderSenha] = useState('');
   const [aprenderSaved, setAprenderSaved] = useState(false);
+  const [aprenderSuccessMsg, setAprenderSuccessMsg] = useState<string | null>(null);
 
   // Teams
   const [teamsConnected, setTeamsConnected] = useState(false);
   const [teamsEmail, setTeamsEmail] = useState('');
 
   const [formError, setFormError] = useState<string | null>(null);
+  const [isVerifying, setIsVerifying] = useState(false);
 
   const handleSaveCurrentPlatform = async () => {
     setFormError(null);
@@ -61,8 +64,20 @@ export const CredentialsScreen: React.FC<CredentialsScreenProps> = ({
         setFormError('Informe sua senha do SIGAA.');
         return;
       }
-      const ok = await saveSigaa({ matricula: sigaaMatricula.trim(), senha: sigaaSenha });
-      if (ok) setSigaaSaved(true);
+      setIsVerifying(true);
+      try {
+        const res = await saveSigaa({ matricula: sigaaMatricula.trim(), senha: sigaaSenha });
+        if (res.success) {
+          setSigaaSaved(true);
+          setSigaaSuccessMsg(res.detail || 'Conectado ao SIGAA com sucesso!');
+        } else {
+          setSigaaSaved(false);
+          setSigaaSuccessMsg(null);
+          setFormError(res.error || 'Falha ao autenticar no SIGAA. Verifique matrícula e senha.');
+        }
+      } finally {
+        setIsVerifying(false);
+      }
     } else if (activeTab === 'aprender3') {
       if (!aprenderCpf.trim()) {
         setFormError('Informe seu CPF do Aprender 3.');
@@ -72,8 +87,20 @@ export const CredentialsScreen: React.FC<CredentialsScreenProps> = ({
         setFormError('Informe sua senha do Aprender 3.');
         return;
       }
-      const ok = await saveAprender3({ cpf: aprenderCpf.trim(), senha: aprenderSenha });
-      if (ok) setAprenderSaved(true);
+      setIsVerifying(true);
+      try {
+        const res = await saveAprender3({ cpf: aprenderCpf.trim(), senha: aprenderSenha });
+        if (res.success) {
+          setAprenderSaved(true);
+          setAprenderSuccessMsg(res.detail || 'Conectado ao Aprender 3 com sucesso!');
+        } else {
+          setAprenderSaved(false);
+          setAprenderSuccessMsg(null);
+          setFormError(res.error || 'Falha ao autenticar no Aprender 3. Verifique CPF e senha.');
+        }
+      } finally {
+        setIsVerifying(false);
+      }
     } else if (activeTab === 'teams') {
       const email = teamsEmail.trim() || 'aluno@aluno.unb.br';
       const ok = await saveTeams({ isConnected: true, email });
@@ -96,7 +123,7 @@ export const CredentialsScreen: React.FC<CredentialsScreenProps> = ({
     setFormError(null);
 
     // Salva o que estiver preenchido no formulário da aba ativa antes de concluir
-    if (activeTab === 'sigaa' && (sigaaMatricula || sigaaSenha)) {
+    if (activeTab === 'sigaa' && (sigaaMatricula || sigaaSenha) && !sigaaSaved) {
       if (!sigaaMatricula.trim()) {
         setFormError('Informe sua matrícula do SIGAA.');
         return;
@@ -105,9 +132,18 @@ export const CredentialsScreen: React.FC<CredentialsScreenProps> = ({
         setFormError('Informe sua senha do SIGAA.');
         return;
       }
-      const ok = await saveSigaa({ matricula: sigaaMatricula.trim(), senha: sigaaSenha });
-      if (!ok) return;
-    } else if (activeTab === 'aprender3' && (aprenderCpf || aprenderSenha)) {
+      setIsVerifying(true);
+      try {
+        const res = await saveSigaa({ matricula: sigaaMatricula.trim(), senha: sigaaSenha });
+        if (!res.success) {
+          setFormError(res.error || 'Falha ao autenticar no SIGAA.');
+          return;
+        }
+        setSigaaSaved(true);
+      } finally {
+        setIsVerifying(false);
+      }
+    } else if (activeTab === 'aprender3' && (aprenderCpf || aprenderSenha) && !aprenderSaved) {
       if (!aprenderCpf.trim()) {
         setFormError('Informe seu CPF do Aprender 3.');
         return;
@@ -116,8 +152,17 @@ export const CredentialsScreen: React.FC<CredentialsScreenProps> = ({
         setFormError('Informe sua senha do Aprender 3.');
         return;
       }
-      const ok = await saveAprender3({ cpf: aprenderCpf.trim(), senha: aprenderSenha });
-      if (!ok) return;
+      setIsVerifying(true);
+      try {
+        const res = await saveAprender3({ cpf: aprenderCpf.trim(), senha: aprenderSenha });
+        if (!res.success) {
+          setFormError(res.error || 'Falha ao autenticar no Aprender 3.');
+          return;
+        }
+        setAprenderSaved(true);
+      } finally {
+        setIsVerifying(false);
+      }
     } else if (activeTab === 'teams' && teamsConnected) {
       await saveTeams({ isConnected: true, email: teamsEmail.trim() || 'aluno@aluno.unb.br' });
     }
@@ -222,17 +267,31 @@ export const CredentialsScreen: React.FC<CredentialsScreenProps> = ({
                   label="Matrícula SIGAA"
                   placeholder="Ex: 202012345"
                   value={sigaaMatricula}
-                  onChange={(e) => setSigaaMatricula(e.target.value)}
-                  disabled={isLoading}
+                  onChange={(e) => {
+                    setSigaaMatricula(e.target.value);
+                    setSigaaSaved(false);
+                    setSigaaSuccessMsg(null);
+                  }}
+                  disabled={isLoading || isVerifying}
                 />
                 <Input
                   type="password"
                   label="Senha SIGAA"
                   placeholder="Senha do SIGAA"
                   value={sigaaSenha}
-                  onChange={(e) => setSigaaSenha(e.target.value)}
-                  disabled={isLoading}
+                  onChange={(e) => {
+                    setSigaaSenha(e.target.value);
+                    setSigaaSaved(false);
+                    setSigaaSuccessMsg(null);
+                  }}
+                  disabled={isLoading || isVerifying}
                 />
+                {sigaaSaved && sigaaSuccessMsg ? (
+                  <div className="p-3 bg-neo-green/20 text-black border-2 border-black rounded-lg shadow-[2px_2px_0px_0px_#000] text-xs font-bold flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-ink-success stroke-[2.5] shrink-0" />
+                    <span>{sigaaSuccessMsg}</span>
+                  </div>
+                ) : null}
               </div>
             )}
 
@@ -245,17 +304,31 @@ export const CredentialsScreen: React.FC<CredentialsScreenProps> = ({
                   label="CPF (somente números ou formatado)"
                   placeholder="Ex: 000.000.000-00"
                   value={aprenderCpf}
-                  onChange={(e) => setAprenderCpf(e.target.value)}
-                  disabled={isLoading}
+                  onChange={(e) => {
+                    setAprenderCpf(e.target.value);
+                    setAprenderSaved(false);
+                    setAprenderSuccessMsg(null);
+                  }}
+                  disabled={isLoading || isVerifying}
                 />
                 <Input
                   type="password"
                   label="Senha do Aprender 3"
                   placeholder="Senha do Aprender 3"
                   value={aprenderSenha}
-                  onChange={(e) => setAprenderSenha(e.target.value)}
-                  disabled={isLoading}
+                  onChange={(e) => {
+                    setAprenderSenha(e.target.value);
+                    setAprenderSaved(false);
+                    setAprenderSuccessMsg(null);
+                  }}
+                  disabled={isLoading || isVerifying}
                 />
+                {aprenderSaved && aprenderSuccessMsg ? (
+                  <div className="p-3 bg-neo-green/20 text-black border-2 border-black rounded-lg shadow-[2px_2px_0px_0px_#000] text-xs font-bold flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-ink-success stroke-[2.5] shrink-0" />
+                    <span>{aprenderSuccessMsg}</span>
+                  </div>
+                ) : null}
               </div>
             )}
 
@@ -272,7 +345,7 @@ export const CredentialsScreen: React.FC<CredentialsScreenProps> = ({
                   placeholder="Ex: aluno@aluno.unb.br"
                   value={teamsEmail}
                   onChange={(e) => setTeamsEmail(e.target.value)}
-                  disabled={isLoading}
+                  disabled={isLoading || isVerifying}
                 />
                 <div className="pt-1">
                   <Button
@@ -299,10 +372,16 @@ export const CredentialsScreen: React.FC<CredentialsScreenProps> = ({
                   type="button"
                   variant="primary"
                   size="md"
+                  isLoading={isVerifying}
+                  disabled={isVerifying || isLoading}
                   onClick={handleSaveCurrentPlatform}
                 >
                   <CheckCircle2 className="w-3.5 h-3.5 stroke-[2.5]" />
-                  <span>Salvar {platforms.find((p) => p.id === activeTab)?.name}</span>
+                  <span>
+                    {isVerifying
+                      ? 'Validando conexão...'
+                      : `Salvar e Conectar ${platforms.find((p) => p.id === activeTab)?.name}`}
+                  </span>
                 </Button>
               </div>
             ) : null}
@@ -325,7 +404,8 @@ export const CredentialsScreen: React.FC<CredentialsScreenProps> = ({
               type="button"
               variant="default"
               size="lg"
-              isLoading={isLoading}
+              isLoading={isLoading || isVerifying}
+              disabled={isVerifying || isLoading}
               onClick={handleFinish}
               className="w-full text-base"
             >

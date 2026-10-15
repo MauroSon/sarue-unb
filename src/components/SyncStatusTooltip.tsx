@@ -1,0 +1,138 @@
+import React from 'react';
+import {
+  CheckCircle2,
+  AlertCircle,
+  MinusCircle,
+  Loader2,
+  BookOpen,
+  GraduationCap,
+  Globe,
+  School,
+  Clock,
+} from 'lucide-react';
+import type { SyncStepInfo, SyncStepStatus } from '../context/SyncContext';
+
+interface SyncStatusTooltipProps {
+  steps: Record<'sigaa' | 'aprender3' | 'myCourse' | 'ghPages', SyncStepInfo>;
+  isSyncing: boolean;
+  lastSyncedAt: string | null;
+}
+
+const STEP_ICONS = {
+  sigaa: School,
+  aprender3: BookOpen,
+  myCourse: GraduationCap,
+  ghPages: Globe,
+};
+
+function StatusIndicator({ status }: { status: SyncStepStatus }) {
+  switch (status) {
+    case 'syncing':
+      return <Loader2 className="w-3.5 h-3.5 animate-spin text-neo-blue shrink-0" />;
+    case 'success':
+      return <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />;
+    case 'error':
+      return <AlertCircle className="w-3.5 h-3.5 text-rose-600 shrink-0" />;
+    case 'skipped':
+      return <MinusCircle className="w-3.5 h-3.5 text-neutral-400 shrink-0" />;
+    case 'idle':
+    default:
+      return <div className="w-2 h-2 rounded-full bg-neutral-300 ml-0.5 mr-1 shrink-0" />;
+  }
+}
+
+function formatRelativeTime(isoString: string | null): string {
+  if (!isoString) return 'Nunca sincronizado';
+  try {
+    const date = new Date(isoString);
+    if (Number.isNaN(date.getTime())) return 'Nunca sincronizado';
+
+    return date.toLocaleTimeString('pt-BR', {
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+    });
+  } catch {
+    return 'Nunca sincronizado';
+  }
+}
+
+export const SyncStatusTooltip: React.FC<SyncStatusTooltipProps> = ({
+  steps,
+  isSyncing,
+  lastSyncedAt,
+}) => {
+  const stepList = [steps.sigaa, steps.aprender3, steps.myCourse, steps.ghPages];
+
+  return (
+    <div className="w-80 p-3 space-y-3 bg-white text-black select-none">
+      {/* Cabeçalho */}
+      <div className="flex items-center justify-between border-b-2 border-black pb-2">
+        <div className="flex items-center gap-1.5 font-black text-xs uppercase tracking-wider">
+          <span>Status da Sincronização</span>
+        </div>
+        <span
+          className={`text-[10px] font-bold px-2 py-0.5 rounded-full border border-black ${
+            isSyncing
+              ? 'bg-amber-300 text-black animate-pulse'
+              : 'bg-emerald-200 text-emerald-950'
+          }`}
+        >
+          {isSyncing ? 'Sincronizando...' : 'Concluído'}
+        </span>
+      </div>
+
+      {/* Lista das 4 sincronizações */}
+      <div className="space-y-2">
+        {stepList.map((step) => {
+          const Icon = STEP_ICONS[step.id];
+
+          return (
+            <div
+              key={step.id}
+              className="p-2 rounded-lg border border-black/15 bg-neutral-50/80 hover:bg-neutral-100/80 transition-colors flex items-start gap-2.5"
+            >
+              <div className="p-1 rounded bg-white border border-black/20 shrink-0 mt-0.5">
+                <Icon className="w-3.5 h-3.5 text-neutral-700" />
+              </div>
+
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between gap-1">
+                  <span className="font-bold text-xs text-neutral-900 truncate">
+                    {step.label}
+                  </span>
+                  <StatusIndicator status={step.status} />
+                </div>
+
+                <p
+                  className={`text-[11px] leading-snug mt-0.5 line-clamp-2 ${
+                    step.status === 'error'
+                      ? 'text-rose-600 font-semibold'
+                      : step.status === 'success'
+                      ? 'text-emerald-700 font-medium'
+                      : step.status === 'syncing'
+                      ? 'text-neo-blue font-medium'
+                      : 'text-neutral-500'
+                  }`}
+                >
+                  {step.message || step.sublabel}
+                </p>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Rodapé com timestamp */}
+      <div className="pt-2 border-t border-black/10 flex items-center justify-between text-[10px] text-neutral-500 font-semibold">
+        <span className="flex items-center gap-1">
+          <Clock className="w-3 h-3 text-neutral-400" />
+          <span>Última sincronização:</span>
+        </span>
+        <span className="text-neutral-700 font-bold">
+          {formatRelativeTime(lastSyncedAt)}
+        </span>
+      </div>
+    </div>
+  );
+};

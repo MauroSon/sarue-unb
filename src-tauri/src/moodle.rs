@@ -1,4 +1,5 @@
 use crate::models::{Course, FeedItem, FeedItemType, PlatformType};
+use chrono::TimeZone;
 use regex::Regex;
 use reqwest::Client;
 use scraper::{Html, Selector};
@@ -161,36 +162,148 @@ impl MoodleClient {
             }
         }
 
-        // 5. Coleta de tarefas e prazos via calendário Moodle
-        let mut feed_items = Vec::new();
+        // 5. Coleta de eventos de ação do calendário Moodle (limite estrito de 50 pelo Moodle 4.5)
+        let mut calendar_feed_items = Vec::new();
+        let now_epoch = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .map(|d| d.as_secs() as i64)
+            .unwrap_or(0);
+
+        let cal_methods = vec![
+            serde_json::json!({
+                "index": 0,
+                "methodname": "core_calendar_get_action_events_by_timesort",
+                "args": {
+                    "timesortfrom": 1,
+                    "timesortto": now_epoch,
+                    "limitnum": 50,
+                    "limittononsuspendedevents": true
+                }
+            }),
+            serde_json::json!({
+                "index": 1,
+                "methodname": "core_calendar_get_action_events_by_timesort",
+                "args": {
+                    "timesortfrom": now_epoch,
+                    "timesortto": now_epoch + (180 * 86400),
+                    "limitnum": 50,
+                    "limittononsuspendedevents": true
+                }
+            }),
+        ];
+
         let calendar_url = format!(
             "{}/lib/ajax/service.php?sesskey={}&info=core_calendar_get_action_events_by_timesort",
             base_url, sesskey
         );
 
-        let cal_body = serde_json::json!([
-            {
-                "index": 0,
-                "methodname": "core_calendar_get_action_events_by_timesort",
-                "args": {
-                    "timesortfrom": 0,
-                    "limitnum": 200
-                }
-            }
-        ]);
-
         if let Ok(cal_res) = self
             ._client
             .post(&calendar_url)
-            .json(&cal_body)
+            .json(&cal_methods)
             .header("Referer", &courses_url)
             .send()
             .await
         {
-            if let Ok(cal_json) = cal_res.json::<Value>().await {
-                feed_items = parse_moodle_calendar_events(&cal_json);
+            if let Ok(body_text) = cal_res.text().await {
+                if let Ok(json_val) = serde_json::from_str::<Value>(&body_text) {
+                    calendar_feed_items = parse_moodle_calendar_events_with_now(&json_val, now_epoch);
+                }
             }
         }
+
+        // Se o WebService de calendário falhou ou retornou vazio, tenta o fallback HTML do calendário
+        if calendar_feed_items.is_empty() {
+            let upcoming_url = format!("{}/calendar/view.php?view=upcoming", base_url);
+            if let Ok(up_res) = self
+                ._client
+                .get(&upcoming_url)
+                .header("Referer", &courses_url)
+                .send()
+                .await
+            {
+                if let Ok(up_html) = up_res.text().await {
+                    let scraped_events = scrape_calendar_html(&up_html, now_epoch);
+                    if !scraped_events.is_empty() {
+                        calendar_feed_items = scraped_events;
+                    }
+                }
+            }
+        }
+
+        // 6. Raspagem completa de todas as atividades diretamente das páginas das turmas (course/view.php)
+        // Isso descobre todas as tarefas, questionários, trabalhos e testes (passados e futuros),
+        // garantindo a inclusão das atividades que não geraram evento de ação no calendário do Moodle.
+        let mut course_module_items = Vec::new();
+        for course in &courses {
+            let cid = match course.id.strip_prefix("aprender-") {
+                Some(id) => id,
+                None => continue,
+            };
+            let c_url = format!("{}/course/view.php?id={}", base_url, cid);
+            if let Ok(c_res) = self
+                ._client
+                .get(&c_url)
+                .header("Referer", &courses_url)
+                .send()
+                .await
+            {
+                if let Ok(c_html) = c_res.text().await {
+                    let mut items = scrape_course_modules_html(&c_html, course, now_epoch);
+                    course_module_items.append(&mut items);
+                }
+            }
+        }
+
+        // 7. Para atividades com prazo futuro pendentes, verifica se já foram enviadas pelo aluno
+        for item in &mut course_module_items {
+            if item.is_completed == Some(false) {
+                if let Some(ref url) = item.external_url {
+                    if let Ok(res) = self._client.get(url).send().await {
+                        if let Ok(html) = res.text().await {
+                            if is_activity_page_submitted(&html) {
+                                item.is_completed = Some(true);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // 8. Mescla os itens das turmas com os eventos de calendário, evitando duplicatas por URL ou ID de módulo
+        let mut seen_mod_urls = HashSet::new();
+        let cmid_re = Regex::new(r"[?&]id=(\d+)").unwrap();
+        let mut seen_cmids = HashSet::new();
+
+        for item in &course_module_items {
+            if let Some(ref u) = item.external_url {
+                seen_mod_urls.insert(u.clone());
+                if let Some(cap) = cmid_re.captures(u) {
+                    seen_cmids.insert(cap[1].to_string());
+                }
+            }
+        }
+
+        let mut feed_items = course_module_items;
+
+        for cal_item in calendar_feed_items {
+            let is_duplicate = if let Some(ref u) = cal_item.external_url {
+                seen_mod_urls.contains(u) || cmid_re.captures(u).map(|c| seen_cmids.contains(&c[1])).unwrap_or(false)
+            } else {
+                false
+            };
+
+            if !is_duplicate {
+                feed_items.push(cal_item);
+            }
+        }
+
+        // Ordena por data de entrega (ou criação), mais recentes/próximas primeiro
+        feed_items.sort_by(|a, b| {
+            let key_a = a.due_date.as_deref().unwrap_or(&a.created_at);
+            let key_b = b.due_date.as_deref().unwrap_or(&b.created_at);
+            key_b.cmp(key_a)
+        });
 
         // Atualiza a contagem de tarefas pendentes em cada turma (apenas não concluídas)
         for course in &mut courses {
@@ -198,9 +311,13 @@ impl MoodleClient {
                 .iter()
                 .filter(|item| {
                     let matches_course = if let Some(code) = &item.course_code {
-                        code.to_lowercase().contains(&course.code.to_lowercase())
+                        let c_code = code.to_lowercase();
+                        let target_code = course.code.to_lowercase();
+                        !c_code.is_empty() && (target_code.contains(&c_code) || c_code.contains(&target_code))
                     } else {
-                        item.course_name.to_lowercase().contains(&course.name.to_lowercase())
+                        let c_name = item.course_name.to_lowercase();
+                        let target_name = course.name.to_lowercase();
+                        target_name.contains(&c_name) || c_name.contains(&target_name)
                     };
                     matches_course && item.is_completed != Some(true)
                 })
@@ -410,122 +527,672 @@ pub fn parse_moodle_calendar_events(json_val: &Value) -> Vec<FeedItem> {
 
 pub fn parse_moodle_calendar_events_with_now(json_val: &Value, now_epoch: i64) -> Vec<FeedItem> {
     let mut items = Vec::new();
-    let events_arr = match json_val
-        .get(0)
-        .and_then(|root| root.get("data"))
-        .and_then(|data| data.get("events"))
-        .and_then(|e| e.as_array())
-    {
-        Some(arr) => arr,
-        None => return items,
-    };
+    let mut seen_ids = HashSet::new();
+    let mut seen_urls = HashSet::new();
 
     let tag_strip = Regex::new(r"<[^>]+>").unwrap();
+    let code_regex = Regex::new(r"\b([A-Z]{3}\d{4})\b").unwrap();
 
-    for ev in events_arr {
-        let id = match ev.get("id") {
-            Some(Value::Number(n)) => n.to_string(),
-            Some(Value::String(s)) => s.clone(),
-            _ => continue,
-        };
+    // Normaliza json_val para um slice de respostas a processar
+    let raw_slices: Vec<&Value> = if let Some(arr) = json_val.as_array() {
+        arr.iter().collect()
+    } else {
+        vec![json_val]
+    };
 
-        let title = ev
-            .get("name")
-            .and_then(|s| s.as_str())
-            .unwrap_or("Atividade")
-            .to_string();
-        let raw_desc = ev.get("description").and_then(|s| s.as_str()).unwrap_or("");
-        let content = tag_strip.replace_all(raw_desc, " ").trim().to_string();
-        let final_content = if content.is_empty() {
-            title.clone()
-        } else {
-            content
-        };
+    for root in raw_slices {
+        // Se este item retornou erro da API, loga e pula para os outros
+        if let Some(err) = root.get("error").and_then(|e| e.as_bool()) {
+            if err {
+                let msg = root
+                    .get("message")
+                    .and_then(|m| m.as_str())
+                    .unwrap_or("Erro retornado pelo WebService do Aprender 3");
+                log::warn!("Aprender 3 WebService error: {}", msg);
+                continue;
+            }
+        }
 
-        let course_name = ev
-            .get("course")
-            .and_then(|c| c.get("fullname"))
-            .and_then(|s| s.as_str())
-            .unwrap_or("Aprender 3")
-            .to_string();
+        // 1. Processa eventos de calendário (core_calendar_get_action_events_by_timesort)
+        let events_opt = root
+            .get("data")
+            .and_then(|d| d.get("events"))
+            .and_then(|e| e.as_array())
+            .or_else(|| root.get("events").and_then(|e| e.as_array()));
 
-        let code_regex = Regex::new(r"\b([A-Z]{3}\d{4})\b").unwrap();
-        let course_code = ev
-            .get("course")
-            .and_then(|c| c.get("shortname"))
-            .and_then(|s| s.as_str())
+        if let Some(events_arr) = events_opt {
+            for ev in events_arr {
+                let id = match ev.get("id") {
+                    Some(Value::Number(n)) => n.to_string(),
+                    Some(Value::String(s)) => s.clone(),
+                    _ => continue,
+                };
+
+                let item_id = format!("aprender-event-{}", id);
+                if seen_ids.contains(&item_id) {
+                    continue;
+                }
+
+                let title = ev
+                    .get("name")
+                    .and_then(|s| s.as_str())
+                    .unwrap_or("Atividade")
+                    .to_string();
+
+                let raw_desc = ev.get("description").and_then(|s| s.as_str()).unwrap_or("");
+                let content = tag_strip.replace_all(raw_desc, " ").trim().to_string();
+                let final_content = if content.is_empty() {
+                    title.clone()
+                } else {
+                    content
+                };
+
+                let course_name = ev
+                    .get("course")
+                    .and_then(|c| c.get("fullname"))
+                    .and_then(|s| s.as_str())
+                    .unwrap_or("Aprender 3")
+                    .to_string();
+
+                let course_code = ev
+                    .get("course")
+                    .and_then(|c| c.get("shortname"))
+                    .and_then(|s| s.as_str())
+                    .map(|s| s.to_string())
+                    .or_else(|| {
+                        code_regex.captures(&course_name).map(|cap| cap[1].to_string())
+                    })
+                    .or_else(|| Some("A3".to_string()));
+
+                let raw_url = ev
+                    .get("action")
+                    .and_then(|a| a.get("url"))
+                    .and_then(|s| s.as_str())
+                    .or_else(|| ev.get("url").and_then(|s| s.as_str()));
+
+                let url = raw_url.map(|u| {
+                    if u.starts_with("http") {
+                        u.to_string()
+                    } else {
+                        format!("https://aprender3.unb.br{}", u)
+                    }
+                });
+
+                let timesort = ev
+                    .get("timesort")
+                    .and_then(|t| t.as_i64())
+                    .or_else(|| ev.get("timestart").and_then(|t| t.as_i64()))
+                    .unwrap_or(0);
+
+                let due_date_iso = if timesort > 0 {
+                    Some(format_epoch_iso(timesort))
+                } else {
+                    None
+                };
+
+                let created_at_iso = format_epoch_iso(
+                    ev.get("timecreated")
+                        .and_then(|t| t.as_i64())
+                        .unwrap_or_else(|| timesort.saturating_sub(86400)),
+                );
+
+                // 1. Prazo já expirado no passado (atividades antigas) -> concluída
+                let is_past_due = timesort > 0 && timesort < now_epoch;
+
+                // 2. Ação já enviada ou não requer mais envio pelo aluno
+                let is_submitted = if let Some(action) = ev.get("action") {
+                    let actionable = action.get("actionable").and_then(|a| a.as_bool()).unwrap_or(true);
+                    let name = action.get("name").and_then(|n| n.as_str()).unwrap_or("");
+                    let itemcount = action.get("itemcount").and_then(|c| c.as_i64()).unwrap_or(1);
+
+                    !actionable
+                        || itemcount == 0
+                        || name.contains("Editar envio")
+                        || name.contains("Ver envio")
+                        || name.contains("Remover envio")
+                        || name.contains("Enviado")
+                        || name.contains("Visualizar")
+                        || name.contains("Revisão")
+                        || name.contains("Terminado")
+                        || name.contains("Concluído")
+                        || name.contains("Avaliado")
+                } else {
+                    false
+                };
+
+                let is_completed = is_past_due || is_submitted;
+
+                if let Some(ref u) = url {
+                    seen_urls.insert(u.clone());
+                }
+                seen_ids.insert(item_id.clone());
+
+                items.push(FeedItem {
+                    id: item_id,
+                    platform: PlatformType::Aprender3,
+                    title,
+                    content: final_content,
+                    course_name,
+                    course_code,
+                    author: None,
+                    item_type: FeedItemType::Assignment,
+                    created_at: created_at_iso,
+                    due_date: due_date_iso,
+                    is_completed: Some(is_completed),
+                    external_url: url,
+                });
+            }
+        }
+
+        // 2. Processa tarefas de turmas (mod_assign_get_assignments)
+        let courses_arr_opt = root
+            .get("data")
+            .and_then(|d| d.get("courses"))
+            .and_then(|c| c.as_array())
+            .or_else(|| root.get("courses").and_then(|c| c.as_array()));
+
+        if let Some(courses_arr) = courses_arr_opt {
+            for c_obj in courses_arr {
+                let c_fullname = c_obj
+                    .get("fullname")
+                    .and_then(|s| s.as_str())
+                    .unwrap_or("Aprender 3")
+                    .to_string();
+
+                let c_code = c_obj
+                    .get("shortname")
+                    .and_then(|s| s.as_str())
+                    .map(|s| s.to_string())
+                    .or_else(|| code_regex.captures(&c_fullname).map(|cap| cap[1].to_string()))
+                    .or_else(|| Some("A3".to_string()));
+
+                if let Some(assignments) = c_obj.get("assignments").and_then(|a| a.as_array()) {
+                    for assign in assignments {
+                        let assign_id = match assign.get("id") {
+                            Some(Value::Number(n)) => n.to_string(),
+                            Some(Value::String(s)) => s.clone(),
+                            _ => continue,
+                        };
+
+                        let cmid = assign.get("cmid").and_then(|v| v.as_i64()).unwrap_or(0);
+                        let item_id = format!("aprender-assign-{}", assign_id);
+
+                        let assign_url = if cmid > 0 {
+                            format!("https://aprender3.unb.br/mod/assign/view.php?id={}", cmid)
+                        } else {
+                            format!("https://aprender3.unb.br/mod/assign/view.php?id={}", assign_id)
+                        };
+
+                        // Evita duplicatas se o evento já veio via calendário
+                        if seen_ids.contains(&item_id) || seen_urls.contains(&assign_url) {
+                            continue;
+                        }
+
+                        let assign_name = assign
+                            .get("name")
+                            .and_then(|s| s.as_str())
+                            .unwrap_or("Tarefa")
+                            .to_string();
+
+                        let raw_intro = assign.get("intro").and_then(|s| s.as_str()).unwrap_or("");
+                        let intro_clean = tag_strip.replace_all(raw_intro, " ").trim().to_string();
+                        let content = if intro_clean.is_empty() {
+                            assign_name.clone()
+                        } else {
+                            intro_clean
+                        };
+
+                        let duedate = assign.get("duedate").and_then(|d| d.as_i64()).unwrap_or(0);
+                        let cutoffdate = assign.get("cutoffdate").and_then(|d| d.as_i64()).unwrap_or(0);
+                        let timemodified = assign.get("timemodified").and_then(|d| d.as_i64()).unwrap_or(0);
+
+                        let due_date_iso = if duedate > 0 {
+                            Some(format_epoch_iso(duedate))
+                        } else {
+                            None
+                        };
+
+                        let created_at_iso = if timemodified > 0 {
+                            format_epoch_iso(timemodified)
+                        } else if duedate > 0 {
+                            format_epoch_iso(duedate.saturating_sub(86400 * 7))
+                        } else {
+                            format_epoch_iso(now_epoch)
+                        };
+
+                        // Se a data de entrega ou data de corte já passou, está concluída
+                        let is_past_due = (duedate > 0 && duedate < now_epoch)
+                            || (cutoffdate > 0 && cutoffdate < now_epoch);
+
+                        seen_ids.insert(item_id.clone());
+                        seen_urls.insert(assign_url.clone());
+
+                        items.push(FeedItem {
+                            id: item_id,
+                            platform: PlatformType::Aprender3,
+                            title: assign_name,
+                            content,
+                            course_name: c_fullname.clone(),
+                            course_code: c_code.clone(),
+                            author: None,
+                            item_type: FeedItemType::Assignment,
+                            created_at: created_at_iso,
+                            due_date: due_date_iso,
+                            is_completed: Some(is_past_due),
+                            external_url: Some(assign_url),
+                        });
+                    }
+                }
+            }
+        }
+    }
+
+    items
+}
+
+pub fn scrape_calendar_html(html: &str, now_epoch: i64) -> Vec<FeedItem> {
+    let mut items = Vec::new();
+    let mut seen_ids = HashSet::new();
+
+    let document = Html::parse_document(html);
+    let event_sel = match Selector::parse("div.event[data-event-id], div[data-type='event'], .calendar-event-box") {
+        Ok(s) => s,
+        Err(_) => return items,
+    };
+    let name_sel = Selector::parse("h3.name a, .name a, h3.name, .card-title a, .card-title").ok();
+    let course_sel = Selector::parse(".course a, .card-header, .description a[href*='course/view.php']").ok();
+    let desc_sel = Selector::parse(".description, .card-body").ok();
+    let date_sel = Selector::parse(".date, .date a").ok();
+    let code_re = Regex::new(r"\b([A-Z]{3}\d{4})\b").unwrap();
+
+    for element in document.select(&event_sel) {
+        let event_id = element
+            .value()
+            .attr("data-event-id")
             .map(|s| s.to_string())
-            .or_else(|| {
-                code_regex.captures(&course_name).map(|cap| cap[1].to_string())
-            })
+            .unwrap_or_else(|| {
+                element
+                    .value()
+                    .attr("id")
+                    .map(|s| s.replace("event_", ""))
+                    .unwrap_or_else(|| format!("{}", items.len() + 1))
+            });
+
+        let item_id = format!("aprender-html-event-{}", event_id);
+        if seen_ids.contains(&item_id) {
+            continue;
+        }
+
+        let (title, raw_url) = if let Some(ref sel) = name_sel {
+            if let Some(el) = element.select(sel).next() {
+                let t = el.text().collect::<Vec<_>>().join(" ").trim().to_string();
+                let u = el.value().attr("href").map(|h| h.to_string());
+                (t, u)
+            } else {
+                ("Atividade".to_string(), None)
+            }
+        } else {
+            ("Atividade".to_string(), None)
+        };
+
+        if title.is_empty() {
+            continue;
+        }
+
+        let course_name = if let Some(ref sel) = course_sel {
+            element
+                .select(sel)
+                .next()
+                .map(|el| el.text().collect::<Vec<_>>().join(" ").trim().to_string())
+                .unwrap_or_else(|| "Aprender 3".to_string())
+        } else {
+            "Aprender 3".to_string()
+        };
+
+        let course_code = code_re
+            .captures(&course_name)
+            .map(|c| c[1].to_string())
             .or_else(|| Some("A3".to_string()));
 
-        let raw_url = ev
-            .get("action")
-            .and_then(|a| a.get("url"))
-            .and_then(|s| s.as_str())
-            .or_else(|| ev.get("url").and_then(|s| s.as_str()));
+        let desc = if let Some(ref sel) = desc_sel {
+            element
+                .select(sel)
+                .next()
+                .map(|el| el.text().collect::<Vec<_>>().join(" ").trim().to_string())
+                .unwrap_or_else(|| title.clone())
+        } else {
+            title.clone()
+        };
+
+        let date_text = if let Some(ref sel) = date_sel {
+            element
+                .select(sel)
+                .next()
+                .map(|el| el.text().collect::<Vec<_>>().join(" ").trim().to_string())
+                .unwrap_or_default()
+        } else {
+            String::new()
+        };
 
         let url = raw_url.map(|u| {
             if u.starts_with("http") {
-                u.to_string()
+                u
             } else {
                 format!("https://aprender3.unb.br{}", u)
             }
         });
 
-        let timesort = ev
-            .get("timesort")
-            .and_then(|t| t.as_i64())
-            .or_else(|| ev.get("timestart").and_then(|t| t.as_i64()))
-            .unwrap_or(0);
+        let parsed_due_epoch = parse_moodle_date_to_epoch(&date_text, 2026);
+        let due_date_iso = parsed_due_epoch.map(format_epoch_iso);
+        let is_completed = parsed_due_epoch.map(|ep| ep < now_epoch).unwrap_or(false);
 
-        let due_date_iso = if timesort > 0 {
-            Some(format_epoch_iso(timesort))
+        seen_ids.insert(item_id.clone());
+
+        items.push(FeedItem {
+            id: item_id,
+            platform: PlatformType::Aprender3,
+            title,
+            content: if desc.is_empty() { date_text } else { desc },
+            course_name,
+            course_code,
+            author: None,
+            item_type: FeedItemType::Assignment,
+            created_at: format_epoch_iso(now_epoch),
+            due_date: due_date_iso,
+            is_completed: Some(is_completed),
+            external_url: url,
+        });
+    }
+
+    items
+}
+
+pub fn parse_moodle_date_to_epoch(text: &str, fallback_year: i32) -> Option<i64> {
+    let month_num = |m: &str| -> Option<u32> {
+        let clean = m.trim().trim_end_matches('.').to_lowercase();
+        match clean.as_str() {
+            "jan" | "janeiro" => Some(1),
+            "fev" | "fevereiro" => Some(2),
+            "mar" | "março" | "marco" => Some(3),
+            "abr" | "abril" => Some(4),
+            "mai" | "maio" => Some(5),
+            "jun" | "junho" => Some(6),
+            "jul" | "julho" => Some(7),
+            "ago" | "agosto" => Some(8),
+            "set" | "setembro" => Some(9),
+            "out" | "outubro" => Some(10),
+            "nov" | "novembro" => Some(11),
+            "dez" | "dezembro" => Some(12),
+            _ => None,
+        }
+    };
+
+    // Formato 1: "1 out. 2026, 23:50" ou "quinta-feira, 1 out. 2026, 23:50" ou "18 out. 2026, 23:59"
+    let re_with_year = Regex::new(r"(\d{1,2})\s+([a-zA-ZçÇáéíóúâêôãõ]+)\.?\s+(\d{4}),?\s*(\d{1,2}):(\d{2})").ok()?;
+    if let Some(cap) = re_with_year.captures(text) {
+        let day: u32 = cap[1].parse().ok()?;
+        let month = month_num(&cap[2])?;
+        let year: i32 = cap[3].parse().ok()?;
+        let hour: u32 = cap[4].parse().ok()?;
+        let min: u32 = cap[5].parse().ok()?;
+
+        let naive_date = chrono::NaiveDate::from_ymd_opt(year, month, day)?;
+        let naive_time = chrono::NaiveTime::from_hms_opt(hour, min, 0)?;
+        let naive_dt = chrono::NaiveDateTime::new(naive_date, naive_time);
+        let offset = chrono::FixedOffset::west_opt(3 * 3600)?;
+        let dt = offset.from_local_datetime(&naive_dt).single()?;
+        return Some(dt.timestamp());
+    }
+
+    // Formato 2: "20 outubro, 23:59" (sem ano explícito)
+    let re_no_year = Regex::new(r"(\d{1,2})\s+([a-zA-ZçÇáéíóúâêôãõ]+)\.?,?\s*(\d{1,2}):(\d{2})").ok()?;
+    if let Some(cap) = re_no_year.captures(text) {
+        let day: u32 = cap[1].parse().ok()?;
+        let month = month_num(&cap[2])?;
+        let year = fallback_year;
+        let hour: u32 = cap[3].parse().ok()?;
+        let min: u32 = cap[4].parse().ok()?;
+
+        let naive_date = chrono::NaiveDate::from_ymd_opt(year, month, day)?;
+        let naive_time = chrono::NaiveTime::from_hms_opt(hour, min, 0)?;
+        let naive_dt = chrono::NaiveDateTime::new(naive_date, naive_time);
+        let offset = chrono::FixedOffset::west_opt(3 * 3600)?;
+        let dt = offset.from_local_datetime(&naive_dt).single()?;
+        return Some(dt.timestamp());
+    }
+
+    // Formato 3: "18/10/2026, 23:59" ou "18/10/2026 23:59"
+    let re_slash = Regex::new(r"(\d{1,2})/(\d{1,2})/(\d{4})[,\s]+(\d{1,2}):(\d{2})").ok()?;
+    if let Some(cap) = re_slash.captures(text) {
+        let day: u32 = cap[1].parse().ok()?;
+        let month: u32 = cap[2].parse().ok()?;
+        let year: i32 = cap[3].parse().ok()?;
+        let hour: u32 = cap[4].parse().ok()?;
+        let min: u32 = cap[5].parse().ok()?;
+
+        let naive_date = chrono::NaiveDate::from_ymd_opt(year, month, day)?;
+        let naive_time = chrono::NaiveTime::from_hms_opt(hour, min, 0)?;
+        let naive_dt = chrono::NaiveDateTime::new(naive_date, naive_time);
+        let offset = chrono::FixedOffset::west_opt(3 * 3600)?;
+        let dt = offset.from_local_datetime(&naive_dt).single()?;
+        return Some(dt.timestamp());
+    }
+
+    None
+}
+
+pub fn is_activity_page_submitted(html: &str) -> bool {
+    let lower = html.to_lowercase();
+    lower.contains("enviado para avaliação")
+        || lower.contains("enviado para avaliacao")
+        || lower.contains("envios de arquivo")
+        || lower.contains("tarefa enviada")
+        || lower.contains("situação finalizada")
+        || lower.contains("situacao finalizada")
+        || lower.contains("tentativa finalizada")
+        || lower.contains("status: finalizada")
+        || (lower.contains("resumo da tentativa") && lower.contains("finalizada"))
+}
+
+pub fn scrape_course_modules_html(
+    html: &str,
+    course: &Course,
+    now_epoch: i64,
+) -> Vec<FeedItem> {
+    let mut items = Vec::new();
+    let mut seen_ids = HashSet::new();
+
+    let document = Html::parse_document(html);
+    let activity_sel = match Selector::parse("li.activity") {
+        Ok(s) => s,
+        Err(_) => return items,
+    };
+    let activity_item_sel = Selector::parse(".activity-item").ok();
+    let instance_sel = Selector::parse(".instancename").ok();
+    let link_sel = Selector::parse("a.stretched-link, a[href*='/mod/']").ok();
+    let dates_sel = Selector::parse("[data-region='activity-dates']").ok();
+    let completion_sel = Selector::parse("[data-region='completion-info']").ok();
+
+    let fallback_year = course
+        .semester
+        .split('.')
+        .next()
+        .and_then(|y| y.parse::<i32>().ok())
+        .unwrap_or(2026);
+
+    for element in document.select(&activity_sel) {
+        let class_attr = element.value().attr("class").unwrap_or("");
+
+        let modtype = if class_attr.contains("modtype_assign") {
+            "assign"
+        } else if class_attr.contains("modtype_quiz") {
+            "quiz"
+        } else if class_attr.contains("modtype_workshop") {
+            "workshop"
+        } else if class_attr.contains("modtype_choice") {
+            "choice"
         } else {
-            None
+            continue;
         };
 
-        let created_at_iso = format_epoch_iso(
-            ev.get("timecreated")
-                .and_then(|t| t.as_i64())
-                .unwrap_or_else(|| timesort.saturating_sub(86400)),
-        );
+        let cmid = element
+            .value()
+            .attr("data-id")
+            .map(|s| s.to_string())
+            .or_else(|| {
+                element.value().attr("id").and_then(|id| {
+                    id.strip_prefix("module-").map(|s| s.to_string())
+                })
+            });
 
-        // 1. Prazo já expirado no passado
-        let is_past_due = timesort > 0 && timesort < now_epoch;
+        let cmid = match cmid {
+            Some(id) if !id.is_empty() => id,
+            _ => continue,
+        };
 
-        // 2. Ação já enviada / não requer mais envio pelo aluno
-        let is_submitted = if let Some(action) = ev.get("action") {
-            let actionable = action.get("actionable").and_then(|a| a.as_bool()).unwrap_or(true);
-            let name = action.get("name").and_then(|n| n.as_str()).unwrap_or("");
-            let itemcount = action.get("itemcount").and_then(|c| c.as_i64()).unwrap_or(1);
+        let item_id = format!("aprender-cm-{}", cmid);
+        if seen_ids.contains(&item_id) {
+            continue;
+        }
 
-            !actionable
-                || itemcount == 0
-                || name.contains("Editar envio")
-                || name.contains("Ver envio")
-                || name.contains("Remover envio")
-                || name.contains("Enviado")
+        let title = activity_item_sel
+            .as_ref()
+            .and_then(|sel| element.select(sel).next())
+            .and_then(|el| el.value().attr("data-activityname"))
+            .map(|s| s.trim().to_string())
+            .or_else(|| {
+                instance_sel.as_ref().and_then(|sel| {
+                    element.select(sel).next().map(|el| {
+                        el.text().collect::<Vec<_>>().join(" ").trim().to_string()
+                    })
+                })
+            })
+            .filter(|s| !s.is_empty())
+            .unwrap_or_else(|| match modtype {
+                "assign" => "Tarefa".to_string(),
+                "quiz" => "Questionário".to_string(),
+                "workshop" => "Laboratório de Avaliação".to_string(),
+                "choice" => "Escolha".to_string(),
+                _ => "Atividade".to_string(),
+            });
+
+        let clean_title = title
+            .trim_end_matches(" Tarefa")
+            .trim_end_matches(" Questionário")
+            .trim_end_matches(" Questionario")
+            .trim_end_matches(" Escolha")
+            .trim()
+            .to_string();
+
+        let url = link_sel
+            .as_ref()
+            .and_then(|sel| element.select(sel).next())
+            .and_then(|el| el.value().attr("href"))
+            .map(|h| {
+                if h.starts_with("http") {
+                    h.to_string()
+                } else {
+                    format!("https://aprender3.unb.br{}", h)
+                }
+            })
+            .unwrap_or_else(|| {
+                format!("https://aprender3.unb.br/mod/{}/view.php?id={}", modtype, cmid)
+            });
+
+        let mut due_epoch: Option<i64> = None;
+        let mut raw_due_text = String::new();
+
+        if let Some(ref sel) = dates_sel {
+            if let Some(dates_el) = element.select(sel).next() {
+                let inner_html = dates_el.inner_html();
+                for line in inner_html.split("<div>") {
+                    let clean_line = line.replace("</div>", "");
+                    let lower = clean_line.to_lowercase();
+                    if lower.contains("vencimento")
+                        || lower.contains("fechado")
+                        || lower.contains("fecha")
+                        || lower.contains("encerramento")
+                        || lower.contains("término")
+                        || lower.contains("termino")
+                        || lower.contains("limite")
+                        || lower.contains("prazo")
+                        || lower.contains("due")
+                        || lower.contains("closed")
+                    {
+                        let text: String = Html::parse_fragment(&clean_line)
+                            .root_element()
+                            .text()
+                            .collect::<Vec<_>>()
+                            .join(" ");
+                        if let Some(colon_pos) = text.find(':') {
+                            let candidate = text[colon_pos + 1..].trim();
+                            if let Some(ep) = parse_moodle_date_to_epoch(candidate, fallback_year) {
+                                due_epoch = Some(ep);
+                                raw_due_text = candidate.to_string();
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        let due_date_iso = due_epoch.map(format_epoch_iso);
+
+        let is_past_due = due_epoch.map(|ep| ep < now_epoch).unwrap_or(false);
+
+        let has_completion_indicator = if let Some(ref sel) = completion_sel {
+            if let Some(comp_el) = element.select(sel).next() {
+                let comp_text = comp_el.text().collect::<Vec<_>>().join(" ").to_lowercase();
+                let comp_html = comp_el.html().to_lowercase();
+                comp_text.contains("concluído")
+                    || comp_text.contains("concluido")
+                    || comp_text.contains("feito")
+                    || comp_html.contains("data-togglegroup=\"done\"")
+                    || comp_html.contains("badge-success")
+            } else {
+                false
+            }
         } else {
             false
         };
 
-        let is_completed = is_past_due || is_submitted;
+        let li_text = element.text().collect::<Vec<_>>().join(" ").to_lowercase();
+        let text_concluded = li_text.contains("concluído:") || li_text.contains("concluido:");
+
+        let is_completed = is_past_due || has_completion_indicator || text_concluded;
+
+        let content_desc = if !raw_due_text.is_empty() {
+            format!("Prazo: {}", raw_due_text)
+        } else {
+            match modtype {
+                "assign" => "Tarefa".to_string(),
+                "quiz" => "Questionário".to_string(),
+                "workshop" => "Laboratório de Avaliação".to_string(),
+                "choice" => "Escolha".to_string(),
+                _ => "Atividade".to_string(),
+            }
+        };
+
+        let created_at_iso = due_epoch
+            .map(|ep| format_epoch_iso(ep.saturating_sub(7 * 86400)))
+            .unwrap_or_else(|| format_epoch_iso(now_epoch));
+
+        seen_ids.insert(item_id.clone());
 
         items.push(FeedItem {
-            id: format!("aprender-event-{}", id),
+            id: item_id,
             platform: PlatformType::Aprender3,
-            title,
-            content: final_content,
-            course_name,
-            course_code,
+            title: clean_title,
+            content: content_desc,
+            course_name: course.name.clone(),
+            course_code: Some(course.code.clone()),
             author: None,
             item_type: FeedItemType::Assignment,
             created_at: created_at_iso,
             due_date: due_date_iso,
             is_completed: Some(is_completed),
-            external_url: url,
+            external_url: Some(url),
         });
     }
 
@@ -750,6 +1417,237 @@ mod tests {
         assert_eq!(t3.is_completed, Some(false));
     }
 
+    #[test]
+    fn test_parse_moodle_multi_batch_and_assignments() {
+        let reference_now = 1770000000;
+
+        let batch_json = serde_json::json!([
+            // Index 0: Eventos passados do calendário
+            {
+                "index": 0,
+                "error": false,
+                "data": {
+                    "events": [
+                        {
+                            "id": 201,
+                            "name": "Entrega Lista 1 (Passada)",
+                            "description": "Lista passada",
+                            "course": {
+                                "fullname": "CIC0004 - Algoritmos",
+                                "shortname": "CIC0004"
+                            },
+                            "timesort": reference_now - 86400 * 10, // 10 dias atrás
+                            "action": {
+                                "name": "Visualizar envio",
+                                "actionable": false,
+                                "itemcount": 0,
+                                "url": "/mod/assign/view.php?id=301"
+                            }
+                        }
+                    ]
+                }
+            },
+            // Index 1: Eventos futuros do calendário
+            {
+                "index": 1,
+                "error": false,
+                "data": {
+                    "events": [
+                        {
+                            "id": 202,
+                            "name": "Prova 1 (Futura)",
+                            "description": "Avaliação teórica",
+                            "course": {
+                                "fullname": "CIC0004 - Algoritmos",
+                                "shortname": "CIC0004"
+                            },
+                            "timesort": reference_now + 86400 * 5, // em 5 dias
+                            "action": {
+                                "name": "Adicionar envio",
+                                "actionable": true,
+                                "itemcount": 1,
+                                "url": "/mod/assign/view.php?id=302"
+                            }
+                        }
+                    ]
+                }
+            },
+            // Index 2: Tarefas das turmas via mod_assign_get_assignments
+            {
+                "index": 2,
+                "error": false,
+                "data": {
+                    "courses": [
+                        {
+                            "id": 999,
+                            "fullname": "CIC0004 - Algoritmos",
+                            "shortname": "CIC0004",
+                            "assignments": [
+                                // Tarefa que já veio no calendário (id 301) -> não deve duplicar
+                                {
+                                    "id": 501,
+                                    "cmid": 301,
+                                    "name": "Entrega Lista 1 (Passada)",
+                                    "intro": "Lista passada",
+                                    "duedate": reference_now - 86400 * 10,
+                                    "cutoffdate": reference_now - 86400 * 9
+                                },
+                                // Tarefa antiga de trabalho prático fora do calendário
+                                {
+                                    "id": 502,
+                                    "cmid": 303,
+                                    "name": "Trabalho Prático 1 (Semestre Antigo)",
+                                    "intro": "Trabalho passado",
+                                    "duedate": reference_now - 86400 * 30, // 30 dias atrás
+                                    "cutoffdate": 0
+                                }
+                            ]
+                        }
+                    ]
+                }
+            }
+        ]);
+
+        let items = parse_moodle_calendar_events_with_now(&batch_json, reference_now);
+
+        // Deve conter 3 itens no total (201, 202, 502) sem duplicar 301
+        assert_eq!(items.len(), 3);
+
+        let pass_ev = items.iter().find(|i| i.id == "aprender-event-201").unwrap();
+        assert_eq!(pass_ev.is_completed, Some(true), "Evento passado deve ser concluído");
+
+        let fut_ev = items.iter().find(|i| i.id == "aprender-event-202").unwrap();
+        assert_eq!(fut_ev.is_completed, Some(false), "Evento futuro pendente não deve ser concluído");
+
+        let pass_assign = items.iter().find(|i| i.id == "aprender-assign-502").unwrap();
+        assert_eq!(pass_assign.is_completed, Some(true), "Tarefa antiga fora do calendário deve ser concluída");
+    }
+
+    #[test]
+    fn test_scrape_calendar_html_fallback() {
+        let reference_now = 1770000000;
+        let html = r#"
+            <div class="calendar-wrapper">
+                <div class="event" data-event-id="991">
+                    <h3 class="name"><a href="https://aprender3.unb.br/mod/assign/view.php?id=881">Entrega Exercício 1</a></h3>
+                    <div class="course"><a href="/course/view.php?id=12">CIC0001 - Programação Concorrente</a></div>
+                    <div class="description card-body">Implementação com threads</div>
+                    <div class="date">quinta-feira, 20 outubro, 23:59</div>
+                </div>
+            </div>
+        "#;
+
+        let items = scrape_calendar_html(html, reference_now);
+        assert_eq!(items.len(), 1);
+        assert_eq!(items[0].id, "aprender-html-event-991");
+        assert_eq!(items[0].title, "Entrega Exercício 1");
+        assert_eq!(items[0].course_code, Some("CIC0001".to_string()));
+    }
+
+    #[test]
+    fn test_parse_moodle_date_to_epoch() {
+        // "quinta-feira, 1 out. 2026, 23:50"
+        let epoch1 = parse_moodle_date_to_epoch("quinta-feira, 1 out. 2026, 23:50", 2026).unwrap();
+        // Em UTC, 1 out 23:50 UTC-3 é 2 out 02:50 UTC
+        let iso1 = format_epoch_iso(epoch1);
+        assert_eq!(iso1, "2026-10-02T02:50:00Z");
+
+        // "domingo, 18 out. 2026, 23:59"
+        let epoch2 = parse_moodle_date_to_epoch("domingo, 18 out. 2026, 23:59", 2026).unwrap();
+        let iso2 = format_epoch_iso(epoch2);
+        assert_eq!(iso2, "2026-10-19T02:59:00Z");
+
+        // "20 outubro, 23:59" (sem ano)
+        let epoch3 = parse_moodle_date_to_epoch("20 outubro, 23:59", 2026).unwrap();
+        let iso3 = format_epoch_iso(epoch3);
+        assert_eq!(iso3, "2026-10-21T02:59:00Z");
+
+        // "18/10/2026 23:59"
+        let epoch4 = parse_moodle_date_to_epoch("18/10/2026 23:59", 2026).unwrap();
+        assert_eq!(epoch4, epoch2);
+    }
+
+    #[test]
+    fn test_scrape_course_modules_html() {
+        let reference_now = 1791946514; // Outubro de 2026
+        let html = r#"
+            <ul class="topics">
+                <li class="activity activity-wrapper assign modtype_assign hasinfo" id="module-1656160" data-for="cmitem" data-id="1656160">
+                    <div class="activity-item" data-activityname="Planejamento_Mov de Precessão">
+                        <div class="activityname">
+                            <a href="https://aprender3.unb.br/mod/assign/view.php?id=1656160" class="stretched-link">
+                                <span class="instancename">Planejamento_Mov de Precessão <span class="accesshide"> Tarefa</span></span>
+                            </a>
+                        </div>
+                        <div data-region="activity-dates" class="activity-dates">
+                            <div><strong>Aberto:</strong> segunda-feira, 28 set. 2026, 00:00</div>
+                            <div><strong>Vencimento:</strong> quinta-feira, 1 out. 2026, 23:50</div>
+                        </div>
+                    </div>
+                </li>
+                <li class="activity activity-wrapper quiz modtype_quiz hasinfo" id="module-1655629" data-for="cmitem" data-id="1655629">
+                    <div class="activity-item" data-activityname="Teste 5 - T2">
+                        <div class="activityname">
+                            <a href="https://aprender3.unb.br/mod/quiz/view.php?id=1655629" class="stretched-link">
+                                <span class="instancename">Teste 5 - T2 <span class="accesshide"> Questionário</span></span>
+                            </a>
+                        </div>
+                        <div data-region="activity-dates" class="activity-dates">
+                            <div><strong>Aberto:</strong> sexta-feira, 9 out. 2026, 20:00</div>
+                            <div><strong>Fechado:</strong> domingo, 11 out. 2026, 23:59</div>
+                        </div>
+                    </div>
+                </li>
+                <li class="activity activity-wrapper assign modtype_assign hasinfo" id="module-1628465" data-for="cmitem" data-id="1628465">
+                    <div class="activity-item" data-activityname="Entrega Gerador de Imediatos">
+                        <div class="activityname">
+                            <a href="https://aprender3.unb.br/mod/assign/view.php?id=1628465" class="stretched-link">
+                                <span class="instancename">Entrega Gerador de Imediatos <span class="accesshide"> Tarefa</span></span>
+                            </a>
+                        </div>
+                        <div data-region="activity-dates" class="activity-dates">
+                            <div><strong>Aberto:</strong> quarta-feira, 7 out. 2026, 00:00</div>
+                            <div><strong>Vencimento:</strong> domingo, 18 out. 2026, 23:59</div>
+                        </div>
+                    </div>
+                </li>
+            </ul>
+        "#;
+
+        let course = Course {
+            id: "aprender-31429".to_string(),
+            code: "CIC0099".to_string(),
+            name: "CIC0099 - OAC".to_string(),
+            semester: "2026.2".to_string(),
+            platform: PlatformType::Aprender3,
+            professor: None,
+            classroom: None,
+            schedule: None,
+            unread_count: None,
+            pending_assignments_count: None,
+            url: None,
+        };
+
+        let items = scrape_course_modules_html(html, &course, reference_now);
+        assert_eq!(items.len(), 3);
+
+        // 1656160: Venceu em 01/10/2026 (passado relativo a reference_now) -> concluído
+        let it1 = items.iter().find(|i| i.id == "aprender-cm-1656160").unwrap();
+        assert_eq!(it1.title, "Planejamento_Mov de Precessão");
+        assert_eq!(it1.is_completed, Some(true));
+        assert_eq!(it1.external_url, Some("https://aprender3.unb.br/mod/assign/view.php?id=1656160".to_string()));
+
+        // 1655629: Fechou em 11/10/2026 (passado relativo a reference_now) -> concluído
+        let it2 = items.iter().find(|i| i.id == "aprender-cm-1655629").unwrap();
+        assert_eq!(it2.title, "Teste 5 - T2");
+        assert_eq!(it2.is_completed, Some(true));
+
+        // 1628465: Vence em 18/10/2026 (futuro relativo a reference_now) -> não concluído
+        let it3 = items.iter().find(|i| i.id == "aprender-cm-1628465").unwrap();
+        assert_eq!(it3.title, "Entrega Gerador de Imediatos");
+        assert_eq!(it3.is_completed, Some(false));
+    }
+
     #[tokio::test]
     #[ignore]
     async fn test_live_sync_aprender3() {
@@ -766,8 +1664,28 @@ mod tests {
             .await
             .expect("Live sync failed");
 
-        println!("Live sync concluído: {} turmas, {} itens", courses.len(), items.len());
-        assert!(!courses.is_empty(), "Deveria carregar ao menos uma turma");
-        assert!(courses.iter().any(|c| c.code == "CIC0099"));
+        println!("=== COURSES ({}): ===", courses.len());
+        for c in &courses {
+            println!("Course: id={}, code={}, name={}, pending={:?}", c.id, c.code, c.name, c.pending_assignments_count);
+        }
+
+        println!("=== ITEMS ({}): ===", items.len());
+        for it in &items {
+            println!("Item: id={}, title={}, due={:?}, completed={:?}, url={:?}", it.id, it.title, it.due_date, it.is_completed, it.external_url);
+        }
+
+        // Verifica que as 3 atividades alvo foram encontradas
+        let item_1656160 = items.iter().find(|i| i.id == "aprender-cm-1656160" || i.external_url.as_deref().unwrap_or("").contains("id=1656160"));
+        assert!(item_1656160.is_some(), "Atividade 1656160 deve estar presente nos itens");
+        let it_1656160 = item_1656160.unwrap();
+        assert_eq!(it_1656160.is_completed, Some(true), "1656160 já venceu e foi entregue, deve chegar concluída");
+
+        let item_1628465 = items.iter().find(|i| i.id == "aprender-cm-1628465" || i.external_url.as_deref().unwrap_or("").contains("id=1628465"));
+        assert!(item_1628465.is_some(), "Atividade 1628465 deve estar presente nos itens");
+
+        let item_1655629 = items.iter().find(|i| i.id == "aprender-cm-1655629" || i.external_url.as_deref().unwrap_or("").contains("id=1655629"));
+        assert!(item_1655629.is_some(), "Quiz 1655629 deve estar presente nos itens");
+        let it_1655629 = item_1655629.unwrap();
+        assert_eq!(it_1655629.is_completed, Some(true), "1655629 já encerrou, deve chegar concluído");
     }
 }

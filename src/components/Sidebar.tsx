@@ -1,5 +1,8 @@
 import React from 'react';
 import { Home, BookOpen, CalendarDays, Settings, PanelLeftClose, PanelLeftOpen, RefreshCw, GraduationCap } from 'lucide-react';
+import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui';
+import { SyncStatusTooltip } from './SyncStatusTooltip';
+import type { SyncStepInfo } from '../context/SyncContext';
 
 export type NavTab = 'home' | 'courses' | 'grade' | 'my-course' | 'settings';
 
@@ -12,6 +15,7 @@ export interface SidebarProps {
   onSync?: () => void;
   lastSyncedAt?: string | null;
   hasConnectedAccounts?: boolean;
+  syncSteps?: Record<'sigaa' | 'aprender3' | 'myCourse' | 'ghPages', SyncStepInfo>;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -23,6 +27,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onSync,
   lastSyncedAt,
   hasConnectedAccounts = false,
+  syncSteps,
 }) => {
   const navItems = [
     { id: 'home' as NavTab, label: 'Home', icon: Home },
@@ -144,24 +149,35 @@ export const Sidebar: React.FC<SidebarProps> = ({
       <div className="p-3 border-t-2 border-black">
         {!isCollapsed ? (
           <div className="space-y-2">
-            <button
-              type="button"
-              onClick={onSync}
-              disabled={isSyncing || !hasConnectedAccounts}
-              title={
-                !hasConnectedAccounts
-                  ? 'Conecte ao menos uma plataforma nas configurações para sincronizar'
-                  : 'Sincronizar todas as plataformas'
-              }
-              className={`w-full flex items-center justify-center gap-2 py-2.5 px-4 font-bold text-xs rounded-2xl border-2 transition-[transform,box-shadow,background-color,border-color] duration-150 ease-out select-none ${
-                !hasConnectedAccounts || isSyncing
-                  ? 'bg-neutral-200 text-neutral-400 border-neutral-300 cursor-not-allowed shadow-none'
-                  : 'cursor-pointer bg-neo-blue hover:bg-neo-blueHover text-white border-black focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-neo-blue focus-visible:ring-offset-2 focus-visible:ring-offset-white shadow-[2px_2px_0px_0px_#000] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none'
-              }`}
-            >
-              <RefreshCw className={`w-4 h-4 stroke-[2.5] ${isSyncing ? 'animate-spin' : ''}`} />
-              <span>{isSyncing ? 'Sincronizando...' : 'Sincronizar'}</span>
-            </button>
+            <Tooltip>
+              <TooltipTrigger
+                type="button"
+                onClick={isSyncing || !hasConnectedAccounts ? undefined : onSync}
+                aria-disabled={isSyncing || !hasConnectedAccounts}
+                className={`w-full flex items-center justify-center gap-2 py-2.5 px-4 font-bold text-xs rounded-2xl border-2 transition-[transform,box-shadow,background-color,border-color] duration-150 ease-out select-none ${
+                  !hasConnectedAccounts || isSyncing
+                    ? 'bg-neutral-200 text-neutral-400 border-neutral-300 cursor-not-allowed shadow-none'
+                    : 'cursor-pointer bg-neo-blue hover:bg-neo-blueHover text-white border-black focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-neo-blue focus-visible:ring-offset-2 focus-visible:ring-offset-white shadow-[2px_2px_0px_0px_#000] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none'
+                }`}
+              >
+                <RefreshCw className={`w-4 h-4 stroke-[2.5] ${isSyncing ? 'animate-spin' : ''}`} />
+                <span>{isSyncing ? 'Sincronizando...' : 'Sincronizar'}</span>
+              </TooltipTrigger>
+              {syncSteps && (
+                <TooltipContent
+                  side="top"
+                  align="center"
+                  sideOffset={8}
+                  className="p-0 border-2 border-black shadow-[4px_4px_0px_0px_#000] rounded-xl overflow-hidden bg-white"
+                >
+                  <SyncStatusTooltip
+                    steps={syncSteps}
+                    isSyncing={isSyncing}
+                    lastSyncedAt={lastSyncedAt ?? null}
+                  />
+                </TooltipContent>
+              )}
+            </Tooltip>
             {!hasConnectedAccounts ? (
               <p className="text-[11px] text-neutral-500 font-semibold text-center leading-tight">
                 Nenhuma conta conectada
@@ -174,23 +190,34 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </div>
         ) : (
           <div className="flex justify-center">
-            <button
-              type="button"
-              onClick={onSync}
-              disabled={isSyncing || !hasConnectedAccounts}
-              title={
-                !hasConnectedAccounts
-                  ? 'Conecte ao menos uma conta nas configurações'
-                  : 'Sincronizar todas as plataformas'
-              }
-              className={`w-10 h-10 flex items-center justify-center rounded-2xl border-2 transition-[transform,box-shadow,background-color,border-color] duration-150 ease-out select-none ${
-                !hasConnectedAccounts || isSyncing
-                  ? 'bg-neutral-200 text-neutral-400 border-neutral-300 cursor-not-allowed shadow-none'
-                  : 'cursor-pointer bg-neo-blue hover:bg-neo-blueHover text-white border-black focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-neo-blue focus-visible:ring-offset-2 focus-visible:ring-offset-white shadow-[2px_2px_0px_0px_#000] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none'
-              }`}
-            >
-              <RefreshCw className={`w-4 h-4 stroke-[2.5] ${isSyncing ? 'animate-spin' : ''}`} />
-            </button>
+            <Tooltip>
+              <TooltipTrigger
+                type="button"
+                onClick={isSyncing || !hasConnectedAccounts ? undefined : onSync}
+                aria-disabled={isSyncing || !hasConnectedAccounts}
+                className={`w-10 h-10 flex items-center justify-center rounded-2xl border-2 transition-[transform,box-shadow,background-color,border-color] duration-150 ease-out select-none ${
+                  !hasConnectedAccounts || isSyncing
+                    ? 'bg-neutral-200 text-neutral-400 border-neutral-300 cursor-not-allowed shadow-none'
+                    : 'cursor-pointer bg-neo-blue hover:bg-neo-blueHover text-white border-black focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-neo-blue focus-visible:ring-offset-2 focus-visible:ring-offset-white shadow-[2px_2px_0px_0px_#000] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none'
+                }`}
+              >
+                <RefreshCw className={`w-4 h-4 stroke-[2.5] ${isSyncing ? 'animate-spin' : ''}`} />
+              </TooltipTrigger>
+              {syncSteps && (
+                <TooltipContent
+                  side="right"
+                  align="center"
+                  sideOffset={12}
+                  className="p-0 border-2 border-black shadow-[4px_4px_0px_0px_#000] rounded-xl overflow-hidden bg-white"
+                >
+                  <SyncStatusTooltip
+                    steps={syncSteps}
+                    isSyncing={isSyncing}
+                    lastSyncedAt={lastSyncedAt ?? null}
+                  />
+                </TooltipContent>
+              )}
+            </Tooltip>
           </div>
         )}
       </div>
