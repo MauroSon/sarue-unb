@@ -713,18 +713,17 @@
         "class_code": "01",
         "teachers": [
           "LUISIANE DE AVILA SANTANA",
-          "VINICIUS ZACARIAS MALDANER DA SILVA",
           "JOSEVAN CERQUEIRA LEAL",
           "LIANA BARBARESCO GOMIDE MATHEUS",
           "GERSON CIPRIANO JUNIOR",
           "VERA REGINA FERNANDES DA SILVA MARAES",
           "LEONARDO PETRUS DA SILVA PAZ",
+          "TAIS MILENE SANTOS DE PAIVA",
           "JULIANA ALBUQUERQUE BALTAR"
         ],
         "classroom": "SUS",
         "schedule_code": "23456M1234",
         "schedule_description": "Segunda-feira 08:00 às 11:50 / Terça-feira 08:00 às 11:50 / Quarta-feira 08:00 às 11:50 / Quinta-feira 08:00 às 11:50 / Sexta-feira 08:00 às 11:50",
-        "date_range": "10/08/2026 - 14/12/2026",
         "schedule_slots": [
           {
             "day": 2,
@@ -896,18 +895,17 @@
         "class_code": "02",
         "teachers": [
           "LUISIANE DE AVILA SANTANA",
-          "VINICIUS ZACARIAS MALDANER DA SILVA",
           "JOSEVAN CERQUEIRA LEAL",
           "LIANA BARBARESCO GOMIDE MATHEUS",
           "GERSON CIPRIANO JUNIOR",
           "VERA REGINA FERNANDES DA SILVA MARAES",
           "LEONARDO PETRUS DA SILVA PAZ",
+          "TAIS MILENE SANTOS DE PAIVA",
           "JULIANA ALBUQUERQUE BALTAR"
         ],
         "classroom": "SUS",
         "schedule_code": "23456T2345",
         "schedule_description": "Segunda-feira 14:00 às 17:50 / Terça-feira 14:00 às 17:50 / Quarta-feira 14:00 às 17:50 / Quinta-feira 14:00 às 17:50 / Sexta-feira 14:00 às 17:50",
-        "date_range": "10/08/2026 - 14/12/2026",
         "schedule_slots": [
           {
             "day": 2,
@@ -1085,17 +1083,16 @@
         "discipline_name": "ESTÁGIO OBRIGATÓRIO EM FISIOTERAPIA 3",
         "class_code": "01",
         "teachers": [
-          "VINICIUS ZACARIAS MALDANER DA SILVA",
           "GRAZIELLA FRANCA BERNARDELLI CIPRIANO",
           "JULIANA DE FARIA FRACON E ROMAO",
           "GERSON CIPRIANO JUNIOR",
           "SERGIO RICARDO MENEZES MATEUS",
+          "TAIS MILENE SANTOS DE PAIVA",
           "SERGIO RICARDO THOMAZ"
         ],
         "classroom": "SUS",
         "schedule_code": "23456M1234",
         "schedule_description": "Segunda-feira 08:00 às 11:50 / Terça-feira 08:00 às 11:50 / Quarta-feira 08:00 às 11:50 / Quinta-feira 08:00 às 11:50 / Sexta-feira 08:00 às 11:50",
-        "date_range": "10/08/2026 - 14/12/2026",
         "schedule_slots": [
           {
             "day": 2,
@@ -52665,12 +52662,11 @@
         "discipline_name": "PESQUISA EM OPINIÃO E MERCADO",
         "class_code": "01",
         "teachers": [
-          "SIVALDO PEREIRA DA SILVA"
+          "ALICE ROBERTE DE OLIVEIRA"
         ],
         "classroom": "FAC/UnB - Lab. Multimídia I",
         "schedule_code": "4N1234",
         "schedule_description": "Quarta-feira 19:00 às 22:30",
-        "date_range": "10/08/2026 - 14/12/2026",
         "schedule_slots": [
           {
             "day": 4,
@@ -58047,7 +58043,7 @@
         "discipline_name": "INTRODUÇÃO À CIÊNCIA DOS MATERIAIS",
         "class_code": "03",
         "teachers": [
-          "DANIEL MONTEIRO ROSA"
+          "AMANDA LUCENA DE MEDEIROS"
         ],
         "classroom": "FT - DT 52/15 (CORREDOR ENM)",
         "schedule_code": "4M123",
@@ -58086,12 +58082,11 @@
         "discipline_name": "INTRODUÇÃO À CIÊNCIA DOS MATERIAIS",
         "class_code": "04",
         "teachers": [
-          "DANIEL MONTEIRO ROSA"
+          "AMANDA LUCENA DE MEDEIROS"
         ],
         "classroom": "FT - DT 52/15 (CORREDOR ENM)",
         "schedule_code": "4M124",
         "schedule_description": "Quarta-feira 08:00 às 09:50 / Quarta-feira 10:55 às 11:50",
-        "date_range": "10/08/2026 - 14/12/2026",
         "schedule_slots": [
           {
             "day": 4,
@@ -61913,6 +61908,905 @@
           }
         ],
         "occupied": 20
+      }
+    ]
+  },
+  {
+    "code": "ELA0001",
+    "name": "TÓPICOS ESPECIAIS DE METODOLOGIA QUALITATIVA 1",
+    "department_id": "479",
+    "classes": [
+      {
+        "id": "ELA0001-01",
+        "discipline_code": "ELA0001",
+        "discipline_name": "TÓPICOS ESPECIAIS DE METODOLOGIA QUALITATIVA 1",
+        "class_code": "01",
+        "teachers": [
+          "DANIEL BIN"
+        ],
+        "classroom": "PAT AT 117",
+        "schedule_code": "6M1234",
+        "schedule_description": "Sexta-feira 08:00 às 11:50",
+        "date_range": "10/08/2026 - 14/12/2026",
+        "schedule_slots": [
+          {
+            "day": 6,
+            "day_name": "Sex",
+            "shift": "M",
+            "period": 1,
+            "time_range": "08:00 - 08:55",
+            "global_slot_index": 0
+          },
+          {
+            "day": 6,
+            "day_name": "Sex",
+            "shift": "M",
+            "period": 2,
+            "time_range": "08:55 - 09:50",
+            "global_slot_index": 1
+          },
+          {
+            "day": 6,
+            "day_name": "Sex",
+            "shift": "M",
+            "period": 3,
+            "time_range": "10:00 - 10:55",
+            "global_slot_index": 2
+          },
+          {
+            "day": 6,
+            "day_name": "Sex",
+            "shift": "M",
+            "period": 4,
+            "time_range": "10:55 - 11:50",
+            "global_slot_index": 3
+          }
+        ],
+        "occupied": 40
+      }
+    ]
+  },
+  {
+    "code": "ELA0013",
+    "name": "INTRODUÇÃO À METODOLOGIA DAS CIÊNCIAS SOCIAIS",
+    "department_id": "479",
+    "classes": [
+      {
+        "id": "ELA0013-02",
+        "discipline_code": "ELA0013",
+        "discipline_name": "INTRODUÇÃO À METODOLOGIA DAS CIÊNCIAS SOCIAIS",
+        "class_code": "02",
+        "teachers": [
+          "HELENA MOREIRA SCHIEL"
+        ],
+        "classroom": "PAT AT 021",
+        "schedule_code": "35M34",
+        "schedule_description": "Terça-feira 10:00 às 11:50 / Quinta-feira 10:00 às 11:50",
+        "date_range": "10/08/2026 - 14/12/2026",
+        "schedule_slots": [
+          {
+            "day": 3,
+            "day_name": "Ter",
+            "shift": "M",
+            "period": 3,
+            "time_range": "10:00 - 10:55",
+            "global_slot_index": 2
+          },
+          {
+            "day": 3,
+            "day_name": "Ter",
+            "shift": "M",
+            "period": 4,
+            "time_range": "10:55 - 11:50",
+            "global_slot_index": 3
+          },
+          {
+            "day": 5,
+            "day_name": "Qui",
+            "shift": "M",
+            "period": 3,
+            "time_range": "10:00 - 10:55",
+            "global_slot_index": 2
+          },
+          {
+            "day": 5,
+            "day_name": "Qui",
+            "shift": "M",
+            "period": 4,
+            "time_range": "10:55 - 11:50",
+            "global_slot_index": 3
+          }
+        ],
+        "occupied": 40
+      },
+      {
+        "id": "ELA0013-03",
+        "discipline_code": "ELA0013",
+        "discipline_name": "INTRODUÇÃO À METODOLOGIA DAS CIÊNCIAS SOCIAIS",
+        "class_code": "03",
+        "teachers": [
+          "DANIEL BIN"
+        ],
+        "classroom": "PAT AT 013",
+        "schedule_code": "35M12",
+        "schedule_description": "Terça-feira 08:00 às 09:50 / Quinta-feira 08:00 às 09:50",
+        "schedule_slots": [
+          {
+            "day": 3,
+            "day_name": "Ter",
+            "shift": "M",
+            "period": 1,
+            "time_range": "08:00 - 08:55",
+            "global_slot_index": 0
+          },
+          {
+            "day": 3,
+            "day_name": "Ter",
+            "shift": "M",
+            "period": 2,
+            "time_range": "08:55 - 09:50",
+            "global_slot_index": 1
+          },
+          {
+            "day": 5,
+            "day_name": "Qui",
+            "shift": "M",
+            "period": 1,
+            "time_range": "08:00 - 08:55",
+            "global_slot_index": 0
+          },
+          {
+            "day": 5,
+            "day_name": "Qui",
+            "shift": "M",
+            "period": 2,
+            "time_range": "08:55 - 09:50",
+            "global_slot_index": 1
+          }
+        ],
+        "occupied": 40
+      }
+    ]
+  },
+  {
+    "code": "ELA0014",
+    "name": "CIÊNCIAS SOCIAIS LATINO",
+    "department_id": "479",
+    "classes": [
+      {
+        "id": "ELA0014-01",
+        "discipline_code": "ELA0014",
+        "discipline_name": "CIÊNCIAS SOCIAIS LATINO",
+        "class_code": "01",
+        "teachers": [
+          "RAPHAEL LANA SEABRA"
+        ],
+        "classroom": "PAT AT 068",
+        "schedule_code": "35T23",
+        "schedule_description": "Terça-feira 14:00 às 15:50 / Quinta-feira 14:00 às 15:50",
+        "schedule_slots": [
+          {
+            "day": 3,
+            "day_name": "Ter",
+            "shift": "T",
+            "period": 2,
+            "time_range": "14:00 - 14:55",
+            "global_slot_index": 6
+          },
+          {
+            "day": 3,
+            "day_name": "Ter",
+            "shift": "T",
+            "period": 3,
+            "time_range": "14:55 - 15:50",
+            "global_slot_index": 7
+          },
+          {
+            "day": 5,
+            "day_name": "Qui",
+            "shift": "T",
+            "period": 2,
+            "time_range": "14:00 - 14:55",
+            "global_slot_index": 6
+          },
+          {
+            "day": 5,
+            "day_name": "Qui",
+            "shift": "T",
+            "period": 3,
+            "time_range": "14:55 - 15:50",
+            "global_slot_index": 7
+          }
+        ],
+        "occupied": 41
+      },
+      {
+        "id": "ELA0014-02",
+        "discipline_code": "ELA0014",
+        "discipline_name": "CIÊNCIAS SOCIAIS LATINO",
+        "class_code": "02",
+        "teachers": [
+          "LILIA GONCALVES MAGALHAES"
+        ],
+        "classroom": "PAT AT 069",
+        "schedule_code": "35T23",
+        "schedule_description": "Terça-feira 14:00 às 15:50 / Quinta-feira 14:00 às 15:50",
+        "date_range": "10/08/2026 - 14/12/2026",
+        "schedule_slots": [
+          {
+            "day": 3,
+            "day_name": "Ter",
+            "shift": "T",
+            "period": 2,
+            "time_range": "14:00 - 14:55",
+            "global_slot_index": 6
+          },
+          {
+            "day": 3,
+            "day_name": "Ter",
+            "shift": "T",
+            "period": 3,
+            "time_range": "14:55 - 15:50",
+            "global_slot_index": 7
+          },
+          {
+            "day": 5,
+            "day_name": "Qui",
+            "shift": "T",
+            "period": 2,
+            "time_range": "14:00 - 14:55",
+            "global_slot_index": 6
+          },
+          {
+            "day": 5,
+            "day_name": "Qui",
+            "shift": "T",
+            "period": 3,
+            "time_range": "14:55 - 15:50",
+            "global_slot_index": 7
+          }
+        ],
+        "occupied": 51
+      }
+    ]
+  },
+  {
+    "code": "ELA0015",
+    "name": "SOCIEDADE, CULTURA E POLÍTICA",
+    "department_id": "479",
+    "classes": [
+      {
+        "id": "ELA0015-01",
+        "discipline_code": "ELA0015",
+        "discipline_name": "SOCIEDADE, CULTURA E POLÍTICA",
+        "class_code": "01",
+        "teachers": [
+          "LILIA GONCALVES MAGALHAES"
+        ],
+        "classroom": "PAT AT 156",
+        "schedule_code": "24M34",
+        "schedule_description": "Segunda-feira 10:00 às 11:50 / Quarta-feira 10:00 às 11:50",
+        "date_range": "10/08/2026 - 14/12/2026",
+        "schedule_slots": [
+          {
+            "day": 2,
+            "day_name": "Seg",
+            "shift": "M",
+            "period": 3,
+            "time_range": "10:00 - 10:55",
+            "global_slot_index": 2
+          },
+          {
+            "day": 2,
+            "day_name": "Seg",
+            "shift": "M",
+            "period": 4,
+            "time_range": "10:55 - 11:50",
+            "global_slot_index": 3
+          },
+          {
+            "day": 4,
+            "day_name": "Qua",
+            "shift": "M",
+            "period": 3,
+            "time_range": "10:00 - 10:55",
+            "global_slot_index": 2
+          },
+          {
+            "day": 4,
+            "day_name": "Qua",
+            "shift": "M",
+            "period": 4,
+            "time_range": "10:55 - 11:50",
+            "global_slot_index": 3
+          }
+        ],
+        "occupied": 50
+      },
+      {
+        "id": "ELA0015-02",
+        "discipline_code": "ELA0015",
+        "discipline_name": "SOCIEDADE, CULTURA E POLÍTICA",
+        "class_code": "02",
+        "teachers": [
+          "VANESSA PAULA DA PONTE MONTEIRO NEVES"
+        ],
+        "classroom": "PAT AT 100",
+        "schedule_code": "24T23",
+        "schedule_description": "Segunda-feira 14:00 às 15:50 / Quarta-feira 14:00 às 15:50",
+        "date_range": "10/08/2026 - 14/12/2026",
+        "schedule_slots": [
+          {
+            "day": 2,
+            "day_name": "Seg",
+            "shift": "T",
+            "period": 2,
+            "time_range": "14:00 - 14:55",
+            "global_slot_index": 6
+          },
+          {
+            "day": 2,
+            "day_name": "Seg",
+            "shift": "T",
+            "period": 3,
+            "time_range": "14:55 - 15:50",
+            "global_slot_index": 7
+          },
+          {
+            "day": 4,
+            "day_name": "Qua",
+            "shift": "T",
+            "period": 2,
+            "time_range": "14:00 - 14:55",
+            "global_slot_index": 6
+          },
+          {
+            "day": 4,
+            "day_name": "Qua",
+            "shift": "T",
+            "period": 3,
+            "time_range": "14:55 - 15:50",
+            "global_slot_index": 7
+          }
+        ],
+        "occupied": 50
+      }
+    ]
+  },
+  {
+    "code": "ELA0016",
+    "name": "CULTURA E IDENTIDADE",
+    "department_id": "479",
+    "classes": [
+      {
+        "id": "ELA0016-01",
+        "discipline_code": "ELA0016",
+        "discipline_name": "CULTURA E IDENTIDADE",
+        "class_code": "01",
+        "teachers": [
+          "HELENA MOREIRA SCHIEL"
+        ],
+        "classroom": "PAT AT 068",
+        "schedule_code": "35M12",
+        "schedule_description": "Terça-feira 08:00 às 09:50 / Quinta-feira 08:00 às 09:50",
+        "date_range": "10/08/2026 - 14/12/2026",
+        "schedule_slots": [
+          {
+            "day": 3,
+            "day_name": "Ter",
+            "shift": "M",
+            "period": 1,
+            "time_range": "08:00 - 08:55",
+            "global_slot_index": 0
+          },
+          {
+            "day": 3,
+            "day_name": "Ter",
+            "shift": "M",
+            "period": 2,
+            "time_range": "08:55 - 09:50",
+            "global_slot_index": 1
+          },
+          {
+            "day": 5,
+            "day_name": "Qui",
+            "shift": "M",
+            "period": 1,
+            "time_range": "08:00 - 08:55",
+            "global_slot_index": 0
+          },
+          {
+            "day": 5,
+            "day_name": "Qui",
+            "shift": "M",
+            "period": 2,
+            "time_range": "08:55 - 09:50",
+            "global_slot_index": 1
+          }
+        ],
+        "occupied": 40
+      }
+    ]
+  },
+  {
+    "code": "ELA0020",
+    "name": "GLOBALIZAÇÃO E REGIONALIZAÇÃO",
+    "department_id": "479",
+    "classes": [
+      {
+        "id": "ELA0020-01",
+        "discipline_code": "ELA0020",
+        "discipline_name": "GLOBALIZAÇÃO E REGIONALIZAÇÃO",
+        "class_code": "01",
+        "teachers": [
+          "NATACHA SIMEI LEAL"
+        ],
+        "classroom": "PJC BT 116",
+        "schedule_code": "24M34",
+        "schedule_description": "Segunda-feira 10:00 às 11:50 / Quarta-feira 10:00 às 11:50",
+        "date_range": "10/08/2026 - 14/12/2026",
+        "schedule_slots": [
+          {
+            "day": 2,
+            "day_name": "Seg",
+            "shift": "M",
+            "period": 3,
+            "time_range": "10:00 - 10:55",
+            "global_slot_index": 2
+          },
+          {
+            "day": 2,
+            "day_name": "Seg",
+            "shift": "M",
+            "period": 4,
+            "time_range": "10:55 - 11:50",
+            "global_slot_index": 3
+          },
+          {
+            "day": 4,
+            "day_name": "Qua",
+            "shift": "M",
+            "period": 3,
+            "time_range": "10:00 - 10:55",
+            "global_slot_index": 2
+          },
+          {
+            "day": 4,
+            "day_name": "Qua",
+            "shift": "M",
+            "period": 4,
+            "time_range": "10:55 - 11:50",
+            "global_slot_index": 3
+          }
+        ],
+        "occupied": 50
+      }
+    ]
+  },
+  {
+    "code": "ELA0021",
+    "name": "PENSAMENTO SOCIAL E POLÍTICO",
+    "department_id": "479",
+    "classes": [
+      {
+        "id": "ELA0021-02",
+        "discipline_code": "ELA0021",
+        "discipline_name": "PENSAMENTO SOCIAL E POLÍTICO",
+        "class_code": "02",
+        "teachers": [
+          "VANESSA PAULA DA PONTE MONTEIRO NEVES"
+        ],
+        "classroom": "PAT AT 069",
+        "schedule_code": "6M1234",
+        "schedule_description": "Sexta-feira 08:00 às 11:50",
+        "date_range": "10/08/2026 - 14/12/2026",
+        "schedule_slots": [
+          {
+            "day": 6,
+            "day_name": "Sex",
+            "shift": "M",
+            "period": 1,
+            "time_range": "08:00 - 08:55",
+            "global_slot_index": 0
+          },
+          {
+            "day": 6,
+            "day_name": "Sex",
+            "shift": "M",
+            "period": 2,
+            "time_range": "08:55 - 09:50",
+            "global_slot_index": 1
+          },
+          {
+            "day": 6,
+            "day_name": "Sex",
+            "shift": "M",
+            "period": 3,
+            "time_range": "10:00 - 10:55",
+            "global_slot_index": 2
+          },
+          {
+            "day": 6,
+            "day_name": "Sex",
+            "shift": "M",
+            "period": 4,
+            "time_range": "10:55 - 11:50",
+            "global_slot_index": 3
+          }
+        ],
+        "occupied": 50
+      }
+    ]
+  },
+  {
+    "code": "ELA0027",
+    "name": "TÓPICOS ESPECIAIS EM CIÊNCIAS SOCIAIS LATINO",
+    "department_id": "479",
+    "classes": [
+      {
+        "id": "ELA0027-01",
+        "discipline_code": "ELA0027",
+        "discipline_name": "TÓPICOS ESPECIAIS EM CIÊNCIAS SOCIAIS LATINO",
+        "class_code": "01",
+        "teachers": [
+          "ANA JÚLIA FRANÇA MONTEIRO",
+          "AMANDA MONTEIRO BORTOLUZZI PIRES"
+        ],
+        "classroom": "PJC BT 092",
+        "schedule_code": "4T6 4N123",
+        "schedule_description": "Quarta-feira 18:00 às 21:40",
+        "date_range": "10/08/2026 - 14/12/2026",
+        "schedule_slots": [
+          {
+            "day": 4,
+            "day_name": "Qua",
+            "shift": "T",
+            "period": 6,
+            "time_range": "18:00 - 18:55",
+            "global_slot_index": 10
+          },
+          {
+            "day": 4,
+            "day_name": "Qua",
+            "shift": "N",
+            "period": 1,
+            "time_range": "19:00 - 19:50",
+            "global_slot_index": 11
+          },
+          {
+            "day": 4,
+            "day_name": "Qua",
+            "shift": "N",
+            "period": 2,
+            "time_range": "19:50 - 20:40",
+            "global_slot_index": 12
+          },
+          {
+            "day": 4,
+            "day_name": "Qua",
+            "shift": "N",
+            "period": 3,
+            "time_range": "20:50 - 21:40",
+            "global_slot_index": 13
+          }
+        ],
+        "occupied": 20
+      }
+    ]
+  },
+  {
+    "code": "ELA0031",
+    "name": "CIÊNCIAS SOCIAIS LATINO",
+    "department_id": "479",
+    "classes": [
+      {
+        "id": "ELA0031-01",
+        "discipline_code": "ELA0031",
+        "discipline_name": "CIÊNCIAS SOCIAIS LATINO",
+        "class_code": "01",
+        "teachers": [
+          "FLAVIA LESSA DE BARROS"
+        ],
+        "classroom": "PAT AT 061",
+        "schedule_code": "24T45",
+        "schedule_description": "Segunda-feira 16:00 às 17:50 / Quarta-feira 16:00 às 17:50",
+        "date_range": "10/08/2026 - 14/12/2026",
+        "schedule_slots": [
+          {
+            "day": 2,
+            "day_name": "Seg",
+            "shift": "T",
+            "period": 4,
+            "time_range": "16:00 - 16:55",
+            "global_slot_index": 8
+          },
+          {
+            "day": 2,
+            "day_name": "Seg",
+            "shift": "T",
+            "period": 5,
+            "time_range": "16:55 - 17:50",
+            "global_slot_index": 9
+          },
+          {
+            "day": 4,
+            "day_name": "Qua",
+            "shift": "T",
+            "period": 4,
+            "time_range": "16:00 - 16:55",
+            "global_slot_index": 8
+          },
+          {
+            "day": 4,
+            "day_name": "Qua",
+            "shift": "T",
+            "period": 5,
+            "time_range": "16:55 - 17:50",
+            "global_slot_index": 9
+          }
+        ],
+        "occupied": 50
+      },
+      {
+        "id": "ELA0031-02",
+        "discipline_code": "ELA0031",
+        "discipline_name": "CIÊNCIAS SOCIAIS LATINO",
+        "class_code": "02",
+        "teachers": [
+          "FLAVIA LESSA DE BARROS"
+        ],
+        "classroom": "PAT AT 045",
+        "schedule_code": "35T23",
+        "schedule_description": "Terça-feira 14:00 às 15:50 / Quinta-feira 14:00 às 15:50",
+        "date_range": "10/08/2026 - 14/12/2026",
+        "schedule_slots": [
+          {
+            "day": 3,
+            "day_name": "Ter",
+            "shift": "T",
+            "period": 2,
+            "time_range": "14:00 - 14:55",
+            "global_slot_index": 6
+          },
+          {
+            "day": 3,
+            "day_name": "Ter",
+            "shift": "T",
+            "period": 3,
+            "time_range": "14:55 - 15:50",
+            "global_slot_index": 7
+          },
+          {
+            "day": 5,
+            "day_name": "Qui",
+            "shift": "T",
+            "period": 2,
+            "time_range": "14:00 - 14:55",
+            "global_slot_index": 6
+          },
+          {
+            "day": 5,
+            "day_name": "Qui",
+            "shift": "T",
+            "period": 3,
+            "time_range": "14:55 - 15:50",
+            "global_slot_index": 7
+          }
+        ],
+        "occupied": 50
+      }
+    ]
+  },
+  {
+    "code": "ELA0032",
+    "name": "CIÊNCIAS SOCIAIS LATINO",
+    "department_id": "479",
+    "classes": [
+      {
+        "id": "ELA0032-01",
+        "discipline_code": "ELA0032",
+        "discipline_name": "CIÊNCIAS SOCIAIS LATINO",
+        "class_code": "01",
+        "teachers": [
+          "CRISTHIAN TEOFILO DA SILVA"
+        ],
+        "classroom": "PAT AT 140",
+        "schedule_code": "35M34",
+        "schedule_description": "Terça-feira 10:00 às 11:50 / Quinta-feira 10:00 às 11:50",
+        "date_range": "10/08/2026 - 14/12/2026",
+        "schedule_slots": [
+          {
+            "day": 3,
+            "day_name": "Ter",
+            "shift": "M",
+            "period": 3,
+            "time_range": "10:00 - 10:55",
+            "global_slot_index": 2
+          },
+          {
+            "day": 3,
+            "day_name": "Ter",
+            "shift": "M",
+            "period": 4,
+            "time_range": "10:55 - 11:50",
+            "global_slot_index": 3
+          },
+          {
+            "day": 5,
+            "day_name": "Qui",
+            "shift": "M",
+            "period": 3,
+            "time_range": "10:00 - 10:55",
+            "global_slot_index": 2
+          },
+          {
+            "day": 5,
+            "day_name": "Qui",
+            "shift": "M",
+            "period": 4,
+            "time_range": "10:55 - 11:50",
+            "global_slot_index": 3
+          }
+        ],
+        "occupied": 40
+      }
+    ]
+  },
+  {
+    "code": "ELA0034",
+    "name": "PROCESSOS DE DESENVOLVIMENTO E DEPENDÊNCIA",
+    "department_id": "479",
+    "classes": [
+      {
+        "id": "ELA0034-01",
+        "discipline_code": "ELA0034",
+        "discipline_name": "PROCESSOS DE DESENVOLVIMENTO E DEPENDÊNCIA",
+        "class_code": "01",
+        "teachers": [
+          "MARTIN LEON JACQUES IBANEZ DE NOVION"
+        ],
+        "classroom": "PAT AT 021",
+        "schedule_code": "35T45",
+        "schedule_description": "Terça-feira 16:00 às 17:50 / Quinta-feira 16:00 às 17:50",
+        "date_range": "10/08/2026 - 14/12/2026",
+        "schedule_slots": [
+          {
+            "day": 3,
+            "day_name": "Ter",
+            "shift": "T",
+            "period": 4,
+            "time_range": "16:00 - 16:55",
+            "global_slot_index": 8
+          },
+          {
+            "day": 3,
+            "day_name": "Ter",
+            "shift": "T",
+            "period": 5,
+            "time_range": "16:55 - 17:50",
+            "global_slot_index": 9
+          },
+          {
+            "day": 5,
+            "day_name": "Qui",
+            "shift": "T",
+            "period": 4,
+            "time_range": "16:00 - 16:55",
+            "global_slot_index": 8
+          },
+          {
+            "day": 5,
+            "day_name": "Qui",
+            "shift": "T",
+            "period": 5,
+            "time_range": "16:55 - 17:50",
+            "global_slot_index": 9
+          }
+        ],
+        "occupied": 50
+      }
+    ]
+  },
+  {
+    "code": "ELA0117",
+    "name": "INTRODUÇÃO ÀS CIÊNCIAS SOCIAIS LATINO",
+    "department_id": "479",
+    "classes": [
+      {
+        "id": "ELA0117-01",
+        "discipline_code": "ELA0117",
+        "discipline_name": "INTRODUÇÃO ÀS CIÊNCIAS SOCIAIS LATINO",
+        "class_code": "01",
+        "teachers": [
+          "SIMONE RODRIGUES PINTO"
+        ],
+        "classroom": "PAT AT 037",
+        "schedule_code": "24T45",
+        "schedule_description": "Segunda-feira 16:00 às 17:50 / Quarta-feira 16:00 às 17:50",
+        "date_range": "10/08/2026 - 14/12/2026",
+        "schedule_slots": [
+          {
+            "day": 2,
+            "day_name": "Seg",
+            "shift": "T",
+            "period": 4,
+            "time_range": "16:00 - 16:55",
+            "global_slot_index": 8
+          },
+          {
+            "day": 2,
+            "day_name": "Seg",
+            "shift": "T",
+            "period": 5,
+            "time_range": "16:55 - 17:50",
+            "global_slot_index": 9
+          },
+          {
+            "day": 4,
+            "day_name": "Qua",
+            "shift": "T",
+            "period": 4,
+            "time_range": "16:00 - 16:55",
+            "global_slot_index": 8
+          },
+          {
+            "day": 4,
+            "day_name": "Qua",
+            "shift": "T",
+            "period": 5,
+            "time_range": "16:55 - 17:50",
+            "global_slot_index": 9
+          }
+        ],
+        "occupied": 53
+      },
+      {
+        "id": "ELA0117-02",
+        "discipline_code": "ELA0117",
+        "discipline_name": "INTRODUÇÃO ÀS CIÊNCIAS SOCIAIS LATINO",
+        "class_code": "02",
+        "teachers": [
+          "NATACHA SIMEI LEAL"
+        ],
+        "classroom": "PAT AT 076",
+        "schedule_code": "24T45",
+        "schedule_description": "Segunda-feira 16:00 às 17:50 / Quarta-feira 16:00 às 17:50",
+        "date_range": "10/08/2026 - 14/12/2026",
+        "schedule_slots": [
+          {
+            "day": 2,
+            "day_name": "Seg",
+            "shift": "T",
+            "period": 4,
+            "time_range": "16:00 - 16:55",
+            "global_slot_index": 8
+          },
+          {
+            "day": 2,
+            "day_name": "Seg",
+            "shift": "T",
+            "period": 5,
+            "time_range": "16:55 - 17:50",
+            "global_slot_index": 9
+          },
+          {
+            "day": 4,
+            "day_name": "Qua",
+            "shift": "T",
+            "period": 4,
+            "time_range": "16:00 - 16:55",
+            "global_slot_index": 8
+          },
+          {
+            "day": 4,
+            "day_name": "Qua",
+            "shift": "T",
+            "period": 5,
+            "time_range": "16:55 - 17:50",
+            "global_slot_index": 9
+          }
+        ],
+        "occupied": 56
       }
     ]
   },
@@ -95555,7 +96449,7 @@
         "discipline_name": "INTRODUÇÃO À ADMINISTRAÇÃO",
         "class_code": "03",
         "teachers": [
-          "ANTONIO NASCIMENTO JUNIOR"
+          "TAYANE MAGALHÃES ALVAIA"
         ],
         "classroom": "PAT AT 021",
         "schedule_code": "24N34",
@@ -95594,7 +96488,7 @@
             "global_slot_index": 14
           }
         ],
-        "occupied": 54
+        "occupied": 55
       },
       {
         "id": "ADM0023-04",
@@ -96680,7 +97574,7 @@
         "discipline_name": "LOGÍSTICA ORGANIZACIONAL",
         "class_code": "01",
         "teachers": [
-          "A DEFINIR DOCENTE"
+          "GILSON JOEL FERNANDES"
         ],
         "classroom": "PAT AT 028",
         "schedule_code": "35M12",
@@ -96727,7 +97621,7 @@
         "discipline_name": "LOGÍSTICA ORGANIZACIONAL",
         "class_code": "02",
         "teachers": [
-          "A DEFINIR DOCENTE"
+          "GILSON JOEL FERNANDES"
         ],
         "classroom": "PAT AT 013",
         "schedule_code": "35N12",
@@ -105378,18 +106272,6 @@
         "discipline_code": "ADM0093",
         "discipline_name": "SEMINÁRIO TEMÁTICO",
         "class_code": "01",
-        "teachers": [
-          "FRANCISCO ANTONIO COELHO JUNIOR"
-        ],
-        "classroom": "A definir",
-        "schedule_code": "A definir",
-        "schedule_slots": []
-      },
-      {
-        "id": "ADM0093-02",
-        "discipline_code": "ADM0093",
-        "discipline_name": "SEMINÁRIO TEMÁTICO",
-        "class_code": "02",
         "teachers": [
           "FRANCISCO ANTONIO COELHO JUNIOR"
         ],
@@ -188981,12 +189863,12 @@
         "discipline_name": "PLANEJAMENTO E ORGANIZAÇÃO DE CONFERÊNCIAS INTERNACIONAIS",
         "class_code": "01",
         "teachers": [
-          "CHARLES ROCHA TEIXEIRA"
+          "CHARLES ROCHA TEIXEIRA",
+          "JANAINA SOARES DE OLIVEIRA ALVES"
         ],
         "classroom": "ICC AT- 163/8",
         "schedule_code": "24T23",
         "schedule_description": "Segunda-feira 14:00 às 15:50 / Quarta-feira 14:00 às 15:50",
-        "date_range": "10/08/2026 - 14/12/2026",
         "schedule_slots": [
           {
             "day": 2,
@@ -192875,7 +193757,8 @@
         "discipline_name": "PLANEJAMENTO E ORGANIZAÇÃO DE EVENTOS MULTILÍNGUES",
         "class_code": "02",
         "teachers": [
-          "CHARLES ROCHA TEIXEIRA"
+          "CHARLES ROCHA TEIXEIRA",
+          "JANAINA SOARES DE OLIVEIRA ALVES"
         ],
         "classroom": "BSA S BT 19/13",
         "schedule_code": "24T23",
@@ -299843,7 +300726,7 @@
         "discipline_name": "INTRODUÇÃO À ADMINISTRAÇÃO APLICADA À GESTÃO AMBIENTAL",
         "class_code": "01",
         "teachers": [
-          "CAROLINA LOPES ARAUJO"
+          "MARIANA MAGRE MACHADO"
         ],
         "classroom": "FUP UAC: A1-48/10",
         "schedule_code": "4N1234",
@@ -299883,7 +300766,7 @@
             "global_slot_index": 14
           }
         ],
-        "occupied": 40
+        "occupied": 47
       }
     ]
   },
@@ -300283,7 +301166,7 @@
         "discipline_name": "GESTÃO ORGANIZACIONAL E ANÁLISES SOCIOAMBIENTAIS",
         "class_code": "01",
         "teachers": [
-          "CAROLINA LOPES ARAUJO"
+          "MARIANA MAGRE MACHADO"
         ],
         "classroom": "FUP UAC: A1-42/8",
         "schedule_code": "3N1234",
@@ -351097,6 +351980,1525 @@
     ]
   },
   {
+    "code": "PGA0001",
+    "name": "GESTÃO DE SEGURANÇA DA INFORMAÇÃO",
+    "department_id": "1847",
+    "classes": [
+      {
+        "id": "PGA0001-01",
+        "discipline_code": "PGA0001",
+        "discipline_name": "GESTÃO DE SEGURANÇA DA INFORMAÇÃO",
+        "class_code": "01",
+        "teachers": [
+          "RAFAEL RABELO NUNES"
+        ],
+        "classroom": "A definir",
+        "schedule_code": "2N1234 2N1234 2N1234 2N1234",
+        "schedule_description": "26/10/2026 - 09/11/2026), (23/11/2026 - 23/11/2026), (07/12/2026 - 07/12/2026) / Segunda-feira 19:00 às 22:30 / Segunda-feira 19:00 às 22:30 / Segunda-feira 19:00 às 22:30 / Segunda-feira 19:00 às 22:30",
+        "date_range": "17/08/2026 - 28/09/2026",
+        "schedule_slots": [
+          {
+            "day": 2,
+            "day_name": "Seg",
+            "shift": "N",
+            "period": 1,
+            "time_range": "19:00 - 19:50",
+            "global_slot_index": 11
+          },
+          {
+            "day": 2,
+            "day_name": "Seg",
+            "shift": "N",
+            "period": 2,
+            "time_range": "19:50 - 20:40",
+            "global_slot_index": 12
+          },
+          {
+            "day": 2,
+            "day_name": "Seg",
+            "shift": "N",
+            "period": 3,
+            "time_range": "20:50 - 21:40",
+            "global_slot_index": 13
+          },
+          {
+            "day": 2,
+            "day_name": "Seg",
+            "shift": "N",
+            "period": 4,
+            "time_range": "21:40 - 22:30",
+            "global_slot_index": 14
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "code": "PGA0002",
+    "name": "GESTÃO DE PRIVACIDADE E PROTEÇÃO DE DADOS PESSOAIS",
+    "department_id": "1847",
+    "classes": [
+      {
+        "id": "PGA0002-01",
+        "discipline_code": "PGA0002",
+        "discipline_name": "GESTÃO DE PRIVACIDADE E PROTEÇÃO DE DADOS PESSOAIS",
+        "class_code": "01",
+        "teachers": [
+          "EDNA DIAS CANEDO"
+        ],
+        "classroom": "A definir",
+        "schedule_code": "5N1234 5N1234 5N1234 5N1234 5N1234",
+        "schedule_description": "03/09/2026 - 03/09/2026), (17/09/2026 - 17/09/2026), (01/10/2026 - 01/10/2026), (15/10/2026 - 19/11/2026) / Quinta-feira 19:00 às 22:30 / Quinta-feira 19:00 às 22:30 / Quinta-feira 19:00 às 22:30 / Quinta-feira 19:00 às 22:30 / Quinta-feira 19:00 às 22:30",
+        "date_range": "20/08/2026 - 20/08/2026",
+        "schedule_slots": [
+          {
+            "day": 5,
+            "day_name": "Qui",
+            "shift": "N",
+            "period": 1,
+            "time_range": "19:00 - 19:50",
+            "global_slot_index": 11
+          },
+          {
+            "day": 5,
+            "day_name": "Qui",
+            "shift": "N",
+            "period": 2,
+            "time_range": "19:50 - 20:40",
+            "global_slot_index": 12
+          },
+          {
+            "day": 5,
+            "day_name": "Qui",
+            "shift": "N",
+            "period": 3,
+            "time_range": "20:50 - 21:40",
+            "global_slot_index": 13
+          },
+          {
+            "day": 5,
+            "day_name": "Qui",
+            "shift": "N",
+            "period": 4,
+            "time_range": "21:40 - 22:30",
+            "global_slot_index": 14
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "code": "PGA0003",
+    "name": "METODOLOGIA CIENTÍFICA",
+    "department_id": "1847",
+    "classes": [
+      {
+        "id": "PGA0003-01",
+        "discipline_code": "PGA0003",
+        "discipline_name": "METODOLOGIA CIENTÍFICA",
+        "class_code": "01",
+        "teachers": [
+          "JOSIVANIA SILVA FARIAS"
+        ],
+        "classroom": "A definir",
+        "schedule_code": "2N1234 2N1234 2N1234",
+        "schedule_description": "16/11/2026 - 16/11/2026), (30/11/2026 - 30/11/2026) / Segunda-feira 19:00 às 22:30 / Segunda-feira 19:00 às 22:30 / Segunda-feira 19:00 às 22:30",
+        "date_range": "05/10/2026 - 12/10/2026",
+        "schedule_slots": [
+          {
+            "day": 2,
+            "day_name": "Seg",
+            "shift": "N",
+            "period": 1,
+            "time_range": "19:00 - 19:50",
+            "global_slot_index": 11
+          },
+          {
+            "day": 2,
+            "day_name": "Seg",
+            "shift": "N",
+            "period": 2,
+            "time_range": "19:50 - 20:40",
+            "global_slot_index": 12
+          },
+          {
+            "day": 2,
+            "day_name": "Seg",
+            "shift": "N",
+            "period": 3,
+            "time_range": "20:50 - 21:40",
+            "global_slot_index": 13
+          },
+          {
+            "day": 2,
+            "day_name": "Seg",
+            "shift": "N",
+            "period": 4,
+            "time_range": "21:40 - 22:30",
+            "global_slot_index": 14
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "code": "PGA0004",
+    "name": "DIREITO DIGITAL E PRIVACIDADE",
+    "department_id": "1847",
+    "classes": [
+      {
+        "id": "PGA0004-01",
+        "discipline_code": "PGA0004",
+        "discipline_name": "DIREITO DIGITAL E PRIVACIDADE",
+        "class_code": "01",
+        "teachers": [
+          "VIRGÍNIA DE MELO DANTAS TRINKS"
+        ],
+        "classroom": "A definir",
+        "schedule_code": "3N1234 3N1234 5N1234 3N1234 5N1234 2N1234",
+        "schedule_description": "17/11/2026 - 24/11/2026), (26/11/2026 - 26/11/2026), (08/12/2026 - 08/12/2026), (10/12/2026 - 10/12/2026), (14/12/2026 - 14/12/2026) / Terça-feira 19:00 às 22:30 / Terça-feira 19:00 às 22:30 / Quinta-feira 19:00 às 22:30 / Terça-feira 19:00 às 22:30 / Quinta-feira 19:00 às 22:30 / Segunda-feira 19:00 às 22:30",
+        "date_range": "03/11/2026 - 03/11/2026",
+        "schedule_slots": [
+          {
+            "day": 3,
+            "day_name": "Ter",
+            "shift": "N",
+            "period": 1,
+            "time_range": "19:00 - 19:50",
+            "global_slot_index": 11
+          },
+          {
+            "day": 3,
+            "day_name": "Ter",
+            "shift": "N",
+            "period": 2,
+            "time_range": "19:50 - 20:40",
+            "global_slot_index": 12
+          },
+          {
+            "day": 3,
+            "day_name": "Ter",
+            "shift": "N",
+            "period": 3,
+            "time_range": "20:50 - 21:40",
+            "global_slot_index": 13
+          },
+          {
+            "day": 3,
+            "day_name": "Ter",
+            "shift": "N",
+            "period": 4,
+            "time_range": "21:40 - 22:30",
+            "global_slot_index": 14
+          },
+          {
+            "day": 5,
+            "day_name": "Qui",
+            "shift": "N",
+            "period": 1,
+            "time_range": "19:00 - 19:50",
+            "global_slot_index": 11
+          },
+          {
+            "day": 5,
+            "day_name": "Qui",
+            "shift": "N",
+            "period": 2,
+            "time_range": "19:50 - 20:40",
+            "global_slot_index": 12
+          },
+          {
+            "day": 5,
+            "day_name": "Qui",
+            "shift": "N",
+            "period": 3,
+            "time_range": "20:50 - 21:40",
+            "global_slot_index": 13
+          },
+          {
+            "day": 5,
+            "day_name": "Qui",
+            "shift": "N",
+            "period": 4,
+            "time_range": "21:40 - 22:30",
+            "global_slot_index": 14
+          },
+          {
+            "day": 2,
+            "day_name": "Seg",
+            "shift": "N",
+            "period": 1,
+            "time_range": "19:00 - 19:50",
+            "global_slot_index": 11
+          },
+          {
+            "day": 2,
+            "day_name": "Seg",
+            "shift": "N",
+            "period": 2,
+            "time_range": "19:50 - 20:40",
+            "global_slot_index": 12
+          },
+          {
+            "day": 2,
+            "day_name": "Seg",
+            "shift": "N",
+            "period": 3,
+            "time_range": "20:50 - 21:40",
+            "global_slot_index": 13
+          },
+          {
+            "day": 2,
+            "day_name": "Seg",
+            "shift": "N",
+            "period": 4,
+            "time_range": "21:40 - 22:30",
+            "global_slot_index": 14
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "code": "PGA0005",
+    "name": "SEGURANÇA EM AMBIENTES DE COMPUTAÇÃO EM NUVEM",
+    "department_id": "1847",
+    "classes": [
+      {
+        "id": "PGA0005-01",
+        "discipline_code": "PGA0005",
+        "discipline_name": "SEGURANÇA EM AMBIENTES DE COMPUTAÇÃO EM NUVEM",
+        "class_code": "01",
+        "teachers": [
+          "ROBSON DE OLIVEIRA ALBUQUERQUE"
+        ],
+        "classroom": "A definir",
+        "schedule_code": "5N1234 5N1234 5N1234 5N1234",
+        "schedule_description": "10/09/2026 - 10/09/2026), (24/09/2026 - 24/09/2026), (08/10/2026 - 08/10/2026) / Quinta-feira 19:00 às 22:30 / Quinta-feira 19:00 às 22:30 / Quinta-feira 19:00 às 22:30 / Quinta-feira 19:00 às 22:30",
+        "date_range": "27/08/2026 - 27/08/2026",
+        "schedule_slots": [
+          {
+            "day": 5,
+            "day_name": "Qui",
+            "shift": "N",
+            "period": 1,
+            "time_range": "19:00 - 19:50",
+            "global_slot_index": 11
+          },
+          {
+            "day": 5,
+            "day_name": "Qui",
+            "shift": "N",
+            "period": 2,
+            "time_range": "19:50 - 20:40",
+            "global_slot_index": 12
+          },
+          {
+            "day": 5,
+            "day_name": "Qui",
+            "shift": "N",
+            "period": 3,
+            "time_range": "20:50 - 21:40",
+            "global_slot_index": 13
+          },
+          {
+            "day": 5,
+            "day_name": "Qui",
+            "shift": "N",
+            "period": 4,
+            "time_range": "21:40 - 22:30",
+            "global_slot_index": 14
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "code": "PGA0006",
+    "name": "GESTÃO DE INCIDENTES CIBERNÉTICOS",
+    "department_id": "1847",
+    "classes": [
+      {
+        "id": "PGA0006-01",
+        "discipline_code": "PGA0006",
+        "discipline_name": "GESTÃO DE INCIDENTES CIBERNÉTICOS",
+        "class_code": "01",
+        "teachers": [
+          "ÉDER SOUZA GUALBERTO"
+        ],
+        "classroom": "A definir",
+        "schedule_code": "3N1234 3N1234 3N1234 5N1234",
+        "schedule_description": "10/11/2026 - 10/11/2026), (01/12/2026 - 01/12/2026), (03/12/2026 - 03/12/2026) / Terça-feira 19:00 às 22:30 / Terça-feira 19:00 às 22:30 / Terça-feira 19:00 às 22:30 / Quinta-feira 19:00 às 22:30",
+        "date_range": "06/10/2026 - 27/10/2026",
+        "schedule_slots": [
+          {
+            "day": 3,
+            "day_name": "Ter",
+            "shift": "N",
+            "period": 1,
+            "time_range": "19:00 - 19:50",
+            "global_slot_index": 11
+          },
+          {
+            "day": 3,
+            "day_name": "Ter",
+            "shift": "N",
+            "period": 2,
+            "time_range": "19:50 - 20:40",
+            "global_slot_index": 12
+          },
+          {
+            "day": 3,
+            "day_name": "Ter",
+            "shift": "N",
+            "period": 3,
+            "time_range": "20:50 - 21:40",
+            "global_slot_index": 13
+          },
+          {
+            "day": 3,
+            "day_name": "Ter",
+            "shift": "N",
+            "period": 4,
+            "time_range": "21:40 - 22:30",
+            "global_slot_index": 14
+          },
+          {
+            "day": 5,
+            "day_name": "Qui",
+            "shift": "N",
+            "period": 1,
+            "time_range": "19:00 - 19:50",
+            "global_slot_index": 11
+          },
+          {
+            "day": 5,
+            "day_name": "Qui",
+            "shift": "N",
+            "period": 2,
+            "time_range": "19:50 - 20:40",
+            "global_slot_index": 12
+          },
+          {
+            "day": 5,
+            "day_name": "Qui",
+            "shift": "N",
+            "period": 3,
+            "time_range": "20:50 - 21:40",
+            "global_slot_index": 13
+          },
+          {
+            "day": 5,
+            "day_name": "Qui",
+            "shift": "N",
+            "period": 4,
+            "time_range": "21:40 - 22:30",
+            "global_slot_index": 14
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "code": "PGA0007",
+    "name": "GESTÃO E PREVENÇÃO DE FRAUDES",
+    "department_id": "1847",
+    "classes": [
+      {
+        "id": "PGA0007-01",
+        "discipline_code": "PGA0007",
+        "discipline_name": "GESTÃO E PREVENÇÃO DE FRAUDES",
+        "class_code": "01",
+        "teachers": [
+          "EDVAN GOMES DA SILVA"
+        ],
+        "classroom": "A definir",
+        "schedule_code": "3N1234",
+        "schedule_description": "Terça-feira 19:00 às 22:30",
+        "date_range": "18/08/2026 - 29/09/2026",
+        "schedule_slots": [
+          {
+            "day": 3,
+            "day_name": "Ter",
+            "shift": "N",
+            "period": 1,
+            "time_range": "19:00 - 19:50",
+            "global_slot_index": 11
+          },
+          {
+            "day": 3,
+            "day_name": "Ter",
+            "shift": "N",
+            "period": 2,
+            "time_range": "19:50 - 20:40",
+            "global_slot_index": 12
+          },
+          {
+            "day": 3,
+            "day_name": "Ter",
+            "shift": "N",
+            "period": 3,
+            "time_range": "20:50 - 21:40",
+            "global_slot_index": 13
+          },
+          {
+            "day": 3,
+            "day_name": "Ter",
+            "shift": "N",
+            "period": 4,
+            "time_range": "21:40 - 22:30",
+            "global_slot_index": 14
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "code": "PGA0008",
+    "name": "DESENVOLVIMENTO SEGURO DE SERVIÇOS DIGITAIS",
+    "department_id": "1847",
+    "classes": [
+      {
+        "id": "PGA0008-01",
+        "discipline_code": "PGA0008",
+        "discipline_name": "DESENVOLVIMENTO SEGURO DE SERVIÇOS DIGITAIS",
+        "class_code": "01",
+        "teachers": [
+          "ELAINE VENSON"
+        ],
+        "classroom": "A definir",
+        "schedule_code": "3N1234",
+        "schedule_description": "Terça-feira 19:00 às 22:30",
+        "date_range": "20/10/2026 - 01/12/2026",
+        "schedule_slots": [
+          {
+            "day": 3,
+            "day_name": "Ter",
+            "shift": "N",
+            "period": 1,
+            "time_range": "19:00 - 19:50",
+            "global_slot_index": 11
+          },
+          {
+            "day": 3,
+            "day_name": "Ter",
+            "shift": "N",
+            "period": 2,
+            "time_range": "19:50 - 20:40",
+            "global_slot_index": 12
+          },
+          {
+            "day": 3,
+            "day_name": "Ter",
+            "shift": "N",
+            "period": 3,
+            "time_range": "20:50 - 21:40",
+            "global_slot_index": 13
+          },
+          {
+            "day": 3,
+            "day_name": "Ter",
+            "shift": "N",
+            "period": 4,
+            "time_range": "21:40 - 22:30",
+            "global_slot_index": 14
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "code": "PGA0009",
+    "name": "GESTÃO DE OPERAÇÕES DE SEGURANÇA",
+    "department_id": "1847",
+    "classes": [
+      {
+        "id": "PGA0009-01",
+        "discipline_code": "PGA0009",
+        "discipline_name": "GESTÃO DE OPERAÇÕES DE SEGURANÇA",
+        "class_code": "01",
+        "teachers": [
+          "LAERTE PEOTTA DE MELO"
+        ],
+        "classroom": "A definir",
+        "schedule_code": "A definir",
+        "schedule_slots": []
+      }
+    ]
+  },
+  {
+    "code": "PGA0010",
+    "name": "TESTES DE SEGURANÇA E ANÁLISE DE VULNERABILIDADES",
+    "department_id": "1847",
+    "classes": [
+      {
+        "id": "PGA0010-01",
+        "discipline_code": "PGA0010",
+        "discipline_name": "TESTES DE SEGURANÇA E ANÁLISE DE VULNERABILIDADES",
+        "class_code": "01",
+        "teachers": [
+          "JOAO JOSE COSTA GONDIM"
+        ],
+        "classroom": "A definir",
+        "schedule_code": "2N34 5N1234 3N34 5N1234 5N1234",
+        "schedule_description": "03/12/2026 - 03/12/2026), (08/12/2026 - 08/12/2026), (10/12/2026 - 10/12/2026), (17/12/2026 - 17/12/2026) / Segunda-feira 20:50 às 22:30 / Quinta-feira 19:00 às 22:30 / Terça-feira 20:50 às 22:30 / Quinta-feira 19:00 às 22:30 / Quinta-feira 19:00 às 22:30",
+        "date_range": "26/10/2026 - 30/11/2026",
+        "schedule_slots": [
+          {
+            "day": 2,
+            "day_name": "Seg",
+            "shift": "N",
+            "period": 3,
+            "time_range": "20:50 - 21:40",
+            "global_slot_index": 13
+          },
+          {
+            "day": 2,
+            "day_name": "Seg",
+            "shift": "N",
+            "period": 4,
+            "time_range": "21:40 - 22:30",
+            "global_slot_index": 14
+          },
+          {
+            "day": 5,
+            "day_name": "Qui",
+            "shift": "N",
+            "period": 1,
+            "time_range": "19:00 - 19:50",
+            "global_slot_index": 11
+          },
+          {
+            "day": 5,
+            "day_name": "Qui",
+            "shift": "N",
+            "period": 2,
+            "time_range": "19:50 - 20:40",
+            "global_slot_index": 12
+          },
+          {
+            "day": 5,
+            "day_name": "Qui",
+            "shift": "N",
+            "period": 3,
+            "time_range": "20:50 - 21:40",
+            "global_slot_index": 13
+          },
+          {
+            "day": 5,
+            "day_name": "Qui",
+            "shift": "N",
+            "period": 4,
+            "time_range": "21:40 - 22:30",
+            "global_slot_index": 14
+          },
+          {
+            "day": 3,
+            "day_name": "Ter",
+            "shift": "N",
+            "period": 3,
+            "time_range": "20:50 - 21:40",
+            "global_slot_index": 13
+          },
+          {
+            "day": 3,
+            "day_name": "Ter",
+            "shift": "N",
+            "period": 4,
+            "time_range": "21:40 - 22:30",
+            "global_slot_index": 14
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "code": "PGA0011",
+    "name": "ELABORAÇÃO DE ARTIGOS CIENTÍFICOS",
+    "department_id": "1847",
+    "classes": [
+      {
+        "id": "PGA0011-01",
+        "discipline_code": "PGA0011",
+        "discipline_name": "ELABORAÇÃO DE ARTIGOS CIENTÍFICOS",
+        "class_code": "01",
+        "teachers": [
+          "ELUIZA ALBERTO DE MORAIS WATANABE"
+        ],
+        "classroom": "A definir",
+        "schedule_code": "3N1234",
+        "schedule_description": "Terça-feira 19:00 às 22:30",
+        "date_range": "22/09/2026 - 13/10/2026",
+        "schedule_slots": [
+          {
+            "day": 3,
+            "day_name": "Ter",
+            "shift": "N",
+            "period": 1,
+            "time_range": "19:00 - 19:50",
+            "global_slot_index": 11
+          },
+          {
+            "day": 3,
+            "day_name": "Ter",
+            "shift": "N",
+            "period": 2,
+            "time_range": "19:50 - 20:40",
+            "global_slot_index": 12
+          },
+          {
+            "day": 3,
+            "day_name": "Ter",
+            "shift": "N",
+            "period": 3,
+            "time_range": "20:50 - 21:40",
+            "global_slot_index": 13
+          },
+          {
+            "day": 3,
+            "day_name": "Ter",
+            "shift": "N",
+            "period": 4,
+            "time_range": "21:40 - 22:30",
+            "global_slot_index": 14
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "code": "PGA0012",
+    "name": "INTELIGÊNCIA E MONITORAMENTO DE AMEAÇAS CIBERNÉTICAS",
+    "department_id": "1847",
+    "classes": [
+      {
+        "id": "PGA0012-01",
+        "discipline_code": "PGA0012",
+        "discipline_name": "INTELIGÊNCIA E MONITORAMENTO DE AMEAÇAS CIBERNÉTICAS",
+        "class_code": "01",
+        "teachers": [
+          "ROBSON DE OLIVEIRA ALBUQUERQUE"
+        ],
+        "classroom": "A definir",
+        "schedule_code": "2N34",
+        "schedule_description": "Segunda-feira 20:50 às 22:30",
+        "date_range": "17/08/2026 - 19/10/2026",
+        "schedule_slots": [
+          {
+            "day": 2,
+            "day_name": "Seg",
+            "shift": "N",
+            "period": 3,
+            "time_range": "20:50 - 21:40",
+            "global_slot_index": 13
+          },
+          {
+            "day": 2,
+            "day_name": "Seg",
+            "shift": "N",
+            "period": 4,
+            "time_range": "21:40 - 22:30",
+            "global_slot_index": 14
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "code": "PGA0013",
+    "name": "TECNOLOGIAS DE APRIMORAMENTO DA PRIVACIDADE",
+    "department_id": "1847",
+    "classes": [
+      {
+        "id": "PGA0013-01",
+        "discipline_code": "PGA0013",
+        "discipline_name": "TECNOLOGIAS DE APRIMORAMENTO DA PRIVACIDADE",
+        "class_code": "01",
+        "teachers": [
+          "EDNA DIAS CANEDO"
+        ],
+        "classroom": "A definir",
+        "schedule_code": "3N1234",
+        "schedule_description": "Terça-feira 19:00 às 22:30",
+        "date_range": "18/08/2026 - 15/09/2026",
+        "schedule_slots": [
+          {
+            "day": 3,
+            "day_name": "Ter",
+            "shift": "N",
+            "period": 1,
+            "time_range": "19:00 - 19:50",
+            "global_slot_index": 11
+          },
+          {
+            "day": 3,
+            "day_name": "Ter",
+            "shift": "N",
+            "period": 2,
+            "time_range": "19:50 - 20:40",
+            "global_slot_index": 12
+          },
+          {
+            "day": 3,
+            "day_name": "Ter",
+            "shift": "N",
+            "period": 3,
+            "time_range": "20:50 - 21:40",
+            "global_slot_index": 13
+          },
+          {
+            "day": 3,
+            "day_name": "Ter",
+            "shift": "N",
+            "period": 4,
+            "time_range": "21:40 - 22:30",
+            "global_slot_index": 14
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "code": "PGA0014",
+    "name": "GESTÃO DE PRIVACIDADE E SEGURANÇA DA INFORMAÇÃO EM CADEIAS DE SUPRIMENTOS",
+    "department_id": "1847",
+    "classes": [
+      {
+        "id": "PGA0014-01",
+        "discipline_code": "PGA0014",
+        "discipline_name": "GESTÃO DE PRIVACIDADE E SEGURANÇA DA INFORMAÇÃO EM CADEIAS DE SUPRIMENTOS",
+        "class_code": "01",
+        "teachers": [
+          "ÉDER SOUZA GUALBERTO"
+        ],
+        "classroom": "A definir",
+        "schedule_code": "5N1234",
+        "schedule_description": "Quinta-feira 19:00 às 22:30",
+        "date_range": "05/11/2026 - 26/11/2026",
+        "schedule_slots": [
+          {
+            "day": 5,
+            "day_name": "Qui",
+            "shift": "N",
+            "period": 1,
+            "time_range": "19:00 - 19:50",
+            "global_slot_index": 11
+          },
+          {
+            "day": 5,
+            "day_name": "Qui",
+            "shift": "N",
+            "period": 2,
+            "time_range": "19:50 - 20:40",
+            "global_slot_index": 12
+          },
+          {
+            "day": 5,
+            "day_name": "Qui",
+            "shift": "N",
+            "period": 3,
+            "time_range": "20:50 - 21:40",
+            "global_slot_index": 13
+          },
+          {
+            "day": 5,
+            "day_name": "Qui",
+            "shift": "N",
+            "period": 4,
+            "time_range": "21:40 - 22:30",
+            "global_slot_index": 14
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "code": "PGA0015",
+    "name": "GESTÃO DE CRISES E CONTINUIDADE DE SERVIÇOS ESSENCIAIS",
+    "department_id": "1847",
+    "classes": [
+      {
+        "id": "PGA0015-01",
+        "discipline_code": "PGA0015",
+        "discipline_name": "GESTÃO DE CRISES E CONTINUIDADE DE SERVIÇOS ESSENCIAIS",
+        "class_code": "01",
+        "teachers": [
+          "DANIEL CHAVES CAFE"
+        ],
+        "classroom": "A definir",
+        "schedule_code": "2N12",
+        "schedule_description": "Segunda-feira 19:00 às 20:40",
+        "date_range": "17/08/2026 - 19/10/2026",
+        "schedule_slots": [
+          {
+            "day": 2,
+            "day_name": "Seg",
+            "shift": "N",
+            "period": 1,
+            "time_range": "19:00 - 19:50",
+            "global_slot_index": 11
+          },
+          {
+            "day": 2,
+            "day_name": "Seg",
+            "shift": "N",
+            "period": 2,
+            "time_range": "19:50 - 20:40",
+            "global_slot_index": 12
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "code": "PGAP0005",
+    "name": "PESQUISA QUALITATIVA AVANÇADA EM ADMINISTRAÇÃO PÚBLICA",
+    "department_id": "1847",
+    "classes": [
+      {
+        "id": "PGAP0005-01",
+        "discipline_code": "PGAP0005",
+        "discipline_name": "PESQUISA QUALITATIVA AVANÇADA EM ADMINISTRAÇÃO PÚBLICA",
+        "class_code": "01",
+        "teachers": [
+          "PAULO RICARDO DA COSTA REIS"
+        ],
+        "classroom": "FACE, UnB, Sala D1-06/37",
+        "schedule_code": "6T23",
+        "schedule_description": "Sexta-feira 14:00 às 15:50",
+        "date_range": "28/08/2026 - 11/12/2026",
+        "schedule_slots": [
+          {
+            "day": 6,
+            "day_name": "Sex",
+            "shift": "T",
+            "period": 2,
+            "time_range": "14:00 - 14:55",
+            "global_slot_index": 6
+          },
+          {
+            "day": 6,
+            "day_name": "Sex",
+            "shift": "T",
+            "period": 3,
+            "time_range": "14:55 - 15:50",
+            "global_slot_index": 7
+          }
+        ],
+        "occupied": 12
+      },
+      {
+        "id": "PGAP0005-02",
+        "discipline_code": "PGAP0005",
+        "discipline_name": "PESQUISA QUALITATIVA AVANÇADA EM ADMINISTRAÇÃO PÚBLICA",
+        "class_code": "02",
+        "teachers": [
+          "CLEIDSON NOGUEIRA DIAS"
+        ],
+        "classroom": "FACE - Sala 06/52",
+        "schedule_code": "2M345",
+        "schedule_description": "Segunda-feira 10:00 às 12:55",
+        "date_range": "17/08/2026 - 23/11/2026",
+        "schedule_slots": [
+          {
+            "day": 2,
+            "day_name": "Seg",
+            "shift": "M",
+            "period": 3,
+            "time_range": "10:00 - 10:55",
+            "global_slot_index": 2
+          },
+          {
+            "day": 2,
+            "day_name": "Seg",
+            "shift": "M",
+            "period": 4,
+            "time_range": "10:55 - 11:50",
+            "global_slot_index": 3
+          },
+          {
+            "day": 2,
+            "day_name": "Seg",
+            "shift": "M",
+            "period": 5,
+            "time_range": "12:00 - 12:55",
+            "global_slot_index": 4
+          }
+        ],
+        "occupied": 12
+      },
+      {
+        "id": "PGAP0005-03",
+        "discipline_code": "PGAP0005",
+        "discipline_name": "PESQUISA QUALITATIVA AVANÇADA EM ADMINISTRAÇÃO PÚBLICA",
+        "class_code": "03",
+        "teachers": [
+          "PATRICIA GUARNIERI"
+        ],
+        "classroom": "FACE, Bloco D, Sala D1-06/52 (5ªf) e D1-06/09 (dem",
+        "schedule_code": "56M1234 7M1234 5M1234 7M1234 56M1234",
+        "schedule_description": "28/11/2026 - 28/11/2026), (03/12/2026 - 03/12/2026), (05/12/2026 - 05/12/2026), (10/12/2026 - 11/12/2026) / Quinta-feira 08:00 às 11:50 / Sexta-feira 08:00 às 11:50 / Sábado 08:00 às 11:50 / Quinta-feira 08:00 às 11:50 / Sábado 08:00 às 11:50 / Quinta-feira 08:00 às 11:50 / Sexta-feira 08:00 às 11:50",
+        "date_range": "29/10/2026 - 30/10/2026",
+        "schedule_slots": [
+          {
+            "day": 5,
+            "day_name": "Qui",
+            "shift": "M",
+            "period": 1,
+            "time_range": "08:00 - 08:55",
+            "global_slot_index": 0
+          },
+          {
+            "day": 5,
+            "day_name": "Qui",
+            "shift": "M",
+            "period": 2,
+            "time_range": "08:55 - 09:50",
+            "global_slot_index": 1
+          },
+          {
+            "day": 5,
+            "day_name": "Qui",
+            "shift": "M",
+            "period": 3,
+            "time_range": "10:00 - 10:55",
+            "global_slot_index": 2
+          },
+          {
+            "day": 5,
+            "day_name": "Qui",
+            "shift": "M",
+            "period": 4,
+            "time_range": "10:55 - 11:50",
+            "global_slot_index": 3
+          },
+          {
+            "day": 6,
+            "day_name": "Sex",
+            "shift": "M",
+            "period": 1,
+            "time_range": "08:00 - 08:55",
+            "global_slot_index": 0
+          },
+          {
+            "day": 6,
+            "day_name": "Sex",
+            "shift": "M",
+            "period": 2,
+            "time_range": "08:55 - 09:50",
+            "global_slot_index": 1
+          },
+          {
+            "day": 6,
+            "day_name": "Sex",
+            "shift": "M",
+            "period": 3,
+            "time_range": "10:00 - 10:55",
+            "global_slot_index": 2
+          },
+          {
+            "day": 6,
+            "day_name": "Sex",
+            "shift": "M",
+            "period": 4,
+            "time_range": "10:55 - 11:50",
+            "global_slot_index": 3
+          },
+          {
+            "day": 7,
+            "day_name": "Sáb",
+            "shift": "M",
+            "period": 1,
+            "time_range": "08:00 - 08:55",
+            "global_slot_index": 0
+          },
+          {
+            "day": 7,
+            "day_name": "Sáb",
+            "shift": "M",
+            "period": 2,
+            "time_range": "08:55 - 09:50",
+            "global_slot_index": 1
+          },
+          {
+            "day": 7,
+            "day_name": "Sáb",
+            "shift": "M",
+            "period": 3,
+            "time_range": "10:00 - 10:55",
+            "global_slot_index": 2
+          },
+          {
+            "day": 7,
+            "day_name": "Sáb",
+            "shift": "M",
+            "period": 4,
+            "time_range": "10:55 - 11:50",
+            "global_slot_index": 3
+          }
+        ],
+        "occupied": 20
+      }
+    ]
+  },
+  {
+    "code": "PGAP0008",
+    "name": "MÉTODOS E TÉCNICAS DE PESQUISA EM ADMINISTRAÇÃO PÚBLICA",
+    "department_id": "1847",
+    "classes": [
+      {
+        "id": "PGAP0008-01",
+        "discipline_code": "PGAP0008",
+        "discipline_name": "MÉTODOS E TÉCNICAS DE PESQUISA EM ADMINISTRAÇÃO PÚBLICA",
+        "class_code": "01",
+        "teachers": [
+          "ELAINE RABELO NEIVA"
+        ],
+        "classroom": "Sala 06/52 - pós-graduação",
+        "schedule_code": "3M45",
+        "schedule_description": "Terça-feira 10:55 às 12:55",
+        "date_range": "18/08/2026 - 10/11/2026",
+        "schedule_slots": [
+          {
+            "day": 3,
+            "day_name": "Ter",
+            "shift": "M",
+            "period": 4,
+            "time_range": "10:55 - 11:50",
+            "global_slot_index": 3
+          },
+          {
+            "day": 3,
+            "day_name": "Ter",
+            "shift": "M",
+            "period": 5,
+            "time_range": "12:00 - 12:55",
+            "global_slot_index": 4
+          }
+        ],
+        "occupied": 12
+      },
+      {
+        "id": "PGAP0008-02",
+        "discipline_code": "PGAP0008",
+        "discipline_name": "MÉTODOS E TÉCNICAS DE PESQUISA EM ADMINISTRAÇÃO PÚBLICA",
+        "class_code": "02",
+        "teachers": [
+          "MARINA FIGUEIREDO MOREIRA"
+        ],
+        "classroom": "FACE, Bloco D, Sala D1-06/09",
+        "schedule_code": "6M1234 6M1234",
+        "schedule_description": "06/11/2026 - 04/12/2026) / Sexta-feira 08:00 às 11:50 / Sexta-feira 08:00 às 11:50",
+        "date_range": "09/10/2026 - 23/10/2026",
+        "schedule_slots": [
+          {
+            "day": 6,
+            "day_name": "Sex",
+            "shift": "M",
+            "period": 1,
+            "time_range": "08:00 - 08:55",
+            "global_slot_index": 0
+          },
+          {
+            "day": 6,
+            "day_name": "Sex",
+            "shift": "M",
+            "period": 2,
+            "time_range": "08:55 - 09:50",
+            "global_slot_index": 1
+          },
+          {
+            "day": 6,
+            "day_name": "Sex",
+            "shift": "M",
+            "period": 3,
+            "time_range": "10:00 - 10:55",
+            "global_slot_index": 2
+          },
+          {
+            "day": 6,
+            "day_name": "Sex",
+            "shift": "M",
+            "period": 4,
+            "time_range": "10:55 - 11:50",
+            "global_slot_index": 3
+          }
+        ],
+        "occupied": 20
+      }
+    ]
+  },
+  {
+    "code": "PGAP0009",
+    "name": "PESQUISA QUANTITATIVA AVANÇADA EM ADMINISTRAÇÃO PÚBLICA",
+    "department_id": "1847",
+    "classes": [
+      {
+        "id": "PGAP0009-01",
+        "discipline_code": "PGAP0009",
+        "discipline_name": "PESQUISA QUANTITATIVA AVANÇADA EM ADMINISTRAÇÃO PÚBLICA",
+        "class_code": "01",
+        "teachers": [
+          "LUCIANO ROSSONI"
+        ],
+        "classroom": "FACE, UnB",
+        "schedule_code": "7M12",
+        "schedule_description": "Sábado 08:00 às 09:50",
+        "date_range": "08/08/2026 - 12/12/2026",
+        "schedule_slots": [
+          {
+            "day": 7,
+            "day_name": "Sáb",
+            "shift": "M",
+            "period": 1,
+            "time_range": "08:00 - 08:55",
+            "global_slot_index": 0
+          },
+          {
+            "day": 7,
+            "day_name": "Sáb",
+            "shift": "M",
+            "period": 2,
+            "time_range": "08:55 - 09:50",
+            "global_slot_index": 1
+          }
+        ],
+        "occupied": 12
+      }
+    ]
+  },
+  {
+    "code": "PGAP0011",
+    "name": "FUNDAMENTOS DA GESTÃO PÚBLICA",
+    "department_id": "1847",
+    "classes": [
+      {
+        "id": "PGAP0011-01",
+        "discipline_code": "PGAP0011",
+        "discipline_name": "FUNDAMENTOS DA GESTÃO PÚBLICA",
+        "class_code": "01",
+        "teachers": [
+          "ARNALDO MAUERBERG JUNIOR"
+        ],
+        "classroom": "Sala 06/52 - pós-graduação",
+        "schedule_code": "3M12",
+        "schedule_description": "Terça-feira 08:00 às 09:50",
+        "date_range": "11/08/2026 - 14/12/2026",
+        "schedule_slots": [
+          {
+            "day": 3,
+            "day_name": "Ter",
+            "shift": "M",
+            "period": 1,
+            "time_range": "08:00 - 08:55",
+            "global_slot_index": 0
+          },
+          {
+            "day": 3,
+            "day_name": "Ter",
+            "shift": "M",
+            "period": 2,
+            "time_range": "08:55 - 09:50",
+            "global_slot_index": 1
+          }
+        ],
+        "occupied": 12
+      },
+      {
+        "id": "PGAP0011-02",
+        "discipline_code": "PGAP0011",
+        "discipline_name": "FUNDAMENTOS DA GESTÃO PÚBLICA",
+        "class_code": "02",
+        "teachers": [
+          "CAIO CASTELLIANO DE VASCONCELOS"
+        ],
+        "classroom": "FACE, Bloco D, Sala D1-06/52",
+        "schedule_code": "5M1234 5M1234",
+        "schedule_description": "05/11/2026 - 26/11/2026) / Quinta-feira 08:00 às 11:50 / Quinta-feira 08:00 às 11:50",
+        "date_range": "08/10/2026 - 22/10/2026",
+        "schedule_slots": [
+          {
+            "day": 5,
+            "day_name": "Qui",
+            "shift": "M",
+            "period": 1,
+            "time_range": "08:00 - 08:55",
+            "global_slot_index": 0
+          },
+          {
+            "day": 5,
+            "day_name": "Qui",
+            "shift": "M",
+            "period": 2,
+            "time_range": "08:55 - 09:50",
+            "global_slot_index": 1
+          },
+          {
+            "day": 5,
+            "day_name": "Qui",
+            "shift": "M",
+            "period": 3,
+            "time_range": "10:00 - 10:55",
+            "global_slot_index": 2
+          },
+          {
+            "day": 5,
+            "day_name": "Qui",
+            "shift": "M",
+            "period": 4,
+            "time_range": "10:55 - 11:50",
+            "global_slot_index": 3
+          }
+        ],
+        "occupied": 20
+      }
+    ]
+  },
+  {
+    "code": "PGAP0012",
+    "name": "TEORIAS EMERGENTES EM ADMINISTRAÇÃO PÚBLICA",
+    "department_id": "1847",
+    "classes": [
+      {
+        "id": "PGAP0012-01",
+        "discipline_code": "PGAP0012",
+        "discipline_name": "TEORIAS EMERGENTES EM ADMINISTRAÇÃO PÚBLICA",
+        "class_code": "01",
+        "teachers": [
+          "ADALMIR DE OLIVEIRA GOMES"
+        ],
+        "classroom": "FACE, UnB, Sala D1-06/37",
+        "schedule_code": "5T6 5N1",
+        "schedule_description": "Quinta-feira 18:00 às 19:50",
+        "date_range": "06/08/2026 - 10/12/2026",
+        "schedule_slots": [
+          {
+            "day": 5,
+            "day_name": "Qui",
+            "shift": "T",
+            "period": 6,
+            "time_range": "18:00 - 18:55",
+            "global_slot_index": 10
+          },
+          {
+            "day": 5,
+            "day_name": "Qui",
+            "shift": "N",
+            "period": 1,
+            "time_range": "19:00 - 19:50",
+            "global_slot_index": 11
+          }
+        ],
+        "occupied": 12
+      },
+      {
+        "id": "PGAP0012-02",
+        "discipline_code": "PGAP0012",
+        "discipline_name": "TEORIAS EMERGENTES EM ADMINISTRAÇÃO PÚBLICA",
+        "class_code": "02",
+        "teachers": [
+          "PAULO RICARDO DA COSTA REIS"
+        ],
+        "classroom": "Sala 06/52 - pós-graduação",
+        "schedule_code": "2M12",
+        "schedule_description": "Segunda-feira 08:00 às 09:50",
+        "date_range": "10/08/2026 - 14/12/2026",
+        "schedule_slots": [
+          {
+            "day": 2,
+            "day_name": "Seg",
+            "shift": "M",
+            "period": 1,
+            "time_range": "08:00 - 08:55",
+            "global_slot_index": 0
+          },
+          {
+            "day": 2,
+            "day_name": "Seg",
+            "shift": "M",
+            "period": 2,
+            "time_range": "08:55 - 09:50",
+            "global_slot_index": 1
+          }
+        ],
+        "occupied": 12
+      }
+    ]
+  },
+  {
+    "code": "PGAP0021",
+    "name": "ELABORAÇÃO E IMPLEMENTAÇÃO DE POLÍTICAS PÚBLICAS",
+    "department_id": "1847",
+    "classes": [
+      {
+        "id": "PGAP0021-01",
+        "discipline_code": "PGAP0021",
+        "discipline_name": "ELABORAÇÃO E IMPLEMENTAÇÃO DE POLÍTICAS PÚBLICAS",
+        "class_code": "01",
+        "teachers": [
+          "JOAO MENDES DA ROCHA NETO"
+        ],
+        "classroom": "FACE, Bloco D, Sala D1-06/52",
+        "schedule_code": "7M1234",
+        "schedule_description": "Sábado 08:00 às 11:50",
+        "date_range": "10/10/2026 - 21/11/2026",
+        "schedule_slots": [
+          {
+            "day": 7,
+            "day_name": "Sáb",
+            "shift": "M",
+            "period": 1,
+            "time_range": "08:00 - 08:55",
+            "global_slot_index": 0
+          },
+          {
+            "day": 7,
+            "day_name": "Sáb",
+            "shift": "M",
+            "period": 2,
+            "time_range": "08:55 - 09:50",
+            "global_slot_index": 1
+          },
+          {
+            "day": 7,
+            "day_name": "Sáb",
+            "shift": "M",
+            "period": 3,
+            "time_range": "10:00 - 10:55",
+            "global_slot_index": 2
+          },
+          {
+            "day": 7,
+            "day_name": "Sáb",
+            "shift": "M",
+            "period": 4,
+            "time_range": "10:55 - 11:50",
+            "global_slot_index": 3
+          }
+        ],
+        "occupied": 20
+      }
+    ]
+  },
+  {
+    "code": "PGAP0044",
+    "name": "INTRODUÇÃO À PÓS",
+    "department_id": "1847",
+    "classes": [
+      {
+        "id": "PGAP0044-02",
+        "discipline_code": "PGAP0044",
+        "discipline_name": "INTRODUÇÃO À PÓS",
+        "class_code": "02",
+        "teachers": [
+          "ANTONIO ISIDRO DA SILVA FILHO"
+        ],
+        "classroom": "Sala 06/37 - pós-graduação",
+        "schedule_code": "6M12345 6M12345 6M12345 6M1234",
+        "schedule_description": "18/09/2026 - 18/09/2026), (02/10/2026 - 02/10/2026), (27/11/2026 - 27/11/2026) / Sexta-feira 08:00 às 12:55 / Sexta-feira 08:00 às 12:55 / Sexta-feira 08:00 às 12:55 / Sexta-feira 08:00 às 11:50",
+        "date_range": "28/08/2026 - 28/08/2026",
+        "schedule_slots": [
+          {
+            "day": 6,
+            "day_name": "Sex",
+            "shift": "M",
+            "period": 1,
+            "time_range": "08:00 - 08:55",
+            "global_slot_index": 0
+          },
+          {
+            "day": 6,
+            "day_name": "Sex",
+            "shift": "M",
+            "period": 2,
+            "time_range": "08:55 - 09:50",
+            "global_slot_index": 1
+          },
+          {
+            "day": 6,
+            "day_name": "Sex",
+            "shift": "M",
+            "period": 3,
+            "time_range": "10:00 - 10:55",
+            "global_slot_index": 2
+          },
+          {
+            "day": 6,
+            "day_name": "Sex",
+            "shift": "M",
+            "period": 4,
+            "time_range": "10:55 - 11:50",
+            "global_slot_index": 3
+          },
+          {
+            "day": 6,
+            "day_name": "Sex",
+            "shift": "M",
+            "period": 5,
+            "time_range": "12:00 - 12:55",
+            "global_slot_index": 4
+          }
+        ],
+        "occupied": 12
+      }
+    ]
+  },
+  {
+    "code": "PGAP0045",
+    "name": "SEMINÁRIO DE PESQUISA EM ADMINISTRAÇÃO PÚBLICA",
+    "department_id": "1847",
+    "classes": [
+      {
+        "id": "PGAP0045-03",
+        "discipline_code": "PGAP0045",
+        "discipline_name": "SEMINÁRIO DE PESQUISA EM ADMINISTRAÇÃO PÚBLICA",
+        "class_code": "03",
+        "teachers": [
+          "DIANA VAZ DE LIMA"
+        ],
+        "classroom": "Sala 06/52 - pós-graduação",
+        "schedule_code": "2M5 3M345",
+        "schedule_description": "Segunda-feira 12:00 às 12:55 / Terça-feira 10:00 às 12:55",
+        "date_range": "24/11/2026 - 15/12/2026",
+        "schedule_slots": [
+          {
+            "day": 2,
+            "day_name": "Seg",
+            "shift": "M",
+            "period": 5,
+            "time_range": "12:00 - 12:55",
+            "global_slot_index": 4
+          },
+          {
+            "day": 3,
+            "day_name": "Ter",
+            "shift": "M",
+            "period": 3,
+            "time_range": "10:00 - 10:55",
+            "global_slot_index": 2
+          },
+          {
+            "day": 3,
+            "day_name": "Ter",
+            "shift": "M",
+            "period": 4,
+            "time_range": "10:55 - 11:50",
+            "global_slot_index": 3
+          },
+          {
+            "day": 3,
+            "day_name": "Ter",
+            "shift": "M",
+            "period": 5,
+            "time_range": "12:00 - 12:55",
+            "global_slot_index": 4
+          }
+        ],
+        "occupied": 12
+      }
+    ]
+  },
+  {
     "code": "CPPAGR0023",
     "name": "O AGRONEGÓCIO E O CONSUMIDOR",
     "department_id": "853",
@@ -354153,7 +356555,7 @@
           "MARIBEL DEL CARMEN ALIAGA FUENTES",
           "CAROLINA PESCATORI CANDIDO DA SILVA"
         ],
-        "classroom": "Sala 01  ASS 571/10",
+        "classroom": "LABMULHERES (SUBSOLO DA FAU)",
         "schedule_code": "3M1234",
         "schedule_description": "Terça-feira 08:00 às 11:50",
         "date_range": "10/08/2026 - 14/12/2026",
@@ -354675,7 +357077,7 @@
         "teachers": [
           "VALERIO AUGUSTO SOARES DE MEDEIROS"
         ],
-        "classroom": "Sala 01  ASS 571/10",
+        "classroom": "Sala 03 PPG-FAU ASS 580/13",
         "schedule_code": "4M1234",
         "schedule_description": "Quarta-feira 08:00 às 11:50",
         "date_range": "10/08/2026 - 14/12/2026",
@@ -402428,1346 +404830,6 @@
     ]
   },
   {
-    "code": "PPGE0019",
-    "name": "SEMINÁRIO DE PESQUISA EDUCAÇÃO E DIVERSIDADE NA INFÂNCIA, JUVENTUDE E VIDA ADULTA II",
-    "department_id": "977",
-    "classes": [
-      {
-        "id": "PPGE0019-01",
-        "discipline_code": "PPGE0019",
-        "discipline_name": "SEMINÁRIO DE PESQUISA EDUCAÇÃO E DIVERSIDADE NA INFÂNCIA, JUVENTUDE E VIDA ADULTA II",
-        "class_code": "01",
-        "teachers": [
-          "FRANCISCO JOSE RENGIFO HERRERA"
-        ],
-        "classroom": "FE-1 - Lab. Informática",
-        "schedule_code": "3M1234",
-        "schedule_description": "Terça-feira 08:00 às 11:50",
-        "date_range": "10/08/2026 - 14/12/2026",
-        "schedule_slots": [
-          {
-            "day": 3,
-            "day_name": "Ter",
-            "shift": "M",
-            "period": 1,
-            "time_range": "08:00 - 08:55",
-            "global_slot_index": 0
-          },
-          {
-            "day": 3,
-            "day_name": "Ter",
-            "shift": "M",
-            "period": 2,
-            "time_range": "08:55 - 09:50",
-            "global_slot_index": 1
-          },
-          {
-            "day": 3,
-            "day_name": "Ter",
-            "shift": "M",
-            "period": 3,
-            "time_range": "10:00 - 10:55",
-            "global_slot_index": 2
-          },
-          {
-            "day": 3,
-            "day_name": "Ter",
-            "shift": "M",
-            "period": 4,
-            "time_range": "10:55 - 11:50",
-            "global_slot_index": 3
-          }
-        ],
-        "occupied": 8
-      }
-    ]
-  },
-  {
-    "code": "PPGE0020",
-    "name": "TÓPICOS ESPECIAIS EM EDUCAÇÃO E DIVERSIDADE NA INFÂNCIA, JUVENTUDE E VIDA ADULTA",
-    "department_id": "977",
-    "classes": [
-      {
-        "id": "PPGE0020-01",
-        "discipline_code": "PPGE0020",
-        "discipline_name": "TÓPICOS ESPECIAIS EM EDUCAÇÃO E DIVERSIDADE NA INFÂNCIA, JUVENTUDE E VIDA ADULTA",
-        "class_code": "01",
-        "teachers": [
-          "MARIA CLARISSE VIEIRA"
-        ],
-        "classroom": "FE-1 SALA 3",
-        "schedule_code": "5N1234",
-        "schedule_description": "Quinta-feira 19:00 às 22:30",
-        "date_range": "10/08/2026 - 14/12/2026",
-        "schedule_slots": [
-          {
-            "day": 5,
-            "day_name": "Qui",
-            "shift": "N",
-            "period": 1,
-            "time_range": "19:00 - 19:50",
-            "global_slot_index": 11
-          },
-          {
-            "day": 5,
-            "day_name": "Qui",
-            "shift": "N",
-            "period": 2,
-            "time_range": "19:50 - 20:40",
-            "global_slot_index": 12
-          },
-          {
-            "day": 5,
-            "day_name": "Qui",
-            "shift": "N",
-            "period": 3,
-            "time_range": "20:50 - 21:40",
-            "global_slot_index": 13
-          },
-          {
-            "day": 5,
-            "day_name": "Qui",
-            "shift": "N",
-            "period": 4,
-            "time_range": "21:40 - 22:30",
-            "global_slot_index": 14
-          }
-        ],
-        "occupied": 20
-      },
-      {
-        "id": "PPGE0020-02",
-        "discipline_code": "PPGE0020",
-        "discipline_name": "TÓPICOS ESPECIAIS EM EDUCAÇÃO E DIVERSIDADE NA INFÂNCIA, JUVENTUDE E VIDA ADULTA",
-        "class_code": "02",
-        "teachers": [
-          "CANDIDA BEATRIZ ALVES"
-        ],
-        "classroom": "FE-1 SALA 4",
-        "schedule_code": "4N1234",
-        "schedule_description": "Quarta-feira 19:00 às 22:30",
-        "date_range": "10/08/2026 - 14/12/2026",
-        "schedule_slots": [
-          {
-            "day": 4,
-            "day_name": "Qua",
-            "shift": "N",
-            "period": 1,
-            "time_range": "19:00 - 19:50",
-            "global_slot_index": 11
-          },
-          {
-            "day": 4,
-            "day_name": "Qua",
-            "shift": "N",
-            "period": 2,
-            "time_range": "19:50 - 20:40",
-            "global_slot_index": 12
-          },
-          {
-            "day": 4,
-            "day_name": "Qua",
-            "shift": "N",
-            "period": 3,
-            "time_range": "20:50 - 21:40",
-            "global_slot_index": 13
-          },
-          {
-            "day": 4,
-            "day_name": "Qua",
-            "shift": "N",
-            "period": 4,
-            "time_range": "21:40 - 22:30",
-            "global_slot_index": 14
-          }
-        ],
-        "occupied": 22
-      },
-      {
-        "id": "PPGE0020-03",
-        "discipline_code": "PPGE0020",
-        "discipline_name": "TÓPICOS ESPECIAIS EM EDUCAÇÃO E DIVERSIDADE NA INFÂNCIA, JUVENTUDE E VIDA ADULTA",
-        "class_code": "03",
-        "teachers": [
-          "CRISTINA MASSOT MADEIRA COELHO"
-        ],
-        "classroom": "FE-1 SALA 3",
-        "schedule_code": "3N1234",
-        "schedule_description": "Terça-feira 19:00 às 22:30",
-        "date_range": "10/08/2026 - 14/12/2026",
-        "schedule_slots": [
-          {
-            "day": 3,
-            "day_name": "Ter",
-            "shift": "N",
-            "period": 1,
-            "time_range": "19:00 - 19:50",
-            "global_slot_index": 11
-          },
-          {
-            "day": 3,
-            "day_name": "Ter",
-            "shift": "N",
-            "period": 2,
-            "time_range": "19:50 - 20:40",
-            "global_slot_index": 12
-          },
-          {
-            "day": 3,
-            "day_name": "Ter",
-            "shift": "N",
-            "period": 3,
-            "time_range": "20:50 - 21:40",
-            "global_slot_index": 13
-          },
-          {
-            "day": 3,
-            "day_name": "Ter",
-            "shift": "N",
-            "period": 4,
-            "time_range": "21:40 - 22:30",
-            "global_slot_index": 14
-          }
-        ],
-        "occupied": 22
-      }
-    ]
-  },
-  {
-    "code": "PPGE0373",
-    "name": "PROCESSOS DE SUBJETIVAÇÃO E INCLUSÃO",
-    "department_id": "977",
-    "classes": [
-      {
-        "id": "PPGE0373-01",
-        "discipline_code": "PPGE0373",
-        "discipline_name": "PROCESSOS DE SUBJETIVAÇÃO E INCLUSÃO",
-        "class_code": "01",
-        "teachers": [
-          "EDEILCE APARECIDA SANTOS BUZAR"
-        ],
-        "classroom": "FE-1 SALA 4",
-        "schedule_code": "4M1234",
-        "schedule_description": "Quarta-feira 08:00 às 11:50",
-        "date_range": "10/08/2026 - 14/12/2026",
-        "schedule_slots": [
-          {
-            "day": 4,
-            "day_name": "Qua",
-            "shift": "M",
-            "period": 1,
-            "time_range": "08:00 - 08:55",
-            "global_slot_index": 0
-          },
-          {
-            "day": 4,
-            "day_name": "Qua",
-            "shift": "M",
-            "period": 2,
-            "time_range": "08:55 - 09:50",
-            "global_slot_index": 1
-          },
-          {
-            "day": 4,
-            "day_name": "Qua",
-            "shift": "M",
-            "period": 3,
-            "time_range": "10:00 - 10:55",
-            "global_slot_index": 2
-          },
-          {
-            "day": 4,
-            "day_name": "Qua",
-            "shift": "M",
-            "period": 4,
-            "time_range": "10:55 - 11:50",
-            "global_slot_index": 3
-          }
-        ],
-        "occupied": 15
-      }
-    ]
-  },
-  {
-    "code": "PPGE0586",
-    "name": "SEMINÁRIO DE PESQUISA EM EDUCAÇÃO, TECNOLOGIAS E COMUNICAÇÃO I",
-    "department_id": "977",
-    "classes": [
-      {
-        "id": "PPGE0586-01",
-        "discipline_code": "PPGE0586",
-        "discipline_name": "SEMINÁRIO DE PESQUISA EM EDUCAÇÃO, TECNOLOGIAS E COMUNICAÇÃO I",
-        "class_code": "01",
-        "teachers": [
-          "JUAREZ JOSE TUCHINSKI DOS ANJOS"
-        ],
-        "classroom": "FE-1 SALA 4",
-        "schedule_code": "5T2345",
-        "schedule_description": "Quinta-feira 14:00 às 17:50",
-        "date_range": "10/08/2026 - 14/12/2026",
-        "schedule_slots": [
-          {
-            "day": 5,
-            "day_name": "Qui",
-            "shift": "T",
-            "period": 2,
-            "time_range": "14:00 - 14:55",
-            "global_slot_index": 6
-          },
-          {
-            "day": 5,
-            "day_name": "Qui",
-            "shift": "T",
-            "period": 3,
-            "time_range": "14:55 - 15:50",
-            "global_slot_index": 7
-          },
-          {
-            "day": 5,
-            "day_name": "Qui",
-            "shift": "T",
-            "period": 4,
-            "time_range": "16:00 - 16:55",
-            "global_slot_index": 8
-          },
-          {
-            "day": 5,
-            "day_name": "Qui",
-            "shift": "T",
-            "period": 5,
-            "time_range": "16:55 - 17:50",
-            "global_slot_index": 9
-          }
-        ],
-        "occupied": 19
-      }
-    ]
-  },
-  {
-    "code": "PPGE0594",
-    "name": "SEMINÁRIO DE PESQUISA EM PROFISSÃO DOCENTE, CURRÍCULO E AVALIAÇÃO I",
-    "department_id": "977",
-    "classes": [
-      {
-        "id": "PPGE0594-01",
-        "discipline_code": "PPGE0594",
-        "discipline_name": "SEMINÁRIO DE PESQUISA EM PROFISSÃO DOCENTE, CURRÍCULO E AVALIAÇÃO I",
-        "class_code": "01",
-        "teachers": [
-          "CATIA PICCOLO VIERO DEVECHI"
-        ],
-        "classroom": "FE-1 SALA 5",
-        "schedule_code": "5M1234",
-        "schedule_description": "Quinta-feira 08:00 às 11:50",
-        "date_range": "10/08/2026 - 14/12/2026",
-        "schedule_slots": [
-          {
-            "day": 5,
-            "day_name": "Qui",
-            "shift": "M",
-            "period": 1,
-            "time_range": "08:00 - 08:55",
-            "global_slot_index": 0
-          },
-          {
-            "day": 5,
-            "day_name": "Qui",
-            "shift": "M",
-            "period": 2,
-            "time_range": "08:55 - 09:50",
-            "global_slot_index": 1
-          },
-          {
-            "day": 5,
-            "day_name": "Qui",
-            "shift": "M",
-            "period": 3,
-            "time_range": "10:00 - 10:55",
-            "global_slot_index": 2
-          },
-          {
-            "day": 5,
-            "day_name": "Qui",
-            "shift": "M",
-            "period": 4,
-            "time_range": "10:55 - 11:50",
-            "global_slot_index": 3
-          }
-        ],
-        "occupied": 18
-      }
-    ]
-  },
-  {
-    "code": "PPGE1027",
-    "name": "TÓPICOS ESPECIAIS EM FILOSOFIA DA EDUCAÇÃO 1",
-    "department_id": "977",
-    "classes": [
-      {
-        "id": "PPGE1027-01",
-        "discipline_code": "PPGE1027",
-        "discipline_name": "TÓPICOS ESPECIAIS EM FILOSOFIA DA EDUCAÇÃO 1",
-        "class_code": "01",
-        "teachers": [
-          "BENEDETTA BISOL"
-        ],
-        "classroom": "FE-1 SALA 4",
-        "schedule_code": "6M1234",
-        "schedule_description": "Sexta-feira 08:00 às 11:50",
-        "date_range": "10/08/2026 - 14/12/2026",
-        "schedule_slots": [
-          {
-            "day": 6,
-            "day_name": "Sex",
-            "shift": "M",
-            "period": 1,
-            "time_range": "08:00 - 08:55",
-            "global_slot_index": 0
-          },
-          {
-            "day": 6,
-            "day_name": "Sex",
-            "shift": "M",
-            "period": 2,
-            "time_range": "08:55 - 09:50",
-            "global_slot_index": 1
-          },
-          {
-            "day": 6,
-            "day_name": "Sex",
-            "shift": "M",
-            "period": 3,
-            "time_range": "10:00 - 10:55",
-            "global_slot_index": 2
-          },
-          {
-            "day": 6,
-            "day_name": "Sex",
-            "shift": "M",
-            "period": 4,
-            "time_range": "10:55 - 11:50",
-            "global_slot_index": 3
-          }
-        ],
-        "occupied": 20
-      }
-    ]
-  },
-  {
-    "code": "PPGE2127",
-    "name": "EDUCAÇÃO, TECNOLOGIA E COMUNICAÇÃO",
-    "department_id": "977",
-    "classes": [
-      {
-        "id": "PPGE2127-01",
-        "discipline_code": "PPGE2127",
-        "discipline_name": "EDUCAÇÃO, TECNOLOGIA E COMUNICAÇÃO",
-        "class_code": "01",
-        "teachers": [
-          "ANDREA CRISTINA VERSUTI"
-        ],
-        "classroom": "FE-03 Sala de Vídeo (subsolo)",
-        "schedule_code": "4T2345",
-        "schedule_description": "Quarta-feira 14:00 às 17:50",
-        "date_range": "10/08/2026 - 14/12/2026",
-        "schedule_slots": [
-          {
-            "day": 4,
-            "day_name": "Qua",
-            "shift": "T",
-            "period": 2,
-            "time_range": "14:00 - 14:55",
-            "global_slot_index": 6
-          },
-          {
-            "day": 4,
-            "day_name": "Qua",
-            "shift": "T",
-            "period": 3,
-            "time_range": "14:55 - 15:50",
-            "global_slot_index": 7
-          },
-          {
-            "day": 4,
-            "day_name": "Qua",
-            "shift": "T",
-            "period": 4,
-            "time_range": "16:00 - 16:55",
-            "global_slot_index": 8
-          },
-          {
-            "day": 4,
-            "day_name": "Qua",
-            "shift": "T",
-            "period": 5,
-            "time_range": "16:55 - 17:50",
-            "global_slot_index": 9
-          }
-        ],
-        "occupied": 20
-      }
-    ]
-  },
-  {
-    "code": "PPGE2201",
-    "name": "SUBJETIVIDADE, CULTURA E EDUCAÇÃO",
-    "department_id": "977",
-    "classes": [
-      {
-        "id": "PPGE2201-01",
-        "discipline_code": "PPGE2201",
-        "discipline_name": "SUBJETIVIDADE, CULTURA E EDUCAÇÃO",
-        "class_code": "01",
-        "teachers": [
-          "DANIEL MAGALHAES GOULART"
-        ],
-        "classroom": "FE-1 SALA 8",
-        "schedule_code": "2T2345",
-        "schedule_description": "Segunda-feira 14:00 às 17:50",
-        "date_range": "10/08/2026 - 14/12/2026",
-        "schedule_slots": [
-          {
-            "day": 2,
-            "day_name": "Seg",
-            "shift": "T",
-            "period": 2,
-            "time_range": "14:00 - 14:55",
-            "global_slot_index": 6
-          },
-          {
-            "day": 2,
-            "day_name": "Seg",
-            "shift": "T",
-            "period": 3,
-            "time_range": "14:55 - 15:50",
-            "global_slot_index": 7
-          },
-          {
-            "day": 2,
-            "day_name": "Seg",
-            "shift": "T",
-            "period": 4,
-            "time_range": "16:00 - 16:55",
-            "global_slot_index": 8
-          },
-          {
-            "day": 2,
-            "day_name": "Seg",
-            "shift": "T",
-            "period": 5,
-            "time_range": "16:55 - 17:50",
-            "global_slot_index": 9
-          }
-        ],
-        "occupied": 21
-      }
-    ]
-  },
-  {
-    "code": "PPGE2205",
-    "name": "CURRÍCULO PARA A FORMAÇÃO DOCENTE",
-    "department_id": "977",
-    "classes": [
-      {
-        "id": "PPGE2205-01",
-        "discipline_code": "PPGE2205",
-        "discipline_name": "CURRÍCULO PARA A FORMAÇÃO DOCENTE",
-        "class_code": "01",
-        "teachers": [
-          "LILIANE CAMPOS MACHADO"
-        ],
-        "classroom": "FE-1 SALA 2",
-        "schedule_code": "4N1234",
-        "schedule_description": "Quarta-feira 19:00 às 22:30",
-        "date_range": "10/08/2026 - 14/12/2026",
-        "schedule_slots": [
-          {
-            "day": 4,
-            "day_name": "Qua",
-            "shift": "N",
-            "period": 1,
-            "time_range": "19:00 - 19:50",
-            "global_slot_index": 11
-          },
-          {
-            "day": 4,
-            "day_name": "Qua",
-            "shift": "N",
-            "period": 2,
-            "time_range": "19:50 - 20:40",
-            "global_slot_index": 12
-          },
-          {
-            "day": 4,
-            "day_name": "Qua",
-            "shift": "N",
-            "period": 3,
-            "time_range": "20:50 - 21:40",
-            "global_slot_index": 13
-          },
-          {
-            "day": 4,
-            "day_name": "Qua",
-            "shift": "N",
-            "period": 4,
-            "time_range": "21:40 - 22:30",
-            "global_slot_index": 14
-          }
-        ],
-        "occupied": 34
-      }
-    ]
-  },
-  {
-    "code": "PPGE2331",
-    "name": "POLÍTICAS PÚBLICAS DE ENSINO SUPERIOR",
-    "department_id": "977",
-    "classes": [
-      {
-        "id": "PPGE2331-01",
-        "discipline_code": "PPGE2331",
-        "discipline_name": "POLÍTICAS PÚBLICAS DE ENSINO SUPERIOR",
-        "class_code": "01",
-        "teachers": [
-          "ANA MARIA DE ALBUQUERQUE MOREIRA"
-        ],
-        "classroom": "FE-1 SALA 1",
-        "schedule_code": "5M1234",
-        "schedule_description": "Quinta-feira 08:00 às 11:50",
-        "date_range": "10/08/2026 - 14/12/2026",
-        "schedule_slots": [
-          {
-            "day": 5,
-            "day_name": "Qui",
-            "shift": "M",
-            "period": 1,
-            "time_range": "08:00 - 08:55",
-            "global_slot_index": 0
-          },
-          {
-            "day": 5,
-            "day_name": "Qui",
-            "shift": "M",
-            "period": 2,
-            "time_range": "08:55 - 09:50",
-            "global_slot_index": 1
-          },
-          {
-            "day": 5,
-            "day_name": "Qui",
-            "shift": "M",
-            "period": 3,
-            "time_range": "10:00 - 10:55",
-            "global_slot_index": 2
-          },
-          {
-            "day": 5,
-            "day_name": "Qui",
-            "shift": "M",
-            "period": 4,
-            "time_range": "10:55 - 11:50",
-            "global_slot_index": 3
-          }
-        ],
-        "occupied": 23
-      }
-    ]
-  },
-  {
-    "code": "PPGE2332",
-    "name": "ESTADO E POLÍTICAS PÚBLICAS EM EDUCAÇÃO",
-    "department_id": "977",
-    "classes": [
-      {
-        "id": "PPGE2332-01",
-        "discipline_code": "PPGE2332",
-        "discipline_name": "ESTADO E POLÍTICAS PÚBLICAS EM EDUCAÇÃO",
-        "class_code": "01",
-        "teachers": [
-          "ADRIANA ALMEIDA SALES DE MELO"
-        ],
-        "classroom": "FE-1 SALA 3",
-        "schedule_code": "4N1234",
-        "schedule_description": "Quarta-feira 19:00 às 22:30",
-        "date_range": "10/08/2026 - 14/12/2026",
-        "schedule_slots": [
-          {
-            "day": 4,
-            "day_name": "Qua",
-            "shift": "N",
-            "period": 1,
-            "time_range": "19:00 - 19:50",
-            "global_slot_index": 11
-          },
-          {
-            "day": 4,
-            "day_name": "Qua",
-            "shift": "N",
-            "period": 2,
-            "time_range": "19:50 - 20:40",
-            "global_slot_index": 12
-          },
-          {
-            "day": 4,
-            "day_name": "Qua",
-            "shift": "N",
-            "period": 3,
-            "time_range": "20:50 - 21:40",
-            "global_slot_index": 13
-          },
-          {
-            "day": 4,
-            "day_name": "Qua",
-            "shift": "N",
-            "period": 4,
-            "time_range": "21:40 - 22:30",
-            "global_slot_index": 14
-          }
-        ],
-        "occupied": 32
-      }
-    ]
-  },
-  {
-    "code": "PPGE2333",
-    "name": "EPISTEMOLOGIA E PESQUISA EM CIÊNCIAS HUMANAS E SOCIAIS",
-    "department_id": "977",
-    "classes": [
-      {
-        "id": "PPGE2333-01",
-        "discipline_code": "PPGE2333",
-        "discipline_name": "EPISTEMOLOGIA E PESQUISA EM CIÊNCIAS HUMANAS E SOCIAIS",
-        "class_code": "01",
-        "teachers": [
-          "JANIELLE DA SILVA MELO RABELO"
-        ],
-        "classroom": "FE-5 SALA 7",
-        "schedule_code": "6T2345",
-        "schedule_description": "Sexta-feira 14:00 às 17:50",
-        "date_range": "10/08/2026 - 14/12/2026",
-        "schedule_slots": [
-          {
-            "day": 6,
-            "day_name": "Sex",
-            "shift": "T",
-            "period": 2,
-            "time_range": "14:00 - 14:55",
-            "global_slot_index": 6
-          },
-          {
-            "day": 6,
-            "day_name": "Sex",
-            "shift": "T",
-            "period": 3,
-            "time_range": "14:55 - 15:50",
-            "global_slot_index": 7
-          },
-          {
-            "day": 6,
-            "day_name": "Sex",
-            "shift": "T",
-            "period": 4,
-            "time_range": "16:00 - 16:55",
-            "global_slot_index": 8
-          },
-          {
-            "day": 6,
-            "day_name": "Sex",
-            "shift": "T",
-            "period": 5,
-            "time_range": "16:55 - 17:50",
-            "global_slot_index": 9
-          }
-        ],
-        "occupied": 35
-      },
-      {
-        "id": "PPGE2333-03",
-        "discipline_code": "PPGE2333",
-        "discipline_name": "EPISTEMOLOGIA E PESQUISA EM CIÊNCIAS HUMANAS E SOCIAIS",
-        "class_code": "03",
-        "teachers": [
-          "GILBERTO LACERDA DOS SANTOS"
-        ],
-        "classroom": "FE-1 SALA 2",
-        "schedule_code": "5N1234",
-        "schedule_description": "Quinta-feira 19:00 às 22:30",
-        "date_range": "10/08/2026 - 14/12/2026",
-        "schedule_slots": [
-          {
-            "day": 5,
-            "day_name": "Qui",
-            "shift": "N",
-            "period": 1,
-            "time_range": "19:00 - 19:50",
-            "global_slot_index": 11
-          },
-          {
-            "day": 5,
-            "day_name": "Qui",
-            "shift": "N",
-            "period": 2,
-            "time_range": "19:50 - 20:40",
-            "global_slot_index": 12
-          },
-          {
-            "day": 5,
-            "day_name": "Qui",
-            "shift": "N",
-            "period": 3,
-            "time_range": "20:50 - 21:40",
-            "global_slot_index": 13
-          },
-          {
-            "day": 5,
-            "day_name": "Qui",
-            "shift": "N",
-            "period": 4,
-            "time_range": "21:40 - 22:30",
-            "global_slot_index": 14
-          }
-        ],
-        "occupied": 23
-      }
-    ]
-  },
-  {
-    "code": "PPGE2348",
-    "name": "TERRITÓRIOS, CULTURA E EDUCAÇÃO: ESCOLA / VIDA E TEMPO / ESPAÇO",
-    "department_id": "977",
-    "classes": [
-      {
-        "id": "PPGE2348-01",
-        "discipline_code": "PPGE2348",
-        "discipline_name": "TERRITÓRIOS, CULTURA E EDUCAÇÃO: ESCOLA / VIDA E TEMPO / ESPAÇO",
-        "class_code": "01",
-        "teachers": [
-          "MARIA LIDIA BUENO FERNANDES"
-        ],
-        "classroom": "FE-1 SALA 4",
-        "schedule_code": "2T2345",
-        "schedule_description": "Segunda-feira 14:00 às 17:50",
-        "date_range": "10/08/2026 - 14/12/2026",
-        "schedule_slots": [
-          {
-            "day": 2,
-            "day_name": "Seg",
-            "shift": "T",
-            "period": 2,
-            "time_range": "14:00 - 14:55",
-            "global_slot_index": 6
-          },
-          {
-            "day": 2,
-            "day_name": "Seg",
-            "shift": "T",
-            "period": 3,
-            "time_range": "14:55 - 15:50",
-            "global_slot_index": 7
-          },
-          {
-            "day": 2,
-            "day_name": "Seg",
-            "shift": "T",
-            "period": 4,
-            "time_range": "16:00 - 16:55",
-            "global_slot_index": 8
-          },
-          {
-            "day": 2,
-            "day_name": "Seg",
-            "shift": "T",
-            "period": 5,
-            "time_range": "16:55 - 17:50",
-            "global_slot_index": 9
-          }
-        ],
-        "occupied": 23
-      }
-    ]
-  },
-  {
-    "code": "PPGE2384",
-    "name": "TÓPICOS EM EDUCAÇÃO AMBIENTAL",
-    "department_id": "977",
-    "classes": [
-      {
-        "id": "PPGE2384-01",
-        "discipline_code": "PPGE2384",
-        "discipline_name": "TÓPICOS EM EDUCAÇÃO AMBIENTAL",
-        "class_code": "01",
-        "teachers": [
-          "ALESSANDRO ROBERTO DE OLIVEIRA"
-        ],
-        "classroom": "FE-1 SALA 5",
-        "schedule_code": "4M1234",
-        "schedule_description": "Quarta-feira 08:00 às 11:50",
-        "date_range": "10/08/2026 - 14/12/2026",
-        "schedule_slots": [
-          {
-            "day": 4,
-            "day_name": "Qua",
-            "shift": "M",
-            "period": 1,
-            "time_range": "08:00 - 08:55",
-            "global_slot_index": 0
-          },
-          {
-            "day": 4,
-            "day_name": "Qua",
-            "shift": "M",
-            "period": 2,
-            "time_range": "08:55 - 09:50",
-            "global_slot_index": 1
-          },
-          {
-            "day": 4,
-            "day_name": "Qua",
-            "shift": "M",
-            "period": 3,
-            "time_range": "10:00 - 10:55",
-            "global_slot_index": 2
-          },
-          {
-            "day": 4,
-            "day_name": "Qua",
-            "shift": "M",
-            "period": 4,
-            "time_range": "10:55 - 11:50",
-            "global_slot_index": 3
-          }
-        ],
-        "occupied": 20
-      }
-    ]
-  },
-  {
-    "code": "PPGE2504",
-    "name": "PESQUISA EM EDUCAÇÃO",
-    "department_id": "977",
-    "classes": [
-      {
-        "id": "PPGE2504-01",
-        "discipline_code": "PPGE2504",
-        "discipline_name": "PESQUISA EM EDUCAÇÃO",
-        "class_code": "01",
-        "teachers": [
-          "FLAVIO BEZERRA DE SOUSA"
-        ],
-        "classroom": "FE-1 SALA 4",
-        "schedule_code": "4T2345",
-        "schedule_description": "Quarta-feira 14:00 às 17:50",
-        "date_range": "10/08/2026 - 14/12/2026",
-        "schedule_slots": [
-          {
-            "day": 4,
-            "day_name": "Qua",
-            "shift": "T",
-            "period": 2,
-            "time_range": "14:00 - 14:55",
-            "global_slot_index": 6
-          },
-          {
-            "day": 4,
-            "day_name": "Qua",
-            "shift": "T",
-            "period": 3,
-            "time_range": "14:55 - 15:50",
-            "global_slot_index": 7
-          },
-          {
-            "day": 4,
-            "day_name": "Qua",
-            "shift": "T",
-            "period": 4,
-            "time_range": "16:00 - 16:55",
-            "global_slot_index": 8
-          },
-          {
-            "day": 4,
-            "day_name": "Qua",
-            "shift": "T",
-            "period": 5,
-            "time_range": "16:55 - 17:50",
-            "global_slot_index": 9
-          }
-        ],
-        "occupied": 28
-      },
-      {
-        "id": "PPGE2504-02",
-        "discipline_code": "PPGE2504",
-        "discipline_name": "PESQUISA EM EDUCAÇÃO",
-        "class_code": "02",
-        "teachers": [
-          "SINARA POLLOM ZARDO"
-        ],
-        "classroom": "FE-1 SALA 3",
-        "schedule_code": "6N1234",
-        "schedule_description": "Sexta-feira 19:00 às 22:30",
-        "date_range": "10/08/2026 - 14/12/2026",
-        "schedule_slots": [
-          {
-            "day": 6,
-            "day_name": "Sex",
-            "shift": "N",
-            "period": 1,
-            "time_range": "19:00 - 19:50",
-            "global_slot_index": 11
-          },
-          {
-            "day": 6,
-            "day_name": "Sex",
-            "shift": "N",
-            "period": 2,
-            "time_range": "19:50 - 20:40",
-            "global_slot_index": 12
-          },
-          {
-            "day": 6,
-            "day_name": "Sex",
-            "shift": "N",
-            "period": 3,
-            "time_range": "20:50 - 21:40",
-            "global_slot_index": 13
-          },
-          {
-            "day": 6,
-            "day_name": "Sex",
-            "shift": "N",
-            "period": 4,
-            "time_range": "21:40 - 22:30",
-            "global_slot_index": 14
-          }
-        ],
-        "occupied": 26
-      }
-    ]
-  },
-  {
-    "code": "PPGE3001",
-    "name": "ESTÁGIO DE DOCÊNCIA NO ENSINO DE GRADUAÇÃO",
-    "department_id": "977",
-    "classes": [
-      {
-        "id": "PPGE3001-01",
-        "discipline_code": "PPGE3001",
-        "discipline_name": "ESTÁGIO DE DOCÊNCIA NO ENSINO DE GRADUAÇÃO",
-        "class_code": "01",
-        "teachers": [
-          "MARIA ABADIA DA SILVA"
-        ],
-        "classroom": "FE-1 SALA 2",
-        "schedule_code": "7M1234",
-        "schedule_description": "Sábado 08:00 às 11:50",
-        "date_range": "10/08/2026 - 14/12/2026",
-        "schedule_slots": [
-          {
-            "day": 7,
-            "day_name": "Sáb",
-            "shift": "M",
-            "period": 1,
-            "time_range": "08:00 - 08:55",
-            "global_slot_index": 0
-          },
-          {
-            "day": 7,
-            "day_name": "Sáb",
-            "shift": "M",
-            "period": 2,
-            "time_range": "08:55 - 09:50",
-            "global_slot_index": 1
-          },
-          {
-            "day": 7,
-            "day_name": "Sáb",
-            "shift": "M",
-            "period": 3,
-            "time_range": "10:00 - 10:55",
-            "global_slot_index": 2
-          },
-          {
-            "day": 7,
-            "day_name": "Sáb",
-            "shift": "M",
-            "period": 4,
-            "time_range": "10:55 - 11:50",
-            "global_slot_index": 3
-          }
-        ],
-        "occupied": 54
-      }
-    ]
-  },
-  {
-    "code": "PPGE3407",
-    "name": "EDUCAÇÃO E SUBJETIVIDADE NA ABORDAGEM TRANSDISCIPLINAR PSICANALÍTICA",
-    "department_id": "977",
-    "classes": [
-      {
-        "id": "PPGE3407-01",
-        "discipline_code": "PPGE3407",
-        "discipline_name": "EDUCAÇÃO E SUBJETIVIDADE NA ABORDAGEM TRANSDISCIPLINAR PSICANALÍTICA",
-        "class_code": "01",
-        "teachers": [
-          "INES MARIA MARQUES ZANFORLIN PIRES DE ALMEIDA"
-        ],
-        "classroom": "FE-1 SALA 2",
-        "schedule_code": "5T2345",
-        "schedule_description": "Quinta-feira 14:00 às 17:50",
-        "date_range": "10/08/2026 - 14/12/2026",
-        "schedule_slots": [
-          {
-            "day": 5,
-            "day_name": "Qui",
-            "shift": "T",
-            "period": 2,
-            "time_range": "14:00 - 14:55",
-            "global_slot_index": 6
-          },
-          {
-            "day": 5,
-            "day_name": "Qui",
-            "shift": "T",
-            "period": 3,
-            "time_range": "14:55 - 15:50",
-            "global_slot_index": 7
-          },
-          {
-            "day": 5,
-            "day_name": "Qui",
-            "shift": "T",
-            "period": 4,
-            "time_range": "16:00 - 16:55",
-            "global_slot_index": 8
-          },
-          {
-            "day": 5,
-            "day_name": "Qui",
-            "shift": "T",
-            "period": 5,
-            "time_range": "16:55 - 17:50",
-            "global_slot_index": 9
-          }
-        ],
-        "occupied": 15
-      }
-    ]
-  },
-  {
-    "code": "PPGE3409",
-    "name": "POLÍTICA DE FINANCIAMENTO DA EDUCAÇÃO",
-    "department_id": "977",
-    "classes": [
-      {
-        "id": "PPGE3409-01",
-        "discipline_code": "PPGE3409",
-        "discipline_name": "POLÍTICA DE FINANCIAMENTO DA EDUCAÇÃO",
-        "class_code": "01",
-        "teachers": [
-          "CRISTINA HELENA ALMEIDA DE CARVALHO"
-        ],
-        "classroom": "FE-1 SALA 8",
-        "schedule_code": "5T2345",
-        "schedule_description": "Quinta-feira 14:00 às 17:50",
-        "date_range": "10/08/2026 - 14/12/2026",
-        "schedule_slots": [
-          {
-            "day": 5,
-            "day_name": "Qui",
-            "shift": "T",
-            "period": 2,
-            "time_range": "14:00 - 14:55",
-            "global_slot_index": 6
-          },
-          {
-            "day": 5,
-            "day_name": "Qui",
-            "shift": "T",
-            "period": 3,
-            "time_range": "14:55 - 15:50",
-            "global_slot_index": 7
-          },
-          {
-            "day": 5,
-            "day_name": "Qui",
-            "shift": "T",
-            "period": 4,
-            "time_range": "16:00 - 16:55",
-            "global_slot_index": 8
-          },
-          {
-            "day": 5,
-            "day_name": "Qui",
-            "shift": "T",
-            "period": 5,
-            "time_range": "16:55 - 17:50",
-            "global_slot_index": 9
-          }
-        ],
-        "occupied": 26
-      }
-    ]
-  },
-  {
-    "code": "PPGE3656",
-    "name": "MATERIALISMO HISTÓRICO",
-    "department_id": "977",
-    "classes": [
-      {
-        "id": "PPGE3656-01",
-        "discipline_code": "PPGE3656",
-        "discipline_name": "MATERIALISMO HISTÓRICO",
-        "class_code": "01",
-        "teachers": [
-          "ERLANDO DA SILVA RESES"
-        ],
-        "classroom": "FE-1 SALA 4",
-        "schedule_code": "3N1234",
-        "schedule_description": "Terça-feira 19:00 às 22:30",
-        "date_range": "10/08/2026 - 14/12/2026",
-        "schedule_slots": [
-          {
-            "day": 3,
-            "day_name": "Ter",
-            "shift": "N",
-            "period": 1,
-            "time_range": "19:00 - 19:50",
-            "global_slot_index": 11
-          },
-          {
-            "day": 3,
-            "day_name": "Ter",
-            "shift": "N",
-            "period": 2,
-            "time_range": "19:50 - 20:40",
-            "global_slot_index": 12
-          },
-          {
-            "day": 3,
-            "day_name": "Ter",
-            "shift": "N",
-            "period": 3,
-            "time_range": "20:50 - 21:40",
-            "global_slot_index": 13
-          },
-          {
-            "day": 3,
-            "day_name": "Ter",
-            "shift": "N",
-            "period": 4,
-            "time_range": "21:40 - 22:30",
-            "global_slot_index": 14
-          }
-        ],
-        "occupied": 37
-      },
-      {
-        "id": "PPGE3656-02",
-        "discipline_code": "PPGE3656",
-        "discipline_name": "MATERIALISMO HISTÓRICO",
-        "class_code": "02",
-        "teachers": [
-          "ERLANDO DA SILVA RESES"
-        ],
-        "classroom": "Laboratório de Informática FE-01",
-        "schedule_code": "4N1234",
-        "schedule_description": "Quarta-feira 19:00 às 22:30",
-        "date_range": "10/08/2026 - 14/12/2026",
-        "schedule_slots": [
-          {
-            "day": 4,
-            "day_name": "Qua",
-            "shift": "N",
-            "period": 1,
-            "time_range": "19:00 - 19:50",
-            "global_slot_index": 11
-          },
-          {
-            "day": 4,
-            "day_name": "Qua",
-            "shift": "N",
-            "period": 2,
-            "time_range": "19:50 - 20:40",
-            "global_slot_index": 12
-          },
-          {
-            "day": 4,
-            "day_name": "Qua",
-            "shift": "N",
-            "period": 3,
-            "time_range": "20:50 - 21:40",
-            "global_slot_index": 13
-          },
-          {
-            "day": 4,
-            "day_name": "Qua",
-            "shift": "N",
-            "period": 4,
-            "time_range": "21:40 - 22:30",
-            "global_slot_index": 14
-          }
-        ],
-        "occupied": 13
-      }
-    ]
-  },
-  {
-    "code": "PPGE3962",
-    "name": "POLÍTICAS PÚBLICAS E GESTÃO DA EDUCAÇÃO BÁSICA",
-    "department_id": "977",
-    "classes": [
-      {
-        "id": "PPGE3962-01",
-        "discipline_code": "PPGE3962",
-        "discipline_name": "POLÍTICAS PÚBLICAS E GESTÃO DA EDUCAÇÃO BÁSICA",
-        "class_code": "01",
-        "teachers": [
-          "ANDREIA MELLO LACE"
-        ],
-        "classroom": "FE-1 SALA 3",
-        "schedule_code": "4M1234",
-        "schedule_description": "Quarta-feira 08:00 às 11:50",
-        "date_range": "10/08/2026 - 14/12/2026",
-        "schedule_slots": [
-          {
-            "day": 4,
-            "day_name": "Qua",
-            "shift": "M",
-            "period": 1,
-            "time_range": "08:00 - 08:55",
-            "global_slot_index": 0
-          },
-          {
-            "day": 4,
-            "day_name": "Qua",
-            "shift": "M",
-            "period": 2,
-            "time_range": "08:55 - 09:50",
-            "global_slot_index": 1
-          },
-          {
-            "day": 4,
-            "day_name": "Qua",
-            "shift": "M",
-            "period": 3,
-            "time_range": "10:00 - 10:55",
-            "global_slot_index": 2
-          },
-          {
-            "day": 4,
-            "day_name": "Qua",
-            "shift": "M",
-            "period": 4,
-            "time_range": "10:55 - 11:50",
-            "global_slot_index": 3
-          }
-        ],
-        "occupied": 26
-      }
-    ]
-  },
-  {
     "code": "PPGEDUC0009",
     "name": "SEMINÁRIO DE PESQUISA EM EDUCAÇÃO CIENTÍFICA",
     "department_id": "1185",
@@ -409347,6 +410409,671 @@
           }
         ],
         "occupied": 1
+      }
+    ]
+  },
+  {
+    "code": "PROFGEO3555",
+    "name": "METODOLOGIA DO ENSINO DA GEOGRAFIA",
+    "department_id": "1613",
+    "classes": [
+      {
+        "id": "PROFGEO3555-01",
+        "discipline_code": "PROFGEO3555",
+        "discipline_name": "METODOLOGIA DO ENSINO DA GEOGRAFIA",
+        "class_code": "01",
+        "teachers": [
+          "VALDIR ADILSON STEINKE",
+          "RAFAEL RODRIGUES DA FRANCA",
+          "ERCILIA TORRES STEINKE",
+          "GLORIA MARIA VARGAS LOPEZ DE MESA",
+          "ROSELIR DE OLIVEIRA NASCIMENTO",
+          "VENÍCIUS JUVÊNCIO DE MIRANDA MENDES",
+          "RUTH ELIAS DE PAULA LARANJA"
+        ],
+        "classroom": "ICC Norte Dep. Direção ICH - Mezanino Sala B1-477",
+        "schedule_code": "7T2345",
+        "schedule_description": "Sábado 14:00 às 17:50",
+        "date_range": "10/08/2026 - 14/12/2026",
+        "schedule_slots": [
+          {
+            "day": 7,
+            "day_name": "Sáb",
+            "shift": "T",
+            "period": 2,
+            "time_range": "14:00 - 14:55",
+            "global_slot_index": 6
+          },
+          {
+            "day": 7,
+            "day_name": "Sáb",
+            "shift": "T",
+            "period": 3,
+            "time_range": "14:55 - 15:50",
+            "global_slot_index": 7
+          },
+          {
+            "day": 7,
+            "day_name": "Sáb",
+            "shift": "T",
+            "period": 4,
+            "time_range": "16:00 - 16:55",
+            "global_slot_index": 8
+          },
+          {
+            "day": 7,
+            "day_name": "Sáb",
+            "shift": "T",
+            "period": 5,
+            "time_range": "16:55 - 17:50",
+            "global_slot_index": 9
+          }
+        ],
+        "occupied": 10
+      }
+    ]
+  },
+  {
+    "code": "PROFGEO3564",
+    "name": "LINGUAGENS E EDUCAÇÃO GEOGRÁFICA",
+    "department_id": "1613",
+    "classes": [
+      {
+        "id": "PROFGEO3564-01",
+        "discipline_code": "PROFGEO3564",
+        "discipline_name": "LINGUAGENS E EDUCAÇÃO GEOGRÁFICA",
+        "class_code": "01",
+        "teachers": [
+          "ERCILIA TORRES STEINKE"
+        ],
+        "classroom": "Campus Darcy Ribeiro ICC Ala Norte",
+        "schedule_code": "5T6 5N123",
+        "schedule_description": "Quinta-feira 18:00 às 21:40",
+        "date_range": "10/08/2026 - 14/12/2026",
+        "schedule_slots": [
+          {
+            "day": 5,
+            "day_name": "Qui",
+            "shift": "T",
+            "period": 6,
+            "time_range": "18:00 - 18:55",
+            "global_slot_index": 10
+          },
+          {
+            "day": 5,
+            "day_name": "Qui",
+            "shift": "N",
+            "period": 1,
+            "time_range": "19:00 - 19:50",
+            "global_slot_index": 11
+          },
+          {
+            "day": 5,
+            "day_name": "Qui",
+            "shift": "N",
+            "period": 2,
+            "time_range": "19:50 - 20:40",
+            "global_slot_index": 12
+          },
+          {
+            "day": 5,
+            "day_name": "Qui",
+            "shift": "N",
+            "period": 3,
+            "time_range": "20:50 - 21:40",
+            "global_slot_index": 13
+          }
+        ],
+        "occupied": 14
+      }
+    ]
+  },
+  {
+    "code": "PROFGEO3576",
+    "name": "ELABORAÇÃO DE TRABALHO FINAL 2",
+    "department_id": "1613",
+    "classes": [
+      {
+        "id": "PROFGEO3576-01",
+        "discipline_code": "PROFGEO3576",
+        "discipline_name": "ELABORAÇÃO DE TRABALHO FINAL 2",
+        "class_code": "01",
+        "teachers": [
+          "VALDIR ADILSON STEINKE",
+          "RAFAEL RODRIGUES DA FRANCA",
+          "ERCILIA TORRES STEINKE",
+          "FERNANDO LUIZ ARAUJO SOBRINHO",
+          "ROSELIR DE OLIVEIRA NASCIMENTO",
+          "VENÍCIUS JUVÊNCIO DE MIRANDA MENDES",
+          "RUTH ELIAS DE PAULA LARANJA",
+          "MARIZANGELA APARECIDA DE BORTOLO PINTO"
+        ],
+        "classroom": "Campus Darcy Ribeiro ICC Ala Norte",
+        "schedule_code": "7M12",
+        "schedule_description": "Sábado 08:00 às 09:50",
+        "date_range": "10/08/2026 - 14/12/2026",
+        "schedule_slots": [
+          {
+            "day": 7,
+            "day_name": "Sáb",
+            "shift": "M",
+            "period": 1,
+            "time_range": "08:00 - 08:55",
+            "global_slot_index": 0
+          },
+          {
+            "day": 7,
+            "day_name": "Sáb",
+            "shift": "M",
+            "period": 2,
+            "time_range": "08:55 - 09:50",
+            "global_slot_index": 1
+          }
+        ],
+        "occupied": 10
+      }
+    ]
+  },
+  {
+    "code": "CPPGA2118",
+    "name": "MÉTODOS ESTATÍSTICOS 1",
+    "department_id": "876",
+    "classes": [
+      {
+        "id": "CPPGA2118-01",
+        "discipline_code": "CPPGA2118",
+        "discipline_name": "MÉTODOS ESTATÍSTICOS 1",
+        "class_code": "01",
+        "teachers": [
+          "PATRICIA DE FRAGAS HINNIG"
+        ],
+        "classroom": "Consultar na LISTA DE OFERTA",
+        "schedule_code": "4M1234",
+        "schedule_description": "Quarta-feira 08:00 às 11:50",
+        "date_range": "12/08/2026 - 14/12/2026",
+        "schedule_slots": [
+          {
+            "day": 4,
+            "day_name": "Qua",
+            "shift": "M",
+            "period": 1,
+            "time_range": "08:00 - 08:55",
+            "global_slot_index": 0
+          },
+          {
+            "day": 4,
+            "day_name": "Qua",
+            "shift": "M",
+            "period": 2,
+            "time_range": "08:55 - 09:50",
+            "global_slot_index": 1
+          },
+          {
+            "day": 4,
+            "day_name": "Qua",
+            "shift": "M",
+            "period": 3,
+            "time_range": "10:00 - 10:55",
+            "global_slot_index": 2
+          },
+          {
+            "day": 4,
+            "day_name": "Qua",
+            "shift": "M",
+            "period": 4,
+            "time_range": "10:55 - 11:50",
+            "global_slot_index": 3
+          }
+        ],
+        "occupied": 10
+      }
+    ]
+  },
+  {
+    "code": "PPGEST0018",
+    "name": "ESTÁGIO DE DOCÊNCIA NO ENSINO DE GRADUAÇÃO EM ESTATÍSTICA",
+    "department_id": "876",
+    "classes": [
+      {
+        "id": "PPGEST0018-01",
+        "discipline_code": "PPGEST0018",
+        "discipline_name": "ESTÁGIO DE DOCÊNCIA NO ENSINO DE GRADUAÇÃO EM ESTATÍSTICA",
+        "class_code": "01",
+        "teachers": [
+          "HELTON SAULO BEZERRA DOS SANTOS"
+        ],
+        "classroom": "A definir",
+        "schedule_code": "7M34",
+        "schedule_description": "Sábado 10:00 às 11:50",
+        "date_range": "10/08/2026 - 14/12/2026",
+        "schedule_slots": [
+          {
+            "day": 7,
+            "day_name": "Sáb",
+            "shift": "M",
+            "period": 3,
+            "time_range": "10:00 - 10:55",
+            "global_slot_index": 2
+          },
+          {
+            "day": 7,
+            "day_name": "Sáb",
+            "shift": "M",
+            "period": 4,
+            "time_range": "10:55 - 11:50",
+            "global_slot_index": 3
+          }
+        ],
+        "occupied": 4
+      },
+      {
+        "id": "PPGEST0018-02",
+        "discipline_code": "PPGEST0018",
+        "discipline_name": "ESTÁGIO DE DOCÊNCIA NO ENSINO DE GRADUAÇÃO EM ESTATÍSTICA",
+        "class_code": "02",
+        "teachers": [
+          "FELIPE SOUSA QUINTINO"
+        ],
+        "classroom": "A definir",
+        "schedule_code": "7M34",
+        "schedule_description": "Sábado 10:00 às 11:50",
+        "date_range": "10/08/2026 - 14/12/2026",
+        "schedule_slots": [
+          {
+            "day": 7,
+            "day_name": "Sáb",
+            "shift": "M",
+            "period": 3,
+            "time_range": "10:00 - 10:55",
+            "global_slot_index": 2
+          },
+          {
+            "day": 7,
+            "day_name": "Sáb",
+            "shift": "M",
+            "period": 4,
+            "time_range": "10:55 - 11:50",
+            "global_slot_index": 3
+          }
+        ],
+        "occupied": 1
+      },
+      {
+        "id": "PPGEST0018-03",
+        "discipline_code": "PPGEST0018",
+        "discipline_name": "ESTÁGIO DE DOCÊNCIA NO ENSINO DE GRADUAÇÃO EM ESTATÍSTICA",
+        "class_code": "03",
+        "teachers": [
+          "ALAN RICARDO DA SILVA"
+        ],
+        "classroom": "A definir",
+        "schedule_code": "7M34",
+        "schedule_description": "Sábado 10:00 às 11:50",
+        "date_range": "10/08/2026 - 14/12/2026",
+        "schedule_slots": [
+          {
+            "day": 7,
+            "day_name": "Sáb",
+            "shift": "M",
+            "period": 3,
+            "time_range": "10:00 - 10:55",
+            "global_slot_index": 2
+          },
+          {
+            "day": 7,
+            "day_name": "Sáb",
+            "shift": "M",
+            "period": 4,
+            "time_range": "10:55 - 11:50",
+            "global_slot_index": 3
+          }
+        ],
+        "occupied": 1
+      },
+      {
+        "id": "PPGEST0018-04",
+        "discipline_code": "PPGEST0018",
+        "discipline_name": "ESTÁGIO DE DOCÊNCIA NO ENSINO DE GRADUAÇÃO EM ESTATÍSTICA",
+        "class_code": "04",
+        "teachers": [
+          "FREDERICO MACHADO ALMEIDA"
+        ],
+        "classroom": "A definir",
+        "schedule_code": "7M34",
+        "schedule_description": "Sábado 10:00 às 11:50",
+        "date_range": "10/08/2026 - 14/12/2026",
+        "schedule_slots": [
+          {
+            "day": 7,
+            "day_name": "Sáb",
+            "shift": "M",
+            "period": 3,
+            "time_range": "10:00 - 10:55",
+            "global_slot_index": 2
+          },
+          {
+            "day": 7,
+            "day_name": "Sáb",
+            "shift": "M",
+            "period": 4,
+            "time_range": "10:55 - 11:50",
+            "global_slot_index": 3
+          }
+        ],
+        "occupied": 2
+      }
+    ]
+  },
+  {
+    "code": "PPGEST0020",
+    "name": "MÉTODOS DE PESQUISA EM ESTATÍSTICA",
+    "department_id": "876",
+    "classes": [
+      {
+        "id": "PPGEST0020-01",
+        "discipline_code": "PPGEST0020",
+        "discipline_name": "MÉTODOS DE PESQUISA EM ESTATÍSTICA",
+        "class_code": "01",
+        "teachers": [
+          "CIRA ETHEOWALDA GUEVARA OTINIANO"
+        ],
+        "classroom": "A1-76/7 (Prédio CIC/EST)",
+        "schedule_code": "3T23",
+        "schedule_description": "Terça-feira 14:00 às 15:50",
+        "schedule_slots": [
+          {
+            "day": 3,
+            "day_name": "Ter",
+            "shift": "T",
+            "period": 2,
+            "time_range": "14:00 - 14:55",
+            "global_slot_index": 6
+          },
+          {
+            "day": 3,
+            "day_name": "Ter",
+            "shift": "T",
+            "period": 3,
+            "time_range": "14:55 - 15:50",
+            "global_slot_index": 7
+          }
+        ],
+        "occupied": 20
+      }
+    ]
+  },
+  {
+    "code": "PPGEST2215",
+    "name": "TÓPICOS ESPECIAIS EM ESTATÍSTICA 1",
+    "department_id": "876",
+    "classes": [
+      {
+        "id": "PPGEST2215-01",
+        "discipline_code": "PPGEST2215",
+        "discipline_name": "TÓPICOS ESPECIAIS EM ESTATÍSTICA 1",
+        "class_code": "01",
+        "teachers": [
+          "CIRA ETHEOWALDA GUEVARA OTINIANO"
+        ],
+        "classroom": "Sala AT-22/28 (Prédio CIC/EST)",
+        "schedule_code": "24M34",
+        "schedule_description": "Segunda-feira 10:00 às 11:50 / Quarta-feira 10:00 às 11:50",
+        "date_range": "10/08/2026 - 14/12/2026",
+        "schedule_slots": [
+          {
+            "day": 2,
+            "day_name": "Seg",
+            "shift": "M",
+            "period": 3,
+            "time_range": "10:00 - 10:55",
+            "global_slot_index": 2
+          },
+          {
+            "day": 2,
+            "day_name": "Seg",
+            "shift": "M",
+            "period": 4,
+            "time_range": "10:55 - 11:50",
+            "global_slot_index": 3
+          },
+          {
+            "day": 4,
+            "day_name": "Qua",
+            "shift": "M",
+            "period": 3,
+            "time_range": "10:00 - 10:55",
+            "global_slot_index": 2
+          },
+          {
+            "day": 4,
+            "day_name": "Qua",
+            "shift": "M",
+            "period": 4,
+            "time_range": "10:55 - 11:50",
+            "global_slot_index": 3
+          }
+        ],
+        "occupied": 20
+      }
+    ]
+  },
+  {
+    "code": "PPGEST2216",
+    "name": "TÉCNICAS COMPUTACIONAIS EM ESTATÍSTICA",
+    "department_id": "876",
+    "classes": [
+      {
+        "id": "PPGEST2216-01",
+        "discipline_code": "PPGEST2216",
+        "discipline_name": "TÉCNICAS COMPUTACIONAIS EM ESTATÍSTICA",
+        "class_code": "01",
+        "teachers": [
+          "HELTON SAULO BEZERRA DOS SANTOS"
+        ],
+        "classroom": "Sala AT-22/28 (Prédio CIC/EST)",
+        "schedule_code": "4M125 4T1",
+        "schedule_description": "Quarta-feira 08:00 às 09:50 / Quarta-feira 12:00 às 13:50",
+        "date_range": "10/08/2026 - 14/12/2026",
+        "schedule_slots": [
+          {
+            "day": 4,
+            "day_name": "Qua",
+            "shift": "M",
+            "period": 1,
+            "time_range": "08:00 - 08:55",
+            "global_slot_index": 0
+          },
+          {
+            "day": 4,
+            "day_name": "Qua",
+            "shift": "M",
+            "period": 2,
+            "time_range": "08:55 - 09:50",
+            "global_slot_index": 1
+          },
+          {
+            "day": 4,
+            "day_name": "Qua",
+            "shift": "M",
+            "period": 5,
+            "time_range": "12:00 - 12:55",
+            "global_slot_index": 4
+          },
+          {
+            "day": 4,
+            "day_name": "Qua",
+            "shift": "T",
+            "period": 1,
+            "time_range": "12:55 - 13:50",
+            "global_slot_index": 5
+          }
+        ],
+        "occupied": 20
+      }
+    ]
+  },
+  {
+    "code": "PPGEST2218",
+    "name": "ANÁLISE DE SÉRIES TEMPORAIS",
+    "department_id": "876",
+    "classes": [
+      {
+        "id": "PPGEST2218-01",
+        "discipline_code": "PPGEST2218",
+        "discipline_name": "ANÁLISE DE SÉRIES TEMPORAIS",
+        "class_code": "01",
+        "teachers": [
+          "RAUL YUKIHIRO MATSUSHITA"
+        ],
+        "classroom": "Sala AT-30/28 (Prédio CIC/EST)",
+        "schedule_code": "24T45",
+        "schedule_description": "Segunda-feira 16:00 às 17:50 / Quarta-feira 16:00 às 17:50",
+        "date_range": "10/08/2026 - 14/12/2026",
+        "schedule_slots": [
+          {
+            "day": 2,
+            "day_name": "Seg",
+            "shift": "T",
+            "period": 4,
+            "time_range": "16:00 - 16:55",
+            "global_slot_index": 8
+          },
+          {
+            "day": 2,
+            "day_name": "Seg",
+            "shift": "T",
+            "period": 5,
+            "time_range": "16:55 - 17:50",
+            "global_slot_index": 9
+          },
+          {
+            "day": 4,
+            "day_name": "Qua",
+            "shift": "T",
+            "period": 4,
+            "time_range": "16:00 - 16:55",
+            "global_slot_index": 8
+          },
+          {
+            "day": 4,
+            "day_name": "Qua",
+            "shift": "T",
+            "period": 5,
+            "time_range": "16:55 - 17:50",
+            "global_slot_index": 9
+          }
+        ],
+        "occupied": 20
+      }
+    ]
+  },
+  {
+    "code": "PPGEST2219",
+    "name": "INFERÊNCIA BAYESIANA",
+    "department_id": "876",
+    "classes": [
+      {
+        "id": "PPGEST2219-01",
+        "discipline_code": "PPGEST2219",
+        "discipline_name": "INFERÊNCIA BAYESIANA",
+        "class_code": "01",
+        "teachers": [
+          "EDUARDO YOSHIO NAKANO"
+        ],
+        "classroom": "Sala AT-30/28 (Prédio CIC/EST)",
+        "schedule_code": "24T23",
+        "schedule_description": "Segunda-feira 14:00 às 15:50 / Quarta-feira 14:00 às 15:50",
+        "date_range": "10/08/2026 - 14/12/2026",
+        "schedule_slots": [
+          {
+            "day": 2,
+            "day_name": "Seg",
+            "shift": "T",
+            "period": 2,
+            "time_range": "14:00 - 14:55",
+            "global_slot_index": 6
+          },
+          {
+            "day": 2,
+            "day_name": "Seg",
+            "shift": "T",
+            "period": 3,
+            "time_range": "14:55 - 15:50",
+            "global_slot_index": 7
+          },
+          {
+            "day": 4,
+            "day_name": "Qua",
+            "shift": "T",
+            "period": 2,
+            "time_range": "14:00 - 14:55",
+            "global_slot_index": 6
+          },
+          {
+            "day": 4,
+            "day_name": "Qua",
+            "shift": "T",
+            "period": 3,
+            "time_range": "14:55 - 15:50",
+            "global_slot_index": 7
+          }
+        ],
+        "occupied": 20
+      }
+    ]
+  },
+  {
+    "code": "PPGEST2220",
+    "name": "INFERÊNCIA ESTATÍSTICA",
+    "department_id": "876",
+    "classes": [
+      {
+        "id": "PPGEST2220-01",
+        "discipline_code": "PPGEST2220",
+        "discipline_name": "INFERÊNCIA ESTATÍSTICA",
+        "class_code": "01",
+        "teachers": [
+          "FREDERICO MACHADO ALMEIDA"
+        ],
+        "classroom": "Sala AT-30/28 (Prédio CIC/EST)",
+        "schedule_code": "24M12",
+        "schedule_description": "Segunda-feira 08:00 às 09:50 / Quarta-feira 08:00 às 09:50",
+        "date_range": "10/08/2026 - 14/12/2026",
+        "schedule_slots": [
+          {
+            "day": 2,
+            "day_name": "Seg",
+            "shift": "M",
+            "period": 1,
+            "time_range": "08:00 - 08:55",
+            "global_slot_index": 0
+          },
+          {
+            "day": 2,
+            "day_name": "Seg",
+            "shift": "M",
+            "period": 2,
+            "time_range": "08:55 - 09:50",
+            "global_slot_index": 1
+          },
+          {
+            "day": 4,
+            "day_name": "Qua",
+            "shift": "M",
+            "period": 1,
+            "time_range": "08:00 - 08:55",
+            "global_slot_index": 0
+          },
+          {
+            "day": 4,
+            "day_name": "Qua",
+            "shift": "M",
+            "period": 2,
+            "time_range": "08:55 - 09:50",
+            "global_slot_index": 1
+          }
+        ],
+        "occupied": 20
       }
     ]
   },
@@ -435407,7 +437134,7 @@
         ],
         "classroom": "A definir",
         "schedule_code": "7M12",
-        "schedule_description": "Sábado 11:50 às 09:50",
+        "schedule_description": "Sábado 08:00 às 09:50",
         "date_range": "10/08/2026 - 14/12/2026",
         "schedule_slots": [
           {
