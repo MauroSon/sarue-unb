@@ -1,3 +1,5 @@
+import type { ScheduleSlot } from './entities/grade';
+
 const STOPWORDS = new Set([
   'de', 'da', 'do', 'das', 'dos',
   'e',
@@ -83,3 +85,81 @@ export function generateAcronyms(name: string): { acronym: string; acronyms: str
     acronyms: Array.from(set),
   };
 }
+
+/**
+ * Decodifica o código de horário padrão UnB (ex: "24M34 6T12") em slots estruturados.
+ */
+export function parseScheduleCode(scheduleStr: string): ScheduleSlot[] {
+  const slots: ScheduleSlot[] = [];
+  const regex = /(\d+)([MTN])(\d+)/g;
+  let match: RegExpExecArray | null;
+
+  while ((match = regex.exec(scheduleStr)) !== null) {
+    const daysPart = match[1] || '';
+    const shiftChar = (match[2] || 'M') as 'M' | 'T' | 'N';
+    const periodsPart = match[3] || '';
+
+    for (const dayCh of daysPart) {
+      const day = parseInt(dayCh, 10);
+      if (isNaN(day)) continue;
+
+      const dayName =
+        day === 2 ? 'Seg' :
+        day === 3 ? 'Ter' :
+        day === 4 ? 'Qua' :
+        day === 5 ? 'Qui' :
+        day === 6 ? 'Sex' :
+        day === 7 ? 'Sáb' : 'Outro';
+
+      for (const periodCh of periodsPart) {
+        const period = parseInt(periodCh, 10);
+        if (isNaN(period)) continue;
+
+        let timeRange = '';
+        let shiftOffset = 0;
+
+        switch (shiftChar) {
+          case 'M':
+            shiftOffset = period - 1;
+            timeRange =
+              period === 1 ? '08:00 - 08:55' :
+              period === 2 ? '08:55 - 09:50' :
+              period === 3 ? '10:00 - 10:55' :
+              period === 4 ? '10:55 - 11:50' :
+              period === 5 ? '12:00 - 12:55' : 'Horário Manhã';
+            break;
+          case 'T':
+            shiftOffset = 5 + (period - 1);
+            timeRange =
+              period === 1 ? '12:55 - 13:50' :
+              period === 2 ? '14:00 - 14:55' :
+              period === 3 ? '14:55 - 15:50' :
+              period === 4 ? '16:00 - 16:55' :
+              period === 5 ? '16:55 - 17:50' :
+              period === 6 ? '18:00 - 18:55' : 'Horário Tarde';
+            break;
+          case 'N':
+            shiftOffset = 11 + (period - 1);
+            timeRange =
+              period === 1 ? '19:00 - 19:50' :
+              period === 2 ? '19:50 - 20:40' :
+              period === 3 ? '20:50 - 21:40' :
+              period === 4 ? '21:40 - 22:30' : 'Horário Noite';
+            break;
+        }
+
+        slots.push({
+          day,
+          dayName,
+          shift: shiftChar,
+          period,
+          timeRange,
+          globalSlotIndex: shiftOffset,
+        });
+      }
+    }
+  }
+
+  return slots;
+}
+

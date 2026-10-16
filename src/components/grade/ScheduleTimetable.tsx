@@ -1,4 +1,4 @@
-import { forwardRef, memo, useMemo, useState } from "react";
+import { forwardRef, memo, useEffect, useMemo, useState } from "react";
 import { Card, Button, Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui";
 import {
   Download,
@@ -24,6 +24,8 @@ export interface ScheduleTimetableProps {
   period: string;
   onDownloadPng: () => void;
   isExportingPng: boolean;
+  /** Estado compacto inicial — sincronizado quando o modo semestre corrente liga/desliga */
+  defaultCompact?: boolean;
 }
 
 const semesterLabel = (year: string, period: string) =>
@@ -43,11 +45,20 @@ export const ScheduleTimetable = memo(forwardRef<
       period,
       onDownloadPng,
       isExportingPng,
+      defaultCompact = false,
     },
     ref,
   ) => {
     // Compactar: esconde linhas de horário sem nenhuma aula na semana
-    const [isCompact, setIsCompact] = useState(false);
+    const [isCompact, setIsCompact] = useState(defaultCompact);
+
+    // Reage a mudanças do modo semestre corrente (ex.: restaurar matriculadas compacta a grade)
+    useEffect(() => {
+      setIsCompact(defaultCompact);
+    }, [defaultCompact]);
+
+    // Grade vazia sempre mostra a semana inteira — compacto sem aulas some com o corpo
+    const hideEmptyRows = isCompact && selectedClasses.length > 0;
     const activeSlots = useMemo(
       () =>
         new Set(
@@ -197,7 +208,7 @@ export const ScheduleTimetable = memo(forwardRef<
           {/* Linhas de Horários (15 slots, 3 turnos) */}
           <div className="divide-y divide-black/10 mt-1">
             {TIME_ROWS.map((timeRow, idx) => {
-              if (isCompact && !activeSlots.has(timeRow.globalIndex))
+              if (hideEmptyRows && !activeSlots.has(timeRow.globalIndex))
                 return null;
 
               const isShiftStart =

@@ -175,18 +175,21 @@ export class ParseHistoricoUseCase {
         ? existing.name
         : entry.name || existing.name;
 
+      const resolvedClassCode = entry.classCode || existing.classCode;
+
       // Se a nova entrada representa conclusão efetiva e a anterior não:
       if (!existing.isCompleted && entry.isCompleted) {
-        completedMap.set(entry.code, { ...entry, name: resolvedName });
+        completedMap.set(entry.code, { ...entry, name: resolvedName, classCode: resolvedClassCode });
         return;
       }
 
       // Se a existente já é concluída (APR/DISP):
       if (existing.isCompleted) {
         if (entry.situation === 'APR' && existing.situation !== 'APR') {
-          completedMap.set(entry.code, { ...entry, name: resolvedName });
-        } else if (resolvedName !== existing.name) {
+          completedMap.set(entry.code, { ...entry, name: resolvedName, classCode: resolvedClassCode });
+        } else if (resolvedName !== existing.name || resolvedClassCode !== existing.classCode) {
           existing.name = resolvedName;
+          existing.classCode = resolvedClassCode;
         }
         return;
       }
@@ -197,6 +200,7 @@ export class ParseHistoricoUseCase {
         completedMap.set(entry.code, {
           ...entry,
           name: resolvedName,
+          classCode: resolvedClassCode,
           situation: 'MATR',
           isCompleted: false,
         });
@@ -205,21 +209,23 @@ export class ParseHistoricoUseCase {
 
       // Se a existente não for MATR e a nova tiver APR:
       if (existing.situation !== 'MATR' && entry.situation === 'APR') {
-        completedMap.set(entry.code, { ...entry, name: resolvedName });
-      } else if (resolvedName !== existing.name) {
+        completedMap.set(entry.code, { ...entry, name: resolvedName, classCode: resolvedClassCode });
+      } else if (resolvedName !== existing.name || resolvedClassCode !== existing.classCode) {
         existing.name = resolvedName;
+        existing.classCode = resolvedClassCode;
       }
     };
 
     // Padrão 1 (UnB oficial comprimido do iText): 08 APRCIC0004 90 90,0 MS ou 01 MATRCIC0099 60 100,0 -
-    // Suporta espaços opcionais entre situação e código, notas com sufixos ou traços:
-    const patternCompact = /(APR|REP|REPF|REPN|TR|MATR|DISP|CANC)\s*([A-Z]{3}\d{4})\s+(\d+)(?:\s+([\d,]+|-+))?(?:\s+([A-Z0-9&*\-–#e]+))?/gi;
+    // Suporta turma opcional antecedendo a situação, espaços opcionais entre situação e código:
+    const patternCompact = /(?:\b(\d{1,3})\s+)?(APR|REP|REPF|REPN|TR|MATR|DISP|CANC)\s*([A-Z]{3}\d{4})\s+(\d+)(?:\s+([\d,]+|-+))?(?:\s+([A-Z0-9&*\-–#e]+))?/gi;
     let match: RegExpExecArray | null;
     while ((match = patternCompact.exec(fullText)) !== null) {
-      const rawSit = match[1].toUpperCase();
-      const code = match[2].toUpperCase();
-      const ch = parseInt(match[3], 10);
-      const rawGrade = (match[5] || '').trim();
+      const rawTurma = match[1] ? match[1].padStart(2, '0') : undefined;
+      const rawSit = match[2].toUpperCase();
+      const code = match[3].toUpperCase();
+      const ch = parseInt(match[4], 10);
+      const rawGrade = (match[6] || '').trim();
       const cleanGrade = rawGrade.replace(/[^A-Z0-9-]/gi, '').toUpperCase();
 
       const situation = rawSit.startsWith('MATR') ? 'MATR' : rawSit;
@@ -236,6 +242,7 @@ export class ParseHistoricoUseCase {
         grade: cleanGrade || rawGrade || (situation === 'MATR' ? '-' : undefined),
         situation,
         isCompleted: situation === 'MATR' ? false : isCompleted,
+        classCode: rawTurma,
       });
     }
 

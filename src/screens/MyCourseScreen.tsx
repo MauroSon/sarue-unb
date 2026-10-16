@@ -71,7 +71,10 @@ export const MyCourseScreen: React.FC = () => {
   // Disciplinas matriculadas (MATRICULADA no SIGAA): a resposta direta a "o que estou fazendo agora?"
   const inProgressDisciplines = useMemo(() => {
     if (!flowchartData) return [];
-    if (flowchartData.inProgressDisciplines && flowchartData.inProgressDisciplines.length > 0) {
+    if (
+      flowchartData.inProgressDisciplines &&
+      flowchartData.inProgressDisciplines.length > 0
+    ) {
       return flowchartData.inProgressDisciplines;
     }
     return flowchartData.semesters.flatMap((s) =>
@@ -154,8 +157,9 @@ export const MyCourseScreen: React.FC = () => {
             Nenhum Perfil Acadêmico Carregado
           </h3>
           <p className="text-xs font-bold text-neutral-600 max-w-md mx-auto leading-relaxed">
-            Sincronize com o SIGAA na aba <strong>Configurações</strong> para carregar seu curso,
-            disciplinas cursadas, IRA e acompanhar seu progresso no fluxograma.
+            Sincronize com o SIGAA na aba <strong>Configurações</strong> para
+            carregar seu curso, disciplinas cursadas, IRA e acompanhar seu
+            progresso no fluxograma.
           </p>
         </div>
       ) : (
@@ -163,14 +167,11 @@ export const MyCourseScreen: React.FC = () => {
           {/* Banner de Identificação do Discente (@DESIGN.md) */}
           <div className="bg-white border-2 border-black rounded-lg p-5 mb-6 shadow-neo">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-              <div className="flex items-center gap-2 mb-1.5 flex-wrap">
+              <div className="flex items-center flex-wrap">
                 <span className="text-lg font-black text-black tracking-tight">
                   {profile.courseName ||
                     curriculum?.courseName ||
                     "Curso de Graduação"}
-                </span>
-                <span className="text-xs font-mono font-bold px-2 py-0.5 bg-pastel-yellow border border-black rounded-md text-black">
-                  Matriz: {curriculum?.code || profile.curriculumCode || "Ativa"}
                 </span>
               </div>
             </div>
@@ -185,87 +186,91 @@ export const MyCourseScreen: React.FC = () => {
             searchQuery={searchQuery}
           />
 
-          {/* Barra de Controles: Busca, Filtros e Alternância de Vista */}
-          <div className="bg-white border-2 border-black rounded-xl p-3 mb-6 shadow-neo flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
-            {/* Campo de Busca de Disciplinas */}
-            <div className="relative flex-1 max-w-md">
-              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
-              <Input
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Buscar por código ou nome (ex: APC, Cálculo, CIC0004)..."
-                aria-label="Buscar disciplina por código ou nome"
-                className="pl-9 h-9 text-xs bg-white"
-              />
-            </div>
-
-            {/* Filtros de Estado */}
-            <div className="flex flex-wrap items-center gap-1.5 text-xs font-bold">
-              <button
-                type="button"
-                onClick={() => setActiveFilter("all")}
-                aria-pressed={activeFilter === "all"}
-                className={`cursor-pointer px-2.5 py-1 rounded-lg border-2 transition-all shadow-neo-sm hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-neo-xs active:translate-x-[2px] active:translate-y-[2px] active:shadow-none ${
-                  activeFilter === "all"
-                    ? "bg-black text-white border-black shadow-neo-sm"
-                    : "bg-white text-black border-black hover:bg-neutral-100"
-                }`}
-              >
-                Todas ({flowchartData?.metrics.totalMandatoryDisciplines || 0})
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setActiveFilter("completed")}
-                aria-pressed={activeFilter === "completed"}
-                className={`cursor-pointer px-2.5 py-1 rounded-lg border-2 transition-all flex items-center gap-1 shadow-neo-sm hover:shadow-neo-xs hover:translate-x-[1px] hover:translate-y-[1px] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none ${
-                  activeFilter === "completed"
-                    ? "bg-neo-green text-black border-black shadow-neo-sm"
-                    : "bg-pastel-green text-black border-black hover:bg-neutral-100"
-                }`}
-              >
-                <CheckCircle2 className="w-3.5 h-3.5 stroke-[2.5]" />
-                Feitas ({flowchartData?.metrics.completedMandatoryDisciplines || 0})
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setActiveFilter("in_progress")}
-                aria-pressed={activeFilter === "in_progress"}
-                className={`cursor-pointer px-2.5 py-1 rounded-lg border-2 transition-all flex items-center gap-1 shadow-neo-sm hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-neo-xs active:translate-x-[2px] active:translate-y-[2px] active:shadow-none ${
-                  activeFilter === "in_progress"
-                    ? "bg-neo-blue text-white border-black shadow-neo-sm"
-                    : "bg-pastel-blue text-black border-black hover:bg-neutral-100"
-                }`}
-              >
-                <Clock className="w-3.5 h-3.5 stroke-[2.5]" />
-                Cursando ({flowchartData?.metrics.inProgressCount || 0})
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setActiveFilter("available")}
-                aria-pressed={activeFilter === "available"}
-                className={`cursor-pointer px-2.5 py-1 rounded-lg border-2 transition-all flex items-center gap-1 shadow-neo-sm hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-neo-xs active:translate-x-[2px] active:translate-y-[2px] active:shadow-none ${
-                  activeFilter === "available"
-                    ? "bg-neo-yellow text-black border-black shadow-neo-sm"
-                    : "bg-pastel-yellow text-black border-black hover:bg-neo-yellow/40"
-                }`}
-              >
-                <Unlock className="w-3.5 h-3.5 stroke-[2.5]" />
-                Prontas ({flowchartData?.metrics.availableCount || 0})
-              </button>
-            </div>
-          </div>
-
-          {/* Lista de disciplinas agrupada por semestre */}
+          {/* Lista de disciplinas: busca embutida no cabeçalho do card */}
           {flowchartData && (
-            <FlowchartList
-              semesters={flowchartData.semesters}
-              visibleCodes={filteredCodesSet}
-              disciplineNames={disciplineNames}
-              onToggle={toggleDiscipline}
-            />
+            <section
+              className="bg-white border-2 border-black rounded-lg shadow-neo"
+              aria-label="Fluxograma de disciplinas por semestre"
+            >
+              <div className="flex flex-col lg:flex-row lg:items-center gap-3 p-4 border-b-2 border-black">
+                <div className="relative flex-1 min-w-0 lg:max-w-md">
+                  <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
+                  <Input
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Buscar por código ou nome (ex: APC, Cálculo, CIC0004)..."
+                    aria-label="Buscar disciplina por código ou nome"
+                    className="pl-9 h-9 text-xs bg-white"
+                  />
+                </div>
+
+                {/* Filtros de Estado */}
+                <div className="flex flex-wrap items-center gap-1.5 text-xs font-bold lg:ml-auto">
+                  <button
+                    type="button"
+                    onClick={() => setActiveFilter("all")}
+                    aria-pressed={activeFilter === "all"}
+                    className={`cursor-pointer px-2.5 py-1 rounded-lg border-2 transition-all shadow-neo-sm hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-neo-xs active:translate-x-[2px] active:translate-y-[2px] active:shadow-none ${
+                      activeFilter === "all"
+                        ? "bg-black text-white border-black shadow-neo-sm"
+                        : "bg-white text-black border-black hover:bg-neutral-100"
+                    }`}
+                  >
+                    Todas (
+                    {flowchartData?.metrics.totalMandatoryDisciplines || 0})
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setActiveFilter("completed")}
+                    aria-pressed={activeFilter === "completed"}
+                    className={`cursor-pointer px-2.5 py-1 rounded-lg border-2 transition-all flex items-center gap-1 shadow-neo-sm hover:shadow-neo-xs hover:translate-x-[1px] hover:translate-y-[1px] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none ${
+                      activeFilter === "completed"
+                        ? "bg-neo-green text-black border-black shadow-neo-sm"
+                        : "bg-pastel-green text-black border-black hover:bg-neutral-100"
+                    }`}
+                  >
+                    <CheckCircle2 className="w-3.5 h-3.5 stroke-[2.5]" />
+                    Feitas (
+                    {flowchartData?.metrics.completedMandatoryDisciplines || 0})
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setActiveFilter("in_progress")}
+                    aria-pressed={activeFilter === "in_progress"}
+                    className={`cursor-pointer px-2.5 py-1 rounded-lg border-2 transition-all flex items-center gap-1 shadow-neo-sm hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-neo-xs active:translate-x-[2px] active:translate-y-[2px] active:shadow-none ${
+                      activeFilter === "in_progress"
+                        ? "bg-neo-blue text-white border-black shadow-neo-sm"
+                        : "bg-pastel-blue text-black border-black hover:bg-neutral-100"
+                    }`}
+                  >
+                    <Clock className="w-3.5 h-3.5 stroke-[2.5]" />
+                    Cursando ({flowchartData?.metrics.inProgressCount || 0})
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setActiveFilter("available")}
+                    aria-pressed={activeFilter === "available"}
+                    className={`cursor-pointer px-2.5 py-1 rounded-lg border-2 transition-all flex items-center gap-1 shadow-neo-sm hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-neo-xs active:translate-x-[2px] active:translate-y-[2px] active:shadow-none ${
+                      activeFilter === "available"
+                        ? "bg-neo-yellow text-black border-black shadow-neo-sm"
+                        : "bg-pastel-yellow text-black border-black hover:bg-neo-yellow/40"
+                    }`}
+                  >
+                    <Unlock className="w-3.5 h-3.5 stroke-[2.5]" />
+                    Prontas ({flowchartData?.metrics.availableCount || 0})
+                  </button>
+                </div>
+              </div>
+              <FlowchartList
+                semesters={flowchartData.semesters}
+                visibleCodes={filteredCodesSet}
+                disciplineNames={disciplineNames}
+                onToggle={toggleDiscipline}
+              />
+            </section>
           )}
 
           {/* Seção de Optativas Cursadas pelo Discente */}

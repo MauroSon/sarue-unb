@@ -1,7 +1,16 @@
 import React, { useState, useRef, useMemo } from "react";
 import { useGrade } from "../hooks/useGrade";
-import { PageContainer, PageHeader, toast } from "@/components/ui";
-import { CalendarDays } from "lucide-react";
+import {
+  PageContainer,
+  PageHeader,
+  toast,
+  Alert,
+  Button,
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+} from "@/components/ui";
+import { CalendarDays, CalendarClock, RotateCcw, PlusCircle, Info } from "lucide-react";
 import { toPng } from "html-to-image";
 import type { ScrapedClass } from "@/core";
 import { GradeFilters } from "../components/grade/GradeFilters";
@@ -48,6 +57,13 @@ export const GradeBuilderScreen: React.FC = () => {
     generateCombinations,
     applyOption,
     saveGrade,
+    calendar,
+    hasSemesterAlert,
+    isCurrentSemesterMode,
+    currentEnrolledClasses,
+    enrolledCount,
+    restoreEnrolledClasses,
+    startNewPlanning,
   } = useGrade();
 
   const [expandedDisciplines, setExpandedDisciplines] = useState<
@@ -154,6 +170,87 @@ export const GradeBuilderScreen: React.FC = () => {
         <PageHeader icon={CalendarDays} title="Montar Grade Horária" />
       </div>
 
+      {/* Alerta de Semestre em Andamento para contas com Meu Curso ativado */}
+      {hasSemesterAlert && (
+        <Alert
+          variant="yellow"
+          icon={CalendarClock}
+          title={`Semestre ${year}.${period} em andamento`}
+          description={
+            <div className="space-y-2.5 mt-1">
+              {/* Frase única; prazos acadêmicos sob demanda no tooltip do ícone */}
+              <p className="flex flex-wrap items-center gap-1.5">
+                <span>
+                  {isCurrentSemesterMode
+                    ? "Suas turmas matriculadas estão na grade."
+                    : "Restaure suas turmas matriculadas ou comece um novo planejamento."}
+                </span>
+                <Tooltip>
+                  <TooltipTrigger
+                    aria-label="Prazos acadêmicos deste semestre"
+                    className="inline-flex h-5 w-5 items-center justify-center cursor-help rounded-md text-neutral-600 hover:bg-black/5 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-neo-blue focus-visible:ring-offset-1"
+                  >
+                    <Info className="w-3.5 h-3.5 stroke-[2.5]" />
+                  </TooltipTrigger>
+                  <TooltipContent
+                    side="bottom"
+                    align="start"
+                    className="max-w-[300px] text-left space-y-1"
+                  >
+                    <p className="font-bold text-black">
+                      Prazos acadêmicos • {year}.{period}
+                    </p>
+                    <ul className="list-disc pl-4 space-y-0.5">
+                      {calendar?.periodoAulas && (
+                        <li>Aulas: {calendar.periodoAulas.raw}</li>
+                      )}
+                      {calendar?.periodoRetirada && (
+                        <li>Retirada: {calendar.periodoRetirada.raw}</li>
+                      )}
+                      {calendar?.periodoTrancamentoParcial && (
+                        <li>
+                          Trancamento parcial:{" "}
+                          {calendar.periodoTrancamentoParcial.raw}
+                        </li>
+                      )}
+                      {calendar?.periodoTrancamentoGeral && (
+                        <li>
+                          Trancamento geral:{" "}
+                          {calendar.periodoTrancamentoGeral.raw}
+                        </li>
+                      )}
+                    </ul>
+                  </TooltipContent>
+                </Tooltip>
+              </p>
+              <div className="flex flex-wrap items-center gap-2">
+                {!isCurrentSemesterMode && currentEnrolledClasses.length > 0 && (
+                  <Button
+                    type="button"
+                    variant="primary"
+                    size="sm"
+                    onClick={restoreEnrolledClasses}
+                  >
+                    <RotateCcw className="w-3.5 h-3.5 stroke-[2.5]" />
+                    <span>Restaurar turmas matriculadas ({enrolledCount})</span>
+                  </Button>
+                )}
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={startNewPlanning}
+                >
+                  <PlusCircle className="w-3.5 h-3.5 stroke-[2.5]" />
+                  <span>Novo planejamento</span>
+                </Button>
+              </div>
+            </div>
+          }
+          className="mb-4"
+        />
+      )}
+
       {/* Seção de busca: parâmetros e busca de turmas */}
       <GradeFilters
         departments={departments}
@@ -230,6 +327,7 @@ export const GradeBuilderScreen: React.FC = () => {
             conflicts={conflicts}
             onDownloadPng={handleDownloadPng}
             isExportingPng={isExportingPng}
+            defaultCompact={isCurrentSemesterMode}
           />
         </div>
       </div>

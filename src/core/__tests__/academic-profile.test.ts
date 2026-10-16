@@ -144,11 +144,12 @@ describe('Meu Curso - Casos de Uso e Domínio', () => {
       expect(completedCodes).toContain('IFD0173'); // Reprovado primeiro, depois aprovado
       expect(completedCodes).toContain('CIC0090'); // Aprovado
 
-      // CIC0099 deve constar como matriculada (MATR), não concluída
+      // CIC0099 deve constar como matriculada (MATR), não concluída, com turma 01
       const matriculada = result.profile.completedDisciplines.find((d) => d.code === 'CIC0099');
       expect(matriculada).toBeDefined();
       expect(matriculada?.situation).toBe('MATR');
       expect(matriculada?.isCompleted).toBe(false);
+      expect(matriculada?.classCode).toBe('01');
     });
 
     it('deve priorizar situação MATR sobre reprovação ou trancamento anterior (REP/TR)', async () => {
@@ -497,6 +498,39 @@ Currículo: 1741/1
       expect(ene).toBeDefined();
       expect(ene?.name).toBe('SINAIS E SISTEMAS EM TEMPO CONTÍNUO');
     });
+
+    it('deve deixar a marca manual vencer a equivalência canônica e bloquear dependentes', () => {
+      // MAT0137 aprovada conclui MAT0025 via equivalência canônica (MAT0025 <-> MAT0137)
+      const baseProfile: StudentAcademicProfile = {
+        matricula: '202000000',
+        courseName: 'ENGENHARIA DE COMPUTAÇÃO',
+        level: 'GRADUAÇÃO',
+        admissionYear: '2022.1',
+        completedDisciplines: [
+          { code: 'MAT0137', name: 'CÁLCULO 1', workloadHours: 90, grade: 'MS', situation: 'APR', isCompleted: true },
+        ],
+        manualCompletedCodes: [],
+        manualUncompletedCodes: [],
+        updatedAt: new Date().toISOString(),
+      };
+
+      const disc = (flowchart: ReturnType<typeof flowchartUseCase.execute>, code: string) =>
+        flowchart.semesters.flatMap((s) => s.disciplines).find((d) => d.code === code);
+
+      const natural = flowchartUseCase.execute(MOCK_CURRICULUM, baseProfile);
+      expect(disc(natural, 'MAT0025')?.status).toBe('completed');
+
+      // Aluno desmarca MAT0025 explicitamente: a equivalência não pode reconcluí-la
+      const desmarcada = flowchartUseCase.execute(MOCK_CURRICULUM, {
+        ...baseProfile,
+        manualUncompletedCodes: ['MAT0025'],
+      });
+      // Sem pré-requisitos, volta a ficar disponível — não concluída
+      expect(disc(desmarcada, 'MAT0025')?.status).toBe('available');
+
+      // MAT0026 depende de MAT0025: perde o "disponível" junto
+      expect(disc(desmarcada, 'MAT0026')?.status).toBe('locked');
+    });
   });
 
   describe('ManageAcademicProfileUseCase', () => {
@@ -565,6 +599,72 @@ Currículo: 1741/1
       await manageUseCase.clearProfile();
       const cleared = await manageUseCase.getProfile();
       expect(cleared).toBeNull();
+    });
+
+    it('deve alternar pelo estado efetivo com marca mínima, voltando ao natural do SIGAA', async () => {
+      const initialProfile: StudentAcademicProfile = {
+        matricula: '202000000',
+        courseName: 'ENGENHARIA DE COMPUTAÇÃO',
+        level: 'GRADUAÇÃO',
+        admissionYear: '2022.1',
+        completedDisciplines: [
+          { code: 'CIC0004', name: 'APC', workloadHours: 90, grade: 'MS', situation: 'APR', isCompleted: true },
+        ],
+        manualCompletedCodes: [],
+        manualUncompletedCodes: [],
+        updatedAt: new Date().toISOString(),
+      };
+      await repo.saveProfile(initialProfile);
+
+      // UI mostra CIC0004 concluída → desmarcar exige marca de desmarcada
+      const u1 = await manageUseCase.toggleDiscipline('CIC0004', true);
+      expect(u1.manualUncompletedCodes).toContain('CIC0004');
+      expect(u1.manualCompletedCodes).toEqual([]);
+
+      // UI agora mostra não concluída → remarcar volta ao natural: nenhuma marca
+      const u2 = await manageUseCase.toggleDiscipline('CIC0004', false);
+      expect(u2.manualUncompletedCodes).toEqual([]);
+      expect(u2.manualCompletedCodes).toEqual([]);
+
+      // Disciplina fora do histórico: marca mínima de conclusão, depois some de volta
+      const u3 = await manageUseCase.toggleDiscipline('MAT0026', false);
+      expect(u3.manualCompletedCodes).toContain('MAT0026');
+      const u4 = await manageUseCase.toggleDiscipline('MAT0026', true);
+      expect(u4.manualCompletedCodes).toEqual([]);
+      expect(u4.manualUncompletedCodes).toEqual([]);
+    });
+
+    it('deve restaurar exatamente o estado do SIGAA ao resetar (cursando volta a cursar)', async () => {
+      const statusDe = (profile: StudentAcademicProfile) =>
+        new GetFlowchartUseCase()
+          .execute(MOCK_CURRICULUM, profile)
+          .semesters.flatMap((s) => s.disciplines)
+          .find((d) => d.code === 'CIC0099')?.status;
+
+      const cursando: StudentAcademicProfile = {
+        matricula: '202000000',
+        courseName: 'ENGENHARIA DE COMPUTAÇÃO',
+        level: 'GRADUAÇÃO',
+        admissionYear: '2022.1',
+        completedDisciplines: [
+          { code: 'CIC0099', name: 'OAC', workloadHours: 60, situation: 'MATR', isCompleted: false },
+        ],
+        manualCompletedCodes: ['CIC0099'],
+        manualUncompletedCodes: [],
+        updatedAt: new Date().toISOString(),
+      };
+      await repo.saveProfile(cursando);
+
+      // Marca manual conclui a disciplina cursando...
+      const marcada = await manageUseCase.getProfile();
+      expect(statusDe(marcada!)).toBe('completed');
+
+      // ...e o reset devolve o estado puro do histórico: MATR volta a cursar
+      await manageUseCase.resetManualOverrides();
+      const resetada = await manageUseCase.getProfile();
+      expect(resetada?.manualCompletedCodes).toEqual([]);
+      expect(resetada?.manualUncompletedCodes).toEqual([]);
+      expect(statusDe(resetada!)).toBe('in_progress');
     });
   });
 });

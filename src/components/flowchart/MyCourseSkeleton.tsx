@@ -63,24 +63,19 @@ export const MyCourseSkeleton: React.FC = () => {
         </div>
       </div>
 
-      {/* Barra de Controles */}
-      <div className="bg-white border-2 border-black rounded-xl p-3 mb-6 shadow-neo flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
-        <Skeleton className="h-9 w-full md:max-w-md rounded-lg" />
-        <div className="flex flex-wrap items-center gap-1.5">
-          {FILTER_PILLS.map((w, i) => (
-            <Skeleton key={i} className={`h-7 ${w} rounded-lg`} />
-          ))}
+      {/* Lista de disciplinas: card único com busca no cabeçalho e semestres internos */}
+      <section className="bg-white border-2 border-black rounded-lg shadow-neo overflow-hidden">
+        <div className="flex flex-col lg:flex-row lg:items-center gap-3 p-4 border-b-2 border-black">
+          <Skeleton className="h-9 flex-1 lg:max-w-md rounded-lg" />
+          <div className="flex flex-wrap items-center gap-1.5 lg:ml-auto">
+            {FILTER_PILLS.map((w, i) => (
+              <Skeleton key={i} className={`h-7 ${w} rounded-lg`} />
+            ))}
+          </div>
         </div>
-      </div>
-
-      {/* Lista de disciplinas agrupada por semestre */}
-      <div className="space-y-4">
         {SEMESTERS.map((sem, si) => (
-          <div
-            key={si}
-            className="bg-white border-2 border-black rounded-lg shadow-neo overflow-hidden"
-          >
-            <div className="px-4 py-2.5 bg-neutral-50 border-b-2 border-black">
+          <div key={si} className={si > 0 ? 'border-t-2 border-black' : ''}>
+            <div className="px-4 py-2.5 bg-white">
               <Skeleton className="h-3 w-32" />
             </div>
             <div className="px-4 py-3 space-y-2.5">
@@ -94,7 +89,7 @@ export const MyCourseSkeleton: React.FC = () => {
             </div>
           </div>
         ))}
-      </div>
+      </section>
     </>
   );
 };

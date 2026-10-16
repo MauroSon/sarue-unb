@@ -14,7 +14,8 @@
     "tauri": "tauri",
     "scrape:grade": "node --experimental-strip-types src/scrapers/grade-scraper.ts",
     "scrape:courses": "node --experimental-strip-types src/scrapers/courses-scraper.ts",
-    "scrape:all": "pnpm run scrape:grade && pnpm run scrape:courses"
+    "scrape:calendar": "node --experimental-strip-types src/scrapers/calendar-scraper.ts",
+    "scrape:all": "pnpm run scrape:grade && pnpm run scrape:courses && pnpm run scrape:calendar"
   },
   "dependencies": {
     "@base-ui/react": "^1.8.0",

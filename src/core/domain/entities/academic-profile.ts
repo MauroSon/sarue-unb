@@ -10,6 +10,7 @@ export interface CompletedDiscipline {
   grade?: string;
   situation?: string;
   isCompleted: boolean;
+  classCode?: string;
 }
 
 export interface StudentAcademicProfile {

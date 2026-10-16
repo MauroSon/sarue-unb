@@ -16,7 +16,7 @@ import {
 export interface FlowchartListProps {
   semesters: FlowchartSemester[];
   visibleCodes: Set<string>;
-  onToggle: (code: string) => void;
+  onToggle: (code: string, isEffectivelyCompleted: boolean) => void;
   /** Mapa código → nome para exibir nomes reais dos pré-requisitos no tooltip */
   disciplineNames?: Map<string, string>;
 }
@@ -107,7 +107,7 @@ const PrereqPill: React.FC<{
 // Memoizada: a busca muda visibleCodes a cada tecla, mas linhas fora dos semestres afetados não precisam re-render
 const DisciplineRow: React.FC<{
   d: FlowchartDiscipline;
-  onToggle: (code: string) => void;
+  onToggle: (code: string, isEffectivelyCompleted: boolean) => void;
   disciplineNames?: Map<string, string>;
 }> = React.memo(({ d, onToggle, disciplineNames }) => {
   const isCompleted = d.status === "completed";
@@ -127,7 +127,7 @@ const DisciplineRow: React.FC<{
             ? `Desmarcar ${d.name} como concluída`
             : `Marcar ${d.name} como concluída`
         }
-        onClick={() => onToggle(d.code)}
+        onClick={() => onToggle(d.code, isCompleted)}
         title={
           isCompleted
             ? "Desmarcar disciplina"
@@ -202,7 +202,7 @@ export const FlowchartList: React.FC<FlowchartListProps> = ({
           <AccordionItem
             key={sem.level}
             value={String(sem.level)}
-            className="bg-white border-2 border-black rounded-lg shadow-neo mb-4 border-black"
+            className="border-0 border-t-2 border-black first:border-t-0"
           >
             <AccordionTrigger className="px-4 py-2.5 bg-white hover:bg-neutral-50 rounded-none font-black text-[11px] uppercase tracking-wider text-black">
               <div className="flex items-center gap-2 flex-1 min-w-0">

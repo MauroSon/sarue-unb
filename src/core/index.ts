@@ -4,6 +4,7 @@ export * from './domain/entities/credential';
 export * from './domain/entities/course';
 export * from './domain/entities/grade';
 export * from './domain/entities/academic-profile';
+export * from './domain/entities/academic-calendar';
 export * from './domain/grade-acronym';
 
 // Interfaces / Ports
@@ -27,6 +28,7 @@ export * from './application/manage-grade.use-case';
 export * from './application/manage-academic-profile.use-case';
 export * from './application/get-flowchart.use-case';
 export * from './application/parse-historico.use-case';
+export * from './application/get-academic-calendar.use-case';
 
 // DI Container
 // Nota: repositórios concretos (adapters) não são exportados aqui de propósito.

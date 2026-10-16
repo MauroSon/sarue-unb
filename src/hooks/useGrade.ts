@@ -1,5 +1,8 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useContainer } from '../context/ContainerContext';
+import { useCredentials } from './useCredentials';
+import { useMyCourse } from './useMyCourse';
+import { useFeed } from './useFeed';
 import type {
   Department,
   SemesterOption,
@@ -7,8 +10,9 @@ import type {
   ScrapedClass,
   ScheduleOption,
   SavedGrade,
+  AcademicCalendar,
 } from '@/core';
-import { generateAcronyms } from '@/core';
+import { generateAcronyms, parseScheduleCode } from '@/core';
 
 // Cache em memória de disciplinas por depto-ano-período
 const disciplinesCache = new Map<string, ScrapedDiscipline[]>();
@@ -132,6 +136,153 @@ export function useGrade() {
   const [isSolving, setIsSolving] = useState<boolean>(false);
   const [isSaving, setIsSaving] = useState<boolean>(false);
   const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null);
+
+  const { allCredentials, hasCredentials } = useCredentials();
+  const { profile } = useMyCourse();
+  const { courses: feedCourses } = useFeed();
+
+  const [calendar, setCalendar] = useState<AcademicCalendar | null>(null);
+  const [isSemesterStarted, setIsSemesterStarted] = useState<boolean>(true);
+  const [isCurrentSemesterMode, setIsCurrentSemesterMode] = useState<boolean>(false);
+  const hasInitializedEnrolledRef = useRef(false);
+
+  // Disciplinas atualmente matriculadas no Meu Curso
+  const enrolledDisciplines = useMemo(() => {
+    if (!profile) return [];
+    return profile.completedDisciplines.filter((d) => d.situation === 'MATR');
+  }, [profile]);
+
+  const hasConnectedAccount = Boolean(allCredentials.sigaa || hasCredentials);
+  const isMyCourseActive = Boolean(profile && (profile.completedDisciplines.length > 0 || profile.matricula));
+
+  // Converte disciplinas matriculadas no Meu Curso em ScrapedClass estruturadas
+  const currentEnrolledClasses = useMemo<ScrapedClass[]>(() => {
+    if (!enrolledDisciplines.length) return [];
+
+    const resolved: ScrapedClass[] = [];
+
+    for (const d of enrolledDisciplines) {
+      // 1. Procura no catálogo allDisciplines por código exato
+      const scrapedDisc = allDisciplines.find((ad) => ad.code.toUpperCase() === d.code.toUpperCase());
+
+      // Procura dados complementares no feed de turmas SIGAA (se houver schedule extraído)
+      const matchedFeedCourse = feedCourses.find(
+        (c) =>
+          c.code.toUpperCase().includes(d.code.toUpperCase()) ||
+          c.name.toUpperCase().includes(d.name.toUpperCase()) ||
+          d.name.toUpperCase().includes(c.name.toUpperCase())
+      );
+
+      let matchedClass: ScrapedClass | undefined;
+
+      if (scrapedDisc && scrapedDisc.classes.length > 0) {
+        // 1. Se houver classCode (ex: "01"), casa exatamente
+        if (d.classCode) {
+          const normTurma = d.classCode.replace(/^0+/, '');
+          matchedClass = scrapedDisc.classes.find(
+            (c) => c.classCode === d.classCode || c.classCode.replace(/^0+/, '') === normTurma
+          );
+        }
+
+        // 2. Casa a turma do catálogo cujo horário é o mesmo do feed SIGAA
+        if (!matchedClass && matchedFeedCourse?.schedule) {
+          matchedClass = scrapedDisc.classes.find(
+            (c) => c.scheduleCode === matchedFeedCourse.schedule
+          );
+        }
+
+        // Sem fallback para a primeira turma do catálogo: turma errada é pior que turma ausente
+      }
+
+      if (matchedClass) {
+        resolved.push(matchedClass);
+      } else if (matchedFeedCourse?.schedule) {
+        // Se não estava no catálogo mas temos o horário do SIGAA, monta a classe estruturada
+        const slots = parseScheduleCode(matchedFeedCourse.schedule);
+        if (slots.length > 0) {
+          resolved.push({
+            id: `enrolled-${d.code}-${d.classCode || '01'}`,
+            disciplineCode: d.code,
+            disciplineName: d.name,
+            classCode: d.classCode || '01',
+            teachers: matchedFeedCourse.professor ? [matchedFeedCourse.professor] : [],
+            classroom: matchedFeedCourse.classroom || 'A definir',
+            scheduleCode: matchedFeedCourse.schedule,
+            scheduleDescription: matchedFeedCourse.schedule,
+            scheduleSlots: slots,
+          });
+        }
+      }
+    }
+
+    return resolved;
+  }, [enrolledDisciplines, allDisciplines, feedCourses]);
+
+  // Carrega calendário acadêmico dinamicamente para ano e período selecionados
+  useEffect(() => {
+    let isMounted = true;
+    async function loadCalendar() {
+      try {
+        const [cal, started] = await Promise.all([
+          container.useCases.getAcademicCalendar.getCalendar(year, period),
+          container.useCases.getAcademicCalendar.isSemesterStarted(year, period),
+        ]);
+        if (isMounted) {
+          setCalendar(cal);
+          setIsSemesterStarted(started);
+        }
+      } catch {
+        if (isMounted) {
+          setIsSemesterStarted(true);
+        }
+      }
+    }
+    loadCalendar();
+    return () => {
+      isMounted = false;
+    };
+  }, [container, year, period]);
+
+  // Se o aluno tiver conta conectada com Meu Curso ativado:
+  // Inicializa com as turmas matriculadas do semestre atual no modo compactado
+  useEffect(() => {
+    if (
+      !hasInitializedEnrolledRef.current &&
+      hasConnectedAccount &&
+      isMyCourseActive &&
+      currentEnrolledClasses.length > 0
+    ) {
+      hasInitializedEnrolledRef.current = true;
+      setSelectedClasses(currentEnrolledClasses);
+      setIsCurrentSemesterMode(true);
+    }
+  }, [hasConnectedAccount, isMyCourseActive, currentEnrolledClasses]);
+
+  const hasSemesterAlert = Boolean(
+    hasConnectedAccount && isMyCourseActive && isSemesterStarted && enrolledDisciplines.length > 0
+  );
+
+  const restoreEnrolledClasses = useCallback(() => {
+    if (currentEnrolledClasses.length === 0) {
+      setFeedbackMessage('Nenhuma turma matriculada disponível para restaurar agora.');
+      return;
+    }
+    setSelectedClasses(currentEnrolledClasses);
+    setIsCurrentSemesterMode(true);
+    // Opções antigas do solver não correspondem mais à grade restaurada
+    setScheduleOptions([]);
+    setCurrentOptionIndex(0);
+    const n = currentEnrolledClasses.length;
+    setFeedbackMessage(
+      `Grade restaurada: ${n} ${n === 1 ? 'turma matriculada' : 'turmas matriculadas'} do semestre.`,
+    );
+  }, [currentEnrolledClasses]);
+
+  const startNewPlanning = useCallback(() => {
+    setSelectedClasses([]);
+    setIsCurrentSemesterMode(false);
+    setFeedbackMessage('Grade limpa para novo planejamento!');
+  }, []);
 
   // Carrega departamentos, semestres e grade salva no início
   useEffect(() => {
@@ -359,6 +510,7 @@ export function useGrade() {
 
   // Adiciona ou remove turma
   const toggleClass = useCallback((cls: ScrapedClass) => {
+    setIsCurrentSemesterMode(false);
     setSelectedClasses((prev) => {
       const exists = prev.some((c) => c.id === cls.id);
       if (exists) {
@@ -372,10 +524,12 @@ export function useGrade() {
   }, []);
 
   const removeClass = useCallback((classId: string) => {
+    setIsCurrentSemesterMode(false);
     setSelectedClasses((prev) => prev.filter((c) => c.id !== classId));
   }, []);
 
   const clearGrade = useCallback(() => {
+    setIsCurrentSemesterMode(false);
     setSelectedClasses([]);
     setConflicts([]);
     setScheduleOptions([]);
@@ -500,6 +654,15 @@ export function useGrade() {
     generateCombinations,
     applyOption,
     saveGrade,
+    calendar,
+    isSemesterStarted,
+    hasSemesterAlert,
+    isCurrentSemesterMode,
+    currentEnrolledClasses,
+    // Contagem honesta: turmas que a grade recebe de fato, não disciplinas cadastradas
+    enrolledCount: currentEnrolledClasses.length,
+    restoreEnrolledClasses,
+    startNewPlanning,
   };
 }
 

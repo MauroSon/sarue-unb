@@ -220,10 +220,10 @@ export function useMyCourse() {
     return map;
   }, [allCurricula, selectedCurriculum, profile]);
 
-  // Alterna uma disciplina manualmente
-  const toggleDiscipline = useCallback(async (code: string) => {
+  // Alterna uma disciplina manualmente (a UI passa o estado efetivo atual do card)
+  const toggleDiscipline = useCallback(async (code: string, isEffectivelyCompleted?: boolean) => {
     try {
-      const updated = await useCases.manageAcademicProfile.toggleDiscipline(code);
+      const updated = await useCases.manageAcademicProfile.toggleDiscipline(code, isEffectivelyCompleted);
       cachedProfile = updated;
       setProfile(updated);
       notifyMyCourseListeners();

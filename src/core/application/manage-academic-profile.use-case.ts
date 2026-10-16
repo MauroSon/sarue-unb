@@ -25,7 +25,20 @@ export class ManageAcademicProfileUseCase {
     await this.repo.clearProfile();
   }
 
-  async toggleDiscipline(code: string): Promise<StudentAcademicProfile> {
+  /**
+   * Alterna o estado de conclusão de uma disciplina.
+   *
+   * `isEffectivelyCompleted` é o estado que a UI está mostrando agora (inclui
+   * equivalências e marcas manuais anteriores). Com ele, o toggle sempre inverte
+   * o estado visível e grava a marca mínima: se o estado desejado já é o natural
+   * do histórico SIGAA, nenhuma marca é necessária — o reset devolve exatamente
+   * o estado original. Sem o parâmetro, mantém o comportamento legado (inverte
+   * com base apenas no histórico original).
+   */
+  async toggleDiscipline(
+    code: string,
+    isEffectivelyCompleted?: boolean
+  ): Promise<StudentAcademicProfile> {
     const current = await this.repo.getProfile();
     if (!current) {
       throw new Error('Nenhum perfil acadêmico carregado para alternar disciplinas.');
@@ -39,19 +52,36 @@ export class ManageAcademicProfileUseCase {
     const manualCompleted = new Set(current.manualCompletedCodes || []);
     const manualUncompleted = new Set(current.manualUncompletedCodes || []);
 
-    if (isOriginallyCompleted) {
-      // Se era originalmente aprovada, alternar significa desmarcar ou remover da lista de desmarcadas
-      if (manualUncompleted.has(normCode)) {
-        manualUncompleted.delete(normCode);
+    if (isEffectivelyCompleted === undefined) {
+      if (isOriginallyCompleted) {
+        // Se era originalmente aprovada, alternar significa desmarcar ou remover da lista de desmarcadas
+        if (manualUncompleted.has(normCode)) {
+          manualUncompleted.delete(normCode);
+        } else {
+          manualUncompleted.add(normCode);
+        }
       } else {
-        manualUncompleted.add(normCode);
+        // Se não era originalmente aprovada, alternar significa marcar ou desmarcar
+        if (manualCompleted.has(normCode)) {
+          manualCompleted.delete(normCode);
+        } else {
+          manualCompleted.add(normCode);
+        }
       }
     } else {
-      // Se não era originalmente aprovada, alternar significa marcar ou desmarcar
-      if (manualCompleted.has(normCode)) {
-        manualCompleted.delete(normCode);
-      } else {
+      // Estado desejado = inverso do que a UI mostra agora
+      const desiredCompleted = !isEffectivelyCompleted;
+
+      // A decisão parte do zero: as duas marcas deste código saem primeiro
+      manualCompleted.delete(normCode);
+      manualUncompleted.delete(normCode);
+
+      // Só precisa de marca se o desejado divergir do natural do histórico —
+      // assim o reset (ou uma nova alternância) devolve o estado puro do SIGAA
+      if (desiredCompleted && !isOriginallyCompleted) {
         manualCompleted.add(normCode);
+      } else if (!desiredCompleted && isOriginallyCompleted) {
+        manualUncompleted.add(normCode);
       }
     }
 

@@ -17,6 +17,7 @@ import { ManageGradeUseCase } from './application/manage-grade.use-case';
 import { ManageAcademicProfileUseCase } from './application/manage-academic-profile.use-case';
 import { GetFlowchartUseCase } from './application/get-flowchart.use-case';
 import { ParseHistoricoUseCase } from './application/parse-historico.use-case';
+import { GetAcademicCalendarUseCase } from './application/get-academic-calendar.use-case';
 
 import { StrongholdCredentialsRepository } from './infrastructure/stronghold-credentials.repo';
 import { TauriSyncRepository } from './infrastructure/tauri-sync.repo';
@@ -54,6 +55,7 @@ export interface UseCases {
   manageAcademicProfile: ManageAcademicProfileUseCase;
   getFlowchart: GetFlowchartUseCase;
   parseHistorico: ParseHistoricoUseCase;
+  getAcademicCalendar: GetAcademicCalendarUseCase;
 }
 
 export interface Container {
@@ -109,6 +111,7 @@ export function createContainer(overrides?: ContainerOverrides): Container {
     manageAcademicProfile: new ManageAcademicProfileUseCase(academicProfileRepo),
     getFlowchart: new GetFlowchartUseCase(),
     parseHistorico: new ParseHistoricoUseCase(),
+    getAcademicCalendar: new GetAcademicCalendarUseCase(),
   };
 
   return {

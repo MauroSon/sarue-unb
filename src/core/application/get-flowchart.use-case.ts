@@ -70,6 +70,9 @@ export class GetFlowchartUseCase {
     };
 
     const isCompletedOrEquivalent = (targetCode: string, equivalences: string[] = []): boolean => {
+      // Marca manual de "não concluída" vence tudo: nem o histórico nem a
+      // equivalência concluem a disciplina que o aluno desmarcou explicitamente
+      if (manualUncompleted.has(targetCode)) return false;
       if (effectiveCompletedCodes.has(targetCode)) return true;
       const allEqs = new Set([...equivalences, ...(canonicalEquivalences[targetCode] || [])]);
       for (const eq of allEqs) {

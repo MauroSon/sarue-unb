@@ -51,6 +51,10 @@ jobs:
             --period "${{ inputs.period || '2' }}" \
             --out-dir ./dist-data
 
+      - name: Executar scraping de calendários acadêmicos (SAA UnB)
+        run: |
+          pnpm run scrape:calendar --out-dir ./dist-data
+
       - name: Publicar dados estáticos na branch órfã gh-pages
         uses: peaceiris/actions-gh-pages@v4
         with:
