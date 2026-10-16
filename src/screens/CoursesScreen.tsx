@@ -1,6 +1,15 @@
-import React, { useState, useEffect } from 'react';
-import { useFeed } from '../hooks/useFeed';
-import { Card, Badge, PageContainer, PageHeader, Button, Tabs, Pagination, toast } from '@/components/ui';
+import React, { useState, useEffect } from "react";
+import { useFeed } from "../hooks/useFeed";
+import {
+  Card,
+  Badge,
+  PageContainer,
+  PageHeader,
+  Button,
+  Tabs,
+  Pagination,
+  toast,
+} from "@/components/ui";
 import {
   GraduationCap,
   User,
@@ -14,12 +23,12 @@ import {
   AlertCircle,
   Link2,
   Search,
-} from 'lucide-react';
-import { openExternalUrl } from '../lib/utils';
-import { UnmatchedCourseDialog } from '../components/UnmatchedCourseDialog';
-import { FeedList } from '../components/feed/FeedList';
-import { ArchivedToggleButton } from '../components/feed/ArchivedToggleButton';
-import type { Course, Discipline, FeedItemType } from '@/core';
+} from "lucide-react";
+import { openExternalUrl } from "../lib/utils";
+import { UnmatchedCourseDialog } from "../components/UnmatchedCourseDialog";
+import { FeedList } from "../components/feed/FeedList";
+import { ArchivedToggleButton } from "../components/feed/ArchivedToggleButton";
+import type { Course, Discipline, FeedItemType } from "@/core";
 
 export const CoursesScreen: React.FC = () => {
   const {
@@ -34,10 +43,13 @@ export const CoursesScreen: React.FC = () => {
     associateCourse,
   } = useFeed();
 
-  const [selectedDiscipline, setSelectedDiscipline] = useState<Discipline | null>(null);
+  const [selectedDiscipline, setSelectedDiscipline] =
+    useState<Discipline | null>(null);
   const [resolvingCourse, setResolvingCourse] = useState<Course | null>(null);
-  const [drillSearchQuery, setDrillSearchQuery] = useState<string>('');
-  const [drillCategory, setDrillCategory] = useState<FeedItemType | 'all'>('all');
+  const [drillSearchQuery, setDrillSearchQuery] = useState<string>("");
+  const [drillCategory, setDrillCategory] = useState<FeedItemType | "all">(
+    "all",
+  );
 
   // Paginação client-side do feed da disciplina: 25 por página, reset ao trocar de vista/filtro
   const DRILL_PAGE_SIZE = 25;
@@ -49,9 +61,9 @@ export const CoursesScreen: React.FC = () => {
   const handleArchive = async (id: string) => {
     await archiveFeedItem(id, true);
     toast.add({
-      title: 'Item arquivado',
-      description: 'O item foi movido para os Arquivados.',
-      type: 'info',
+      title: "Item arquivado",
+      description: "O item foi movido para os Arquivados.",
+      type: "info",
       timeout: 5000,
     });
   };
@@ -59,19 +71,18 @@ export const CoursesScreen: React.FC = () => {
   const handleRestore = async (id: string) => {
     await archiveFeedItem(id, false);
     toast.add({
-      title: 'Item desarquivado',
-      description: 'O item retornou ao feed ativo da disciplina.',
-      type: 'success',
+      title: "Item desarquivado",
+      description: "O item retornou ao feed ativo da disciplina.",
+      type: "success",
       timeout: 4000,
     });
   };
 
   const typeTabs = [
-    { id: 'all', label: 'Tudo' },
-    { id: 'assignment', label: 'Tarefas' },
-    { id: 'post', label: 'Avisos' },
+    { id: "all", label: "Tudo" },
+    { id: "assignment", label: "Tarefas" },
+    { id: "post", label: "Avisos" },
   ];
-
 
   // Exibe a modal automaticamente se houver turma não associada do Aprender 3
   useEffect(() => {
@@ -99,15 +110,18 @@ export const CoursesScreen: React.FC = () => {
     const disciplineFeedItems = items.filter((item) => {
       const belongsToDiscipline =
         item.courseName === selectedDiscipline.name ||
-        (selectedDiscipline.code && item.courseCode === selectedDiscipline.code) ||
+        (selectedDiscipline.code &&
+          item.courseCode === selectedDiscipline.code) ||
         selectedDiscipline.aprenderCourses.some(
-          (ac) => ac.name === item.courseName || (ac.code && item.courseCode === ac.code)
+          (ac) =>
+            ac.name === item.courseName ||
+            (ac.code && item.courseCode === ac.code),
         );
 
       if (!belongsToDiscipline) return false;
 
       // Filtro por Categoria
-      if (drillCategory !== 'all' && item.itemType !== drillCategory) {
+      if (drillCategory !== "all" && item.itemType !== drillCategory) {
         return false;
       }
 
@@ -124,9 +138,15 @@ export const CoursesScreen: React.FC = () => {
 
       return true;
     });
-    const drillPageCount = Math.max(1, Math.ceil(disciplineFeedItems.length / DRILL_PAGE_SIZE));
+    const drillPageCount = Math.max(
+      1,
+      Math.ceil(disciplineFeedItems.length / DRILL_PAGE_SIZE),
+    );
     const safeDrillPage = Math.min(drillPage, drillPageCount);
-    const drillPageItems = disciplineFeedItems.slice((safeDrillPage - 1) * DRILL_PAGE_SIZE, safeDrillPage * DRILL_PAGE_SIZE);
+    const drillPageItems = disciplineFeedItems.slice(
+      (safeDrillPage - 1) * DRILL_PAGE_SIZE,
+      safeDrillPage * DRILL_PAGE_SIZE,
+    );
 
     return (
       <PageContainer>
@@ -138,8 +158,8 @@ export const CoursesScreen: React.FC = () => {
             size="sm"
             onClick={() => {
               setSelectedDiscipline(null);
-              setDrillSearchQuery('');
-              setDrillCategory('all');
+              setDrillSearchQuery("");
+              setDrillCategory("all");
               setShowArchived(false);
             }}
             className="cursor-pointer flex items-center gap-1.5 font-bold"
@@ -221,7 +241,7 @@ export const CoursesScreen: React.FC = () => {
                   <span>Acessar Turma no Aprender 3</span>
                   <ExternalLink className="w-3.5 h-3.5 stroke-[2.5]" />
                 </Button>
-              ) : null
+              ) : null,
             )}
           </div>
         </div>
@@ -250,22 +270,22 @@ export const CoursesScreen: React.FC = () => {
               <Tabs
                 items={typeTabs}
                 activeId={drillCategory}
-                onChange={(id) => setDrillCategory(id as FeedItemType | 'all')}
+                onChange={(id) => setDrillCategory(id as FeedItemType | "all")}
               />
             </div>
 
             <div className="flex flex-wrap items-end gap-3">
-              {drillSearchQuery || drillCategory !== 'all' ? (
-              <button
-                type="button"
-                onClick={() => {
-                  setDrillSearchQuery('');
-                  setDrillCategory('all');
-                }}
-                className="cursor-pointer rounded-xs text-xs font-bold text-neutral-500 hover:text-black underline focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-neo-blue focus-visible:ring-offset-2"
-              >
-                Limpar filtros
-              </button>
+              {drillSearchQuery || drillCategory !== "all" ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setDrillSearchQuery("");
+                    setDrillCategory("all");
+                  }}
+                  className="cursor-pointer rounded-xs text-xs font-bold text-neutral-500 hover:text-black underline focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-neo-blue focus-visible:ring-offset-2"
+                >
+                  Limpar filtros
+                </button>
               ) : null}
 
               <ArchivedToggleButton
@@ -279,7 +299,11 @@ export const CoursesScreen: React.FC = () => {
         {/* Feed Filtrado desta Disciplina */}
         <div className="space-y-3">
           <div className="flex items-center justify-between text-xs font-bold text-neutral-600 px-1">
-            <span>{showArchived ? 'Arquivados da Matéria' : 'Feed da Matéria'} ({disciplineFeedItems.length} {disciplineFeedItems.length === 1 ? 'publicação' : 'publicações'})</span>
+            <span>
+              {showArchived ? "Arquivados da Matéria" : "Feed da Matéria"} (
+              {disciplineFeedItems.length}{" "}
+              {disciplineFeedItems.length === 1 ? "publicação" : "publicações"})
+            </span>
             <span>Avisos e Tarefas</span>
           </div>
 
@@ -289,14 +313,16 @@ export const CoursesScreen: React.FC = () => {
                 <Inbox className="w-6 h-6 stroke-[2.5] text-neo-blue" />
               </div>
               <h3 className="text-base font-bold text-black">
-                {showArchived ? 'Nenhum item arquivado nesta matéria' : 'Nenhuma publicação encontrada'}
+                {showArchived
+                  ? "Nenhum item arquivado nesta matéria"
+                  : "Nenhuma publicação encontrada"}
               </h3>
               <p className="text-xs font-medium text-neutral-600 max-w-sm mx-auto">
-                {showArchived && !drillSearchQuery && drillCategory === 'all'
-                  ? 'Você ainda não arquivou nenhum aviso ou tarefa desta disciplina.'
-                  : drillSearchQuery || drillCategory !== 'all'
-                  ? 'Nenhum aviso ou tarefa encontrado para os filtros selecionados nesta matéria.'
-                  : 'Não há avisos ou tarefas registradas para esta disciplina até o momento.'}
+                {showArchived && !drillSearchQuery && drillCategory === "all"
+                  ? "Você ainda não arquivou nenhum aviso ou tarefa desta disciplina."
+                  : drillSearchQuery || drillCategory !== "all"
+                    ? "Nenhum aviso ou tarefa encontrado para os filtros selecionados nesta matéria."
+                    : "Não há avisos ou tarefas registradas para esta disciplina até o momento."}
               </p>
             </div>
           ) : (
@@ -311,7 +337,11 @@ export const CoursesScreen: React.FC = () => {
                   onRestore={handleRestore}
                 />
               </Card>
-              <Pagination page={safeDrillPage} pageCount={drillPageCount} onPageChange={setDrillPage} />
+              <Pagination
+                page={safeDrillPage}
+                pageCount={drillPageCount}
+                onPageChange={setDrillPage}
+              />
             </>
           )}
         </div>
@@ -323,10 +353,7 @@ export const CoursesScreen: React.FC = () => {
   return (
     <PageContainer>
       {/* Título Padronizado da Página com Ícone da Sidebar */}
-      <PageHeader
-        icon={GraduationCap}
-        title="Disciplinas do Semestre"
-      />
+      <PageHeader icon={GraduationCap} title="Disciplinas do Semestre" />
 
       {/* Alerta caso haja turmas do Aprender 3 não associadas */}
       {unmatchedCourses.length > 0 ? (
@@ -337,10 +364,14 @@ export const CoursesScreen: React.FC = () => {
             </div>
             <div>
               <p className="text-xs font-black text-black">
-                {unmatchedCourses.length} {unmatchedCourses.length === 1 ? 'turma do Aprender 3 aguarda associação' : 'turmas do Aprender 3 aguardam associação'}
+                {unmatchedCourses.length}{" "}
+                {unmatchedCourses.length === 1
+                  ? "turma do Aprender 3 aguarda associação"
+                  : "turmas do Aprender 3 aguardam associação"}
               </p>
               <p className="text-[11px] font-medium text-neutral-700">
-                Associe para exibir os avisos e tarefas direto na matéria oficial do SIGAA.
+                Associe para exibir os avisos e tarefas direto na matéria
+                oficial do SIGAA.
               </p>
             </div>
           </div>
@@ -358,11 +389,6 @@ export const CoursesScreen: React.FC = () => {
         </div>
       ) : null}
 
-      <div className="flex items-center justify-between text-xs font-bold text-neutral-600 px-1">
-        <span>Disciplinas Matriculadas ({disciplines.length})</span>
-        <span>Base Oficial SIGAA</span>
-      </div>
-
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {disciplines.map((discipline) => (
           <Card
@@ -372,7 +398,7 @@ export const CoursesScreen: React.FC = () => {
             tabIndex={0}
             aria-label={`Ver feed da disciplina ${discipline.name}`}
             onKeyDown={(e) => {
-              if (e.key === 'Enter' || e.key === ' ') {
+              if (e.key === "Enter" || e.key === " ") {
                 e.preventDefault();
                 setSelectedDiscipline(discipline);
               }
@@ -387,7 +413,10 @@ export const CoursesScreen: React.FC = () => {
                 ) : null}
                 {discipline.aprenderCourses.length > 0 ? (
                   <Badge variant="aprender3">
-                    Aprender 3{discipline.aprenderCourses.length > 1 ? ` (${discipline.aprenderCourses.length})` : ''}
+                    Aprender 3
+                    {discipline.aprenderCourses.length > 1
+                      ? ` (${discipline.aprenderCourses.length})`
+                      : ""}
                   </Badge>
                 ) : null}
               </div>
@@ -424,19 +453,19 @@ export const CoursesScreen: React.FC = () => {
 
             {/* Rodapé com indicadores e atalho */}
             <div className="flex flex-wrap items-center justify-between gap-2 pt-4 border-t-2 border-black/10 mt-4 text-xs font-bold">
-              <span className="text-neutral-500">
-                {discipline.semester}
-              </span>
+              <span className="text-neutral-500">{discipline.semester}</span>
 
               <div className="flex items-center gap-2">
-                {discipline.pendingAssignmentsCount !== undefined && discipline.pendingAssignmentsCount > 0 ? (
+                {discipline.pendingAssignmentsCount !== undefined &&
+                discipline.pendingAssignmentsCount > 0 ? (
                   <div className="flex items-center gap-1 text-ink-success bg-green-50 px-2 py-0.5 border border-black/20 rounded-md">
                     <CheckSquare className="w-3.5 h-3.5 stroke-[2.5]" />
                     <span>{discipline.pendingAssignmentsCount} entregas</span>
                   </div>
                 ) : null}
 
-                {discipline.unreadCount !== undefined && discipline.unreadCount > 0 ? (
+                {discipline.unreadCount !== undefined &&
+                discipline.unreadCount > 0 ? (
                   <div className="flex items-center gap-1 text-neo-blue bg-blue-50 px-2 py-0.5 border border-black/20 rounded-md">
                     <MessageSquare className="w-3.5 h-3.5 stroke-[2.5]" />
                     <span>{discipline.unreadCount} novos</span>
