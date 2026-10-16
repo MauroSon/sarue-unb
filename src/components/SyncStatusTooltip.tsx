@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 import {
   CheckCircle2,
   AlertCircle,
@@ -9,11 +9,11 @@ import {
   Globe,
   School,
   Clock,
-} from 'lucide-react';
-import type { SyncStepInfo, SyncStepStatus } from '../context/SyncContext';
+} from "lucide-react";
+import type { SyncStepInfo, SyncStepStatus } from "../context/SyncContext";
 
 interface SyncStatusTooltipProps {
-  steps: Record<'sigaa' | 'aprender3' | 'myCourse' | 'ghPages', SyncStepInfo>;
+  steps: Record<"sigaa" | "aprender3" | "myCourse" | "ghPages", SyncStepInfo>;
   isSyncing: boolean;
   lastSyncedAt: string | null;
 }
@@ -27,33 +27,37 @@ const STEP_ICONS = {
 
 function StatusIndicator({ status }: { status: SyncStepStatus }) {
   switch (status) {
-    case 'syncing':
-      return <Loader2 className="w-3.5 h-3.5 animate-spin text-neo-blue shrink-0" />;
-    case 'success':
+    case "syncing":
+      return (
+        <Loader2 className="w-3.5 h-3.5 animate-spin text-neo-blue shrink-0" />
+      );
+    case "success":
       return <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />;
-    case 'error':
+    case "error":
       return <AlertCircle className="w-3.5 h-3.5 text-rose-600 shrink-0" />;
-    case 'skipped':
+    case "skipped":
       return <MinusCircle className="w-3.5 h-3.5 text-neutral-400 shrink-0" />;
-    case 'idle':
+    case "idle":
     default:
-      return <div className="w-2 h-2 rounded-full bg-neutral-300 ml-0.5 mr-1 shrink-0" />;
+      return (
+        <div className="w-2 h-2 rounded-full bg-neutral-300 ml-0.5 mr-1 shrink-0" />
+      );
   }
 }
 
 function formatRelativeTime(isoString: string | null): string {
-  if (!isoString) return 'Nunca sincronizado';
+  if (!isoString) return "Nunca sincronizado";
   try {
     const date = new Date(isoString);
-    if (Number.isNaN(date.getTime())) return 'Nunca sincronizado';
+    if (Number.isNaN(date.getTime())) return "Nunca sincronizado";
 
-    return date.toLocaleTimeString('pt-BR', {
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
+    return date.toLocaleTimeString("pt-BR", {
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
     });
   } catch {
-    return 'Nunca sincronizado';
+    return "Nunca sincronizado";
   }
 }
 
@@ -62,10 +66,15 @@ export const SyncStatusTooltip: React.FC<SyncStatusTooltipProps> = ({
   isSyncing,
   lastSyncedAt,
 }) => {
-  const stepList = [steps.sigaa, steps.aprender3, steps.myCourse, steps.ghPages];
+  const stepList = [
+    steps.sigaa,
+    steps.aprender3,
+    steps.myCourse,
+    steps.ghPages,
+  ];
 
   return (
-    <div className="w-80 p-3 space-y-3 bg-white text-black select-none">
+    <div className="w-80 p-3 space-y-3 bg-canvas text-black select-none">
       {/* Cabeçalho */}
       <div className="flex items-center justify-between border-b-2 border-black pb-2">
         <div className="flex items-center gap-1.5 font-black text-xs uppercase tracking-wider">
@@ -74,11 +83,11 @@ export const SyncStatusTooltip: React.FC<SyncStatusTooltipProps> = ({
         <span
           className={`text-[10px] font-bold px-2 py-0.5 rounded-full border border-black ${
             isSyncing
-              ? 'bg-amber-300 text-black animate-pulse'
-              : 'bg-emerald-200 text-emerald-950'
+              ? "bg-amber-300 text-black animate-pulse"
+              : "bg-emerald-200 text-emerald-950"
           }`}
         >
-          {isSyncing ? 'Sincronizando...' : 'Concluído'}
+          {isSyncing ? "Sincronizando..." : "Concluído"}
         </span>
       </div>
 
@@ -90,9 +99,9 @@ export const SyncStatusTooltip: React.FC<SyncStatusTooltipProps> = ({
           return (
             <div
               key={step.id}
-              className="p-2 rounded-lg border border-black/15 bg-neutral-50/80 hover:bg-neutral-100/80 transition-colors flex items-start gap-2.5"
+              className="p-2 rounded-lg border border-black/15 bg-canvas hover:bg-neutral-100 transition-colors flex items-start gap-2.5"
             >
-              <div className="p-1 rounded bg-white border border-black/20 shrink-0 mt-0.5">
+              <div className="p-1 rounded bg-canvas border border-black/15 shrink-0 mt-0.5">
                 <Icon className="w-3.5 h-3.5 text-neutral-700" />
               </div>
 
@@ -106,13 +115,13 @@ export const SyncStatusTooltip: React.FC<SyncStatusTooltipProps> = ({
 
                 <p
                   className={`text-[11px] leading-snug mt-0.5 line-clamp-2 ${
-                    step.status === 'error'
-                      ? 'text-rose-600 font-semibold'
-                      : step.status === 'success'
-                      ? 'text-emerald-700 font-medium'
-                      : step.status === 'syncing'
-                      ? 'text-neo-blue font-medium'
-                      : 'text-neutral-500'
+                    step.status === "error"
+                      ? "text-rose-600 font-semibold"
+                      : step.status === "success"
+                        ? "text-emerald-700 font-medium"
+                        : step.status === "syncing"
+                          ? "text-neo-blue font-semibold"
+                          : "text-neutral-500"
                   }`}
                 >
                   {step.message || step.sublabel}
@@ -124,9 +133,9 @@ export const SyncStatusTooltip: React.FC<SyncStatusTooltipProps> = ({
       </div>
 
       {/* Rodapé com timestamp */}
-      <div className="pt-2 border-t border-black/10 flex items-center justify-between text-[10px] text-neutral-500 font-semibold">
+      <div className="pt-2 border-t border-black/10 flex items-center justify-between text-[10px] text-neutral-600 font-semibold">
         <span className="flex items-center gap-1">
-          <Clock className="w-3 h-3 text-neutral-400" />
+          <Clock className="w-3 h-3 text-neutral-500" />
           <span>Última sincronização:</span>
         </span>
         <span className="text-neutral-700 font-bold">

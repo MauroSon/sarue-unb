@@ -168,7 +168,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   side="top"
                   align="center"
                   sideOffset={8}
-                  className="p-0 border-2 border-black shadow-[4px_4px_0px_0px_#000] rounded-xl overflow-hidden bg-white"
+                  className="p-0 border-2 border-black rounded-lg overflow-hidden"
                 >
                   <SyncStatusTooltip
                     steps={syncSteps}
@@ -208,7 +208,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   side="right"
                   align="center"
                   sideOffset={12}
-                  className="p-0 border-2 border-black shadow-[4px_4px_0px_0px_#000] rounded-xl overflow-hidden bg-white"
+                  className="p-0 border-2 border-black rounded-lg overflow-hidden"
                 >
                   <SyncStatusTooltip
                     steps={syncSteps}
