@@ -1,8 +1,24 @@
 {
-  "scraped_at": "2026-10-15T09:53:03.965Z",
+  "scraped_at": "2026-10-16T09:47:34.227Z",
   "year": "2026",
   "period": "2",
+  "semesters": [
+    {
+      "value": "2026-2",
+      "year": "2026",
+      "period": "2",
+      "label": "2026 • 2º semestre",
+      "is_current": true
+    },
+    {
+      "value": "2027-1",
+      "year": "2027",
+      "period": "1",
+      "label": "2027 • 1º semestre",
+      "is_current": false
+    }
+  ],
   "total_departments": 211,
-  "total_disciplines": 4702,
-  "total_classes": 9137
+  "total_disciplines": 4508,
+  "total_classes": 8830
 }

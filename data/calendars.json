@@ -1,0 +1,364 @@
+[
+  {
+    "semester": "2026.2",
+    "year": "2026",
+    "period": "2",
+    "label": "2026 • 2º semestre",
+    "isCurrent": true,
+    "updatedAt": "2026-10-16T09:47:57.715Z",
+    "pdfUrl": "https://saa.unb.br/wp-content/uploads/2026/06/2026_2_Calend_Mat_Grad_25_06_2026.pdf",
+    "periodoAulas": {
+      "inicio": "2026-08-10",
+      "fim": "2026-12-14",
+      "raw": "10/08/2026 a 14/12/2026"
+    },
+    "periodoLetivo": {
+      "inicio": "2026-07-22",
+      "fim": "2026-12-19",
+      "raw": "22/07/2026 a 19/12/2026"
+    },
+    "periodoMatricula": {
+      "inicio": "2026-07-27",
+      "fim": "2026-07-29",
+      "raw": "27/07 a 29/07/2026"
+    },
+    "periodoRematricula": {
+      "inicio": "2026-08-03",
+      "fim": "2026-08-04",
+      "raw": "03/08 e 04/08/2026"
+    },
+    "periodoMatriculaExtraordinaria": {
+      "inicio": "2026-08-06",
+      "fim": "2026-08-13",
+      "raw": "06/08 a 13/08/2026"
+    },
+    "periodoRetirada": {
+      "inicio": "2026-07-27",
+      "fim": "2026-12-14",
+      "raw": "27/07 a 14/12/2026"
+    },
+    "periodoTrancamentoParcial": {
+      "limite": "2026-10-09",
+      "raw": "Até 09/10/2026"
+    },
+    "periodoTrancamentoGeral": {
+      "limite": "2026-11-12",
+      "raw": "Até 12/11/2026"
+    }
+  },
+  {
+    "semester": "2026.1",
+    "year": "2026",
+    "period": "1",
+    "label": "2026 • 1º semestre",
+    "isCurrent": false,
+    "updatedAt": "2026-10-16T09:47:58.056Z",
+    "pdfUrl": "https://saa.unb.br/wp-content/uploads/2026/02/2026_1_Calend_Mat_Grad_27_02_2026.pdf",
+    "periodoAulas": {
+      "inicio": "2026-03-16",
+      "fim": "2026-07-18",
+      "raw": "16/03/2026 a 18/07/2026"
+    },
+    "periodoLetivo": {
+      "inicio": "2026-02-23",
+      "fim": "2026-07-23",
+      "raw": "23/02/2026 a 23/07/2026"
+    },
+    "periodoMatricula": {
+      "inicio": "2026-02-27",
+      "fim": "2026-03-02",
+      "raw": "27/02 a 02/03/2026"
+    },
+    "periodoRematricula": {
+      "inicio": "2026-03-03",
+      "fim": "2026-03-05",
+      "raw": "03/03 e 05/03/2026"
+    },
+    "periodoMatriculaExtraordinaria": {
+      "inicio": "2026-03-09",
+      "fim": "2026-03-12",
+      "raw": "09/03 a 12/03/2026"
+    },
+    "periodoRetirada": {
+      "inicio": "2026-03-10",
+      "fim": "2026-03-13",
+      "raw": "10/03 a 13/03/2026"
+    },
+    "periodoTrancamentoParcial": {
+      "limite": "2026-07-21",
+      "raw": "Até 21/07/2026"
+    },
+    "periodoTrancamentoGeral": {
+      "limite": "2026-07-21",
+      "raw": "Até 21/07/2026"
+    }
+  },
+  {
+    "semester": "2025.4",
+    "year": "2025",
+    "period": "4",
+    "label": "2025 • 4º semestre",
+    "isCurrent": false,
+    "updatedAt": "2026-10-16T09:47:37.296Z",
+    "pdfUrl": "https://saa.unb.br/wp-content/uploads/2026/01/2025_4_Calend_Ativ_Grad_29_12_2025.pdf",
+    "periodoMatricula": {
+      "inicio": "2025-12-24",
+      "fim": "2025-12-29",
+      "raw": "24/12 a 29/12/2025"
+    },
+    "periodoMatriculaExtraordinaria": {
+      "inicio": "2025-01-02",
+      "fim": "2026-01-05",
+      "raw": "02/01 a 05/01/2026"
+    },
+    "periodoTrancamentoParcial": {
+      "limite": "2026-02-19",
+      "raw": "Até 19/02/2026"
+    }
+  },
+  {
+    "semester": "2025.2",
+    "year": "2025",
+    "period": "2",
+    "label": "2025 • 2º semestre",
+    "isCurrent": false,
+    "updatedAt": "2026-10-16T09:47:58.398Z",
+    "pdfUrl": "https://saa.unb.br/wp-content/uploads/2025/09/2025_2_Calend_Mat_Grad_31_07_2025.pdf",
+    "periodoAulas": {
+      "inicio": "2025-08-18",
+      "fim": "2025-12-15",
+      "raw": "18/08/2025 a 15/12/2025"
+    },
+    "periodoLetivo": {
+      "inicio": "2025-08-01",
+      "fim": "2025-12-22",
+      "raw": "01/08/2025 a 22/12/2025"
+    },
+    "periodoMatricula": {
+      "inicio": "2025-08-11",
+      "fim": "2025-08-13",
+      "raw": "11/08 a 13/08/2025"
+    },
+    "periodoRematricula": {
+      "inicio": "2025-08-18",
+      "fim": "2025-08-20",
+      "raw": "18/08 e 20/08/2025"
+    },
+    "periodoMatriculaExtraordinaria": {
+      "inicio": "2025-08-22",
+      "fim": "2025-08-28",
+      "raw": "22/08 a 28/08/2025"
+    },
+    "periodoRetirada": {
+      "inicio": "2025-08-25",
+      "fim": "2025-08-29",
+      "raw": "25/08 a 29/08/2025"
+    },
+    "periodoTrancamentoParcial": {
+      "limite": "2025-10-14",
+      "raw": "Até 14/10/2025"
+    },
+    "periodoTrancamentoGeral": {
+      "limite": "2025-11-13",
+      "raw": "Até 13/11/2025"
+    }
+  },
+  {
+    "semester": "2025.1",
+    "year": "2025",
+    "period": "1",
+    "label": "2025 • 1º semestre",
+    "isCurrent": false,
+    "updatedAt": "2026-10-16T09:47:58.740Z",
+    "pdfUrl": "https://saa.unb.br/wp-content/uploads/2025/09/2025_1_Calend_Mat_Grad_02_12_2024.pdf",
+    "periodoAulas": {
+      "inicio": "2025-03-24",
+      "fim": "2025-07-26",
+      "raw": "24/03/2025 a 26/07/2025"
+    },
+    "periodoLetivo": {
+      "inicio": "2025-02-24",
+      "fim": "2025-07-31",
+      "raw": "24/02/2025 a 31/07/2025"
+    },
+    "periodoMatricula": {
+      "inicio": "2025-03-07",
+      "fim": "2025-03-10",
+      "raw": "07/03 a 10/03/2025"
+    },
+    "periodoRematricula": {
+      "inicio": "2025-03-11",
+      "fim": "2025-03-17",
+      "raw": "11/03 e 17/03/2025"
+    },
+    "periodoMatriculaExtraordinaria": {
+      "inicio": "2025-03-19",
+      "fim": "2024-03-27",
+      "raw": "19/03 a 27/03/2024"
+    },
+    "periodoRetirada": {
+      "inicio": "2025-03-20",
+      "fim": "2025-03-28",
+      "raw": "20/03 a 28/03/2025"
+    },
+    "periodoTrancamentoParcial": {
+      "limite": "2025-05-26",
+      "raw": "Até 26/05/2025"
+    },
+    "periodoTrancamentoGeral": {
+      "limite": "2025-06-27",
+      "raw": "Até 27/06/2025"
+    }
+  },
+  {
+    "semester": "2024.2",
+    "year": "2024",
+    "period": "2",
+    "label": "2024 • 2º semestre",
+    "isCurrent": false,
+    "updatedAt": "2026-10-16T09:47:59.101Z",
+    "pdfUrl": "https://saa.unb.br/wp-content/uploads/2025/09/2024_2_Calend_Mat_Grad_16_09_2024.pdf",
+    "periodoAulas": {
+      "inicio": "2024-10-14",
+      "fim": "2025-02-22",
+      "raw": "14/10/2024 a 22/02/2025"
+    },
+    "periodoLetivo": {
+      "inicio": "2024-09-24",
+      "fim": "2025-02-27",
+      "raw": "24/09/2024 a 27/02/2025"
+    },
+    "periodoMatricula": {
+      "inicio": "2024-10-02",
+      "fim": "2024-10-03",
+      "raw": "02/10 a 03/10/2024"
+    },
+    "periodoRematricula": {
+      "inicio": "2024-10-04",
+      "fim": "2024-10-08",
+      "raw": "04/10 e 08/10/2024"
+    },
+    "periodoMatriculaExtraordinaria": {
+      "inicio": "2024-10-10",
+      "fim": "2024-10-17",
+      "raw": "10/10 a 17/10/2024"
+    },
+    "periodoTrancamentoParcial": {
+      "limite": "2024-12-14",
+      "raw": "Até 14/12/2024"
+    },
+    "periodoTrancamentoGeral": {
+      "limite": "2025-01-25",
+      "raw": "Até 25/01/2025"
+    }
+  },
+  {
+    "semester": "2024.1",
+    "year": "2024",
+    "period": "1",
+    "label": "2024 • 1º semestre",
+    "isCurrent": false,
+    "updatedAt": "2026-10-16T09:47:59.468Z",
+    "pdfUrl": "https://saa.unb.br/wp-content/uploads/2025/09/2024_1_Calend_Mat_Grad_07_12_2023.pdf",
+    "periodoAulas": {
+      "inicio": "2024-03-18",
+      "fim": "2024-09-21",
+      "raw": "18/03/2024 a 21/09/2024"
+    },
+    "periodoMatricula": {
+      "inicio": "2024-02-28",
+      "fim": "2024-02-29",
+      "raw": "28/02 a 29/02/2024"
+    },
+    "periodoRematricula": {
+      "inicio": "2024-03-01",
+      "fim": "2024-03-05",
+      "raw": "01/03 e 05/03/2024"
+    },
+    "periodoMatriculaExtraordinaria": {
+      "inicio": "2024-03-08",
+      "fim": "2024-03-11",
+      "raw": "08/03 a 11/03/2024"
+    },
+    "periodoTrancamentoGeral": {
+      "limite": "2024-09-21",
+      "raw": "Até 21/09/2024"
+    }
+  },
+  {
+    "semester": "2023.4",
+    "year": "2023",
+    "period": "4",
+    "label": "2023 • 4º semestre",
+    "isCurrent": false,
+    "updatedAt": "2026-10-16T09:47:37.655Z",
+    "pdfUrl": "https://saa.unb.br/wp-content/uploads/2025/09/2023_4_Calend_Ativ_Grad_07_12_2023.pdf",
+    "periodoMatricula": {
+      "inicio": "29/12/2023 a\n02/01/2024",
+      "fim": "29/12/2023 a\n02/01/2024",
+      "raw": "29/12/2023 a\n02/01/2024 a 29/12/2023 a\n02/01/2024"
+    },
+    "periodoMatriculaExtraordinaria": {
+      "inicio": "04/01/2024 a\n08/01/2024",
+      "fim": "04/01/2024 a\n08/01/2024",
+      "raw": "04/01/2024 a\n08/01/2024 a 04/01/2024 a\n08/01/2024"
+    },
+    "periodoTrancamentoParcial": {
+      "limite": "2024-02-16",
+      "raw": "Até 16/02/2024"
+    }
+  },
+  {
+    "semester": "2023.2",
+    "year": "2023",
+    "period": "2",
+    "label": "2023 • 2º semestre",
+    "isCurrent": false,
+    "updatedAt": "2026-10-16T09:47:59.807Z",
+    "pdfUrl": "https://saa.unb.br/wp-content/uploads/2025/09/2023_2_Calend_Mat_Grad_05_07_2023_v2.pdf",
+    "periodoMatricula": {
+      "inicio": "2023-08-17",
+      "fim": "2023-08-31",
+      "raw": "17/08 a 31/08/2023"
+    },
+    "periodoRematricula": {
+      "inicio": "2023-08-11",
+      "fim": "2023-08-15",
+      "raw": "11/08 e 15/08/2023"
+    },
+    "periodoMatriculaExtraordinaria": {
+      "inicio": "2023-08-17",
+      "fim": "2023-08-31",
+      "raw": "17/08 a 31/08/2023"
+    }
+  },
+  {
+    "semester": "2023.1",
+    "year": "2023",
+    "period": "1",
+    "label": "2023 • 1º semestre",
+    "isCurrent": false,
+    "updatedAt": "2026-10-16T09:48:00.155Z",
+    "pdfUrl": "https://saa.unb.br/wp-content/uploads/2025/09/2023_1_Calend_Matricula_Grad_27_03_2023.pdf",
+    "periodoAulas": {
+      "inicio": "2023-03-28",
+      "fim": "2023-07-25",
+      "raw": "28/03/2023 a 25/07/2023"
+    },
+    "periodoMatricula": {
+      "inicio": "2023-03-01",
+      "fim": "2023-03-06",
+      "raw": "01/03 a 06/03/2023"
+    },
+    "periodoRematricula": {
+      "inicio": "2023-03-17",
+      "fim": "2023-03-20",
+      "raw": "17/03 e 20/03/2023"
+    },
+    "periodoMatriculaExtraordinaria": {
+      "inicio": "2023-03-21",
+      "fim": "2023-03-31",
+      "raw": "21/03 a 31/03/2023"
+    }
+  }
+]
