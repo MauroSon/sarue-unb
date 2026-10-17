@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { Popover as PopoverPrimitive } from '@base-ui/react/popover';
-import { Bell, BellOff, ExternalLink } from 'lucide-react';
+import { Bell, BellOff, Check, ExternalLink } from 'lucide-react';
 import { Badge, Button } from '@/components/ui';
 import { useDeadlines } from '@/context/DeadlineContext';
 import { useSync } from '@/context/SyncContext';
@@ -44,8 +44,9 @@ const SECTIONS: {
 const DeadlineRow: React.FC<{
   entry: DeadlineEntry;
   disciplineLabel?: string;
+  isDone?: boolean;
   onComplete: (id: string) => void;
-}> = ({ entry, disciplineLabel, onComplete }) => {
+}> = ({ entry, disciplineLabel, isDone, onComplete }) => {
   const item = entry.item;
   const isOverdue = entry.urgency === 'overdue';
 
@@ -61,15 +62,25 @@ const DeadlineRow: React.FC<{
       <button
         type="button"
         onClick={() => onComplete(item.id)}
-        title="Marcar como concluído"
-        aria-label={`Concluir: ${item.title}`}
-        className="w-5 h-5 mt-0.5 rounded-md border-2 border-black bg-white text-neutral-400 hover:bg-neutral-100 flex items-center justify-center shrink-0 cursor-pointer transition-[transform,box-shadow,background-color] duration-150 ease-out shadow-[1px_1px_0px_0px_#000] hover:translate-x-[0.5px] hover:translate-y-[0.5px] hover:shadow-none active:translate-x-[1px] active:translate-y-[1px]"
-      />
+        title={isDone ? 'Concluído' : 'Marcar como concluído'}
+        aria-label={isDone ? `Concluído: ${item.title}` : `Concluir: ${item.title}`}
+        className={cn(
+          'w-5 h-5 mt-0.5 rounded-md border-2 border-black flex items-center justify-center shrink-0 cursor-pointer transition-[transform,box-shadow,background-color] duration-150 ease-out shadow-[1px_1px_0px_0px_#000] hover:translate-x-[0.5px] hover:translate-y-[0.5px] hover:shadow-none active:translate-x-[1px] active:translate-y-[1px]',
+          isDone
+            ? 'bg-neo-green text-black'
+            : 'bg-white text-neutral-400 hover:bg-neutral-100',
+        )}
+      >
+        {isDone ? <Check className="w-3.5 h-3.5 stroke-[3]" /> : null}
+      </button>
 
       <div className="min-w-0 flex-1">
         <span
           title={item.title}
-          className="block truncate text-sm font-bold text-black"
+          className={cn(
+            'block truncate text-sm font-bold',
+            isDone ? 'text-neutral-600 line-through' : 'text-black',
+          )}
         >
           {item.title}
         </span>
@@ -124,6 +135,12 @@ export const DeadlineBell: React.FC<{ className?: string }> = ({ className }) =>
 
   const [open, setOpen] = React.useState(false);
   const [disciplines, setDisciplines] = React.useState<Discipline[]>([]);
+  /* Snapshot congelado na abertura: itens concluídos ficam visíveis (com check)
+     até o popup fechar, quando o refresh sincroniza lista e badge. */
+  const [snapshot, setSnapshot] = React.useState<DeadlineEntry[]>([]);
+  const [pendingDone, setPendingDone] = React.useState<ReadonlySet<string>>(
+    new Set(),
+  );
 
   React.useEffect(() => {
     let active = true;
@@ -139,8 +156,19 @@ export const DeadlineBell: React.FC<{ className?: string }> = ({ className }) =>
   }, [useCases]);
 
   const handleComplete = async (id: string) => {
+    // Persiste a conclusão, mas o item só sai da lista quando o popup fechar.
+    setPendingDone((prev) => new Set(prev).add(id));
     await useCases.getFeed.markAsCompleted(id, true);
-    await refresh();
+  };
+
+  const handleOpenChange = (nextOpen: boolean) => {
+    if (nextOpen) {
+      setSnapshot(entries);
+      setPendingDone(new Set());
+    } else {
+      void refresh();
+    }
+    setOpen(nextOpen);
   };
 
   const disciplineNames = React.useMemo(() => {
@@ -155,11 +183,11 @@ export const DeadlineBell: React.FC<{ className?: string }> = ({ className }) =>
 
   const grouped = SECTIONS.map((section) => ({
     ...section,
-    entries: entries.filter((e) => e.urgency === section.urgency),
+    entries: snapshot.filter((e) => e.urgency === section.urgency),
   }));
 
   return (
-    <PopoverPrimitive.Root open={open} onOpenChange={setOpen}>
+    <PopoverPrimitive.Root open={open} onOpenChange={handleOpenChange}>
       <PopoverPrimitive.Trigger
         render={
           <Button
@@ -205,9 +233,9 @@ export const DeadlineBell: React.FC<{ className?: string }> = ({ className }) =>
                   Prazos
                 </h3>
               </div>
-              {entries.length > 0 ? (
+              {snapshot.length > 0 ? (
                 <Badge variant="urgent" size="sm">
-                  {entries.length} pendência{entries.length > 1 ? 's' : ''}
+                  {snapshot.length} pendência{snapshot.length > 1 ? 's' : ''}
                 </Badge>
               ) : lastSyncedAt ? (
                 <Badge variant="neutral" size="sm">Em dia</Badge>
@@ -216,7 +244,7 @@ export const DeadlineBell: React.FC<{ className?: string }> = ({ className }) =>
 
             {/* Seções de urgência */}
             <div className="overflow-y-auto overscroll-contain">
-              {entries.length === 0 ? (
+              {snapshot.length === 0 ? (
                 <div className="px-6 py-10 text-center space-y-3">
                   <div className="w-12 h-12 mx-auto bg-white border-2 border-black rounded-lg shadow-[2px_2px_0px_0px_#000] flex items-center justify-center">
                     <BellOff className="size-6 stroke-[2.5] text-neo-blue" />
@@ -252,6 +280,7 @@ export const DeadlineBell: React.FC<{ className?: string }> = ({ className }) =>
                                 entry.item.courseCode ||
                                 undefined
                               }
+                              isDone={pendingDone.has(entry.item.id)}
                               onComplete={handleComplete}
                             />
                           ))}

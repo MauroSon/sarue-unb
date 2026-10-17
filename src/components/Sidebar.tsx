@@ -68,14 +68,20 @@ export const Sidebar: React.FC<SidebarProps> = ({
           {!isCollapsed ? (
             <>
               {/* Quando expandido: Logo e nome */}
-              <div className="flex items-center gap-2.5 min-w-0">
+              <button
+                type="button"
+                onClick={() => onSelectTab('home')}
+                title="Ir para a Home"
+                aria-label="Ir para a Home"
+                className="cursor-pointer flex items-center gap-2.5 min-w-0 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-neo-blue focus-visible:ring-offset-2"
+              >
                 <div className="w-9 h-9 bg-unb-blue text-white border-2 border-black rounded-xl flex items-center justify-center font-black text-xs shrink-0 shadow-[2px_2px_0px_0px_#000]">
                   UnB
                 </div>
                 <span className="font-extrabold text-sm tracking-tight truncate text-black">
                   UnB <span className="text-[#468AFB]">Aggregator</span>
                 </span>
-              </div>
+              </button>
 
               {/* Botão de Colapsar: só visível no hover-group da sidebar */}
               <button
@@ -92,9 +98,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <div className="w-full flex justify-center">
               {/* Ícone da plataforma (visível por padrão, oculto no hover-group) */}
               <div className="flex group-hover:hidden items-center justify-center">
-                <div className="w-9 h-9 bg-unb-blue text-white border-2 border-black rounded-xl flex items-center justify-center font-black text-xs shadow-[2px_2px_0px_0px_#000]">
+                <button
+                  type="button"
+                  onClick={() => onSelectTab('home')}
+                  title="Ir para a Home"
+                  aria-label="Ir para a Home"
+                  className="cursor-pointer w-9 h-9 bg-unb-blue text-white border-2 border-black rounded-xl flex items-center justify-center font-black text-xs shadow-[2px_2px_0px_0px_#000] focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-neo-blue focus-visible:ring-offset-2"
+                >
                   UnB
-                </div>
+                </button>
               </div>
 
               {/* Botão de Expandir (oculto por padrão, substitui o ícone no hover-group) */}
