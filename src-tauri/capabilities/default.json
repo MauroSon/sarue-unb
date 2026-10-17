@@ -2,9 +2,13 @@
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "default",
   "description": "Default permissions for UnB Aggregator",
-  "windows": ["main", "scraper-*"],
+  "windows": [
+    "main",
+    "scraper-*"
+  ],
   "permissions": [
     "core:default",
+    "notification:default",
     "stronghold:default",
     "sql:default",
     "sql:allow-execute",

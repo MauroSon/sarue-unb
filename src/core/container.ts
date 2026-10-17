@@ -3,11 +3,14 @@ import type { ISyncRepository } from './domain/interfaces/sync-repo.interface';
 import type { IFeedRepository } from './domain/interfaces/feed-repo.interface';
 import type { IGradeRepository } from './domain/interfaces/grade-repo.interface';
 import type { IAcademicProfileRepository } from './domain/interfaces/academic-profile-repo.interface';
+import type { IDeadlineNotificationRepository } from './domain/interfaces/deadline-notification-repo.interface';
+import type { IOSNotifier } from './domain/interfaces/os-notifier.interface';
 
 import { SaveCredentialsUseCase } from './application/save-credentials.use-case';
 import { GetCredentialsUseCase } from './application/get-credentials.use-case';
 import { SyncPlatformsUseCase } from './application/sync-platforms.use-case';
 import { GetFeedUseCase } from './application/get-feed.use-case';
+import { EvaluateDeadlineNotificationsUseCase } from './application/evaluate-deadline-notifications.use-case';
 import { GetCoursesUseCase } from './application/get-courses.use-case';
 import { GetDepartmentsUseCase } from './application/get-departments.use-case';
 import { GetSemestersUseCase } from './application/get-semesters.use-case';
@@ -28,6 +31,10 @@ import { TauriGradeRepository } from './infrastructure/tauri-grade.repo';
 import { InMemoryGradeRepository } from './infrastructure/in-memory-grade.repo';
 import { TauriAcademicProfileRepository } from './infrastructure/tauri-academic-profile.repo';
 import { InMemoryAcademicProfileRepository } from './infrastructure/in-memory-academic-profile.repo';
+import { SqliteDeadlineNotificationRepository } from './infrastructure/sqlite-deadline-notification.repo';
+import { InMemoryDeadlineNotificationRepository } from './infrastructure/in-memory-deadline-notification.repo';
+import { TauriOSNotifier } from './infrastructure/tauri-os-notifier';
+import { NullNotifier } from './infrastructure/tauri-os-notifier';
 
 function isTauriRuntime(): boolean {
   return typeof window !== 'undefined' && '__TAURI_INTERNALS__' in window;
@@ -39,6 +46,8 @@ export interface Repositories {
   feedRepo: IFeedRepository;
   gradeRepo: IGradeRepository;
   academicProfileRepo: IAcademicProfileRepository;
+  deadlineNotificationRepo: IDeadlineNotificationRepository;
+  osNotifier: IOSNotifier;
 }
 
 export interface UseCases {
@@ -46,6 +55,7 @@ export interface UseCases {
   getCredentials: GetCredentialsUseCase;
   syncPlatforms: SyncPlatformsUseCase;
   getFeed: GetFeedUseCase;
+  evaluateDeadlines: EvaluateDeadlineNotificationsUseCase;
   getCourses: GetCoursesUseCase;
   getDepartments: GetDepartmentsUseCase;
   getSemesters: GetSemestersUseCase;
@@ -89,19 +99,35 @@ export function createContainer(overrides?: ContainerOverrides): Container {
     overrides?.repos?.academicProfileRepo ??
     (tauri ? new TauriAcademicProfileRepository() : new InMemoryAcademicProfileRepository());
 
+  const deadlineNotificationRepo: IDeadlineNotificationRepository =
+    overrides?.repos?.deadlineNotificationRepo ??
+    (tauri
+      ? new SqliteDeadlineNotificationRepository()
+      : new InMemoryDeadlineNotificationRepository());
+
+  const osNotifier: IOSNotifier =
+    overrides?.repos?.osNotifier ?? (tauri ? new TauriOSNotifier() : new NullNotifier());
+
   const repos: Repositories = {
     credentialsRepo,
     syncRepo,
     feedRepo,
     gradeRepo,
     academicProfileRepo,
+    deadlineNotificationRepo,
+    osNotifier,
   };
 
   const useCases: UseCases = {
     saveCredentials: new SaveCredentialsUseCase(credentialsRepo),
     getCredentials: new GetCredentialsUseCase(credentialsRepo),
     syncPlatforms: new SyncPlatformsUseCase(syncRepo, feedRepo),
-    getFeed: new GetFeedUseCase(feedRepo),
+    getFeed: new GetFeedUseCase(feedRepo, deadlineNotificationRepo),
+    evaluateDeadlines: new EvaluateDeadlineNotificationsUseCase(
+      feedRepo,
+      deadlineNotificationRepo,
+      osNotifier,
+    ),
     getCourses: new GetCoursesUseCase(feedRepo),
     getDepartments: new GetDepartmentsUseCase(gradeRepo),
     getSemesters: new GetSemestersUseCase(gradeRepo),

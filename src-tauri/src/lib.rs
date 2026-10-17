@@ -42,6 +42,7 @@ pub fn run() {
         .expect("Falha ao exportar bindings TypeScript");
 
     tauri::Builder::default()
+        .plugin(tauri_plugin_window_state::Builder::new().build())
         .setup(|app| {
             // Inicialização do cofre criptográfico com derivação Argon2 do Tauri Stronghold
             let app_data_dir = app
@@ -52,13 +53,14 @@ pub fn run() {
             let _ = std::fs::create_dir_all(&app_data_dir);
             let salt_path = app_data_dir.join("vault.salt");
 
-            app.handle().plugin(
-                tauri_plugin_stronghold::Builder::with_argon2(&salt_path).build(),
-            )?;
+            app.handle()
+                .plugin(tauri_plugin_stronghold::Builder::with_argon2(&salt_path).build())?;
 
-            app.handle().plugin(
-                tauri_plugin_sql::Builder::default().build(),
-            )?;
+            app.handle()
+                .plugin(tauri_plugin_sql::Builder::default().build())?;
+
+            app.handle()
+                .plugin(tauri_plugin_notification::init())?;
 
             log::info!("Plugins Tauri Stronghold e SQL (SQLite) inicializados com sucesso.");
 

@@ -55,7 +55,7 @@ function SelectScrollUpButton({
     <SelectPrimitive.ScrollUpArrow
       data-slot="select-scroll-up"
       className={cn(
-        'top-0 z-10 flex w-full cursor-default items-center justify-center bg-white py-1 text-black',
+        'top-0 z-10 flex w-full cursor-default items-center justify-center bg-canvas py-1 text-black',
         className
       )}
       {...props}
@@ -73,7 +73,7 @@ function SelectScrollDownButton({
     <SelectPrimitive.ScrollDownArrow
       data-slot="select-scroll-down"
       className={cn(
-        'bottom-0 z-10 flex w-full cursor-default items-center justify-center bg-white py-1 text-black',
+        'bottom-0 z-10 flex w-full cursor-default items-center justify-center bg-canvas py-1 text-black',
         className
       )}
       {...props}
@@ -110,7 +110,7 @@ function SelectContent({
         <SelectPrimitive.Popup
           data-slot="select-content"
           className={cn(
-            'relative z-50 max-h-[min(24rem,var(--available-height))] min-w-(--anchor-width) overflow-x-hidden overflow-y-auto rounded-lg border-2 border-black bg-white text-black shadow-[4px_4px_0px_0px_#000] outline-hidden origin-(--transform-origin) data-open:animate-in data-closed:animate-out data-closed:fade-out-0 data-open:fade-in-0 data-closed:zoom-out-95 data-open:zoom-in-95',
+            'relative z-50 max-h-[min(24rem,var(--available-height))] min-w-(--anchor-width) overflow-x-hidden overflow-y-auto rounded-lg border-2 border-black bg-canvas text-black outline-hidden origin-(--transform-origin) data-open:animate-in data-closed:animate-out data-closed:fade-out-0 data-open:fade-in-0 data-closed:zoom-out-95 data-open:zoom-in-95',
             className
           )}
           {...props}

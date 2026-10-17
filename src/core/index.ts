@@ -5,12 +5,15 @@ export * from './domain/entities/course';
 export * from './domain/entities/grade';
 export * from './domain/entities/academic-profile';
 export * from './domain/entities/academic-calendar';
+export * from './domain/entities/deadline-notification';
 export * from './domain/grade-acronym';
 
 // Interfaces / Ports
 export * from './domain/interfaces/credentials-repo.interface';
 export * from './domain/interfaces/sync-repo.interface';
 export * from './domain/interfaces/feed-repo.interface';
+export * from './domain/interfaces/deadline-notification-repo.interface';
+export * from './domain/interfaces/os-notifier.interface';
 export * from './domain/interfaces/grade-repo.interface';
 export * from './domain/interfaces/academic-profile-repo.interface';
 
@@ -19,6 +22,7 @@ export * from './application/save-credentials.use-case';
 export * from './application/get-credentials.use-case';
 export * from './application/sync-platforms.use-case';
 export * from './application/get-feed.use-case';
+export * from './application/evaluate-deadline-notifications.use-case';
 export * from './application/get-courses.use-case';
 export * from './application/get-departments.use-case';
 export * from './application/get-semesters.use-case';

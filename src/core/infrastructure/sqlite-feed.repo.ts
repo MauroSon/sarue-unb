@@ -54,7 +54,7 @@ const inMemoryCourses = new Map<string, Course>();
 const inMemoryAssociations = new Map<string, CourseAssociation>();
 
 
-async function getDatabase(): Promise<Database | null> {
+export async function getDatabase(): Promise<Database | null> {
   if (!isTauriEnvironment()) return null;
 
   if (!cachedDbPromise) {

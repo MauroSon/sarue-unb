@@ -1,8 +1,12 @@
 import type { FeedItem } from '../domain/entities/feed-item';
 import type { IFeedRepository, FeedFilterOptions } from '../domain/interfaces/feed-repo.interface';
+import type { IDeadlineNotificationRepository } from '../domain/interfaces/deadline-notification-repo.interface';
 
 export class GetFeedUseCase {
-  constructor(private readonly feedRepo: IFeedRepository) {}
+  constructor(
+    private readonly feedRepo: IFeedRepository,
+    private readonly deadlineRepo?: IDeadlineNotificationRepository,
+  ) {}
 
   async execute(filters?: FeedFilterOptions): Promise<FeedItem[]> {
     const items = await this.feedRepo.getItems(filters);
@@ -28,6 +32,8 @@ export class GetFeedUseCase {
 
   async clear(): Promise<void> {
     await this.feedRepo.clear();
+    // Itens sumiram do feed: a memória de marcos notificados zera junto.
+    await this.deadlineRepo?.clear();
   }
 }
 

@@ -105,7 +105,7 @@ export const GradeFilters: React.FC<GradeFiltersProps> = ({
                 }
               </SelectValue>
             </SelectTrigger>
-            <SelectContent className="bg-canvas">
+            <SelectContent>
               {semesterOptions.map((item) => (
                 <SelectItem key={item.value} value={item.value}>
                   {item.label}

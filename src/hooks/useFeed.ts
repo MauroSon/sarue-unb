@@ -9,6 +9,14 @@ function notifyFeedListeners() {
   feedListeners.forEach((fn) => fn());
 }
 
+/** Assina atualizações globais do feed (sync, conclusão, arquivamento). */
+export function subscribeToFeedUpdates(listener: () => void): () => void {
+  feedListeners.add(listener);
+  return () => {
+    feedListeners.delete(listener);
+  };
+}
+
 export function useFeed() {
   const { useCases } = useContainer();
   const [items, setItems] = useState<FeedItem[]>([]);
@@ -116,6 +124,8 @@ export function useFeed() {
     setItems((prev) =>
       prev.map((item) => (item.id === id ? { ...item, isCompleted: nextStatus } : item))
     );
+    // Conclusão muda prazos pendentes: o sino e o painel acompanham.
+    notifyFeedListeners();
   };
 
   const archiveFeedItem = async (id: string, isArchived: boolean = true) => {

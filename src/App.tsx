@@ -10,6 +10,8 @@ import { Sidebar, type NavTab } from './components/Sidebar';
 import { TooltipProvider, Toaster } from '@/components/ui';
 import { useCredentials } from './hooks/useCredentials';
 import { SyncProvider, useSync } from './context/SyncContext';
+import { DeadlineProvider } from './context/DeadlineContext';
+import { NAVIGATE_EVENT } from './lib/utils';
 
 type AppStep = 'onboarding' | 'credentials' | 'main';
 
@@ -27,6 +29,18 @@ const AppShell: React.FC = () => {
       setStep('main');
     }
   }, [hasCredentials]);
+
+  // Navegação disparada por componentes fora da árvore de tabs (ex.: sino de prazos)
+  React.useEffect(() => {
+    const handler = (event: Event) => {
+      const detail = (event as CustomEvent<{ tab: string }>).detail;
+      if (detail?.tab) {
+        setCurrentTab(detail.tab as NavTab);
+      }
+    };
+    window.addEventListener(NAVIGATE_EVENT, handler);
+    return () => window.removeEventListener(NAVIGATE_EVENT, handler);
+  }, []);
 
   if (isCheckingAuth) {
     return (
@@ -68,6 +82,7 @@ const AppShell: React.FC = () => {
 
   // Fluxo 3: Aplicação Principal (Dashboard com Sidebar Colapsável)
   return (
+    <DeadlineProvider>
     <div className="flex h-screen bg-canvas bg-grid overflow-hidden">
       {/* Sidebar Colapsável com Botão de Sincronização no Canto Inferior */}
       <Sidebar
@@ -100,6 +115,7 @@ const AppShell: React.FC = () => {
         </main>
       </div>
     </div>
+    </DeadlineProvider>
   );
 };
 

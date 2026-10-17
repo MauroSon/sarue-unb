@@ -5,6 +5,14 @@ export function cn(...inputs: ClassValue[]): string {
   return twMerge(clsx(inputs));
 }
 
+/** Evento DOM para navegação entre tabs a partir de componentes sem acesso ao estado do App. */
+export const NAVIGATE_EVENT = 'unb-aggregator:navigate';
+
+export function navigateToTab(tab: string): void {
+  if (typeof window === 'undefined') return;
+  window.dispatchEvent(new CustomEvent(NAVIGATE_EVENT, { detail: { tab } }));
+}
+
 export async function openExternalUrl(url: string): Promise<void> {
   if (!url) return;
   if (!/^https?:\/\//i.test(url)) {

@@ -17,6 +17,7 @@ tauri-build = { version = "2", features = [] }
 tauri = { version = "2", features = [] }
 tauri-plugin-stronghold = "2"
 tauri-plugin-sql = { version = "2", features = ["sqlite"] }
+tauri-plugin-notification = "2"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 reqwest = { version = "0.12", default-features = false, features = ["json", "cookies", "rustls-tls"] }
@@ -28,4 +29,7 @@ chrono = { version = "0.4", default-features = false, features = ["clock", "std"
 tauri-specta = { version = "2.0.0-rc.25", features = ["javascript", "typescript"] }
 specta = { version = "2.0.0-rc", features = ["derive"] }
 specta-typescript = "0.0.12"
+
+[target.'cfg(not(any(target_os = "android", target_os = "ios")))'.dependencies]
+tauri-plugin-window-state = "2"
 

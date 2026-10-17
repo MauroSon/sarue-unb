@@ -2,6 +2,7 @@ import React from 'react';
 import { Home, BookOpen, CalendarDays, Settings, PanelLeftClose, PanelLeftOpen, RefreshCw, GraduationCap } from 'lucide-react';
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui';
 import { SyncStatusTooltip } from './SyncStatusTooltip';
+import { DeadlineBell } from './notifications/DeadlineBell';
 import type { SyncStepInfo } from '../context/SyncContext';
 
 export type NavTab = 'home' | 'courses' | 'grade' | 'my-course' | 'settings';
@@ -149,12 +150,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
       <div className="p-3 border-t-2 border-black">
         {!isCollapsed ? (
           <div className="space-y-2">
+            <div className="flex items-center gap-2">
             <Tooltip>
               <TooltipTrigger
                 type="button"
                 onClick={isSyncing || !hasConnectedAccounts ? undefined : onSync}
                 aria-disabled={isSyncing || !hasConnectedAccounts}
-                className={`w-full flex items-center justify-center gap-2 py-2.5 px-4 font-bold text-xs rounded-2xl border-2 transition-[transform,box-shadow,background-color,border-color] duration-150 ease-out select-none ${
+                className={`min-w-0 flex-1 flex items-center justify-center gap-2 py-2.5 px-4 font-bold text-xs rounded-2xl border-2 transition-[transform,box-shadow,background-color,border-color] duration-150 ease-out select-none ${
                   !hasConnectedAccounts || isSyncing
                     ? 'bg-neutral-200 text-neutral-400 border-neutral-300 cursor-not-allowed shadow-none'
                     : 'cursor-pointer bg-neo-blue hover:bg-neo-blueHover text-white border-black focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-neo-blue focus-visible:ring-offset-2 focus-visible:ring-offset-white shadow-[2px_2px_0px_0px_#000] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none'
@@ -178,6 +180,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 </TooltipContent>
               )}
             </Tooltip>
+            <DeadlineBell />
+            </div>
             {!hasConnectedAccounts ? (
               <p className="text-[11px] text-neutral-500 font-semibold text-center leading-tight">
                 Nenhuma conta conectada
@@ -189,7 +193,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             )}
           </div>
         ) : (
-          <div className="flex justify-center">
+          <div className="flex flex-col items-center gap-2">
             <Tooltip>
               <TooltipTrigger
                 type="button"
@@ -218,6 +222,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 </TooltipContent>
               )}
             </Tooltip>
+            <DeadlineBell />
           </div>
         )}
       </div>

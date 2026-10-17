@@ -64,6 +64,21 @@ const INITIAL_STEPS: Record<SyncStepId, SyncStepInfo> = {
 
 const SyncContext = createContext<SyncContextValue | null>(null);
 
+// Ouvintes globais de fim de sync (ex.: avaliação de prazos do sino)
+const syncCompleteListeners = new Set<() => void>();
+
+/** Assina a conclusão de um ciclo completo de sincronização. */
+export function subscribeToSyncComplete(listener: () => void): () => void {
+  syncCompleteListeners.add(listener);
+  return () => {
+    syncCompleteListeners.delete(listener);
+  };
+}
+
+function notifySyncComplete() {
+  syncCompleteListeners.forEach((fn) => fn());
+}
+
 export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
@@ -272,6 +287,7 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({
     const now = new Date().toISOString();
     setLastSyncedAt(now);
     setIsSyncing(false);
+    notifySyncComplete();
   }, [allCredentials, updateStep, useCases]);
 
   const value = useMemo(
