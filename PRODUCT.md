@@ -40,7 +40,7 @@ Confirmado e funcional hoje:
 
 Restrições e undecided (trabalho futuro não deve tratá-los como promessa):
 
-- Plataformas confirmadas no momento: **SIGAA e Aprender 3**. Teams em avaliação; MoodleMat removido da plataforma. Novas plataformas são escopo futuro.
+- Plataformas confirmadas no momento: **SIGAA, Aprender 3 e Microsoft Teams** (via autenticação interativa institucional para turmas e avisos). MoodleMat removido da plataforma. Novas plataformas são escopo futuro.
 - **Zero telemetria é o estado atual, não um compromisso permanente.** Telemetria anônima pode existir no futuro para melhorar a plataforma, sempre com consentimento do usuário e possibilidade de desativar. Não tratar "zero telemetria" como promessa eterna em copy novo.
 - UI sempre em **português brasileiro**.
 

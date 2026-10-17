@@ -10,7 +10,13 @@ import {
   TooltipTrigger,
   TooltipContent,
 } from "@/components/ui";
-import { CalendarDays, CalendarClock, RotateCcw, PlusCircle, Info } from "lucide-react";
+import {
+  CalendarDays,
+  CalendarClock,
+  RotateCcw,
+  PlusCircle,
+  Info,
+} from "lucide-react";
 import { toPng } from "html-to-image";
 import type { ScrapedClass } from "@/core";
 import { GradeFilters } from "../components/grade/GradeFilters";
@@ -108,6 +114,22 @@ export const GradeBuilderScreen: React.FC = () => {
     return map;
   }, [selectedClasses]);
 
+  // Contagem regressiva até o último dia letivo do semestre (calendário acadêmico)
+  const daysLeftInSemester = useMemo(() => {
+    const fim = calendar?.periodoLetivo?.fim;
+    if (!fim) return null;
+
+    // Parse "YYYY-MM-DD" como data local — evita off-by-one de timezone (UTC)
+    const [fy, fm, fd] = fim.split("-").map(Number);
+    const fimDate = new Date(fy, fm - 1, fd);
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const days = Math.round((fimDate.getTime() - today.getTime()) / 86_400_000);
+
+    // Semestre acabou → sem contador
+    return days < 0 ? null : days;
+  }, [calendar]);
+
   // Feedback da tela vira toast no canto da tela (sucesso, aviso ou erro)
   const lastToastRef = React.useRef<string | null>(null);
   React.useEffect(() => {
@@ -118,11 +140,21 @@ export const GradeBuilderScreen: React.FC = () => {
     const msg = feedbackMessage.replace(/^Aviso:\s*/i, "");
     if (/^(exibindo|coleta|busca)/i.test(msg)) return; // busca silenciosa de turmas
     if (/^erro/i.test(msg)) {
-      toast.add({ title: 'Algo deu errado', description: msg, type: 'error', timeout: 7000 });
+      toast.add({
+        title: "Algo deu errado",
+        description: msg,
+        type: "error",
+        timeout: 7000,
+      });
     } else if (/^(aviso|nenhuma|n\u00e3o|selecione)/i.test(msg)) {
-      toast.add({ title: 'Aten\u00e7\u00e3o', description: msg, type: 'warning', timeout: 6000 });
+      toast.add({
+        title: "Aten\u00e7\u00e3o",
+        description: msg,
+        type: "warning",
+        timeout: 6000,
+      });
     } else {
-      toast.add({ description: msg, type: 'success', timeout: 4000 });
+      toast.add({ description: msg, type: "success", timeout: 4000 });
     }
   }, [feedbackMessage]);
 
@@ -154,9 +186,9 @@ export const GradeBuilderScreen: React.FC = () => {
       document.body.removeChild(link);
     } catch {
       toast.add({
-        title: 'Exportação da grade',
-        description: 'Não foi possível gerar a imagem. Tente novamente.',
-        type: 'error',
+        title: "Exportação da grade",
+        description: "Não foi possível gerar a imagem. Tente novamente.",
+        type: "error",
       });
     } finally {
       setIsExportingPng(false);
@@ -224,17 +256,20 @@ export const GradeBuilderScreen: React.FC = () => {
                 </Tooltip>
               </p>
               <div className="flex flex-wrap items-center gap-2">
-                {!isCurrentSemesterMode && currentEnrolledClasses.length > 0 && (
-                  <Button
-                    type="button"
-                    variant="primary"
-                    size="sm"
-                    onClick={restoreEnrolledClasses}
-                  >
-                    <RotateCcw className="w-3.5 h-3.5 stroke-[2.5]" />
-                    <span>Restaurar turmas matriculadas ({enrolledCount})</span>
-                  </Button>
-                )}
+                {!isCurrentSemesterMode &&
+                  currentEnrolledClasses.length > 0 && (
+                    <Button
+                      type="button"
+                      variant="primary"
+                      size="sm"
+                      onClick={restoreEnrolledClasses}
+                    >
+                      <RotateCcw className="w-3.5 h-3.5 stroke-[2.5]" />
+                      <span>
+                        Restaurar turmas matriculadas ({enrolledCount})
+                      </span>
+                    </Button>
+                  )}
                 <Button
                   type="button"
                   variant="outline"
@@ -246,6 +281,20 @@ export const GradeBuilderScreen: React.FC = () => {
                 </Button>
               </div>
             </div>
+          }
+          aside={
+            daysLeftInSemester !== null ? (
+              <div className="flex flex-col items-end gap-1 text-right">
+                <span className="text-5xl font-black tracking-tight leading-none text-black">
+                  {daysLeftInSemester}
+                </span>
+                <span className="text-xs font-medium text-black leading-snug max-w-[10rem]">
+                  {daysLeftInSemester === 1
+                    ? "dia para acabar o semestre"
+                    : "dias para acabar o semestre"}
+                </span>
+              </div>
+            ) : undefined
           }
           className="mb-4"
         />
@@ -299,11 +348,12 @@ export const GradeBuilderScreen: React.FC = () => {
             activeSearchQuery={activeSearchQuery}
             activeDeptId={activeDeptId}
             isFallbackSearch={isFallbackSearch}
-            isCatalogLoaded={allDisciplines.length > 0 || disciplines.length > 0}
+            isCatalogLoaded={
+              allDisciplines.length > 0 || disciplines.length > 0
+            }
             departmentsMap={departmentsMap}
             onResetSearch={resetSearch}
-            onQuickSearch={(query) => executeSearch(query)}
-            onSearchAllUnb={() => executeSearch(activeSearchQuery, 'ALL')}
+            onSearchAllUnb={() => executeSearch(activeSearchQuery, "ALL")}
           />
         </div>
 

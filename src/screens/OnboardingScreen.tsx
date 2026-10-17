@@ -1,124 +1,362 @@
-import React from 'react';
-import { Button, Card, CardContent } from '@/components/ui';
-import { ShieldCheck, Scale, GitBranch, ArrowRight, Layers } from 'lucide-react';
+import React, { useRef, useState } from 'react';
+import { motion, AnimatePresence, useReducedMotion, type Variants } from 'motion/react';
+import { Button } from '@/components/ui';
+import { CredentialsStep } from '@/components/onboarding/CredentialsStep';
+import {
+  ArrowRight,
+  ChevronLeft,
+  ChevronRight,
+  Star,
+  Plus,
+  Circle,
+  Triangle,
+  Inbox,
+  CalendarDays,
+  BookOpen,
+  Lock,
+  ShieldCheck,
+  GitBranch,
+} from 'lucide-react';
 
 export interface OnboardingScreenProps {
-  onContinue: () => void;
-  onExplore?: () => void;
+  onComplete: () => void;
+  onExplore: () => void;
 }
 
-export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onContinue, onExplore }) => {
+const TOTAL_STEPS = 4;
+
+type StepCard = { bg: string; icon: React.ReactNode; title: string; copy: string };
+
+export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete, onExplore }) => {
+  const [step, setStep] = useState(1);
+  const reduced = useReducedMotion();
+  const finishRef = useRef<() => void | Promise<void>>(() => {});
+  const [credState, setCredState] = useState({ connected: false, busy: false });
+  // Loading exclusivo da ação de entrar: o busy do passo desabilita o botão,
+  // mas o spinner pertence só ao clique de Entrar (validar SIGAA não é "entrar").
+  const [isEntering, setIsEntering] = useState(false);
+
+  const springy = reduced
+    ? { type: 'tween' as const, duration: 0 }
+    : { type: 'spring' as const, stiffness: 320, damping: 26 };
+
+  const panelVariants: Variants = {
+    enter: { opacity: 0, y: 18, scale: 1.05, rotate: 1.5 },
+    center: {
+      opacity: 1,
+      y: 0,
+      scale: 1,
+      rotate: 0,
+      transition: { ...springy, staggerChildren: 0.07, delayChildren: 0.05 },
+    },
+    exit: {
+      opacity: 0,
+      y: -12,
+      scale: 0.95,
+      rotate: -1.5,
+      transition: { duration: reduced ? 0 : 0.16, ease: [0.22, 1, 0.36, 1] },
+    },
+  };
+
+  const itemVariants: Variants = {
+    enter: { opacity: 0, y: 12, scale: 0.96 },
+    center: { opacity: 1, y: 0, scale: 1, transition: springy },
+    exit: { opacity: 0, transition: { duration: reduced ? 0 : 0.1 } },
+  };
+
+  const next = () => setStep((s) => Math.min(TOTAL_STEPS, s + 1));
+  const back = () => setStep((s) => Math.max(1, s - 1));
+  const isLast = step === TOTAL_STEPS;
+
   return (
-    <div className="min-h-screen bg-canvas bg-grid flex flex-col justify-center items-center p-6 md:p-12">
-      <div className="w-full max-w-2xl space-y-8">
-        {/* Header institucional */}
-        <div className="text-center space-y-3">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1 bg-neo-blue text-white border-2 border-black rounded-full shadow-[2px_2px_0px_0px_#000]">
-            <Layers className="w-4 h-4 stroke-[2.5]" />
-            <span className="text-xs font-bold">Universidade de Brasília</span>
-          </div>
-
-          <h1 className="text-4xl md:text-5xl font-black text-black tracking-tight">
-            UnB <span className="text-unb-blue">Aggregator</span>
-          </h1>
-
-          <p className="text-base md:text-lg font-medium text-neutral-700 max-w-xl mx-auto">
-            Todas as suas plataformas acadêmicas reunidas em um único feed desktop integrado, seguro e rápido.
-          </p>
+    <div className="min-h-screen bg-canvas bg-grid flex flex-col">
+      {/* Chrome do wizard: logo, progresso, pular */}
+      <div className="w-full max-w-2xl mx-auto px-6 pt-6 flex items-center justify-between gap-4 shrink-0">
+        <div className="flex-1 flex">
+          {step > 1 && (
+            <div className="w-7 h-7 bg-unb-blue text-white border-2 border-black rounded-lg shadow-[2px_2px_0px_0px_#000] flex items-center justify-center">
+              <span className="text-[11px] font-black leading-none">UnB</span>
+            </div>
+          )}
         </div>
 
-        {/* 3 Destaques Obrigatórios */}
-        <div className="space-y-4">
-          {/* Destaque 1: Zero Telemetria */}
-          <div className="flex items-start gap-4 p-5 bg-pastel-green border-2 border-black rounded-lg shadow-[4px_4px_0px_0px_#000]">
-            <div className="p-3 bg-white border-2 border-black rounded-lg shadow-[2px_2px_0px_0px_#000] shrink-0">
-              <ShieldCheck className="w-6 h-6 text-ink-success stroke-[2.5]" />
-            </div>
-            <div className="space-y-1">
-              <h3 className="text-base font-bold text-black tracking-tight">
-                Zero Telemetria
-              </h3>
-              <p className="text-sm font-normal text-neutral-700 leading-relaxed">
-                Sua privacidade é inegociável. Nenhum dado de navegação, uso, clique ou métrica é coletado ou transmitido para servidores de terceiros. Tudo é processado localmente no seu computador.
-              </p>
-            </div>
-          </div>
-
-          {/* Destaque 2: Licença Apache 2.0 */}
-          <div className="flex items-start gap-4 p-5 bg-pastel-yellow border-2 border-black rounded-lg shadow-[4px_4px_0px_0px_#000]">
-            <div className="p-3 bg-white border-2 border-black rounded-lg shadow-[2px_2px_0px_0px_#000] shrink-0">
-              <Scale className="w-6 h-6 text-black stroke-[2.5]" />
-            </div>
-            <div className="space-y-1">
-              <h3 className="text-base font-bold text-black tracking-tight">
-                Licenciado sob Apache 2.0
-              </h3>
-              <p className="text-sm font-normal text-neutral-700 leading-relaxed">
-                Software 100% livre e transparente. Desenvolvido para a comunidade acadêmica sob os termos permissivos da Apache License Version 2.0, garantindo autonomia e perenidade.
-              </p>
-            </div>
-          </div>
-
-          {/* Destaque 3: Código Aberto no GitHub */}
-          <div className="flex items-start gap-4 p-5 bg-pastel-blue border-2 border-black rounded-lg shadow-[4px_4px_0px_0px_#000]">
-            <div className="p-3 bg-white border-2 border-black rounded-lg shadow-[2px_2px_0px_0px_#000] shrink-0">
-              <GitBranch className="w-6 h-6 text-neo-blue stroke-[2.5]" />
-            </div>
-            <div className="space-y-1">
-              <h3 className="text-base font-bold text-black tracking-tight">
-                Código Aberto para Auditoria no GitHub
-              </h3>
-              <p className="text-sm font-normal text-neutral-700 leading-relaxed">
-                Transparência completa. Qualquer estudante, professor ou pesquisador pode auditar, inspecionar a implementação dos scrapers e do cofre criptográfico, e sugerir melhorias no GitHub.
-              </p>
-            </div>
-          </div>
+        {/* Indicador de progresso: bolinhas-adesivo */}
+        <div className="flex items-center gap-2.5" role="group" aria-label={`Passo ${step} de ${TOTAL_STEPS}`}>
+          {[1, 2, 3, 4].map((n) => {
+            const state = n < step ? 'done' : n === step ? 'active' : 'todo';
+            return (
+              <motion.span
+                key={n}
+                aria-hidden
+                animate={state === 'active' ? { scale: 1.3 } : { scale: 1 }}
+                transition={reduced ? { duration: 0 } : { type: 'spring', stiffness: 400, damping: 20 }}
+                className={`inline-block w-3 h-3 rounded-full border-2 border-black ${n <= step ? 'bg-neo-blue' : 'bg-white'}`}
+              />
+            );
+          })}
         </div>
 
-        {/* Plataformas integradas */}
-        <Card className="border-2 border-black bg-white rounded-lg shadow-[4px_4px_0px_0px_#000] p-4 text-center">
-          <CardContent className="p-0">
-            <span className="text-xs font-bold text-neutral-600 block mb-2">
-              Plataformas Integradas
-            </span>
-            <div className="flex flex-wrap justify-center gap-2">
-              <span className="px-3 py-1 bg-platform-sigaa text-black font-bold text-xs border-2 border-black rounded-full shadow-[2px_2px_0px_0px_#000]">
-                Sigaa
-              </span>
-              <span className="px-3 py-1 bg-platform-aprender3 text-black font-bold text-xs border-2 border-black rounded-full shadow-[2px_2px_0px_0px_#000]">
-                Aprender 3
-              </span>
-              <span className="px-3 py-1 bg-platform-teams text-black font-bold text-xs border-2 border-black rounded-full shadow-[2px_2px_0px_0px_#000]">
-                Microsoft Teams
-              </span>
-            </div>
-          </CardContent>
-        </Card>
+        <div className="flex-1 flex justify-end">
+          {!isLast ? (
+            <Button
+              variant="ghost"
+              size="md"
+              onClick={() => setStep(TOTAL_STEPS)}
+              className="text-neutral-700 hover:text-black"
+            >
+              Pular <ChevronRight className="w-4 h-4 stroke-[2.5]" />
+            </Button>
+          ) : (
+            <Button
+              variant="ghost"
+              size="md"
+              onClick={onExplore}
+              className="text-neutral-700 hover:text-black"
+            >
+              Explorar sem Login
+            </Button>
+          )}
+        </div>
+      </div>
 
-        {/* Botões de Ação */}
-        <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
-          <Button
-            size="lg"
-            variant="default"
-            onClick={onContinue}
-            className="w-full sm:w-auto min-w-[240px] text-base"
-          >
-            <span>Configurar Credenciais</span>
+      {/* Conteúdo do passo */}
+      <div className="flex-1 flex items-center justify-center px-6 py-8">
+        <div className="w-full max-w-2xl relative">
+          <AnimatePresence mode="wait">
+            {/* PASSO 1: BEM-VINDO */}
+            {step === 1 && (
+              <motion.div key="s1" variants={panelVariants} initial="enter" animate="center" exit="exit">
+                {/* Adesivos decorativos */}
+                <motion.div
+                  className="absolute -top-2 -left-2 z-10 pointer-events-none"
+                  initial={{ scale: 0, rotate: -12, opacity: 0 }}
+                  animate={{ scale: 1, rotate: -8, opacity: 1 }}
+                  transition={reduced ? { duration: 0 } : { type: 'spring', stiffness: 260, damping: 12, delay: 0.45 }}
+                  aria-hidden
+                >
+                  <Star className="w-7 h-7 fill-neo-yellow text-black stroke-[2.5]" />
+                </motion.div>
+                <motion.div
+                  className="absolute -top-3 right-8 z-10 pointer-events-none"
+                  initial={{ scale: 0, rotate: 10, opacity: 0 }}
+                  animate={{ scale: 1, rotate: 6, opacity: 1 }}
+                  transition={reduced ? { duration: 0 } : { type: 'spring', stiffness: 260, damping: 12, delay: 0.55 }}
+                  aria-hidden
+                >
+                  <div className="w-5 h-5 rounded-full bg-neo-coral border-2 border-black shadow-[2px_2px_0px_0px_#000]" />
+                </motion.div>
+                <motion.div
+                  className="absolute top-[16%] -left-4 z-10 pointer-events-none"
+                  initial={{ scale: 0, rotate: 14, opacity: 0 }}
+                  animate={{ scale: 1, rotate: 8, opacity: 1 }}
+                  transition={reduced ? { duration: 0 } : { type: 'spring', stiffness: 260, damping: 12, delay: 0.62 }}
+                  aria-hidden
+                >
+                  <Triangle className="w-6 h-6 fill-platform-teams text-black stroke-[2.5]" />
+                </motion.div>
+                <motion.div
+                  className="absolute top-[24%] -right-5 z-10 pointer-events-none"
+                  initial={{ scale: 0, rotate: -20, opacity: 0 }}
+                  animate={{ scale: 1, rotate: -12, opacity: 1 }}
+                  transition={reduced ? { duration: 0 } : { type: 'spring', stiffness: 260, damping: 12, delay: 0.69 }}
+                  aria-hidden
+                >
+                  <Plus className="w-6 h-6 text-neo-purple stroke-[3]" />
+                </motion.div>
+                <motion.div
+                  className="absolute bottom-[8%] left-[12%] z-10 pointer-events-none"
+                  initial={{ scale: 0, rotate: 12, opacity: 0 }}
+                  animate={{ scale: 1, rotate: 45, opacity: 1 }}
+                  transition={reduced ? { duration: 0 } : { type: 'spring', stiffness: 260, damping: 12, delay: 0.76 }}
+                  aria-hidden
+                >
+                  <div className="w-4 h-4 bg-neo-green border-2 border-black shadow-[2px_2px_0px_0px_#000]" />
+                </motion.div>
+                <motion.div
+                  className="absolute bottom-[14%] right-[10%] z-10 pointer-events-none"
+                  initial={{ scale: 0, rotate: -10, opacity: 0 }}
+                  animate={{ scale: 1, rotate: 0, opacity: 1 }}
+                  transition={reduced ? { duration: 0 } : { type: 'spring', stiffness: 260, damping: 12, delay: 0.83 }}
+                  aria-hidden
+                >
+                  <Circle className="w-5 h-5 text-platform-aprender3 stroke-[3]" />
+                </motion.div>
+
+                {/* Hero */}
+                <motion.div variants={itemVariants} className="text-center space-y-3 relative">
+                  <motion.div
+                    initial={{ scale: 0.4, rotate: -10, opacity: 0 }}
+                    animate={{ scale: 1, rotate: 0, opacity: 1 }}
+                    transition={reduced ? { duration: 0 } : { type: 'spring', stiffness: 260, damping: 12 }}
+                  >
+                    <div className="mx-auto w-[72px] h-[72px] bg-unb-blue text-white border-2 border-black rounded-2xl flex items-center justify-center shadow-[4px_4px_0px_0px_#000]">
+                      <span className="text-3xl font-black">UnB</span>
+                    </div>
+                  </motion.div>
+                  <h1 className="text-4xl md:text-5xl font-black text-black tracking-tight">
+                    UnB <span className="text-unb-blue">Aggregator</span>
+                  </h1>
+                  <p className="text-base md:text-lg font-medium text-neutral-700 max-w-lg mx-auto">
+                    Todas as suas plataformas acadêmicas reunidas em um único feed desktop integrado, seguro e rápido.
+                  </p>
+                  <div className="flex flex-wrap justify-center gap-2 pt-1">
+                    <span className="px-3 py-1 bg-neo-green text-black font-bold text-xs border-2 border-black rounded-full shadow-[2px_2px_0px_0px_#000]">Sigaa</span>
+                    <span className="px-3 py-1 bg-platform-aprender3 text-black font-bold text-xs border-2 border-black rounded-full shadow-[2px_2px_0px_0px_#000]">Aprender 3</span>
+                    <span className="px-3 py-1 bg-platform-teams text-black font-bold text-xs border-2 border-black rounded-full shadow-[2px_2px_0px_0px_#000]">Microsoft Teams</span>
+                  </div>
+                </motion.div>
+              </motion.div>
+            )}
+
+            {/* PASSO 2: FUNCIONALIDADES */}
+            {step === 2 && (
+              <motion.div key="s2" variants={panelVariants} initial="enter" animate="center" exit="exit">
+                <motion.h2 variants={itemVariants} className="text-3xl font-black tracking-tight text-black text-center">
+                  Tudo que você usa, em um lugar só
+                </motion.h2>
+                <motion.p variants={itemVariants} className="text-sm md:text-base font-medium text-neutral-600 text-center mt-2">
+                  Três frentes que poupam suas abas e seu tempo.
+                </motion.p>
+                <div className="grid md:grid-cols-3 gap-4 pt-4">
+                  {STEP2_CARDS.map((c) => (
+                    <motion.div
+                      key={c.title}
+                      variants={itemVariants}
+                      className={`${c.bg} border-2 border-black rounded-lg shadow-[4px_4px_0px_0px_#000] p-5`}
+                    >
+                      <div className="w-10 h-10 bg-white border-2 border-black rounded-lg shadow-[2px_2px_0px_0px_#000] flex items-center justify-center mb-3">
+                        {c.icon}
+                      </div>
+                      <h3 className="text-base font-bold text-black tracking-tight">{c.title}</h3>
+                      <p className="text-sm font-medium text-neutral-700 leading-relaxed mt-1">{c.copy}</p>
+                    </motion.div>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+
+            {/* PASSO 3: SEGURANÇA */}
+            {step === 3 && (
+              <motion.div key="s3" variants={panelVariants} initial="enter" animate="center" exit="exit">
+                <motion.h2 variants={itemVariants} className="text-3xl font-black tracking-tight text-black text-center">
+                  Seus dados moram no seu computador
+                </motion.h2>
+                <motion.p variants={itemVariants} className="text-sm md:text-base font-medium text-neutral-600 text-center mt-2">
+                  Privacidade não é uma opção aqui — é arquitetura.
+                </motion.p>
+                <div className="grid md:grid-cols-3 gap-4 pt-4">
+                  {STEP3_CARDS.map((c) => (
+                    <motion.div
+                      key={c.title}
+                      variants={itemVariants}
+                      className={`${c.bg} border-2 border-black rounded-lg shadow-[4px_4px_0px_0px_#000] p-5`}
+                    >
+                      <div className="w-10 h-10 bg-white border-2 border-black rounded-lg shadow-[2px_2px_0px_0px_#000] flex items-center justify-center mb-3">
+                        {c.icon}
+                      </div>
+                      <h3 className="text-base font-bold text-black tracking-tight">{c.title}</h3>
+                      <p className="text-sm font-medium text-neutral-700 leading-relaxed mt-1">{c.copy}</p>
+                    </motion.div>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+
+            {/* PASSO 4: LOGIN */}
+            {step === 4 && (
+              <motion.div key="s4" variants={panelVariants} initial="enter" animate="center" exit="exit">
+                <motion.div variants={itemVariants}>
+                  <CredentialsStep
+                    onSuccess={onComplete}
+                    registerFinish={(fn) => {
+                      finishRef.current = fn;
+                    }}
+                    onActiveChange={setCredState}
+                  />
+                </motion.div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      </div>
+
+      {/* Footer do wizard: Voltar à esquerda; CTA primária à direita (Entrar exige conta conectada) */}
+      <div className="w-full max-w-2xl mx-auto px-6 pb-8 flex items-center justify-between shrink-0">
+        {step > 1 ? (
+          <Button variant="ghost" size="md" onClick={back} className="text-neutral-700 hover:text-black">
+            <ChevronLeft className="w-4 h-4 stroke-[2.5]" />
+            Voltar
+          </Button>
+        ) : (
+          <span />
+        )}
+        {step < 4 ? (
+          <Button size="md" onClick={next}>
+            <span>{step === 1 ? 'Começar' : 'Continuar'}</span>
             <ArrowRight className="w-5 h-5 stroke-[2.5]" />
           </Button>
-
-          {onExplore ? (
-            <Button
-              size="lg"
-              variant="outline"
-              onClick={onExplore}
-              className="w-full sm:w-auto min-w-[200px] text-base"
-            >
-              <span>Explorar sem Login</span>
-            </Button>
-          ) : null}
-        </div>
+        ) : (
+          <Button
+            size="md"
+            disabled={!credState.connected || credState.busy}
+            isLoading={isEntering}
+            onClick={async () => {
+              setIsEntering(true);
+              try {
+                await finishRef.current();
+              } finally {
+                setIsEntering(false);
+              }
+            }}
+          >
+            <span>Entrar no Aggregator</span>
+            <ArrowRight className="w-5 h-5 stroke-[2.5]" />
+          </Button>
+        )}
       </div>
     </div>
   );
 };
+
+// Cards dos passos 2 e 3 (mesma anatomia, conteúdo distinto)
+const STEP2_CARDS: StepCard[] = [
+  {
+    bg: 'bg-pastel-blue',
+    icon: <Inbox className="w-5 h-5 text-neo-blue stroke-[2.5]" />,
+    title: 'Feed Unificado',
+    copy: 'Posts e tarefas do SIGAA e do Aprender 3 num feed só, com prazo visível e marcação de concluído.',
+  },
+  {
+    bg: 'bg-pastel-yellow',
+    icon: <CalendarDays className="w-5 h-5 text-platform-aprender3 stroke-[2.5]" />,
+    title: 'Monte sua Grade',
+    copy: 'Busque turmas por departamento, gere opções de horário sem conflito e salve grades por semestre.',
+  },
+  {
+    bg: 'bg-pastel-green',
+    icon: <BookOpen className="w-5 h-5 text-ink-success stroke-[2.5]" />,
+    title: 'Disciplinas',
+    copy: 'Tudo organizado por disciplina: avisos, materiais e o que vence primeiro.',
+  },
+];
+
+const STEP3_CARDS: StepCard[] = [
+  {
+    bg: 'bg-pastel-blue',
+    icon: <Lock className="w-5 h-5 text-neo-blue stroke-[2.5]" />,
+    title: 'Cofre Local Stronghold',
+    copy: 'Suas credenciais ficam em cofre criptografado no seu próprio computador. Nada vai para servidores nossos.',
+  },
+  {
+    bg: 'bg-pastel-green',
+    icon: <ShieldCheck className="w-5 h-5 text-ink-success stroke-[2.5]" />,
+    title: 'Zero Telemetria',
+    copy: 'Nenhum dado de uso, clique ou métrica sai do seu computador. Tudo é processado localmente, por construção.',
+  },
+  {
+    bg: 'bg-pastel-yellow',
+    icon: <GitBranch className="w-5 h-5 text-neo-blue stroke-[2.5]" />,
+    title: 'Código Aberto',
+    copy: 'Apache 2.0 no GitHub. Qualquer pessoa pode auditar os scrapers e o cofre, e sugerir melhorias.',
+  },
+];

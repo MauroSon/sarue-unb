@@ -63,7 +63,7 @@ pub async fn sync_platforms(
             PlatformType::Teams => {
                 let is_connected = teams.as_ref().and_then(|t| t.is_connected).unwrap_or(false);
                 let email = teams.as_ref().and_then(|t| t.email.as_deref()).unwrap_or("");
-                if is_connected && !email.is_empty() {
+                if is_connected {
                     match HiddenWebviewScraper::sync_teams(&app, email, "").await {
                         Ok((items, courses)) => {
                             all_items.extend(items);
@@ -227,5 +227,152 @@ pub async fn validate_aprender3_credentials(
     let (_items, courses) = client.sync_aprender3(&clean_cpf, &senha).await?;
     Ok(format!("Conectado ao Aprender 3 ({} turmas encontradas)", courses.len()))
 }
+
+#[command]
+#[specta::specta]
+pub async fn connect_teams(
+    app: AppHandle,
+    email: Option<String>,
+) -> Result<crate::models::TeamsCreds, String> {
+    use std::sync::{Arc, Mutex};
+    use tauri::{Manager, WebviewUrl, WebviewWindowBuilder};
+
+    // Fecha qualquer janela residual anterior de login
+    if let Some(existing) = app.get_webview_window("teams-auth") {
+        let _ = existing.destroy();
+        tokio::time::sleep(tokio::time::Duration::from_millis(200)).await;
+    }
+
+    let raw_email = email.unwrap_or_default().trim().to_string();
+    let mut target_url = tauri::Url::parse("https://teams.microsoft.com").map_err(|e| e.to_string())?;
+    if !raw_email.is_empty() {
+        target_url.query_pairs_mut().append_pair("login_hint", &raw_email);
+    }
+
+    let (tx, rx) = tokio::sync::oneshot::channel::<Result<String, String>>();
+    let tx_cell = Arc::new(Mutex::new(Some(tx)));
+
+    let tx_clone_nav = tx_cell.clone();
+    let tx_clone_win = tx_cell.clone();
+
+    // User agent moderno para prevenir tela de navegador não suportado
+    let modern_ua = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36";
+
+    let window_builder = WebviewWindowBuilder::new(
+        &app,
+        "teams-auth",
+        WebviewUrl::External(target_url),
+    )
+    .title("Login Institucional - Microsoft Teams (UnB)")
+    .inner_size(960.0, 720.0)
+    .center()
+    .user_agent(modern_ua)
+    .visible(true)
+    .on_navigation(move |url| {
+        if url.host_str() == Some("teams.microsoft.com") && url.path().starts_with("/__aggregator_bridge__") {
+            let mut detected_email = String::new();
+            for (k, v) in url.query_pairs() {
+                if k == "email" && !v.is_empty() {
+                    detected_email = v.to_string();
+                }
+            }
+            if let Ok(mut lock) = tx_clone_nav.lock() {
+                if let Some(sender) = lock.take() {
+                    let _ = sender.send(Ok(detected_email));
+                }
+            }
+            return false;
+        }
+        true
+    })
+    .on_page_load(move |window, payload| {
+        if payload.event() == tauri::webview::PageLoadEvent::Finished {
+            let url = payload.url();
+            let host = url.host_str().unwrap_or("");
+            let path = url.path();
+            // Detecta quando o usuário completou o fluxo de login institucional e caiu na página do Teams
+            if host == "teams.microsoft.com" && !path.starts_with("/login") && !path.starts_with("/__aggregator_bridge__") {
+                log::info!("[Teams Connect] Usuário autenticado na página principal do Teams: {}", url);
+                let probe_script = r#"
+                    (function() {
+                        try {
+                            let foundEmail = '';
+                            for (let i = 0; i < localStorage.length; i++) {
+                                let key = localStorage.key(i);
+                                let val = localStorage.getItem(key);
+                                if (val && (val.includes('@aluno.unb.br') || val.includes('@unb.br'))) {
+                                    let match = val.match(/[a-zA-Z0-9._%+-]+@(aluno\.)?unb\.br/i);
+                                    if (match) { foundEmail = match[0]; break; }
+                                }
+                            }
+                            setTimeout(function() {
+                                window.location.href = "https://teams.microsoft.com/__aggregator_bridge__?action=login_done&email=" + encodeURIComponent(foundEmail);
+                            }, 1200);
+                        } catch(e) {
+                            window.location.href = "https://teams.microsoft.com/__aggregator_bridge__?action=login_done&email=";
+                        }
+                    })();
+                "#;
+                let _ = window.eval(probe_script);
+            }
+        }
+    });
+
+    let window = window_builder.build().map_err(|e| format!("Falha ao abrir janela de login do Teams: {}", e))?;
+
+    window.on_window_event(move |event| {
+        if let tauri::WindowEvent::Destroyed = event {
+            if let Ok(mut lock) = tx_clone_win.lock() {
+                if let Some(sender) = lock.take() {
+                    let _ = sender.send(Err("Janela de autenticação fechada antes da conclusão.".into()));
+                }
+            }
+        }
+    });
+
+    // Aguarda conclusão do login com tempo limite de 5 minutos (para 2FA/SSO)
+    let auth_result = match tokio::time::timeout(tokio::time::Duration::from_secs(300), rx).await {
+        Ok(res) => match res {
+            Ok(inner) => inner,
+            Err(_) => Err("Comunicação com a janela do Teams interrompida.".into()),
+        },
+        Err(_) => Err("Tempo limite esgotado para o login no Microsoft Teams.".into()),
+    };
+
+    // Fecha janela com segurança se ainda existir
+    if let Some(win) = app.get_webview_window("teams-auth") {
+        let _ = win.destroy();
+    }
+
+    match auth_result {
+        Ok(detected_email) => {
+            let final_email = if !detected_email.trim().is_empty() {
+                detected_email.trim().to_string()
+            } else if !raw_email.is_empty() {
+                raw_email
+            } else {
+                "aluno@aluno.unb.br".to_string()
+            };
+            log::info!("Teams conectado com sucesso para: {}", final_email);
+            Ok(crate::models::TeamsCreds {
+                is_connected: Some(true),
+                email: Some(final_email),
+            })
+        }
+        Err(err) => Err(err),
+    }
+}
+
+#[command]
+#[specta::specta]
+pub async fn disconnect_teams(app: AppHandle) -> Result<(), String> {
+    use tauri::Manager;
+    if let Some(win) = app.get_webview_window("teams-auth") {
+        let _ = win.destroy();
+    }
+    log::info!("Microsoft Teams desconectado.");
+    Ok(())
+}
+
 
 

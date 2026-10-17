@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { OnboardingScreen } from './screens/OnboardingScreen';
-import { CredentialsScreen } from './screens/CredentialsScreen';
 import { DashboardScreen } from './screens/DashboardScreen';
 import { CoursesScreen } from './screens/CoursesScreen';
 import { GradeBuilderScreen } from './screens/GradeBuilderScreen';
@@ -13,7 +12,7 @@ import { SyncProvider, useSync } from './context/SyncContext';
 import { DeadlineProvider } from './context/DeadlineContext';
 import { NAVIGATE_EVENT } from './lib/utils';
 
-type AppStep = 'onboarding' | 'credentials' | 'main';
+type AppStep = 'onboarding' | 'main';
 
 const AppShell: React.FC = () => {
   const { hasCredentials, isLoading: isCheckingAuth } = useCredentials();
@@ -23,12 +22,17 @@ const AppShell: React.FC = () => {
   const [currentTab, setCurrentTab] = useState<NavTab>('home');
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState<boolean>(false);
 
-  // Inicializa a sincronização quando o usuário entra na tela principal com credenciais existentes
+  // Usuário recorrente com credenciais salvas pula o onboarding na abertura do app.
+  // Roda uma vez no boot apenas: conectar uma plataforma durante o onboarding
+  // não deve ejectar o usuário para o app principal no meio do wizard.
+  const bootstrapped = React.useRef(false);
   React.useEffect(() => {
+    if (isCheckingAuth || bootstrapped.current) return;
+    bootstrapped.current = true;
     if (hasCredentials) {
       setStep('main');
     }
-  }, [hasCredentials]);
+  }, [isCheckingAuth, hasCredentials]);
 
   // Navegação disparada por componentes fora da árvore de tabs (ex.: sino de prazos)
   React.useEffect(() => {
@@ -42,7 +46,11 @@ const AppShell: React.FC = () => {
     return () => window.removeEventListener(NAVIGATE_EVENT, handler);
   }, []);
 
-  if (isCheckingAuth) {
+  // A tela de verificação existe só para o arranque do app. Depois do boot, o
+  // loadAll disparado por um save (ex.: conectar SIGAA no onboarding) acende
+  // isLoading nesta instância também — renderizar o loading aqui desmontaria
+  // o wizard e resetaria o onboarding para o passo 1.
+  if (isCheckingAuth && !bootstrapped.current) {
     return (
       <div className="min-h-screen bg-canvas bg-grid flex flex-col items-center justify-center space-y-4">
         <div className="w-12 h-12 bg-unb-blue text-white border-2 border-black rounded-lg flex items-center justify-center font-black text-lg shadow-[4px_4px_0px_0px_#000]">
@@ -56,26 +64,17 @@ const AppShell: React.FC = () => {
     );
   }
 
-  // Fluxo 1: Onboarding de Boas-vindas
-  if (step === 'onboarding' && !hasCredentials) {
+  // Fluxo 1: Onboarding animado em 4 passos (bem-vindo, funcionalidades, segurança, login)
+  // Sem teste de hasCredentials aqui: conectar uma plataforma dentro do wizard acende
+  // hasCredentials e, se o gate testasse, renderizaria o app principal por cima do wizard.
+  if (step === 'onboarding') {
     return (
       <OnboardingScreen
-        onContinue={() => setStep('credentials')}
-        onExplore={() => setStep('main')}
-      />
-    );
-  }
-
-  // Fluxo 2: Configuração de Credenciais no Stronghold
-  if (step === 'credentials' && !hasCredentials) {
-    return (
-      <CredentialsScreen
-        onBack={() => setStep('onboarding')}
-        onExplore={() => setStep('main')}
-        onSuccess={() => {
+        onComplete={() => {
           setStep('main');
           syncAll();
         }}
+        onExplore={() => setStep('main')}
       />
     );
   }

@@ -47,3 +47,10 @@ export function formatCpf(cpf: string): string {
   if (clean.length <= 9) return `${clean.slice(0, 3)}.${clean.slice(3, 6)}.${clean.slice(6)}`;
   return `${clean.slice(0, 3)}.${clean.slice(3, 6)}.${clean.slice(6, 9)}-${clean.slice(9, 11)}`;
 }
+
+export function validateUnbEmail(email: string): boolean {
+  const clean = email.trim().toLowerCase();
+  if (!clean) return true; // Se vazio, pode ser preenchido/detectado no login interativo
+  return /^[a-zA-Z0-9._%+-]+@([a-zA-Z0-9-]+\.)*unb\.br$/.test(clean);
+}
+

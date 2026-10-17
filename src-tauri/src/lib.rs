@@ -26,6 +26,8 @@ pub fn builder() -> Builder<tauri::Wry> {
         commands::open_external_url,
         commands::validate_sigaa_credentials,
         commands::validate_aprender3_credentials,
+        commands::connect_teams,
+        commands::disconnect_teams,
     ])
 }
 

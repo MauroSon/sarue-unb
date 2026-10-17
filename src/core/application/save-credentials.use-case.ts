@@ -131,10 +131,58 @@ export class SaveCredentialsUseCase {
     }
   }
 
-  async saveTeams(credentials: TeamsCredentials): Promise<SaveResult> {
+  async saveTeams(
+    credentials: TeamsCredentials,
+    options?: { validate?: boolean }
+  ): Promise<SaveResult> {
+    const shouldValidate = options?.validate ?? true;
+
+    if (credentials.isConnected && shouldValidate && isTauriEnvironment()) {
+      try {
+        const { commands } = await import('@/core/infrastructure/bindings');
+        const res = await commands.connectTeams(credentials.email || null);
+        if (res.status === 'error') {
+          return {
+            success: false,
+            error: res.error || 'Falha ao autenticar no Microsoft Teams.',
+          };
+        }
+
+        const confirmedEmail = res.data.email || credentials.email;
+        const savedCreds: TeamsCredentials = {
+          isConnected: true,
+          email: confirmedEmail,
+          connectedAt: new Date().toISOString(),
+        };
+
+        await this.credentialsRepo.saveTeams(savedCreds);
+
+        return {
+          success: true,
+          detail: confirmedEmail
+            ? `Microsoft Teams conectado como ${confirmedEmail}!`
+            : 'Microsoft Teams conectado com sucesso!',
+        };
+      } catch (e: unknown) {
+        return {
+          success: false,
+          error: e instanceof Error ? e.message : 'Falha na autenticação com o Microsoft Teams',
+        };
+      }
+    }
+
+    if (!credentials.isConnected && isTauriEnvironment()) {
+      try {
+        const { commands } = await import('@/core/infrastructure/bindings');
+        await commands.disconnectTeams();
+      } catch {
+        // Fallback silencioso
+      }
+    }
+
     try {
       await this.credentialsRepo.saveTeams(credentials);
-      return { success: true };
+      return { success: true, detail: credentials.isConnected ? 'Microsoft Teams conectado com sucesso' : 'Microsoft Teams desconectado' };
     } catch (e: unknown) {
       return { success: false, error: e instanceof Error ? e.message : 'Erro ao salvar estado do Teams' };
     }

@@ -118,7 +118,7 @@ export function useCredentials() {
         setHasCredentials(true);
         await loadAll();
         notifyListeners();
-        return { success: true, detail: 'Microsoft Teams conectado com sucesso!' };
+        return { success: true, detail: res.detail || 'Microsoft Teams conectado com sucesso!' };
       }
       const err = res.error || 'Erro ao conectar conta do Teams';
       setError(err);

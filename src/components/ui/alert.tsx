@@ -7,6 +7,7 @@ export interface AlertProps extends React.HTMLAttributes<HTMLDivElement> {
   title: string;
   description?: React.ReactNode;
   variant?: 'yellow' | 'green' | 'blue' | 'neutral' | 'destructive';
+  aside?: React.ReactNode;
 }
 
 export const Alert: React.FC<AlertProps> = ({
@@ -16,6 +17,7 @@ export const Alert: React.FC<AlertProps> = ({
   variant = 'yellow',
   className,
   children,
+  aside,
   ...props
 }) => {
   const variantStyles = {
@@ -64,6 +66,7 @@ export const Alert: React.FC<AlertProps> = ({
         ) : null}
         {children}
       </div>
+      {aside ? <div className="shrink-0 self-center">{aside}</div> : null}
     </div>
   );
 };

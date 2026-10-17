@@ -87,6 +87,12 @@ describe('Clean Architecture Use Cases - UnB Aggregator', () => {
       for (const item of aprenderItems) {
         expect(item.platform).toBe('aprender3');
       }
+
+      const teamsItems = await container.useCases.getFeed.execute({ platform: 'teams' });
+      expect(teamsItems.length).toBeGreaterThan(0);
+      for (const item of teamsItems) {
+        expect(item.platform).toBe('teams');
+      }
     });
 
     it('deve persistir e listar turmas via GetCoursesUseCase com o repositório padrão', async () => {

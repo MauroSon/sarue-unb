@@ -122,7 +122,9 @@ no TS na próxima geração.
 - `get_course_curriculum`: Obtém matrizes curriculares e disciplinas de um curso específico.
 - `solve_schedules`: Resolvedor de grade e combinações de horários.
 - `check_schedule_conflicts`: Detector nativo de conflitos de horário.
-- `sync_platforms`: Sincronizador de feed do discente (Aprender 3 / SIGAA autenticado).
+- `sync_platforms`: Sincronizador de feed do discente (Aprender 3 / SIGAA / Teams autenticado).
+- `connect_teams`: Abertura e orquestração de login interativo na Webview do Microsoft Teams.
+- `disconnect_teams`: Desconexão e limpeza da sessão do Microsoft Teams.
 - `check_vault_status`: Status de integridade criptográfica do cofre Argon2.
 
 ## Guardrails

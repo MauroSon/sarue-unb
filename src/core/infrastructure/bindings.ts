@@ -26,6 +26,8 @@ export const commands = {
 	openExternalUrl: (url: string) => typedError<null, string>(__TAURI_INVOKE("open_external_url", { url })),
 	validateSigaaCredentials: (matricula: string, senha: string) => typedError<string, string>(__TAURI_INVOKE("validate_sigaa_credentials", { matricula, senha })),
 	validateAprender3Credentials: (cpf: string, senha: string) => typedError<string, string>(__TAURI_INVOKE("validate_aprender3_credentials", { cpf, senha })),
+	connectTeams: (email: string | null) => typedError<TeamsCreds, string>(__TAURI_INVOKE("connect_teams", { email })),
+	disconnectTeams: () => typedError<null, string>(__TAURI_INVOKE("disconnect_teams")),
 };
 
 /* Types */
