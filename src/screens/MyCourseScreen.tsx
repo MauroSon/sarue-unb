@@ -5,7 +5,13 @@ import { FlowchartList } from "../components/flowchart/FlowchartList";
 import { CurrentlyEnrolledPanel } from "../components/flowchart/CurrentlyEnrolledPanel";
 import { CurriculumSelectorDialog } from "../components/flowchart/CurriculumSelectorDialog";
 import { MyCourseSkeleton } from "../components/flowchart/MyCourseSkeleton";
-import { PageContainer, PageHeader, Button, Input } from "@/components/ui";
+import {
+  PageContainer,
+  PageHeader,
+  Button,
+  Input,
+  EmptyState,
+} from "@/components/ui";
 import {
   GraduationCap,
   SlidersHorizontal,
@@ -149,19 +155,18 @@ export const MyCourseScreen: React.FC = () => {
       />
 
       {!profile ? (
-        <div className="bg-white border-2 border-black rounded-xl p-8 mb-6 shadow-neo text-center">
-          <div className="w-12 h-12 bg-pastel-yellow border-2 border-black rounded-xl flex items-center justify-center mx-auto mb-3 shadow-neo-sm">
-            <GraduationCap className="w-6 h-6 stroke-[2.5] text-black" />
-          </div>
-          <h3 className="text-base font-black text-black mb-1.5">
-            Nenhum Perfil Acadêmico Carregado
-          </h3>
-          <p className="text-xs font-bold text-neutral-600 max-w-md mx-auto leading-relaxed">
-            Sincronize com o SIGAA na aba <strong>Configurações</strong> para
-            carregar seu curso, disciplinas cursadas, IRA e acompanhar seu
-            progresso no fluxograma.
-          </p>
-        </div>
+        <EmptyState
+          icon={GraduationCap}
+          title="Nenhum Perfil Acadêmico Carregado"
+          description={
+            <>
+              Sincronize com o SIGAA na aba <strong>Configurações</strong> para
+              carregar seu curso, disciplinas cursadas, IRA e acompanhar seu
+              progresso no fluxograma.
+            </>
+          }
+          className="mb-6"
+        />
       ) : (
         <>
           {/* Banner de Identificação do Discente (@DESIGN.md) */}

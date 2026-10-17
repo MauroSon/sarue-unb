@@ -9,6 +9,7 @@ import {
   Tabs,
   Pagination,
   toast,
+  EmptyState,
 } from "@/components/ui";
 import {
   GraduationCap,
@@ -23,6 +24,7 @@ import {
   AlertCircle,
   Link2,
   Search,
+  BookOpen,
 } from "lucide-react";
 import { openExternalUrl } from "../lib/utils";
 import { UnmatchedCourseDialog } from "../components/UnmatchedCourseDialog";
@@ -308,23 +310,22 @@ export const CoursesScreen: React.FC = () => {
           </div>
 
           {disciplineFeedItems.length === 0 ? (
-            <div className="p-12 text-center bg-white border-2 border-black rounded-lg shadow-[4px_4px_0px_0px_#000] space-y-3">
-              <div className="w-12 h-12 bg-canvas border-2 border-black rounded-lg flex items-center justify-center mx-auto shadow-[2px_2px_0px_0px_#000]">
-                <Inbox className="w-6 h-6 stroke-[2.5] text-neo-blue" />
-              </div>
-              <h3 className="text-base font-bold text-black">
-                {showArchived
+            <EmptyState
+              icon={Inbox}
+              iconClassName="bg-canvas text-neo-blue"
+              title={
+                showArchived
                   ? "Nenhum item arquivado nesta matéria"
-                  : "Nenhuma publicação encontrada"}
-              </h3>
-              <p className="text-xs font-medium text-neutral-600 max-w-sm mx-auto">
-                {showArchived && !drillSearchQuery && drillCategory === "all"
+                  : "Nenhuma publicação encontrada"
+              }
+              description={
+                showArchived && !drillSearchQuery && drillCategory === "all"
                   ? "Você ainda não arquivou nenhum aviso ou tarefa desta disciplina."
                   : drillSearchQuery || drillCategory !== "all"
                     ? "Nenhum aviso ou tarefa encontrado para os filtros selecionados nesta matéria."
-                    : "Não há avisos ou tarefas registradas para esta disciplina até o momento."}
-              </p>
-            </div>
+                    : "Não há avisos ou tarefas registradas para esta disciplina até o momento."
+              }
+            />
           ) : (
             <>
               <Card className="p-0 overflow-hidden">
@@ -389,8 +390,15 @@ export const CoursesScreen: React.FC = () => {
         </div>
       ) : null}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {disciplines.map((discipline) => (
+      {disciplines.length === 0 ? (
+        <EmptyState
+          icon={BookOpen}
+          title="Nenhuma disciplina no semestre"
+          description='Clique em "Sincronizar" na barra lateral para carregar suas disciplinas do SIGAA e do Aprender 3.'
+        />
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {disciplines.map((discipline) => (
           <Card
             key={discipline.id}
             onClick={() => setSelectedDiscipline(discipline)}
@@ -478,8 +486,9 @@ export const CoursesScreen: React.FC = () => {
               </div>
             </div>
           </Card>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
 
       {/* Modal Neobrutalista para turmas do Aprender 3 sem correspondência */}
       <UnmatchedCourseDialog

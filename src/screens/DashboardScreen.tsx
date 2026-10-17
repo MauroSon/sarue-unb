@@ -10,6 +10,7 @@ import {
   PageContainer,
   PageHeader,
   toast,
+  EmptyState,
 } from "@/components/ui";
 import { Search, Inbox, Home } from "lucide-react";
 import type { PlatformType, FeedItemType } from "@/core";
@@ -149,21 +150,20 @@ export const DashboardScreen: React.FC = () => {
           <FeedListSkeleton />
         </Card>
       ) : items.length === 0 ? (
-        <div className="p-12 text-center bg-white border-2 border-black rounded-lg shadow-[4px_4px_0px_0px_#000] space-y-3">
-          <div className="w-12 h-12 bg-canvas border-2 border-black rounded-lg flex items-center justify-center mx-auto shadow-[2px_2px_0px_0px_#000]">
-            <Inbox className="w-6 h-6 stroke-[2.5] text-neo-blue" />
-          </div>
-          <h3 className="text-lg font-bold text-black">
-            {showArchived
+        <EmptyState
+          icon={Inbox}
+          iconClassName="bg-canvas text-neo-blue"
+          title={
+            showArchived
               ? "Nenhum item arquivado encontrado"
-              : "Nenhum item encontrado"}
-          </h3>
-          <p className="text-xs font-medium text-neutral-600 max-w-sm mx-auto">
-            {showArchived
+              : "Nenhum item encontrado"
+          }
+          description={
+            showArchived
               ? "Você ainda não arquivou nenhum aviso ou tarefa."
-              : 'Não há avisos ou tarefas correspondentes aos filtros selecionados. Clique em "Sincronizar" na barra lateral para atualizar os portais.'}
-          </p>
-        </div>
+              : 'Não há avisos ou tarefas correspondentes aos filtros selecionados. Clique em "Sincronizar" na barra lateral para atualizar os portais.'
+          }
+        />
       ) : (
         <div className="space-y-4">
           <div className="flex items-center justify-between text-xs font-bold text-neutral-600 px-1">
