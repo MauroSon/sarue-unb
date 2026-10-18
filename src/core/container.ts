@@ -3,6 +3,7 @@ import type { ISyncRepository } from './domain/interfaces/sync-repo.interface';
 import type { IFeedRepository } from './domain/interfaces/feed-repo.interface';
 import type { IGradeRepository } from './domain/interfaces/grade-repo.interface';
 import type { IAcademicProfileRepository } from './domain/interfaces/academic-profile-repo.interface';
+import type { IIraScenarioRepository } from './domain/interfaces/ira-scenario-repo.interface';
 import type { IDeadlineNotificationRepository } from './domain/interfaces/deadline-notification-repo.interface';
 import type { IOSNotifier } from './domain/interfaces/os-notifier.interface';
 
@@ -21,6 +22,9 @@ import { ManageAcademicProfileUseCase } from './application/manage-academic-prof
 import { GetFlowchartUseCase } from './application/get-flowchart.use-case';
 import { ParseHistoricoUseCase } from './application/parse-historico.use-case';
 import { GetAcademicCalendarUseCase } from './application/get-academic-calendar.use-case';
+import { CalculateIraUseCase } from './application/calculate-ira.use-case';
+import { BuildIraScenarioUseCase } from './application/build-ira-scenario.use-case';
+import { ManageIraScenarioUseCase } from './application/manage-ira-scenario.use-case';
 
 import { StrongholdCredentialsRepository } from './infrastructure/stronghold-credentials.repo';
 import { TauriSyncRepository } from './infrastructure/tauri-sync.repo';
@@ -31,6 +35,8 @@ import { TauriGradeRepository } from './infrastructure/tauri-grade.repo';
 import { InMemoryGradeRepository } from './infrastructure/in-memory-grade.repo';
 import { TauriAcademicProfileRepository } from './infrastructure/tauri-academic-profile.repo';
 import { InMemoryAcademicProfileRepository } from './infrastructure/in-memory-academic-profile.repo';
+import { SqliteIraScenarioRepository } from './infrastructure/sqlite-ira-scenario.repo';
+import { InMemoryIraScenarioRepository } from './infrastructure/in-memory-ira-scenario.repo';
 import { SqliteDeadlineNotificationRepository } from './infrastructure/sqlite-deadline-notification.repo';
 import { InMemoryDeadlineNotificationRepository } from './infrastructure/in-memory-deadline-notification.repo';
 import { TauriOSNotifier } from './infrastructure/tauri-os-notifier';
@@ -46,6 +52,7 @@ export interface Repositories {
   feedRepo: IFeedRepository;
   gradeRepo: IGradeRepository;
   academicProfileRepo: IAcademicProfileRepository;
+  iraScenarioRepo: IIraScenarioRepository;
   deadlineNotificationRepo: IDeadlineNotificationRepository;
   osNotifier: IOSNotifier;
 }
@@ -63,6 +70,9 @@ export interface UseCases {
   solveSchedule: SolveScheduleUseCase;
   manageGrade: ManageGradeUseCase;
   manageAcademicProfile: ManageAcademicProfileUseCase;
+  calculateIra: CalculateIraUseCase;
+  buildIraScenario: BuildIraScenarioUseCase;
+  manageIraScenario: ManageIraScenarioUseCase;
   getFlowchart: GetFlowchartUseCase;
   parseHistorico: ParseHistoricoUseCase;
   getAcademicCalendar: GetAcademicCalendarUseCase;
@@ -99,6 +109,10 @@ export function createContainer(overrides?: ContainerOverrides): Container {
     overrides?.repos?.academicProfileRepo ??
     (tauri ? new TauriAcademicProfileRepository() : new InMemoryAcademicProfileRepository());
 
+  const iraScenarioRepo: IIraScenarioRepository =
+    overrides?.repos?.iraScenarioRepo ??
+    (tauri ? new SqliteIraScenarioRepository() : new InMemoryIraScenarioRepository());
+
   const deadlineNotificationRepo: IDeadlineNotificationRepository =
     overrides?.repos?.deadlineNotificationRepo ??
     (tauri
@@ -114,12 +128,13 @@ export function createContainer(overrides?: ContainerOverrides): Container {
     feedRepo,
     gradeRepo,
     academicProfileRepo,
+    iraScenarioRepo,
     deadlineNotificationRepo,
     osNotifier,
   };
 
   const useCases: UseCases = {
-    saveCredentials: new SaveCredentialsUseCase(credentialsRepo),
+    saveCredentials: new SaveCredentialsUseCase(credentialsRepo, feedRepo),
     getCredentials: new GetCredentialsUseCase(credentialsRepo),
     syncPlatforms: new SyncPlatformsUseCase(syncRepo, feedRepo),
     getFeed: new GetFeedUseCase(feedRepo, deadlineNotificationRepo),
@@ -135,6 +150,9 @@ export function createContainer(overrides?: ContainerOverrides): Container {
     solveSchedule: new SolveScheduleUseCase(gradeRepo),
     manageGrade: new ManageGradeUseCase(gradeRepo),
     manageAcademicProfile: new ManageAcademicProfileUseCase(academicProfileRepo),
+    calculateIra: new CalculateIraUseCase(),
+    buildIraScenario: new BuildIraScenarioUseCase(),
+    manageIraScenario: new ManageIraScenarioUseCase(iraScenarioRepo),
     getFlowchart: new GetFlowchartUseCase(),
     parseHistorico: new ParseHistoricoUseCase(),
     getAcademicCalendar: new GetAcademicCalendarUseCase(),

@@ -68,7 +68,7 @@ export function deadlineKey(itemId: string, marco: DeadlineMarco): string {
 
 export interface DeadlineEvaluationResult {
   entries: DeadlineEntry[];
-  /** Tarefas pendentes dentro da janela de 48h (inclui atrasadas). */
+  /** Pendências na janela do painel (atrasadas até 14 dias, futuras até 7 dias) — mesma contagem da lista. */
   badgeCount: number;
   newPings: OSNotificationPayload[];
 }
@@ -145,7 +145,9 @@ export class EvaluateDeadlineNotificationsUseCase {
       }
     }
 
-    const badgeCount = entries.filter((e) => e.hoursRemaining <= 48).length;
+    // Badge espelha o painel: toda pendência da janela conta, para o número
+    // do sino bater com o que a lista mostra ao abrir.
+    const badgeCount = entries.length;
 
     return { entries, badgeCount, newPings };
   }

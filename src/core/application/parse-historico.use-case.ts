@@ -94,6 +94,49 @@ export function extractPrecedingDisciplineName(fullText: string, matchIndex: num
   return undefined;
 }
 
+/**
+ * Extrai o período letivo (ex.: "2020.1") do agrupamento em que a disciplina
+ * está no histórico escolar. O SIGAA imprime uma linha "2020.1 NOME DA
+ * DISCIPLINA" imediatamente antes de cada registro; o último token de período
+ * antes do match é o semestre do registro. Janela de 400 caracteres: cada
+ * agrupamento tem até ~8 disciplinas e o token se repete a cada registro.
+ */
+export function extractPrecedingPeriod(fullText: string, matchIndex: number): string | undefined {
+  const windowStart = Math.max(0, matchIndex - 400);
+  const textBefore = fullText.slice(windowStart, matchIndex);
+  const matches = [...textBefore.matchAll(/\b(\d{4}\.[12])\b/g)];
+  const last = matches[matches.length - 1];
+  return last ? last[1] : undefined;
+}
+
+
+/**
+ * Normaliza situações do histórico para os códigos curtos canônicos:
+ * APROVADO->APR, REPROVADO->REP, TRANCADO->TR, CANCELADO->CANC,
+ * DISPENSADO->DISP, MATRICULADO->MATR.
+ */
+function normalizeSituation(raw: string): string {
+  const s = raw.toUpperCase();
+  if (s.startsWith('MATR')) return 'MATR';
+  if (s.startsWith('APROV') || s === 'APR') return 'APR';
+  if (s.startsWith('REPROV')) return 'REP';
+  if (s === 'TRAN' || s.startsWith('TRANC')) return 'TR';
+  if (s.startsWith('CANC')) return 'CANC';
+  if (s.startsWith('DISP')) return 'DISP';
+  return s;
+}
+
+/**
+ * Extrai a sigla canônica de menção de um token do histórico: o SIGAA imprime
+ * sufixos como "MSe" (exame), "SS*" (ajuste), "MI&", "--#" — a sigla válida
+ * para o IRA são os dois primeiros caracteres (SS/MS/MM/MI/II/SR).
+ */
+export function extractMentionCode(token: string | undefined): string {
+  const raw = (token || '').trim().toUpperCase().replace(/[^A-Z0-9-]/g, '');
+  const m = raw.match(/^(SS|MS|MM|MI|II|SR|AP|CC)/);
+  return m ? m[1] : raw;
+}
+
 export class ParseHistoricoUseCase {
   async execute(input: ParseHistoricoInput): Promise<ParseHistoricoResult> {
     let fullText = input.rawText || '';
@@ -160,6 +203,17 @@ export class ParseHistoricoUseCase {
 
     // 3. Extração das disciplinas cursadas e em andamento
     const completedMap = new Map<string, CompletedDiscipline>();
+    // Eventos de trancamento (um por linha TR do histórico): o fator de
+    // trancamento do IRA conta cada evento, mesmo que a disciplina tenha sido
+    // aprovada depois — o dedup por código do completedMap perderia esses.
+    const trancadaEvents: { code: string; period?: string }[] = [];
+    const trancadaKeys = new Set<string>();
+    const recordTrancada = (code: string, period?: string) => {
+      const key = `${code}|${period || ''}`;
+      if (trancadaKeys.has(key)) return;
+      trancadaKeys.add(key);
+      trancadaEvents.push({ code, period });
+    };
 
     const setOrUpdateDiscipline = (entry: CompletedDiscipline) => {
       const existing = completedMap.get(entry.code);
@@ -176,6 +230,7 @@ export class ParseHistoricoUseCase {
         : entry.name || existing.name;
 
       const resolvedClassCode = entry.classCode || existing.classCode;
+      const resolvedPeriod = entry.period || existing.period;
 
       // Se a nova entrada representa conclusão efetiva e a anterior não:
       if (!existing.isCompleted && entry.isCompleted) {
@@ -190,6 +245,7 @@ export class ParseHistoricoUseCase {
         } else if (resolvedName !== existing.name || resolvedClassCode !== existing.classCode) {
           existing.name = resolvedName;
           existing.classCode = resolvedClassCode;
+          existing.period = resolvedPeriod;
         }
         return;
       }
@@ -218,7 +274,7 @@ export class ParseHistoricoUseCase {
 
     // Padrão 1 (UnB oficial comprimido do iText): 08 APRCIC0004 90 90,0 MS ou 01 MATRCIC0099 60 100,0 -
     // Suporta turma opcional antecedendo a situação, espaços opcionais entre situação e código:
-    const patternCompact = /(?:\b(\d{1,3})\s+)?(APR|REP|REPF|REPN|TR|MATR|DISP|CANC)\s*([A-Z]{3}\d{4})\s+(\d+)(?:\s+([\d,]+|-+))?(?:\s+([A-Z0-9&*\-–#e]+))?/gi;
+    const patternCompact = /(?:\b(\d{1,3})\s+)?(APR|REPF|REPN|REP|TRANC|TRAN|TR|MATR|DISP|CANC)\s*([A-Z]{3}\d{4})[ \t]+(\d+)(?:[ \t]+([\d,]+|-+))?(?:[ \t]+([A-Z0-9&*\-–#e]+))?/gi;
     let match: RegExpExecArray | null;
     while ((match = patternCompact.exec(fullText)) !== null) {
       const rawTurma = match[1] ? match[1].padStart(2, '0') : undefined;
@@ -226,9 +282,9 @@ export class ParseHistoricoUseCase {
       const code = match[3].toUpperCase();
       const ch = parseInt(match[4], 10);
       const rawGrade = (match[6] || '').trim();
-      const cleanGrade = rawGrade.replace(/[^A-Z0-9-]/gi, '').toUpperCase();
+      const cleanGrade = extractMentionCode(rawGrade);
 
-      const situation = rawSit.startsWith('MATR') ? 'MATR' : rawSit;
+      const situation = normalizeSituation(rawSit);
       const isCompleted = situation === 'APR'
         || situation === 'DISP'
         || ['SS', 'MS', 'MM', 'AP', 'CC'].some((g) => cleanGrade.startsWith(g));
@@ -243,7 +299,11 @@ export class ParseHistoricoUseCase {
         situation,
         isCompleted: situation === 'MATR' ? false : isCompleted,
         classCode: rawTurma,
+        period: extractPrecedingPeriod(fullText, match.index),
       });
+      if (situation === 'TR') {
+        recordTrancada(code, extractPrecedingPeriod(fullText, match.index));
+      }
     }
 
     // Padrão 2 (Tabelado ou padrão com código separado): [A-Z]{3}\d{4} ... APROVADO|DISPENSADO|MATRICULADO
@@ -256,7 +316,7 @@ export class ParseHistoricoUseCase {
       const rawSit = match[5].toUpperCase();
 
       const isMatr = rawSit.includes('MATR');
-      const situation = isMatr ? 'MATR' : rawSit.includes('APROV') || rawSit === 'APR' ? 'APR' : rawSit;
+      const situation = isMatr ? 'MATR' : normalizeSituation(rawSit);
       const isCompleted = !isMatr && (situation.includes('APROV') || situation.includes('DISP') || ['SS', 'MS', 'MM', 'AP'].includes(grade));
 
       setOrUpdateDiscipline({
@@ -266,7 +326,11 @@ export class ParseHistoricoUseCase {
         grade: grade || (isMatr ? '-' : undefined),
         situation,
         isCompleted,
+        period: extractPrecedingPeriod(fullText, match.index),
       });
+      if (situation === 'TR') {
+        recordTrancada(code, extractPrecedingPeriod(fullText, match.index));
+      }
     }
 
     // Fallback de segurança: qualquer linha contendo código de disciplina acompanhado de MATR/MATRICULADO
@@ -282,7 +346,56 @@ export class ParseHistoricoUseCase {
           grade: '-',
           situation: 'MATR',
           isCompleted: false,
+          period: extractPrecedingPeriod(fullText, match.index),
         });
+      }
+    }
+
+    // Padrões de resgate para trancadas que os padrões principais não cobrem:
+    // situação sem carga horária ("TR CIC0123") e código seguido da situação
+    // ("CIC0123 ... TRAN"). Trancada só precisa do código — a calculadora
+    // conta a ocorrência, não os créditos. Entradas já vistas não mudam de
+    // situação (o merge preserva APR/MATR sobre TR).
+    const patternTrBefore = /(?:^|[\s,;])(?:TRAN|TRANCADO|TR)\s+([A-Z]{3}\d{4})\b/gi;
+    const patternTrAfter = /\b([A-Z]{3}\d{4})[^\n]{0,60}?\b(?:TRAN|TRANCADO|TR)\s*$/gim;
+    for (const patternTr of [patternTrBefore, patternTrAfter]) {
+      patternTr.lastIndex = 0;
+      let trMatch: RegExpExecArray | null;
+      while ((trMatch = patternTr.exec(fullText)) !== null) {
+        const trCode = trMatch[1].toUpperCase();
+        setOrUpdateDiscipline({
+          code: trCode,
+          name: trCode,
+          workloadHours: undefined,
+          grade: '-',
+          situation: 'TR',
+          isCompleted: false,
+        });
+        // O padrão principal (compacto/tabelado) já registra o evento quando
+        // conseguiu ler a linha; o fallback só registra códigos que nenhum
+        // padrão pegou.
+        if (!trancadaEvents.some((ev) => ev.code === trCode)) {
+          recordTrancada(trCode);
+        }
+      }
+    }
+
+    // Pós-passo: recupera menções que escaparam dos padrões acima. Linhas de
+    // registro do histórico frequentemente terminam com a sigla da menção
+    // (SS/MS/MM/MI/II/SR); se o registro do código existe sem menção (ou com
+    // "-"), adota a sigla da linha. Nunca sobrescreve menção já capturada.
+    const mentionByCode = new Map<string, string>();
+    const mentionLineRe = /([A-Z]{3}\d{4})[^\n]*?(?:^|[^A-Za-z])(SS|MS|MM|MI|II|SR)\s*$/gm;
+    let mentionMatch: RegExpExecArray | null;
+    while ((mentionMatch = mentionLineRe.exec(fullText)) !== null) {
+      const code = mentionMatch[1].toUpperCase();
+      if (!mentionByCode.has(code)) {
+        mentionByCode.set(code, mentionMatch[2]);
+      }
+    }
+    for (const entry of completedMap.values()) {
+      if ((!entry.grade || entry.grade === '-') && mentionByCode.has(entry.code)) {
+        entry.grade = mentionByCode.get(entry.code);
       }
     }
 
@@ -357,46 +470,69 @@ export class ParseHistoricoUseCase {
     // a) Da matriz curricular correspondente (prioridade máxima)
     const matchedMap = new Map<string, string>();
     if (matchedCurriculum) {
-      const allMatchedDiscs = [
-        ...(matchedCurriculum.mandatoryDisciplines || []),
-        ...(matchedCurriculum.electiveDisciplines || []),
-        ...(matchedCurriculum.complementaryDisciplines || []),
-      ];
-      for (const d of allMatchedDiscs) {
-        if (d.code && d.name) matchedMap.set(d.code, d.name);
+      for (const list of [
+        matchedCurriculum.mandatoryDisciplines,
+        matchedCurriculum.electiveDisciplines,
+        matchedCurriculum.complementaryDisciplines,
+      ]) {
+        if (!list) continue;
+        for (const d of list) {
+          if (d.code && d.name) matchedMap.set(d.code, d.name);
+        }
       }
     }
 
     // b) De outras matrizes do mesmo curso (prioridade secundária, ex.: 1741/3 quando o aluno é 1741/1)
     const sameCourseMap = new Map<string, string>();
     const normCourse = courseName ? normalizeName(courseName) : '';
-    for (const curr of curricula) {
-      if (curr === matchedCurriculum) continue;
-      if (normCourse && normalizeName(curr.courseName).includes(normCourse)) {
-        for (const d of [
-          ...(curr.mandatoryDisciplines || []),
-          ...(curr.electiveDisciplines || []),
-          ...(curr.complementaryDisciplines || []),
-        ]) {
-          if (d.code && d.name && !sameCourseMap.has(d.code)) {
-            sameCourseMap.set(d.code, d.name);
+    if (normCourse) {
+      for (const curr of curricula) {
+        if (curr === matchedCurriculum) continue;
+        if (normalizeName(curr.courseName).includes(normCourse)) {
+          for (const list of [
+            curr.mandatoryDisciplines,
+            curr.electiveDisciplines,
+            curr.complementaryDisciplines,
+          ]) {
+            if (!list) continue;
+            for (const d of list) {
+              if (d.code && d.name && !sameCourseMap.has(d.code)) {
+                sameCourseMap.set(d.code, d.name);
+              }
+            }
           }
         }
       }
     }
 
-    // c) De qualquer matriz do catálogo (fallback global para optativas/módulos livres de outros departamentos)
+    // c) De qualquer matriz do catálogo apenas para códigos do aluno ainda não encontrados nas etapas a) e b)
+    const unresolvedCodes = new Set<string>();
+    for (const code of completedMap.keys()) {
+      if (!matchedMap.has(code) && !sameCourseMap.has(code)) {
+        unresolvedCodes.add(code);
+      }
+    }
+
     const globalCatalogMap = new Map<string, string>();
-    for (const curr of curricula) {
-      if (curr === matchedCurriculum) continue;
-      for (const d of [
-        ...(curr.mandatoryDisciplines || []),
-        ...(curr.electiveDisciplines || []),
-        ...(curr.complementaryDisciplines || []),
-      ]) {
-        if (d.code && d.name && !globalCatalogMap.has(d.code)) {
-          globalCatalogMap.set(d.code, d.name);
+    if (unresolvedCodes.size > 0) {
+      for (const curr of curricula) {
+        if (curr === matchedCurriculum) continue;
+        for (const list of [
+          curr.mandatoryDisciplines,
+          curr.electiveDisciplines,
+          curr.complementaryDisciplines,
+        ]) {
+          if (!list) continue;
+          for (const d of list) {
+            if (d.code && d.name && unresolvedCodes.has(d.code) && !globalCatalogMap.has(d.code)) {
+              globalCatalogMap.set(d.code, d.name);
+              unresolvedCodes.delete(d.code);
+              if (unresolvedCodes.size === 0) break;
+            }
+          }
+          if (unresolvedCodes.size === 0) break;
         }
+        if (unresolvedCodes.size === 0) break;
       }
     }
 
@@ -423,6 +559,7 @@ export class ParseHistoricoUseCase {
       curriculumCode: curriculumCode || matchedCurriculum?.code,
       curriculumId: matchedCurriculum?.id,
       completedDisciplines: Array.from(completedMap.values()),
+      trancadaEvents,
       manualCompletedCodes: input.defaultProfile?.manualCompletedCodes || [],
       manualUncompletedCodes: input.defaultProfile?.manualUncompletedCodes || [],
       updatedAt: new Date().toISOString(),

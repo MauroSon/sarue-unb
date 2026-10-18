@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-10-05T12:00:00Z",
+  "generatedAt": "2026-10-17T22:27:43Z",
   "title": "Design System: UnB Aggregator",
   "extensions": {
     "colorMeta": {
@@ -334,6 +334,158 @@
           "#c1bebe",
           "#dad8d8",
           "#f3f2f2"
+        ]
+      },
+      "highlighter-yellow-hover": {
+        "role": "secondary",
+        "displayName": "Amarelo Marca-Texto Pressionado",
+        "canonical": "#F2DA00",
+        "tonalRamp": [
+          "#100e00",
+          "#2f2900",
+          "#514903",
+          "#a49409",
+          "#ceb907",
+          "#f1da0f",
+          "#f5dd10",
+          "#fff5aa"
+        ],
+        "tailwindToken": "neo.yellowHover"
+      },
+      "chalk-green-hover": {
+        "role": "secondary",
+        "displayName": "Verde Giz Pressionado",
+        "canonical": "#39D68A",
+        "tonalRamp": [
+          "#011207",
+          "#00321b",
+          "#025632",
+          "#05ae6a",
+          "#3ad78b",
+          "#68fcad",
+          "#d1ffe2",
+          "#f4fff8"
+        ],
+        "tailwindToken": "neo.greenHover"
+      },
+      "scroll-thumb": {
+        "role": "neutral",
+        "displayName": "Thumb de Scroll",
+        "canonical": "#A3A3A3",
+        "tonalRamp": [
+          "#0d0d0d",
+          "#292929",
+          "#484848",
+          "#929292",
+          "#a4a4a4",
+          "#b7b7b7",
+          "#dbdbdb",
+          "#f2f2f2"
+        ]
+      },
+      "scroll-thumb-active": {
+        "role": "neutral",
+        "displayName": "Thumb de Scroll Ativo",
+        "canonical": "#737373",
+        "tonalRamp": [
+          "#0d0d0d",
+          "#292929",
+          "#484848",
+          "#747474",
+          "#929292",
+          "#b7b7b7",
+          "#dbdbdb",
+          "#f2f2f2"
+        ]
+      },
+      "discipline-ink-blue": {
+        "role": "tertiary",
+        "displayName": "Tinta Azul",
+        "canonical": "#2563EB",
+        "tonalRamp": [
+          "#00082e",
+          "#001d6c",
+          "#0036b0",
+          "#2664ec",
+          "#558cfe",
+          "#92b7ff",
+          "#c8dbff",
+          "#ecf2fe"
+        ]
+      },
+      "discipline-ink-green": {
+        "role": "tertiary",
+        "displayName": "Tinta Verde",
+        "canonical": "#15803D",
+        "tonalRamp": [
+          "#001204",
+          "#023313",
+          "#025725",
+          "#17813e",
+          "#49a964",
+          "#71d088",
+          "#95f4aa",
+          "#d4ffdb"
+        ]
+      },
+      "discipline-ink-yellow": {
+        "role": "tertiary",
+        "displayName": "Tinta Amarela",
+        "canonical": "#EAB308",
+        "tonalRamp": [
+          "#130c00",
+          "#352601",
+          "#5b4400",
+          "#b68b07",
+          "#e4ae0d",
+          "#ecb50f",
+          "#ffd578",
+          "#fff0d1"
+        ]
+      },
+      "discipline-ink-purple": {
+        "role": "tertiary",
+        "displayName": "Tinta Roxa",
+        "canonical": "#A855F7",
+        "tonalRamp": [
+          "#150029",
+          "#390160",
+          "#62019f",
+          "#a956f8",
+          "#b163ff",
+          "#caa0fe",
+          "#e4d1fe",
+          "#f5eeff"
+        ]
+      },
+      "discipline-ink-orange": {
+        "role": "tertiary",
+        "displayName": "Tinta Laranja",
+        "canonical": "#F97316",
+        "tonalRamp": [
+          "#1b0700",
+          "#461a00",
+          "#753101",
+          "#e76700",
+          "#f77112",
+          "#ff9a65",
+          "#ffcfb8",
+          "#feeee6"
+        ]
+      },
+      "discipline-ink-sky": {
+        "role": "tertiary",
+        "displayName": "Tinta Céu",
+        "canonical": "#0EA5E9",
+        "tonalRamp": [
+          "#000f1a",
+          "#022d43",
+          "#044d70",
+          "#059ddf",
+          "#08a4e7",
+          "#5dc3ff",
+          "#b6e1fe",
+          "#e6f4fe"
         ]
       }
     },

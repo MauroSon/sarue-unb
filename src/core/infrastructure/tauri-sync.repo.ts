@@ -11,7 +11,7 @@ export class TauriSyncRepository implements ISyncRepository {
   }
 
   async syncAll(platforms?: PlatformType[]): Promise<SyncResult> {
-    const selectedPlatforms: PlatformType[] = platforms && platforms.length > 0
+    const requestedPlatforms: PlatformType[] = platforms && platforms.length > 0
       ? platforms
       : ['sigaa', 'aprender3', 'teams'];
 
@@ -19,8 +19,23 @@ export class TauriSyncRepository implements ISyncRepository {
       const { commands } = await import('@/core/infrastructure/bindings');
       const allCreds = await this.credentialsRepo.getAll();
 
+      const activePlatforms = requestedPlatforms.filter((p) => {
+        if (p === 'sigaa') return Boolean(allCreds.sigaa?.matricula && allCreds.sigaa?.senha);
+        if (p === 'aprender3') return Boolean(allCreds.aprender3?.cpf && allCreds.aprender3?.senha);
+        if (p === 'teams') return Boolean(allCreds.teams?.isConnected);
+        return false;
+      });
+
+      if (activePlatforms.length === 0) {
+        return {
+          items: [],
+          courses: [],
+          syncedAt: new Date().toISOString(),
+        };
+      }
+
       const response = await commands.syncPlatforms(
-        selectedPlatforms,
+        activePlatforms,
         allCreds.sigaa ?? null,
         allCreds.aprender3 ?? null,
         allCreds.teams
@@ -35,10 +50,22 @@ export class TauriSyncRepository implements ISyncRepository {
         throw new Error(response.error);
       }
 
-      // Bindings tipam Option<T> como `T | null`; entidades de domínio usam
-      // campos opcionais. A tradução acontece aqui, na fronteira do adapter.
+      // Verifica novamente se o usuário apagou os dados/credenciais enquanto o comando nativo rodava
+      const credsAfter = await this.credentialsRepo.getAll();
+      const isStillActive = (p: string) => {
+        if (p === 'sigaa') return Boolean(credsAfter.sigaa?.matricula && credsAfter.sigaa?.senha);
+        if (p === 'aprender3') return Boolean(credsAfter.aprender3?.cpf && credsAfter.aprender3?.senha);
+        if (p === 'teams') return Boolean(credsAfter.teams?.isConnected);
+        return false;
+      };
+
+      const filteredItems = (response.data.items || []).filter((item) => isStillActive(item.platform));
+      const filteredCourses = (response.data.courses || []).filter((course) => isStillActive(course.platform));
+
       return {
         ...response.data,
+        items: filteredItems,
+        courses: filteredCourses,
         errors: response.data.errors ?? undefined,
       } as SyncResult;
     } catch (error) {

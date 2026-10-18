@@ -31,6 +31,7 @@ export interface Discipline {
   schedule?: string;
   sigaaCourse?: Course;
   aprenderCourses: Course[];
+  teamsCourses: Course[];
   url?: string;
   unreadCount?: number;
   pendingAssignmentsCount?: number;

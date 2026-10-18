@@ -17,6 +17,8 @@ function notifyListeners() {
   listeners.forEach((fn) => fn());
 }
 
+let sharedLoadPromise: Promise<void> | null = null;
+
 export function useCredentials() {
   const { useCases } = useContainer();
   const [allCredentials, setAllCredentials] = useState<AllPlatformCredentials>(cachedAllCredentials);
@@ -25,18 +27,30 @@ export function useCredentials() {
   const [error, setError] = useState<string | null>(null);
 
   const loadAll = useCallback(async () => {
-    setIsLoading(true);
+    if (cachedHasCredentials === null) {
+      setIsLoading(true);
+    }
     try {
-      const exists = await useCases.getCredentials.hasSavedCredentials();
-      const creds = await useCases.getCredentials.getAllCredentials();
-      cachedHasCredentials = exists;
-      cachedAllCredentials = creds;
-      setHasCredentials(exists);
-      setAllCredentials(creds);
+      if (!sharedLoadPromise) {
+        sharedLoadPromise = (async () => {
+          const creds = await useCases.getCredentials.getAllCredentials();
+          const exists = Boolean(
+            (creds.sigaa && creds.sigaa.matricula && creds.sigaa.senha) ||
+              (creds.aprender3 && creds.aprender3.cpf && creds.aprender3.senha) ||
+              (creds.teams && creds.teams.isConnected),
+          );
+          cachedHasCredentials = exists;
+          cachedAllCredentials = creds;
+        })();
+      }
+      await sharedLoadPromise;
+      setHasCredentials(cachedHasCredentials);
+      setAllCredentials(cachedAllCredentials);
     } catch (err: unknown) {
       console.error('Erro ao verificar credenciais:', err);
       setHasCredentials(false);
     } finally {
+      sharedLoadPromise = null;
       setIsLoading(false);
     }
   }, [useCases]);

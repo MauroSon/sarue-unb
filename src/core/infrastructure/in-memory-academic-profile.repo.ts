@@ -8,9 +8,12 @@ import type {
 
 const STORAGE_KEY = 'unb_aggregator_academic_profile_v1';
 
+let sharedCurriculaCache: CurriculumStructure[] | null = null;
+let sharedCurriculaPromise: Promise<CurriculumStructure[]> | null = null;
+export const sharedDisciplineNameMap = new Map<string, string>();
+
 export class InMemoryAcademicProfileRepository implements IAcademicProfileRepository {
   private profileInMemory: StudentAcademicProfile | null = null;
-  private curriculaCache: CurriculumStructure[] | null = null;
 
   async getProfile(): Promise<StudentAcademicProfile | null> {
     if (this.profileInMemory) {
@@ -50,93 +53,133 @@ export class InMemoryAcademicProfileRepository implements IAcademicProfileReposi
   }
 
   async getAllCurricula(): Promise<CurriculumStructure[]> {
-    if (this.curriculaCache && this.curriculaCache.length > 0) {
-      return this.curriculaCache;
+    if (sharedCurriculaCache && sharedCurriculaCache.length > 0) {
+      return sharedCurriculaCache;
     }
 
-    if (typeof fetch !== 'undefined') {
-      try {
-        const res = await fetch('/data/curricula.json');
-        if (res.ok) {
-          const raw = (await res.json()) as Array<{
-            id: string;
-            course_id: string;
-            course_name: string;
-            code: string;
-            created_year?: string | null;
-            status: string;
-            shift?: string | null;
-            total_hours?: number | null;
-            mandatory_disciplines?: Array<{
-              code: string;
-              name: string;
-              workload_hours: number;
-              level?: number | null;
-              nature: 'Obrigatória' | 'Optativa' | 'Complementar';
-              prerequisites?: string[];
-              equivalences?: string[];
-            }>;
-            elective_disciplines?: Array<{
-              code: string;
-              name: string;
-              workload_hours: number;
-              level?: number | null;
-              nature: 'Obrigatória' | 'Optativa' | 'Complementar';
-              prerequisites?: string[];
-              equivalences?: string[];
-            }>;
-            complementary_disciplines?: Array<{
-              code: string;
-              name: string;
-              workload_hours: number;
-              level?: number | null;
-              nature: 'Obrigatória' | 'Optativa' | 'Complementar';
-              prerequisites?: string[];
-              equivalences?: string[];
-            }>;
-          }>;
+    if (sharedCurriculaPromise) {
+      return sharedCurriculaPromise;
+    }
 
-          if (Array.isArray(raw)) {
-            const mapDisc = (d: {
+    sharedCurriculaPromise = (async () => {
+      if (typeof fetch !== 'undefined') {
+        try {
+          const res = await fetch('/data/curricula.json');
+          if (res.ok) {
+            const raw = (await res.json()) as Array<{
+              id: string;
+              course_id: string;
+              course_name: string;
               code: string;
-              name: string;
-              workload_hours: number;
-              level?: number | null;
-              nature: 'Obrigatória' | 'Optativa' | 'Complementar';
-              prerequisites?: string[];
-              equivalences?: string[];
-            }) => ({
-              code: d.code,
-              name: d.name,
-              workloadHours: d.workload_hours,
-              level: d.level ?? undefined,
-              nature: d.nature,
-              prerequisites: d.prerequisites || [],
-              equivalences: d.equivalences || [],
-            });
+              created_year?: string | null;
+              status: string;
+              shift?: string | null;
+              total_hours?: number | null;
+              mandatory_disciplines?: Array<{
+                code: string;
+                name: string;
+                workload_hours: number;
+                level?: number | null;
+                nature: 'Obrigatória' | 'Optativa' | 'Complementar';
+                prerequisites_raw?: string | null;
+                prerequisites?: string[];
+                equivalences_raw?: string | null;
+                equivalences?: string[];
+              }>;
+              elective_disciplines?: Array<{
+                code: string;
+                name: string;
+                workload_hours: number;
+                level?: number | null;
+                nature: 'Obrigatória' | 'Optativa' | 'Complementar';
+                prerequisites_raw?: string | null;
+                prerequisites?: string[];
+                equivalences_raw?: string | null;
+                equivalences?: string[];
+              }>;
+              complementary_disciplines?: Array<{
+                code: string;
+                name: string;
+                workload_hours: number;
+                level?: number | null;
+                nature: 'Obrigatória' | 'Optativa' | 'Complementar';
+                prerequisites_raw?: string | null;
+                prerequisites?: string[];
+                equivalences_raw?: string | null;
+                equivalences?: string[];
+              }>;
+            }>;
 
-            this.curriculaCache = raw.map((c) => ({
-              id: c.id,
-              courseId: c.course_id,
-              courseName: c.course_name,
-              code: c.code,
-              createdYear: c.created_year ?? undefined,
-              status: c.status,
-              shift: c.shift ?? undefined,
-              totalHours: c.total_hours ?? undefined,
-              mandatoryDisciplines: (c.mandatory_disciplines || []).map(mapDisc),
-              electiveDisciplines: (c.elective_disciplines || []).map(mapDisc),
-              complementaryDisciplines: (c.complementary_disciplines || []).map(mapDisc),
-            }));
-            return this.curriculaCache;
+            if (Array.isArray(raw)) {
+              const mapDisc = (d: {
+                code: string;
+                name: string;
+                workload_hours: number;
+                level?: number | null;
+                nature: 'Obrigatória' | 'Optativa' | 'Complementar';
+                prerequisites_raw?: string | null;
+                prerequisites?: string[];
+                equivalences_raw?: string | null;
+                equivalences?: string[];
+              }) => {
+                if (d.code && d.name && !sharedDisciplineNameMap.has(d.code)) {
+                  sharedDisciplineNameMap.set(d.code, d.name);
+                }
+                return {
+                  code: d.code,
+                  name: d.name,
+                  workloadHours: d.workload_hours,
+                  level: d.level ?? undefined,
+                  nature: d.nature,
+                  prerequisitesRaw: d.prerequisites_raw ?? undefined,
+                  prerequisites: d.prerequisites || [],
+                  equivalencesRaw: d.equivalences_raw ?? undefined,
+                  equivalences: d.equivalences || [],
+                };
+              };
+
+              const mapped: CurriculumStructure[] = [];
+              const CHUNK_SIZE = 25;
+
+              for (let i = 0; i < raw.length; i += CHUNK_SIZE) {
+                const slice = raw.slice(i, i + CHUNK_SIZE);
+                for (const c of slice) {
+                  mapped.push({
+                    id: c.id,
+                    courseId: c.course_id,
+                    courseName: c.course_name,
+                    code: c.code,
+                    createdYear: c.created_year ?? undefined,
+                    status: c.status,
+                    shift: c.shift ?? undefined,
+                    totalHours: c.total_hours ?? undefined,
+                    mandatoryDisciplines: (c.mandatory_disciplines || []).map(mapDisc),
+                    electiveDisciplines: (c.elective_disciplines || []).map(mapDisc),
+                    complementaryDisciplines: (c.complementary_disciplines || []).map(mapDisc),
+                  });
+                }
+                if (i + CHUNK_SIZE < raw.length) {
+                  await new Promise((resolve) => setTimeout(resolve, 0));
+                }
+              }
+
+              sharedCurriculaCache = mapped;
+              return mapped;
+            }
           }
+        } catch (e) {
+          console.warn('[InMemoryAcademicProfileRepository] Erro ao carregar /data/curricula.json:', e);
         }
-      } catch (e) {
-        console.warn('[InMemoryAcademicProfileRepository] Erro ao carregar /data/curricula.json:', e);
       }
-    }
 
-    return [];
+      return [];
+    })();
+
+    try {
+      return await sharedCurriculaPromise;
+    } finally {
+      sharedCurriculaPromise = null;
+    }
   }
 
   async fetchSigaaHistory(creds: SigaaCredentials): Promise<SigaaHistoryRawResponse> {

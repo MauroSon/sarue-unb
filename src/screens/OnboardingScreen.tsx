@@ -1,7 +1,12 @@
-import React, { useRef, useState } from 'react';
-import { motion, AnimatePresence, useReducedMotion, type Variants } from 'motion/react';
-import { Button } from '@/components/ui';
-import { CredentialsStep } from '@/components/onboarding/CredentialsStep';
+import React, { useEffect, useRef, useState } from "react";
+import {
+  motion,
+  AnimatePresence,
+  useReducedMotion,
+  type Variants,
+} from "motion/react";
+import { Button } from "@/components/ui";
+import { CredentialsStep } from "@/components/onboarding/CredentialsStep";
 import {
   ArrowRight,
   ChevronLeft,
@@ -16,7 +21,7 @@ import {
   Lock,
   ShieldCheck,
   GitBranch,
-} from 'lucide-react';
+} from "lucide-react";
 
 export interface OnboardingScreenProps {
   onComplete: () => void;
@@ -25,9 +30,17 @@ export interface OnboardingScreenProps {
 
 const TOTAL_STEPS = 4;
 
-type StepCard = { bg: string; icon: React.ReactNode; title: string; copy: string };
+type StepCard = {
+  bg: string;
+  icon: React.ReactNode;
+  title: string;
+  copy: string;
+};
 
-export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete, onExplore }) => {
+export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
+  onComplete,
+  onExplore,
+}) => {
   const [step, setStep] = useState(1);
   const reduced = useReducedMotion();
   const finishRef = useRef<() => void | Promise<void>>(() => {});
@@ -36,9 +49,16 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete, 
   // mas o spinner pertence só ao clique de Entrar (validar SIGAA não é "entrar").
   const [isEntering, setIsEntering] = useState(false);
 
+  // Foco no CTA primário ao entrar na tela e a cada passo (1–3), para o
+  // usuário avançar tudo com Enter. No passo 4 o foco fica com o formulário.
+  const ctaRef = useRef<HTMLButtonElement>(null);
+  useEffect(() => {
+    if (step < TOTAL_STEPS) ctaRef.current?.focus();
+  }, [step]);
+
   const springy = reduced
-    ? { type: 'tween' as const, duration: 0 }
-    : { type: 'spring' as const, stiffness: 320, damping: 26 };
+    ? { type: "tween" as const, duration: 0 }
+    : { type: "spring" as const, stiffness: 320, damping: 26 };
 
   const panelVariants: Variants = {
     enter: { opacity: 0, y: 18, scale: 1.05, rotate: 1.5 },
@@ -81,16 +101,24 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete, 
         </div>
 
         {/* Indicador de progresso: bolinhas-adesivo */}
-        <div className="flex items-center gap-2.5" role="group" aria-label={`Passo ${step} de ${TOTAL_STEPS}`}>
+        <div
+          className="flex items-center gap-2.5"
+          role="group"
+          aria-label={`Passo ${step} de ${TOTAL_STEPS}`}
+        >
           {[1, 2, 3, 4].map((n) => {
-            const state = n < step ? 'done' : n === step ? 'active' : 'todo';
+            const state = n < step ? "done" : n === step ? "active" : "todo";
             return (
               <motion.span
                 key={n}
                 aria-hidden
-                animate={state === 'active' ? { scale: 1.3 } : { scale: 1 }}
-                transition={reduced ? { duration: 0 } : { type: 'spring', stiffness: 400, damping: 20 }}
-                className={`inline-block w-3 h-3 rounded-full border-2 border-black ${n <= step ? 'bg-neo-blue' : 'bg-white'}`}
+                animate={state === "active" ? { scale: 1.3 } : { scale: 1 }}
+                transition={
+                  reduced
+                    ? { duration: 0 }
+                    : { type: "spring", stiffness: 400, damping: 20 }
+                }
+                className={`inline-block w-3 h-3 rounded-full border-2 border-black ${n <= step ? "bg-neo-blue" : "bg-white"}`}
               />
             );
           })}
@@ -106,7 +134,7 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete, 
             >
               Pular <ChevronRight className="w-4 h-4 stroke-[2.5]" />
             </Button>
-          ) : (
+          ) : credState.connected ? null : (
             <Button
               variant="ghost"
               size="md"
@@ -125,13 +153,28 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete, 
           <AnimatePresence mode="wait">
             {/* PASSO 1: BEM-VINDO */}
             {step === 1 && (
-              <motion.div key="s1" variants={panelVariants} initial="enter" animate="center" exit="exit">
+              <motion.div
+                key="s1"
+                variants={panelVariants}
+                initial="enter"
+                animate="center"
+                exit="exit"
+              >
                 {/* Adesivos decorativos */}
                 <motion.div
                   className="absolute -top-2 -left-2 z-10 pointer-events-none"
                   initial={{ scale: 0, rotate: -12, opacity: 0 }}
                   animate={{ scale: 1, rotate: -8, opacity: 1 }}
-                  transition={reduced ? { duration: 0 } : { type: 'spring', stiffness: 260, damping: 12, delay: 0.45 }}
+                  transition={
+                    reduced
+                      ? { duration: 0 }
+                      : {
+                          type: "spring",
+                          stiffness: 260,
+                          damping: 12,
+                          delay: 0.45,
+                        }
+                  }
                   aria-hidden
                 >
                   <Star className="w-7 h-7 fill-neo-yellow text-black stroke-[2.5]" />
@@ -140,7 +183,16 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete, 
                   className="absolute -top-3 right-8 z-10 pointer-events-none"
                   initial={{ scale: 0, rotate: 10, opacity: 0 }}
                   animate={{ scale: 1, rotate: 6, opacity: 1 }}
-                  transition={reduced ? { duration: 0 } : { type: 'spring', stiffness: 260, damping: 12, delay: 0.55 }}
+                  transition={
+                    reduced
+                      ? { duration: 0 }
+                      : {
+                          type: "spring",
+                          stiffness: 260,
+                          damping: 12,
+                          delay: 0.55,
+                        }
+                  }
                   aria-hidden
                 >
                   <div className="w-5 h-5 rounded-full bg-neo-coral border-2 border-black shadow-[2px_2px_0px_0px_#000]" />
@@ -149,7 +201,16 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete, 
                   className="absolute top-[16%] -left-4 z-10 pointer-events-none"
                   initial={{ scale: 0, rotate: 14, opacity: 0 }}
                   animate={{ scale: 1, rotate: 8, opacity: 1 }}
-                  transition={reduced ? { duration: 0 } : { type: 'spring', stiffness: 260, damping: 12, delay: 0.62 }}
+                  transition={
+                    reduced
+                      ? { duration: 0 }
+                      : {
+                          type: "spring",
+                          stiffness: 260,
+                          damping: 12,
+                          delay: 0.62,
+                        }
+                  }
                   aria-hidden
                 >
                   <Triangle className="w-6 h-6 fill-platform-teams text-black stroke-[2.5]" />
@@ -158,7 +219,16 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete, 
                   className="absolute top-[24%] -right-5 z-10 pointer-events-none"
                   initial={{ scale: 0, rotate: -20, opacity: 0 }}
                   animate={{ scale: 1, rotate: -12, opacity: 1 }}
-                  transition={reduced ? { duration: 0 } : { type: 'spring', stiffness: 260, damping: 12, delay: 0.69 }}
+                  transition={
+                    reduced
+                      ? { duration: 0 }
+                      : {
+                          type: "spring",
+                          stiffness: 260,
+                          damping: 12,
+                          delay: 0.69,
+                        }
+                  }
                   aria-hidden
                 >
                   <Plus className="w-6 h-6 text-neo-purple stroke-[3]" />
@@ -167,7 +237,16 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete, 
                   className="absolute bottom-[8%] left-[12%] z-10 pointer-events-none"
                   initial={{ scale: 0, rotate: 12, opacity: 0 }}
                   animate={{ scale: 1, rotate: 45, opacity: 1 }}
-                  transition={reduced ? { duration: 0 } : { type: 'spring', stiffness: 260, damping: 12, delay: 0.76 }}
+                  transition={
+                    reduced
+                      ? { duration: 0 }
+                      : {
+                          type: "spring",
+                          stiffness: 260,
+                          damping: 12,
+                          delay: 0.76,
+                        }
+                  }
                   aria-hidden
                 >
                   <div className="w-4 h-4 bg-neo-green border-2 border-black shadow-[2px_2px_0px_0px_#000]" />
@@ -176,18 +255,34 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete, 
                   className="absolute bottom-[14%] right-[10%] z-10 pointer-events-none"
                   initial={{ scale: 0, rotate: -10, opacity: 0 }}
                   animate={{ scale: 1, rotate: 0, opacity: 1 }}
-                  transition={reduced ? { duration: 0 } : { type: 'spring', stiffness: 260, damping: 12, delay: 0.83 }}
+                  transition={
+                    reduced
+                      ? { duration: 0 }
+                      : {
+                          type: "spring",
+                          stiffness: 260,
+                          damping: 12,
+                          delay: 0.83,
+                        }
+                  }
                   aria-hidden
                 >
                   <Circle className="w-5 h-5 text-platform-aprender3 stroke-[3]" />
                 </motion.div>
 
                 {/* Hero */}
-                <motion.div variants={itemVariants} className="text-center space-y-3 relative">
+                <motion.div
+                  variants={itemVariants}
+                  className="text-center space-y-3 relative"
+                >
                   <motion.div
                     initial={{ scale: 0.4, rotate: -10, opacity: 0 }}
                     animate={{ scale: 1, rotate: 0, opacity: 1 }}
-                    transition={reduced ? { duration: 0 } : { type: 'spring', stiffness: 260, damping: 12 }}
+                    transition={
+                      reduced
+                        ? { duration: 0 }
+                        : { type: "spring", stiffness: 260, damping: 12 }
+                    }
                   >
                     <div className="mx-auto w-[72px] h-[72px] bg-unb-blue text-white border-2 border-black rounded-2xl flex items-center justify-center shadow-[4px_4px_0px_0px_#000]">
                       <span className="text-3xl font-black">UnB</span>
@@ -197,12 +292,19 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete, 
                     UnB <span className="text-unb-blue">Aggregator</span>
                   </h1>
                   <p className="text-base md:text-lg font-medium text-neutral-700 max-w-lg mx-auto">
-                    Todas as suas plataformas acadêmicas reunidas em um único feed desktop integrado, seguro e rápido.
+                    Todas as suas plataformas acadêmicas reunidas em um único
+                    feed desktop integrado, seguro e rápido.
                   </p>
                   <div className="flex flex-wrap justify-center gap-2 pt-1">
-                    <span className="px-3 py-1 bg-neo-green text-black font-bold text-xs border-2 border-black rounded-full shadow-[2px_2px_0px_0px_#000]">Sigaa</span>
-                    <span className="px-3 py-1 bg-platform-aprender3 text-black font-bold text-xs border-2 border-black rounded-full shadow-[2px_2px_0px_0px_#000]">Aprender 3</span>
-                    <span className="px-3 py-1 bg-platform-teams text-black font-bold text-xs border-2 border-black rounded-full shadow-[2px_2px_0px_0px_#000]">Microsoft Teams</span>
+                    <span className="px-3 py-1 bg-neo-green text-black font-bold text-xs border-2 border-black rounded-full shadow-[2px_2px_0px_0px_#000]">
+                      Sigaa
+                    </span>
+                    <span className="px-3 py-1 bg-platform-aprender3 text-black font-bold text-xs border-2 border-black rounded-full shadow-[2px_2px_0px_0px_#000]">
+                      Aprender 3
+                    </span>
+                    <span className="px-3 py-1 bg-platform-teams text-black font-bold text-xs border-2 border-black rounded-full shadow-[2px_2px_0px_0px_#000]">
+                      Microsoft Teams (Beta)
+                    </span>
                   </div>
                 </motion.div>
               </motion.div>
@@ -210,11 +312,23 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete, 
 
             {/* PASSO 2: FUNCIONALIDADES */}
             {step === 2 && (
-              <motion.div key="s2" variants={panelVariants} initial="enter" animate="center" exit="exit">
-                <motion.h2 variants={itemVariants} className="text-3xl font-black tracking-tight text-black text-center">
+              <motion.div
+                key="s2"
+                variants={panelVariants}
+                initial="enter"
+                animate="center"
+                exit="exit"
+              >
+                <motion.h2
+                  variants={itemVariants}
+                  className="text-3xl font-black tracking-tight text-black text-center"
+                >
                   Tudo que você usa, em um lugar só
                 </motion.h2>
-                <motion.p variants={itemVariants} className="text-sm md:text-base font-medium text-neutral-600 text-center mt-2">
+                <motion.p
+                  variants={itemVariants}
+                  className="text-sm md:text-base font-medium text-neutral-600 text-center mt-2"
+                >
                   Três frentes que poupam suas abas e seu tempo.
                 </motion.p>
                 <div className="grid md:grid-cols-3 gap-4 pt-4">
@@ -227,8 +341,12 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete, 
                       <div className="w-10 h-10 bg-white border-2 border-black rounded-lg shadow-[2px_2px_0px_0px_#000] flex items-center justify-center mb-3">
                         {c.icon}
                       </div>
-                      <h3 className="text-base font-bold text-black tracking-tight">{c.title}</h3>
-                      <p className="text-sm font-medium text-neutral-700 leading-relaxed mt-1">{c.copy}</p>
+                      <h3 className="text-base font-bold text-black tracking-tight">
+                        {c.title}
+                      </h3>
+                      <p className="text-sm font-medium text-neutral-700 leading-relaxed mt-1">
+                        {c.copy}
+                      </p>
                     </motion.div>
                   ))}
                 </div>
@@ -237,11 +355,23 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete, 
 
             {/* PASSO 3: SEGURANÇA */}
             {step === 3 && (
-              <motion.div key="s3" variants={panelVariants} initial="enter" animate="center" exit="exit">
-                <motion.h2 variants={itemVariants} className="text-3xl font-black tracking-tight text-black text-center">
+              <motion.div
+                key="s3"
+                variants={panelVariants}
+                initial="enter"
+                animate="center"
+                exit="exit"
+              >
+                <motion.h2
+                  variants={itemVariants}
+                  className="text-3xl font-black tracking-tight text-black text-center"
+                >
                   Seus dados moram no seu computador
                 </motion.h2>
-                <motion.p variants={itemVariants} className="text-sm md:text-base font-medium text-neutral-600 text-center mt-2">
+                <motion.p
+                  variants={itemVariants}
+                  className="text-sm md:text-base font-medium text-neutral-600 text-center mt-2"
+                >
                   Privacidade não é uma opção aqui — é arquitetura.
                 </motion.p>
                 <div className="grid md:grid-cols-3 gap-4 pt-4">
@@ -254,8 +384,12 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete, 
                       <div className="w-10 h-10 bg-white border-2 border-black rounded-lg shadow-[2px_2px_0px_0px_#000] flex items-center justify-center mb-3">
                         {c.icon}
                       </div>
-                      <h3 className="text-base font-bold text-black tracking-tight">{c.title}</h3>
-                      <p className="text-sm font-medium text-neutral-700 leading-relaxed mt-1">{c.copy}</p>
+                      <h3 className="text-base font-bold text-black tracking-tight">
+                        {c.title}
+                      </h3>
+                      <p className="text-sm font-medium text-neutral-700 leading-relaxed mt-1">
+                        {c.copy}
+                      </p>
                     </motion.div>
                   ))}
                 </div>
@@ -264,7 +398,13 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete, 
 
             {/* PASSO 4: LOGIN */}
             {step === 4 && (
-              <motion.div key="s4" variants={panelVariants} initial="enter" animate="center" exit="exit">
+              <motion.div
+                key="s4"
+                variants={panelVariants}
+                initial="enter"
+                animate="center"
+                exit="exit"
+              >
                 <motion.div variants={itemVariants}>
                   <CredentialsStep
                     onSuccess={onComplete}
@@ -283,7 +423,12 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete, 
       {/* Footer do wizard: Voltar à esquerda; CTA primária à direita (Entrar exige conta conectada) */}
       <div className="w-full max-w-2xl mx-auto px-6 pb-8 flex items-center justify-between shrink-0">
         {step > 1 ? (
-          <Button variant="ghost" size="md" onClick={back} className="text-neutral-700 hover:text-black">
+          <Button
+            variant="ghost"
+            size="md"
+            onClick={back}
+            className="text-neutral-700 hover:text-black"
+          >
             <ChevronLeft className="w-4 h-4 stroke-[2.5]" />
             Voltar
           </Button>
@@ -291,8 +436,8 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete, 
           <span />
         )}
         {step < 4 ? (
-          <Button size="md" onClick={next}>
-            <span>{step === 1 ? 'Começar' : 'Continuar'}</span>
+          <Button ref={ctaRef} size="md" onClick={next}>
+            <span>{step === 1 ? "Começar" : "Continuar"}</span>
             <ArrowRight className="w-5 h-5 stroke-[2.5]" />
           </Button>
         ) : (
@@ -321,42 +466,44 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete, 
 // Cards dos passos 2 e 3 (mesma anatomia, conteúdo distinto)
 const STEP2_CARDS: StepCard[] = [
   {
-    bg: 'bg-pastel-blue',
+    bg: "bg-pastel-blue",
     icon: <Inbox className="w-5 h-5 text-neo-blue stroke-[2.5]" />,
-    title: 'Feed Unificado',
-    copy: 'Posts e tarefas do SIGAA e do Aprender 3 num feed só, com prazo visível e marcação de concluído.',
+    title: "Feed Unificado",
+    copy: "Posts e tarefas do SIGAA e do Aprender 3 num feed só, com prazo visível e marcação de concluído.",
   },
   {
-    bg: 'bg-pastel-yellow',
-    icon: <CalendarDays className="w-5 h-5 text-platform-aprender3 stroke-[2.5]" />,
-    title: 'Monte sua Grade',
-    copy: 'Busque turmas por departamento, gere opções de horário sem conflito e salve grades por semestre.',
+    bg: "bg-pastel-yellow",
+    icon: (
+      <CalendarDays className="w-5 h-5 text-platform-aprender3 stroke-[2.5]" />
+    ),
+    title: "Monte sua Grade",
+    copy: "Busque turmas por departamento, gere opções de horário sem conflito e salve grades por semestre.",
   },
   {
-    bg: 'bg-pastel-green',
+    bg: "bg-pastel-green",
     icon: <BookOpen className="w-5 h-5 text-ink-success stroke-[2.5]" />,
-    title: 'Disciplinas',
-    copy: 'Tudo organizado por disciplina: avisos, materiais e o que vence primeiro.',
+    title: "Disciplinas",
+    copy: "Tudo organizado por disciplina: avisos, materiais e o que vence primeiro.",
   },
 ];
 
 const STEP3_CARDS: StepCard[] = [
   {
-    bg: 'bg-pastel-blue',
+    bg: "bg-pastel-blue",
     icon: <Lock className="w-5 h-5 text-neo-blue stroke-[2.5]" />,
-    title: 'Cofre Local Stronghold',
-    copy: 'Suas credenciais ficam em cofre criptografado no seu próprio computador. Nada vai para servidores nossos.',
+    title: "Cofre Local Stronghold",
+    copy: "Suas credenciais ficam em cofre criptografado no seu próprio computador. Nada vai para servidores nossos.",
   },
   {
-    bg: 'bg-pastel-green',
+    bg: "bg-pastel-green",
     icon: <ShieldCheck className="w-5 h-5 text-ink-success stroke-[2.5]" />,
-    title: 'Zero Telemetria',
-    copy: 'Nenhum dado de uso, clique ou métrica sai do seu computador. Tudo é processado localmente, por construção.',
+    title: "Zero Telemetria",
+    copy: "Nenhum dado de uso, clique ou métrica sai do seu computador. Tudo é processado localmente, por construção.",
   },
   {
-    bg: 'bg-pastel-yellow',
+    bg: "bg-pastel-yellow",
     icon: <GitBranch className="w-5 h-5 text-neo-blue stroke-[2.5]" />,
-    title: 'Código Aberto',
-    copy: 'Apache 2.0 no GitHub. Qualquer pessoa pode auditar os scrapers e o cofre, e sugerir melhorias.',
+    title: "Código Aberto",
+    copy: "Apache 2.0 no GitHub. Qualquer pessoa pode auditar os scrapers e o cofre, e sugerir melhorias.",
   },
 ];

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   Card,
   Button,
@@ -14,8 +14,9 @@ import {
 import { PlatformAccountsAccordion } from "@/components/onboarding/PlatformAccountsAccordion";
 import { useCredentials } from "../hooks/useCredentials";
 import { useFeed } from "../hooks/useFeed";
-import { notifyMyCourseListeners } from "../hooks/useMyCourse";
+import { resetMyCourseCache } from "../hooks/useMyCourse";
 import { useContainer } from "../context/ContainerContext";
+import { useOptionalSync } from "../context/SyncContext";
 import { Settings, AlertCircle, Scale, GitBranch, Trash2, RotateCcw } from "lucide-react";
 
 export interface SettingsScreenProps {
@@ -28,6 +29,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
   const { useCases } = useContainer();
   const { clearFeedData } = useFeed();
   const { clearAll, allCredentials } = useCredentials();
+  const syncContext = useOptionalSync();
 
   // Modo explorar: nenhuma conta conectada — o botão da zona de perigo vira
   // "Voltar para o Onboarding", mas a ação continua apagando tudo (grades,
@@ -38,35 +40,13 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
 
   const [isWiping, setIsWiping] = useState(false);
   const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
-  const [countdown, setCountdown] = useState(3);
-
-  // Efeito de contagem regressiva de 3 segundos para liberação do botão de confirmação
-  useEffect(() => {
-    let intervalId: ReturnType<typeof setInterval> | null = null;
-    if (isConfirmDialogOpen) {
-      setCountdown(3);
-      intervalId = setInterval(() => {
-        setCountdown((prev) => {
-          if (prev <= 1) {
-            if (intervalId) clearInterval(intervalId);
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-    } else {
-      setCountdown(3);
-    }
-
-    return () => {
-      if (intervalId) clearInterval(intervalId);
-    };
-  }, [isConfirmDialogOpen]);
 
   const handleConfirmWipe = async () => {
     setIsWiping(true);
     try {
-      // 1. Apaga credenciais salvas no cofre seguro (Stronghold)
+      // 0. Interrompe imediatamente qualquer sincronização em andamento e fecha janelas do Teams
+      syncContext?.cancelSync();
+      // 1. Apaga credenciais salvas no cofre seguro (Stronghold + flags instantâneas)
       await clearAll();
       // 2. Apaga feed, turmas e associações (SQLite + memória)
       await clearFeedData();
@@ -74,7 +54,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
       await useCases.manageGrade.clear();
       // 4. Apaga perfil acadêmico e histórico escolar (Meu Curso)
       await useCases.manageAcademicProfile.clearProfile();
-      notifyMyCourseListeners();
+      resetMyCourseCache();
       // 5. Limpa preferências auxiliares e perfil do localStorage
       try {
         localStorage.removeItem("unb_grade_deptId");
@@ -82,7 +62,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
         localStorage.removeItem("unb_grade_period");
         localStorage.removeItem("unb_aggregator_academic_profile_v1");
       } catch {}
-      // 6. Fecha o diálogo e redireciona
+      // 6. Fecha o diálogo e redireciona imediatamente para o onboarding
       setIsConfirmDialogOpen(false);
       onResetCredentials();
     } catch (err) {
@@ -99,7 +79,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
 
       {/* Mesma UX do onboarding: adesivos expansíveis por plataforma */}
       <div className="max-w-2xl">
-        <PlatformAccountsAccordion />
+        <PlatformAccountsAccordion animated={false} initialOpenPlatform={null} allowAllClosed />
       </div>
 
       {/* Licença e Código Aberto */}
@@ -151,10 +131,10 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
             variant="destructive"
             size="md"
             onClick={() => {
-              // Modo explorar: nada crítico para confirmar — apaga e volta direto.
-              // Com contas conectadas, passa pelo diálogo com contagem regressiva.
+              // Interrompe imediatamente qualquer sincronização que esteja rodando
+              syncContext?.cancelSync();
               if (hasAnyAccount) setIsConfirmDialogOpen(true);
-              else handleConfirmWipe();
+              else void handleConfirmWipe();
             }}
             className="shrink-0"
           >
@@ -170,7 +150,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
         </div>
       </Card>
 
-      {/* Diálogo de Confirmação com Contagem Regressiva de 3 segundos */}
+      {/* Diálogo de Confirmação */}
       <Dialog
         open={isConfirmDialogOpen}
         onOpenChange={(open) => {
@@ -194,7 +174,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
             <DialogDescription>
               Esta ação é definitiva e irreversível. Todos os dados armazenados
               do UnB Aggregator neste dispositivo serão permanentemente
-              excluídos
+              excluídos.
             </DialogDescription>
           </DialogHeader>
 
@@ -212,16 +192,12 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
               type="button"
               variant="destructive"
               size="md"
-              disabled={countdown > 0 || isWiping}
+              disabled={isWiping}
               isLoading={isWiping}
               onClick={handleConfirmWipe}
             >
               <Trash2 className="w-4 h-4 stroke-[2.5]" />
-              <span>
-                {countdown > 0
-                  ? `Confirmar (${countdown}s)`
-                  : "Confirmar Exclusão"}
-              </span>
+              <span>Confirmar Exclusão</span>
             </Button>
           </DialogFooter>
         </DialogContent>

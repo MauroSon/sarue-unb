@@ -8,6 +8,15 @@
         "value": "plus jakarta sans",
         "createdAt": "2026-10-02T04:06:47.489Z",
         "reason": "Fonte de marca incumbente do projeto, documentada no DESIGN.md desde antes desta sessão; triada como exceção intencional no audit (/impeccable audit, achado overused-font classificado falso positivo). Trocar a identidade tipográfica está fora do escopo dos fixes aprovados."
+      },
+      {
+        "rule": "border-accent-on-rounded",
+        "value": "*",
+        "files": [
+          "src/components/ira/IraSemesterCard.tsx"
+        ],
+        "createdAt": "2026-10-18T03:50:54.877Z",
+        "reason": "DESIGN.md UnB Aggregator: A Regra do Risco Preto manda borda preta 2px em toda superficie e divisores internos de card; mesmo padrao do cabecalho da lista em MyCourseScreen e do Feed List do sistema"
       }
     ]
   }

@@ -10,6 +10,7 @@ import {
   validateSenha,
 } from '../domain/entities/credential';
 import type { ICredentialsRepository } from '../domain/interfaces/credentials-repo.interface';
+import type { IFeedRepository } from '../domain/interfaces/feed-repo.interface';
 
 export interface SaveResult {
   success: boolean;
@@ -22,7 +23,10 @@ function isTauriEnvironment(): boolean {
 }
 
 export class SaveCredentialsUseCase {
-  constructor(private readonly credentialsRepo: ICredentialsRepository) {}
+  constructor(
+    private readonly credentialsRepo: ICredentialsRepository,
+    private readonly feedRepo?: IFeedRepository
+  ) {}
 
   async saveSigaa(
     credentials: SigaaCredentials,
@@ -157,11 +161,44 @@ export class SaveCredentialsUseCase {
 
         await this.credentialsRepo.saveTeams(savedCreds);
 
+        // Se foram extraídos turmas e itens da sincronização em segundo plano, salva no repositório
+        if (this.feedRepo) {
+          if (res.data.items && res.data.items.length > 0) {
+            const domainItems = res.data.items.map((item) => ({
+              ...item,
+              courseCode: item.courseCode ?? undefined,
+              author: item.author ?? undefined,
+              dueDate: item.dueDate ?? undefined,
+              isCompleted: item.isCompleted ?? undefined,
+              externalUrl: item.externalUrl ?? undefined,
+            }));
+            await this.feedRepo.saveItems(domainItems);
+          }
+          if (res.data.courses && res.data.courses.length > 0) {
+            const domainCourses = res.data.courses.map((c) => ({
+              ...c,
+              professor: c.professor ?? undefined,
+              classroom: c.classroom ?? undefined,
+              schedule: c.schedule ?? undefined,
+              unreadCount: c.unreadCount ?? undefined,
+              pendingAssignmentsCount: c.pendingAssignmentsCount ?? undefined,
+              url: c.url ?? undefined,
+            }));
+            await this.feedRepo.saveCourses(domainCourses);
+          }
+        }
+
+        const countCourses = res.data.courses?.length || 0;
+        const countItems = res.data.items?.length || 0;
+        const detailMsg = countCourses > 0
+          ? `Microsoft Teams conectado! ${countCourses} equipe${countCourses > 1 ? 's' : ''} e ${countItems} comunicado${countItems > 1 ? 's' : ''} sincronizados.`
+          : confirmedEmail
+            ? `Microsoft Teams conectado como ${confirmedEmail}!`
+            : 'Microsoft Teams conectado com sucesso!';
+
         return {
           success: true,
-          detail: confirmedEmail
-            ? `Microsoft Teams conectado como ${confirmedEmail}!`
-            : 'Microsoft Teams conectado com sucesso!',
+          detail: detailMsg,
         };
       } catch (e: unknown) {
         return {

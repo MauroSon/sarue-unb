@@ -6093,6 +6093,7 @@ name = "unb_aggregator"
 version = "0.1.0"
 dependencies = [
  "chrono",
+ "iota_stronghold",
  "log",
  "regex",
  "reqwest 0.12.28",
@@ -6109,6 +6110,7 @@ dependencies = [
  "tauri-plugin-window-state",
  "tauri-specta",
  "tokio",
+ "zeroize",
 ]
 
 [[package]]

@@ -24,6 +24,12 @@ let cachedProfile: StudentAcademicProfile | null | undefined;
 // stats e sem lista, e o conteúdo inteiro entraria de uma vez depois (layout shift)
 let cachedSelectedCurriculum: CurriculumStructure | null = null;
 
+export function resetMyCourseCache() {
+  cachedProfile = null;
+  cachedSelectedCurriculum = null;
+  notifyMyCourseListeners();
+}
+
 export function useMyCourse() {
   const { useCases } = useContainer();
   const { allCredentials } = useCredentials();
@@ -52,27 +58,60 @@ export function useMyCourse() {
 
       if (currentProfile && curricula.length > 0) {
         // Auto-cura: se alguma disciplina salva no perfil tem nome igual ao código ou vazio,
-        // recupera o nome real a partir do catálogo de matrizes carregadas
+        // recupera o nome real a partir do catálogo de matrizes carregadas (apenas quando necessário)
         let healed = false;
-        const catalogNameMap = new Map<string, string>();
-        for (const c of curricula) {
-          for (const d of [
-            ...(c.mandatoryDisciplines || []),
-            ...(c.electiveDisciplines || []),
-            ...(c.complementaryDisciplines || []),
-          ]) {
-            if (d.code && d.name && !catalogNameMap.has(d.code)) {
-              catalogNameMap.set(d.code, d.name);
+        const missingNameItems = currentProfile.completedDisciplines.filter(
+          (cd) => !cd.name || cd.name === cd.code,
+        );
+
+        if (missingNameItems.length > 0) {
+          const { sharedDisciplineNameMap } = await import(
+            '@/core/infrastructure/in-memory-academic-profile.repo'
+          );
+
+          for (const cd of missingNameItems) {
+            const cachedName = sharedDisciplineNameMap.get(cd.code);
+            if (cachedName) {
+              cd.name = cachedName;
+              healed = true;
             }
           }
-        }
 
-        for (const cd of currentProfile.completedDisciplines) {
-          if (!cd.name || cd.name === cd.code) {
-            const realName = catalogNameMap.get(cd.code);
-            if (realName) {
-              cd.name = realName;
-              healed = true;
+          const stillUnresolved = new Set(
+            currentProfile.completedDisciplines
+              .filter((cd) => !cd.name || cd.name === cd.code)
+              .map((cd) => cd.code),
+          );
+
+          if (stillUnresolved.size > 0) {
+            const catalogNameMap = new Map<string, string>();
+            for (const c of curricula) {
+              for (const list of [
+                c.mandatoryDisciplines,
+                c.electiveDisciplines,
+                c.complementaryDisciplines,
+              ]) {
+                if (!list) continue;
+                for (const d of list) {
+                  if (d.code && d.name && stillUnresolved.has(d.code)) {
+                    catalogNameMap.set(d.code, d.name);
+                    stillUnresolved.delete(d.code);
+                    if (stillUnresolved.size === 0) break;
+                  }
+                }
+                if (stillUnresolved.size === 0) break;
+              }
+              if (stillUnresolved.size === 0) break;
+            }
+
+            for (const cd of currentProfile.completedDisciplines) {
+              if (!cd.name || cd.name === cd.code) {
+                const realName = catalogNameMap.get(cd.code);
+                if (realName) {
+                  cd.name = realName;
+                  healed = true;
+                }
+              }
             }
           }
         }

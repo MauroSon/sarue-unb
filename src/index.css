@@ -85,3 +85,10 @@
     animation: none !important;
   }
 }
+
+/* Atribuição do React Flow: canto esquerdo, longe do minimapa do fluxograma */
+.react-flow__attribution {
+  left: 8px;
+  right: auto;
+  background: transparent;
+}

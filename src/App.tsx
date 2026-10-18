@@ -10,29 +10,62 @@ import { TooltipProvider, Toaster } from '@/components/ui';
 import { useCredentials } from './hooks/useCredentials';
 import { SyncProvider, useSync } from './context/SyncContext';
 import { DeadlineProvider } from './context/DeadlineContext';
+import { useContainer } from './context/ContainerContext';
 import { NAVIGATE_EVENT } from './lib/utils';
 
 type AppStep = 'onboarding' | 'main';
 
 const AppShell: React.FC = () => {
+  const { repos } = useContainer();
   const { hasCredentials, isLoading: isCheckingAuth } = useCredentials();
   const { syncAll, isSyncing, lastSyncedAt, steps: syncSteps } = useSync();
 
   const [step, setStep] = useState<AppStep>('onboarding');
   const [currentTab, setCurrentTab] = useState<NavTab>('home');
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState<boolean>(false);
+  // Indica se o app já foi usado antes: perfil acadêmico salvo ou cursos no
+  // feed (SQLite persistente) provam uma sessão anterior, mesmo que o cofre
+  // de credenciais esteja vazio ou indisponível.
+  const [hasLocalData, setHasLocalData] = useState<boolean | null>(null);
 
-  // Usuário recorrente com credenciais salvas pula o onboarding na abertura do app.
-  // Roda uma vez no boot apenas: conectar uma plataforma durante o onboarding
-  // não deve ejectar o usuário para o app principal no meio do wizard.
+  React.useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const profile = await repos.academicProfileRepo.getProfile();
+        if (cancelled) return;
+        if (profile) {
+          setHasLocalData(true);
+          return;
+        }
+        const courses = await repos.feedRepo.getCourses();
+        if (!cancelled) setHasLocalData(courses.length > 0);
+      } catch {
+        if (!cancelled) setHasLocalData(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [repos]);
+
+  // Usuário recorrente pula o onboarding na abertura do app: credenciais salvas
+  // (entra sincronizando) ou, como fallback, dados locais de uso anterior (modo
+  // local: reconectar contas em Configurações). Roda uma vez no boot apenas:
+  // conectar uma plataforma durante o onboarding não deve ejectar o usuário
+  // para o app principal no meio do wizard.
   const bootstrapped = React.useRef(false);
   React.useEffect(() => {
-    if (isCheckingAuth || bootstrapped.current) return;
+    if (isCheckingAuth || hasLocalData === null || bootstrapped.current) return;
     bootstrapped.current = true;
     if (hasCredentials) {
       setStep('main');
+      // Sessão restabelecida: atualiza os dados locais em segundo plano
+      void syncAll();
+    } else if (hasLocalData) {
+      setStep('main');
     }
-  }, [isCheckingAuth, hasCredentials]);
+  }, [isCheckingAuth, hasLocalData, hasCredentials, syncAll]);
 
   // Navegação disparada por componentes fora da árvore de tabs (ex.: sino de prazos)
   React.useEffect(() => {
@@ -50,7 +83,7 @@ const AppShell: React.FC = () => {
   // loadAll disparado por um save (ex.: conectar SIGAA no onboarding) acende
   // isLoading nesta instância também — renderizar o loading aqui desmontaria
   // o wizard e resetaria o onboarding para o passo 1.
-  if (isCheckingAuth && !bootstrapped.current) {
+  if ((isCheckingAuth || hasLocalData === null) && !bootstrapped.current) {
     return (
       <div className="min-h-screen bg-canvas bg-grid flex flex-col items-center justify-center space-y-4">
         <div className="w-12 h-12 bg-unb-blue text-white border-2 border-black rounded-lg flex items-center justify-center font-black text-lg shadow-[4px_4px_0px_0px_#000]">

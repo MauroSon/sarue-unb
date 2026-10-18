@@ -82,6 +82,15 @@ pub struct TeamsCreds {
 
 #[derive(Debug, Clone, Serialize, Deserialize, specta::Type)]
 #[serde(rename_all = "camelCase")]
+pub struct TeamsConnectResult {
+    pub is_connected: Option<bool>,
+    pub email: Option<String>,
+    pub items: Vec<FeedItem>,
+    pub courses: Vec<Course>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, specta::Type)]
+#[serde(rename_all = "camelCase")]
 pub struct VaultStatus {
     pub status: String,
     pub encryption: String,

@@ -1,12 +1,14 @@
 import React from 'react';
 import type { FlowchartMetrics } from '@/core';
-import { Award, BookOpen, Clock, Sparkles } from 'lucide-react';
+import { Award, BookOpen, Calculator, Clock, Sparkles } from 'lucide-react';
+import { Button } from '@/components/ui';
 
 export interface FlowchartStatsProps {
   metrics: FlowchartMetrics;
+  onOpenIraCalculator?: () => void;
 }
 
-export const FlowchartStats: React.FC<FlowchartStatsProps> = ({ metrics }) => {
+export const FlowchartStats: React.FC<FlowchartStatsProps> = ({ metrics, onOpenIraCalculator }) => {
   const percentual = metrics.percentualIntegralizado ?? metrics.mandatoryProgressPercentage;
   const totalCurriculo = metrics.chTotalCurriculo ?? metrics.totalHours;
   // CH obrigatória da própria matriz (soma das disciplinas obrigatórias), não um número fixo
@@ -144,9 +146,12 @@ export const FlowchartStats: React.FC<FlowchartStatsProps> = ({ metrics }) => {
           )}
         </div>
 
-        <p className="text-[11px] font-bold text-neutral-600 mt-2">
-          {metrics.availableCount} liberadas para cursar agora
-        </p>
+        <div className="mt-2">
+          <Button variant="yellow" size="sm" onClick={onOpenIraCalculator}>
+            <Calculator className="w-3.5 h-3.5 stroke-[2.5]" />
+            Calculadora de IRA
+          </Button>
+        </div>
       </div>
     </div>
   );

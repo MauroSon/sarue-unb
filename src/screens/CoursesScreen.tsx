@@ -25,6 +25,7 @@ import {
   Link2,
   Search,
   BookOpen,
+  Folder,
 } from "lucide-react";
 import { openExternalUrl } from "../lib/utils";
 import { UnmatchedCourseDialog } from "../components/UnmatchedCourseDialog";
@@ -36,6 +37,7 @@ export const CoursesScreen: React.FC = () => {
   const {
     disciplines,
     unmatchedCourses,
+    otherCourses,
     items,
     isLoading,
     toggleTaskCompleted,
@@ -118,7 +120,13 @@ export const CoursesScreen: React.FC = () => {
           (ac) =>
             ac.name === item.courseName ||
             (ac.code && item.courseCode === ac.code),
-        );
+        ) ||
+        (selectedDiscipline.teamsCourses &&
+          selectedDiscipline.teamsCourses.some(
+            (tc) =>
+              tc.name === item.courseName ||
+              (tc.code && item.courseCode === tc.code),
+          ));
 
       if (!belongsToDiscipline) return false;
 
@@ -183,6 +191,11 @@ export const CoursesScreen: React.FC = () => {
                   Aprender 3
                 </Badge>
               ))}
+              {selectedDiscipline.teamsCourses?.map((tc) => (
+                <Badge key={tc.id} variant="teams">
+                  Teams: {tc.name}
+                </Badge>
+              ))}
             </div>
 
             <span className="text-xs font-bold text-neutral-500">
@@ -241,6 +254,21 @@ export const CoursesScreen: React.FC = () => {
                   className="bg-platform-aprender3 hover:bg-orange-400 text-black"
                 >
                   <span>Acessar Turma no Aprender 3</span>
+                  <ExternalLink className="w-3.5 h-3.5 stroke-[2.5]" />
+                </Button>
+              ) : null,
+            )}
+
+            {selectedDiscipline.teamsCourses?.map((tc) =>
+              tc.url ? (
+                <Button
+                  key={tc.id}
+                  type="button"
+                  size="sm"
+                  onClick={() => openExternalUrl(tc.url!)}
+                  className="bg-platform-teams hover:bg-violet-400 text-white"
+                >
+                  <span>Acessar Equipe no Teams</span>
                   <ExternalLink className="w-3.5 h-3.5 stroke-[2.5]" />
                 </Button>
               ) : null,
@@ -356,7 +384,7 @@ export const CoursesScreen: React.FC = () => {
       {/* Título Padronizado da Página com Ícone da Sidebar */}
       <PageHeader icon={GraduationCap} title="Disciplinas do Semestre" />
 
-      {/* Alerta caso haja turmas do Aprender 3 não associadas */}
+      {/* Alerta caso haja turmas do Aprender 3 ou Teams não associadas */}
       {unmatchedCourses.length > 0 ? (
         <div className="bg-neo-yellow/20 border-2 border-black rounded-lg p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-[4px_4px_0px_0px_#000]">
           <div className="flex items-center gap-2.5">
@@ -367,12 +395,12 @@ export const CoursesScreen: React.FC = () => {
               <p className="text-xs font-black text-black">
                 {unmatchedCourses.length}{" "}
                 {unmatchedCourses.length === 1
-                  ? "turma do Aprender 3 aguarda associação"
-                  : "turmas do Aprender 3 aguardam associação"}
+                  ? "turma externa aguarda associação"
+                  : "turmas externas aguardam associação"}
               </p>
               <p className="text-[11px] font-medium text-neutral-700">
-                Associe para exibir os avisos e tarefas direto na matéria
-                oficial do SIGAA.
+                Associe para exibir os comunicados e tarefas na matéria
+                oficial do SIGAA ou direcione para a seção Outros.
               </p>
             </div>
           </div>
@@ -424,6 +452,14 @@ export const CoursesScreen: React.FC = () => {
                     Aprender 3
                     {discipline.aprenderCourses.length > 1
                       ? ` (${discipline.aprenderCourses.length})`
+                      : ""}
+                  </Badge>
+                ) : null}
+                {discipline.teamsCourses && discipline.teamsCourses.length > 0 ? (
+                  <Badge variant="teams">
+                    Teams
+                    {discipline.teamsCourses.length > 1
+                      ? ` (${discipline.teamsCourses.length})`
                       : ""}
                   </Badge>
                 ) : null}
@@ -489,6 +525,107 @@ export const CoursesScreen: React.FC = () => {
           ))}
         </div>
       )}
+
+      {/* Seção Outros: Equipes do Teams, Monitorias e Projetos */}
+      {otherCourses.length > 0 ? (
+        <div className="space-y-4 pt-6 border-t-2 border-black/10">
+          <div className="flex items-center justify-between text-xs font-bold text-neutral-600 px-1">
+            <div className="flex items-center gap-2">
+              <Folder className="w-4 h-4 stroke-[2.5] text-neo-blue" />
+              <span className="text-sm font-black text-black">
+                Outras Equipes, Monitorias e Projetos ({otherCourses.length})
+              </span>
+            </div>
+            <span className="text-neutral-500 font-semibold">Teams & Aprender 3</span>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {otherCourses.map((oc) => (
+              <Card
+                key={oc.id}
+                onClick={() => {
+                  setSelectedDiscipline({
+                    id: oc.id,
+                    code: oc.code,
+                    name: oc.name,
+                    semester: oc.semester || "2026.1",
+                    professor: oc.professor,
+                    classroom: oc.classroom,
+                    teamsCourses: oc.platform === "teams" ? [oc] : [],
+                    aprenderCourses: oc.platform === "aprender3" ? [oc] : [],
+                    url: oc.url,
+                    unreadCount: oc.unreadCount,
+                    pendingAssignmentsCount: oc.pendingAssignmentsCount,
+                  });
+                }}
+                role="button"
+                tabIndex={0}
+                aria-label={`Ver feed de ${oc.name}`}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    setSelectedDiscipline({
+                      id: oc.id,
+                      code: oc.code,
+                      name: oc.name,
+                      semester: oc.semester || "2026.1",
+                      professor: oc.professor,
+                      classroom: oc.classroom,
+                      teamsCourses: oc.platform === "teams" ? [oc] : [],
+                      aprenderCourses: oc.platform === "aprender3" ? [oc] : [],
+                      url: oc.url,
+                      unreadCount: oc.unreadCount,
+                      pendingAssignmentsCount: oc.pendingAssignmentsCount,
+                    });
+                  }
+                }}
+                className="cursor-pointer bg-white rounded-lg p-5 shadow-[4px_4px_0px_0px_#000] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_#000] active:translate-x-[4px] active:translate-y-[4px] active:shadow-none transition-[transform,box-shadow,background-color,border-color] duration-150 ease-out flex flex-col justify-between group"
+              >
+                <div>
+                  <div className="flex items-center gap-1.5 mb-2.5">
+                    <Badge variant={oc.platform}>
+                      {oc.platform === "teams" ? "Teams" : "Aprender 3"}
+                    </Badge>
+                    {oc.code && oc.code !== oc.name ? (
+                      <span className="text-[11px] font-bold bg-neutral-100 px-2 py-0.5 border border-black/20 rounded-md">
+                        {oc.code}
+                      </span>
+                    ) : null}
+                  </div>
+
+                  <h3 className="text-base md:text-lg font-black text-black leading-snug mb-3 group-hover:text-neo-blue transition-colors">
+                    {oc.name}
+                  </h3>
+
+                  {oc.classroom || oc.professor ? (
+                    <div className="space-y-1.5 text-xs font-medium text-neutral-700">
+                      {oc.professor ? (
+                        <div className="flex items-center gap-2">
+                          <User className="w-3.5 h-3.5 text-neutral-500 stroke-[2.5]" />
+                          <span className="truncate">{oc.professor}</span>
+                        </div>
+                      ) : null}
+                      {oc.classroom ? (
+                        <div className="flex items-center gap-2">
+                          <MapPin className="w-3.5 h-3.5 text-neutral-500 stroke-[2.5]" />
+                          <span className="truncate">{oc.classroom}</span>
+                        </div>
+                      ) : null}
+                    </div>
+                  ) : null}
+                </div>
+
+                <div className="flex flex-wrap items-center justify-between gap-2 pt-4 border-t-2 border-black/10 mt-4 text-xs font-bold">
+                  <span className="text-neutral-500">{oc.semester || "2026.1"}</span>
+                  <span className="text-neutral-800 text-[11px] underline decoration-2 group-hover:text-neo-blue font-extrabold">
+                    Ver publicações →
+                  </span>
+                </div>
+              </Card>
+            ))}
+          </div>
+        </div>
+      ) : null}
 
       {/* Modal Neobrutalista para turmas do Aprender 3 sem correspondência */}
       <UnmatchedCourseDialog

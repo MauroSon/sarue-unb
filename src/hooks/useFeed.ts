@@ -5,7 +5,7 @@ import type { FeedItem, Course, PlatformType, FeedItemType, Discipline } from '@
 // Notificador global entre instâncias ativas do hook useFeed
 const feedListeners = new Set<() => void>();
 
-function notifyFeedListeners() {
+export function notifyFeedListeners() {
   feedListeners.forEach((fn) => fn());
 }
 
@@ -23,6 +23,7 @@ export function useFeed() {
   const [courses, setCourses] = useState<Course[]>([]);
   const [disciplines, setDisciplines] = useState<Discipline[]>([]);
   const [unmatchedCourses, setUnmatchedCourses] = useState<Course[]>([]);
+  const [otherCourses, setOtherCourses] = useState<Course[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [hasLoadedOnce, setHasLoadedOnce] = useState<boolean>(false);
   const [isSyncing, setIsSyncing] = useState<boolean>(false);
@@ -52,7 +53,8 @@ export function useFeed() {
 
       const disciplinesResult = await useCases.getCourses.getDisciplines();
       setDisciplines(disciplinesResult.disciplines);
-      setUnmatchedCourses(disciplinesResult.unmatchedAprenderCourses);
+      setUnmatchedCourses(disciplinesResult.unmatchedCourses);
+      setOtherCourses(disciplinesResult.otherCourses);
     } catch (err) {
       console.error('Erro ao carregar dados do feed e disciplinas:', err);
     } finally {
@@ -85,7 +87,8 @@ export function useFeed() {
 
       const disciplinesResult = await useCases.getCourses.getDisciplines();
       setDisciplines(disciplinesResult.disciplines);
-      setUnmatchedCourses(disciplinesResult.unmatchedAprenderCourses);
+      setUnmatchedCourses(disciplinesResult.unmatchedCourses);
+      setOtherCourses(disciplinesResult.otherCourses);
 
       if (result.errors && Object.keys(result.errors).length > 0) {
         setSyncErrors(result.errors);
@@ -145,7 +148,8 @@ export function useFeed() {
     await useCases.getCourses.associateCourse(aprenderCourseId, sigaaCourseId, isIgnored);
     const disciplinesResult = await useCases.getCourses.getDisciplines();
     setDisciplines(disciplinesResult.disciplines);
-    setUnmatchedCourses(disciplinesResult.unmatchedAprenderCourses);
+    setUnmatchedCourses(disciplinesResult.unmatchedCourses);
+    setOtherCourses(disciplinesResult.otherCourses);
     notifyFeedListeners();
   };
 
@@ -154,6 +158,7 @@ export function useFeed() {
     courses,
     disciplines,
     unmatchedCourses,
+    otherCourses,
     isLoading,
     hasLoadedOnce,
     isSyncing,

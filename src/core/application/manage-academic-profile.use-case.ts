@@ -170,6 +170,18 @@ export class ManageAcademicProfileUseCase {
       parseResult.profile.manualUncompletedCodes = currentProfile.manualUncompletedCodes || [];
     }
 
+    // Se o usuário apagou os dados/credenciais enquanto o histórico era baixado, não regrava o perfil
+    if (typeof window !== 'undefined' && window.localStorage) {
+      try {
+        if (
+          window.localStorage.getItem('unb_vault_cleared_v1') === 'true' ||
+          window.localStorage.getItem('unb_cleared_sigaa_v1') === 'true'
+        ) {
+          return parseResult;
+        }
+      } catch {}
+    }
+
     await this.repo.saveProfile(parseResult.profile);
     return parseResult;
   }

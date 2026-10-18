@@ -143,6 +143,12 @@ export async function getDatabase(): Promise<Database | null> {
           console.warn('Erro ao limpar dados legados do MoodleMat no SQLite:', e);
         }
 
+        // Remove banners de notificação, botões de sistema ou idioma do Teams salvos por versões anteriores
+        try {
+          await db.execute("DELETE FROM courses WHERE platform = 'teams' AND (name LIKE '%language%' OR name LIKE '%restart%' OR name LIKE '%notifica%' OR name LIKE '%announcement%' OR name LIKE '%join or create%' OR name LIKE '%classes%' OR name LIKE '%equipes%' OR name = 'TEAMS');");
+          await db.execute("DELETE FROM feed_items WHERE platform = 'teams' AND (title LIKE '%desktop notifications%' OR title LIKE '%Apply and restart%' OR title LIKE '%Stay in the know%' OR title LIKE '%restart for change language%' OR content LIKE '%Stay in the know%' OR title LIKE '%Aviso: OAC Prof Ricardo Jacobi%');");
+        } catch {}
+
         return db;
       } catch (err) {
         console.warn('SQLite nativo não inicializado, operando com espelho em memória:', err);

@@ -1,7 +1,9 @@
 import React, { useState, useMemo } from "react";
 import { useMyCourse } from "../hooks/useMyCourse";
 import { FlowchartStats } from "../components/flowchart/FlowchartStats";
+import { IraCalculatorScreen } from "./IraCalculatorScreen";
 import { FlowchartList } from "../components/flowchart/FlowchartList";
+import { FlowchartDiagram } from "../components/flowchart/FlowchartDiagram";
 import { CurrentlyEnrolledPanel } from "../components/flowchart/CurrentlyEnrolledPanel";
 import { CurriculumSelectorDialog } from "../components/flowchart/CurriculumSelectorDialog";
 import { MyCourseSkeleton } from "../components/flowchart/MyCourseSkeleton";
@@ -21,9 +23,15 @@ import {
   Unlock,
   Clock,
   BookOpen,
+  List,
+  Network,
 } from "lucide-react";
 
 type FilterType = "all" | "completed" | "available" | "in_progress";
+type ViewMode = "list" | "map";
+
+// Modo de visualização persiste durante a sessão: voltar de outra aba não reseta
+let cachedViewMode: ViewMode = "list";
 
 export const MyCourseScreen: React.FC = () => {
   const {
@@ -41,6 +49,13 @@ export const MyCourseScreen: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState<FilterType>("all");
   const [isCurriculumDialogOpen, setIsCurriculumDialogOpen] = useState(false);
+  const [view, setView] = useState<"overview" | "ira-calculator">("overview");
+  const [viewMode, setViewMode] = useState<ViewMode>(cachedViewMode);
+
+  const switchViewMode = (mode: ViewMode) => {
+    cachedViewMode = mode;
+    setViewMode(mode);
+  };
 
   // Filtra as disciplinas para o modo lista
   const filteredDisciplinesForList = useMemo(() => {
@@ -105,6 +120,10 @@ export const MyCourseScreen: React.FC = () => {
     // Nunca deixa o diálogo vazio se o casamento por nome falhar
     return matched.length > 0 ? matched : allCurricula;
   }, [allCurricula, profile?.courseName]);
+
+  if (view === "ira-calculator") {
+    return <IraCalculatorScreen onBack={() => setView("overview")} />;
+  }
 
   if (isLoading && !profile) {
     return (
@@ -183,7 +202,12 @@ export const MyCourseScreen: React.FC = () => {
           </div>
 
           {/* Painel de Métricas e Integralização */}
-          {flowchartData && <FlowchartStats metrics={flowchartData.metrics} />}
+          {flowchartData && (
+            <FlowchartStats
+              metrics={flowchartData.metrics}
+              onOpenIraCalculator={() => setView("ira-calculator")}
+            />
+          )}
 
           {/* Painel "Cursando agora" — resposta direta a "o que estou fazendo neste semestre?" */}
           <CurrentlyEnrolledPanel
@@ -195,7 +219,11 @@ export const MyCourseScreen: React.FC = () => {
           {flowchartData && (
             <section
               className="bg-white border-2 border-black rounded-lg shadow-neo"
-              aria-label="Fluxograma de disciplinas por semestre"
+              aria-label={
+                viewMode === "list"
+                  ? "Fluxograma de disciplinas por semestre"
+                  : "Mapa de cadeias de pré-requisitos"
+              }
             >
               <div className="flex flex-col lg:flex-row lg:items-center gap-3 p-4 border-b-2 border-black">
                 <div className="relative flex-1 min-w-0 lg:max-w-md">
@@ -211,70 +239,122 @@ export const MyCourseScreen: React.FC = () => {
 
                 {/* Filtros de Estado */}
                 <div className="flex flex-wrap items-center gap-1.5 text-xs font-bold lg:ml-auto">
-                  <button
+                  {/* Estado ativo usa o variant do Button; inativo sobrescreve o bg pastel via className (twMerge resolve conflito) */}
+                  <Button
                     type="button"
+                    variant="outline"
+                    size="sm"
                     onClick={() => setActiveFilter("all")}
                     aria-pressed={activeFilter === "all"}
-                    className={`cursor-pointer px-2.5 py-1 rounded-lg border-2 transition-all shadow-neo-sm hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-neo-xs active:translate-x-[2px] active:translate-y-[2px] active:shadow-none ${
+                    className={
                       activeFilter === "all"
-                        ? "bg-black text-white border-black shadow-neo-sm"
-                        : "bg-white text-black border-black hover:bg-neutral-100"
-                    }`}
+                        ? "bg-black text-white hover:bg-black"
+                        : "hover:bg-white"
+                    }
                   >
                     Todas (
                     {flowchartData?.metrics.totalMandatoryDisciplines || 0})
-                  </button>
+                  </Button>
 
-                  <button
+                  <Button
                     type="button"
+                    variant={activeFilter === "completed" ? "accent" : "outline"}
+                    size="sm"
                     onClick={() => setActiveFilter("completed")}
                     aria-pressed={activeFilter === "completed"}
-                    className={`cursor-pointer px-2.5 py-1 rounded-lg border-2 transition-all flex items-center gap-1 shadow-neo-sm hover:shadow-neo-xs hover:translate-x-[1px] hover:translate-y-[1px] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none ${
+                    className={
                       activeFilter === "completed"
-                        ? "bg-neo-green text-black border-black shadow-neo-sm"
-                        : "bg-pastel-green text-black border-black hover:bg-neutral-100"
-                    }`}
+                        ? "gap-1"
+                        : "gap-1 bg-pastel-green text-black hover:bg-pastel-green"
+                    }
                   >
                     <CheckCircle2 className="w-3.5 h-3.5 stroke-[2.5]" />
-                    Feitas (
-                    {flowchartData?.metrics.completedMandatoryDisciplines || 0})
-                  </button>
+                    ({flowchartData?.metrics.completedMandatoryDisciplines || 0})
+                  </Button>
 
-                  <button
+                  <Button
                     type="button"
+                    variant={activeFilter === "in_progress" ? "primary" : "outline"}
+                    size="sm"
                     onClick={() => setActiveFilter("in_progress")}
                     aria-pressed={activeFilter === "in_progress"}
-                    className={`cursor-pointer px-2.5 py-1 rounded-lg border-2 transition-all flex items-center gap-1 shadow-neo-sm hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-neo-xs active:translate-x-[2px] active:translate-y-[2px] active:shadow-none ${
+                    className={
                       activeFilter === "in_progress"
-                        ? "bg-neo-blue text-white border-black shadow-neo-sm"
-                        : "bg-pastel-blue text-black border-black hover:bg-neutral-100"
-                    }`}
+                        ? "gap-1"
+                        : "gap-1 bg-pastel-blue text-black hover:bg-pastel-blue"
+                    }
                   >
                     <Clock className="w-3.5 h-3.5 stroke-[2.5]" />
-                    Cursando ({flowchartData?.metrics.inProgressCount || 0})
-                  </button>
+                    ({flowchartData?.metrics.inProgressCount || 0})
+                  </Button>
 
-                  <button
+                  <Button
                     type="button"
+                    variant={activeFilter === "available" ? "yellow" : "outline"}
+                    size="sm"
                     onClick={() => setActiveFilter("available")}
                     aria-pressed={activeFilter === "available"}
-                    className={`cursor-pointer px-2.5 py-1 rounded-lg border-2 transition-all flex items-center gap-1 shadow-neo-sm hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-neo-xs active:translate-x-[2px] active:translate-y-[2px] active:shadow-none ${
+                    className={
                       activeFilter === "available"
-                        ? "bg-neo-yellow text-black border-black shadow-neo-sm"
-                        : "bg-pastel-yellow text-black border-black hover:bg-neo-yellow/40"
-                    }`}
+                        ? "gap-1"
+                        : "gap-1 bg-pastel-yellow text-black hover:bg-neo-yellow/40"
+                    }
                   >
                     <Unlock className="w-3.5 h-3.5 stroke-[2.5]" />
-                    Prontas ({flowchartData?.metrics.availableCount || 0})
+                    ({flowchartData?.metrics.availableCount || 0})
+                  </Button>
+                </div>
+
+                {/* Alternador Lista | Mapa */}
+                <div
+                  role="group"
+                  aria-label="Modo de visualização do fluxograma"
+                  className="flex items-center gap-0.5 p-0.5 bg-white border-2 border-black rounded-xl shadow-neo-sm shrink-0"
+                >
+                  <button
+                    type="button"
+                    onClick={() => switchViewMode("list")}
+                    aria-pressed={viewMode === "list"}
+                    title="Visualização em lista por semestre"
+                    className={`cursor-pointer flex items-center gap-1.5 h-7 px-2.5 rounded-lg text-xs font-black transition-colors duration-150 active:translate-y-px ${
+                      viewMode === "list"
+                        ? "bg-neo-blue text-white"
+                        : "bg-white text-black hover:bg-neutral-100"
+                    }`}
+                  >
+                    <List className="w-3.5 h-3.5 stroke-[2.5]" />
+                    Lista
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => switchViewMode("map")}
+                    aria-pressed={viewMode === "map"}
+                    title="Visualização em mapa de cadeias de pré-requisitos"
+                    className={`cursor-pointer flex items-center gap-1.5 h-7 px-2.5 rounded-lg text-xs font-black transition-colors duration-150 active:translate-y-px ${
+                      viewMode === "map"
+                        ? "bg-neo-blue text-white"
+                        : "bg-white text-black hover:bg-neutral-100"
+                    }`}
+                  >
+                    <Network className="w-3.5 h-3.5 stroke-[2.5]" />
+                    Mapa
                   </button>
                 </div>
               </div>
-              <FlowchartList
-                semesters={flowchartData.semesters}
-                visibleCodes={filteredCodesSet}
-                disciplineNames={disciplineNames}
-                onToggle={toggleDiscipline}
-              />
+              {viewMode === "list" ? (
+                <FlowchartList
+                  semesters={flowchartData.semesters}
+                  visibleCodes={filteredCodesSet}
+                  disciplineNames={disciplineNames}
+                  onToggle={toggleDiscipline}
+                />
+              ) : (
+                <FlowchartDiagram
+                  flowchartData={flowchartData}
+                  visibleCodes={filteredCodesSet}
+                  onToggle={toggleDiscipline}
+                />
+              )}
             </section>
           )}
 

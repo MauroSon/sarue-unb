@@ -44,7 +44,11 @@ pub fn run() {
         .expect("Falha ao exportar bindings TypeScript");
 
     tauri::Builder::default()
-        .plugin(tauri_plugin_window_state::Builder::new().build())
+        .plugin(
+            tauri_plugin_window_state::Builder::new()
+                .with_filter(|label| label == "main")
+                .build(),
+        )
         .setup(|app| {
             // Inicialização do cofre criptográfico com derivação Argon2 do Tauri Stronghold
             let app_data_dir = app

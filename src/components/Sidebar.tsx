@@ -16,7 +16,7 @@ export interface SidebarProps {
   onSync?: () => void;
   lastSyncedAt?: string | null;
   hasConnectedAccounts?: boolean;
-  syncSteps?: Record<'sigaa' | 'aprender3' | 'myCourse' | 'ghPages', SyncStepInfo>;
+  syncSteps?: Record<'sigaa' | 'aprender3' | 'teams' | 'myCourse' | 'ghPages', SyncStepInfo>;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -54,6 +54,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
       return '';
     }
   };
+
+  const activeSyncStep = syncSteps
+    ? (['sigaa', 'aprender3', 'myCourse', 'teams', 'ghPages'] as const)
+        .map((id) => syncSteps[id])
+        .find((s) => s?.status === 'syncing')
+    : undefined;
 
   return (
     <aside
@@ -174,7 +180,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     : 'cursor-pointer bg-neo-blue hover:bg-neo-blueHover text-white border-black focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-neo-blue focus-visible:ring-offset-2 focus-visible:ring-offset-white shadow-[2px_2px_0px_0px_#000] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none'
                 }`}
               >
-                <RefreshCw className={`w-4 h-4 stroke-[2.5] ${isSyncing ? 'animate-spin' : ''}`} />
+                <RefreshCw className={`w-4 h-4 stroke-[2.5] ${isSyncing || activeSyncStep ? 'animate-spin' : ''}`} />
                 <span>{isSyncing ? 'Sincronizando...' : 'Sincronizar'}</span>
               </TooltipTrigger>
               {syncSteps && (
@@ -186,7 +192,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 >
                   <SyncStatusTooltip
                     steps={syncSteps}
-                    isSyncing={isSyncing}
+                    isSyncing={isSyncing || Boolean(activeSyncStep)}
                     lastSyncedAt={lastSyncedAt ?? null}
                   />
                 </TooltipContent>
@@ -194,15 +200,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
             </Tooltip>
             <DeadlineBell />
             </div>
-            {!hasConnectedAccounts ? (
-              <p className="text-[11px] text-neutral-500 font-semibold text-center leading-tight">
-                Nenhuma conta conectada
-              </p>
-            ) : (
-              <p className="text-[11px] text-neutral-500 font-semibold text-center truncate">
-                {formatLastSync(lastSyncedAt)}
-              </p>
-            )}
+            <p className="text-[11px] text-neutral-500 font-semibold text-center truncate">
+              {formatLastSync(lastSyncedAt)}
+            </p>
           </div>
         ) : (
           <div className="flex flex-col items-center gap-2">

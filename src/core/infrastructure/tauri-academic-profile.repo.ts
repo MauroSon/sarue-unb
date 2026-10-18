@@ -23,6 +23,13 @@ export class TauriAcademicProfileRepository implements IAcademicProfileRepositor
   }
 
   async getAllCurricula(): Promise<CurriculumStructure[]> {
+    // Carrega via fetch('/data/curricula.json') em chunks não-bloqueantes com cache compartilhado,
+    // evitando serializar 40 MB via evaluateJavaScript na Main Thread do macOS (WKWebView).
+    const fromStaticAsset = await this.fallbackRepo.getAllCurricula();
+    if (fromStaticAsset.length > 0) {
+      return fromStaticAsset;
+    }
+
     try {
       const { commands } = await import('@/core/infrastructure/bindings');
       const response = await commands.getAllCurricula();
@@ -75,7 +82,7 @@ export class TauriAcademicProfileRepository implements IAcademicProfileRepositor
       console.warn('[TauriAcademicProfileRepository] Erro ao buscar via bindings Tauri:', e);
     }
 
-    return this.fallbackRepo.getAllCurricula();
+    return [];
   }
 
   async fetchSigaaHistory(creds: SigaaCredentials): Promise<SigaaHistoryRawResponse> {

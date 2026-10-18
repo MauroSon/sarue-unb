@@ -13,8 +13,16 @@ export interface CompletedDiscipline {
   classCode?: string;
 }
 
+/** Um evento de trancamento no histórico (conta mesmo se aprovado depois). */
+export interface TrancadaEvent {
+  code: string;
+  period?: string;
+}
+
 export interface StudentAcademicProfile {
   matricula: string;
+  /** Eventos de trancamento acumulados do curso (fator de trancamento do IRA). */
+  trancadaEvents?: TrancadaEvent[];
   studentName?: string;
   courseName: string;
   degree?: string;

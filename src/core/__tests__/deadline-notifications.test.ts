@@ -79,8 +79,8 @@ describe('EvaluateDeadlineNotificationsUseCase', () => {
     expect(result.entries[2].urgency).toBe('tomorrow');
     expect(result.entries[3].urgency).toBe('week');
 
-    // Badge: pendentes dentro de 48h (inclui atrasada)
-    expect(result.badgeCount).toBe(3);
+    // Badge: todas as pendências da janela do painel (inclui atrasada e semana)
+    expect(result.badgeCount).toBe(4);
 
     // Um ping por tarefa, no marco mais urgente entrado agora
     expect(notifier.calls).toHaveLength(3);

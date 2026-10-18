@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import type { FlowchartDiscipline, FlowchartSemester } from "@/core";
 import { Check, CircleDotDashed, Lock, Unlock } from "lucide-react";
 import {
@@ -174,6 +174,13 @@ const DisciplineRow: React.FC<{
   );
 });
 
+// Última escolha do usuário de quais semestres ficam abertos no accordion
+const OPEN_SEMESTERS_STORAGE_KEY = "unb_flowchart_open_semesters";
+
+const isSemesterFullyCompleted = (sem: FlowchartSemester): boolean =>
+  sem.disciplines.length > 0 &&
+  sem.disciplines.every((d) => d.status === "completed");
+
 export const FlowchartList: React.FC<FlowchartListProps> = ({
   semesters,
   visibleCodes,
@@ -185,8 +192,40 @@ export const FlowchartList: React.FC<FlowchartListProps> = ({
     sem.disciplines.some((d) => visibleCodes.has(d.code)),
   );
 
+  // Semestres abertos: preferência salva no localStorage vence; sem preferência,
+  // semestres totalmente concluídos nascem minimizados e os demais abertos.
+  const [openValues, setOpenValues] = useState<string[] | null>(() => {
+    try {
+      const raw = window.localStorage.getItem(OPEN_SEMESTERS_STORAGE_KEY);
+      if (raw) {
+        const parsed: unknown = JSON.parse(raw);
+        if (Array.isArray(parsed)) return parsed.map(String);
+      }
+    } catch {}
+    return null;
+  });
+
+  const handleOpenChange = (next: unknown) => {
+    const list = Array.isArray(next) ? next.map(String) : [];
+    setOpenValues(list);
+    try {
+      window.localStorage.setItem(
+        OPEN_SEMESTERS_STORAGE_KEY,
+        JSON.stringify(list),
+      );
+    } catch {}
+  };
+
+  const defaultOpenValues = visible
+    .filter((sem) => !isSemesterFullyCompleted(sem))
+    .map((sem) => String(sem.level));
+
   return (
-    <Accordion multiple defaultValue={visible.map((sem) => String(sem.level))}>
+    <Accordion
+      multiple
+      value={openValues ?? defaultOpenValues}
+      onValueChange={handleOpenChange}
+    >
       {visible.map((sem) => {
         const discs = sem.disciplines.filter((d) => visibleCodes.has(d.code));
 
@@ -194,9 +233,7 @@ export const FlowchartList: React.FC<FlowchartListProps> = ({
         const completedCount = sem.disciplines.filter(
           (d) => d.status === "completed",
         ).length;
-        const allCompleted =
-          sem.disciplines.length > 0 &&
-          completedCount === sem.disciplines.length;
+        const allCompleted = isSemesterFullyCompleted(sem);
 
         return (
           <AccordionItem

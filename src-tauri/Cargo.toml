@@ -30,6 +30,57 @@ tauri-specta = { version = "2.0.0-rc.25", features = ["javascript", "typescript"
 specta = { version = "2.0.0-rc", features = ["derive"] }
 specta-typescript = "0.0.12"
 
+[dev-dependencies]
+iota_stronghold = "2.1.0"
+zeroize = "1"
+
 [target.'cfg(not(any(target_os = "android", target_os = "ios")))'.dependencies]
 tauri-plugin-window-state = "2"
+
+# Otimiza as primitivas criptográficas do Stronghold (Argon2id + Scrypt/Salsa20/SHA2/ChaCha20) em modo dev/test.
+# Sem isso, Stronghold.load / Stronghold.save em opt-level=0 leva ~45-90s de 100% CPU e trava o app.
+[profile.dev.package.blake2b_simd]
+opt-level = 3
+
+[profile.dev.package.rust-argon2]
+opt-level = 3
+
+[profile.dev.package.scrypt]
+opt-level = 3
+
+[profile.dev.package.salsa20]
+opt-level = 3
+
+[profile.dev.package.pbkdf2]
+opt-level = 3
+
+[profile.dev.package.sha2]
+opt-level = 3
+
+[profile.dev.package.hmac]
+opt-level = 3
+
+[profile.dev.package.chacha20]
+opt-level = 3
+
+[profile.dev.package.chacha20poly1305]
+opt-level = 3
+
+[profile.dev.package.poly1305]
+opt-level = 3
+
+[profile.dev.package.cipher]
+opt-level = 3
+
+[profile.dev.package.inout]
+opt-level = 3
+
+[profile.dev.package.iota-crypto]
+opt-level = 3
+
+[profile.dev.package.stronghold_engine]
+opt-level = 3
+
+[profile.dev.package.iota_stronghold]
+opt-level = 3
 

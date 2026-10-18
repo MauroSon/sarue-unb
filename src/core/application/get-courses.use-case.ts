@@ -3,7 +3,9 @@ import type { IFeedRepository } from '../domain/interfaces/feed-repo.interface';
 
 export interface GetDisciplinesResult {
   disciplines: Discipline[];
+  unmatchedCourses: Course[];
   unmatchedAprenderCourses: Course[];
+  otherCourses: Course[];
 }
 
 export function normalizeCourseText(text: string): string {
@@ -14,6 +16,14 @@ export function normalizeCourseText(text: string): string {
     .replace(/[^A-Z0-9\s]/g, ' ')
     .replace(/\s+/g, ' ')
     .trim();
+}
+
+export function getCourseAcronym(name: string): string {
+  const stopWords = new Set([
+    'E', 'DE', 'DA', 'DO', 'DOS', 'DAS', 'EM', 'NO', 'NA', 'NOS', 'NAS', 'PARA', 'COM', 'POR', 'A', 'O', 'AS', 'OS'
+  ]);
+  const words = normalizeCourseText(name).split(' ').filter((w) => w.length > 0 && !stopWords.has(w));
+  return words.map((w) => w[0]).join('');
 }
 
 export class GetCoursesUseCase {
@@ -35,7 +45,18 @@ export class GetCoursesUseCase {
 
     const sigaaCourses = allCourses.filter((c) => c.platform === 'sigaa');
     const aprenderCourses = allCourses.filter((c) => c.platform === 'aprender3');
-    const otherCourses = allCourses.filter((c) => c.platform !== 'sigaa' && c.platform !== 'aprender3');
+    const teamsCourses = allCourses.filter(
+      (c) =>
+        c.platform === 'teams' &&
+        !c.name.toLowerCase().includes('language') &&
+        !c.name.toLowerCase().includes('restart') &&
+        !c.name.toLowerCase().includes('notification') &&
+        !c.name.toLowerCase().includes('announcement') &&
+        !c.name.toLowerCase().includes('join or create') &&
+        !c.name.toLowerCase().includes('classes') &&
+        !c.name.toLowerCase().includes('equipes') &&
+        c.name !== 'TEAMS'
+    );
 
     // Se o usuário não tiver disciplinas do SIGAA, tratamos cada curso como sua própria disciplina
     if (sigaaCourses.length === 0) {
@@ -49,6 +70,7 @@ export class GetCoursesUseCase {
         schedule: c.schedule,
         sigaaCourse: c.platform === 'sigaa' ? c : undefined,
         aprenderCourses: c.platform === 'aprender3' ? [c] : [],
+        teamsCourses: c.platform === 'teams' ? [c] : [],
         url: c.url,
         unreadCount: c.unreadCount || 0,
         pendingAssignmentsCount: c.pendingAssignmentsCount || 0,
@@ -56,7 +78,9 @@ export class GetCoursesUseCase {
 
       return {
         disciplines,
+        unmatchedCourses: [],
         unmatchedAprenderCourses: [],
+        otherCourses: [],
       };
     }
 
@@ -65,42 +89,47 @@ export class GetCoursesUseCase {
       (a, b) => normalizeCourseText(b.name).length - normalizeCourseText(a.name).length
     );
 
-    // Mapeamento de SIGAA ID -> Array de Aprender3 Courses
+    // Mapeamento de SIGAA ID -> Array de Aprender3 e Teams Courses
     const sigaaToAprender = new Map<string, Course[]>();
+    const sigaaToTeams = new Map<string, Course[]>();
     for (const sc of sigaaCourses) {
       sigaaToAprender.set(sc.id, []);
+      sigaaToTeams.set(sc.id, []);
     }
 
     const unmatchedAprenderCourses: Course[] = [];
+    const unmatchedTeamsCourses: Course[] = [];
+    const otherCourses: Course[] = [];
 
+    // 1. Mapeamento do Aprender 3
     for (const ac of aprenderCourses) {
       const existingAssoc = assocMap.get(ac.id);
 
-      // Se o usuário marcou para ignorar
       if (existingAssoc?.isIgnored) {
         continue;
       }
 
-      // Se há associação manual persistida no SQLite
+      if (existingAssoc?.sigaaCourseId === '__others__') {
+        otherCourses.push(ac);
+        continue;
+      }
+
       if (existingAssoc?.sigaaCourseId && sigaaToAprender.has(existingAssoc.sigaaCourseId)) {
         sigaaToAprender.get(existingAssoc.sigaaCourseId)!.push(ac);
         continue;
       }
 
-      // Tentativa de matching automático
       const normAprenderName = normalizeCourseText(ac.name);
       const normAprenderCode = normalizeCourseText(ac.code);
 
       let matchedSigaa: Course | undefined;
 
-      // 1. Tenta casar por código se não for genérico
       if (normAprenderCode.length >= 4 && normAprenderCode !== 'APRENDER3' && normAprenderCode !== 'A3') {
         matchedSigaa = sortedSigaa.find(
           (s) => normalizeCourseText(s.code) === normAprenderCode
         );
       }
 
-      // 2. Se não casou por código, tenta substring de nome mais específico
       if (!matchedSigaa) {
         matchedSigaa = sortedSigaa.find((s) => {
           const normSigaaName = normalizeCourseText(s.name);
@@ -115,10 +144,66 @@ export class GetCoursesUseCase {
       }
     }
 
+    // 2. Mapeamento do Teams (com suporte a siglas como SSTC, OAC)
+    for (const tc of teamsCourses) {
+      const existingAssoc = assocMap.get(tc.id);
+
+      if (existingAssoc?.isIgnored) {
+        continue;
+      }
+
+      if (existingAssoc?.sigaaCourseId === '__others__') {
+        otherCourses.push(tc);
+        continue;
+      }
+
+      if (existingAssoc?.sigaaCourseId && sigaaToTeams.has(existingAssoc.sigaaCourseId)) {
+        sigaaToTeams.get(existingAssoc.sigaaCourseId)!.push(tc);
+        continue;
+      }
+
+      const normTeamsName = normalizeCourseText(tc.name);
+      const cleanPrefix = normTeamsName.split(/[\s\-_(]/)[0].trim();
+
+      let matchedSigaa: Course | undefined;
+
+      // 2.1 Verifica sigla exata (ex.: SSTC -> SINAIS E SISTEMAS NO TEMPO CONTINUO, OAC -> ORGANIZACAO E ARQUITETURA DE COMPUTADORES)
+      if (cleanPrefix.length >= 2) {
+        matchedSigaa = sortedSigaa.find((s) => {
+          const acronym = getCourseAcronym(s.name);
+          return acronym === cleanPrefix || acronym.startsWith(cleanPrefix) || cleanPrefix.startsWith(acronym);
+        });
+      }
+
+      // 2.2 Se não casou por sigla, tenta código ou substring
+      if (!matchedSigaa) {
+        matchedSigaa = sortedSigaa.find((s) => {
+          const normSigaaName = normalizeCourseText(s.name);
+          const normSigaaCode = normalizeCourseText(s.code);
+          return (
+            (normSigaaCode.length >= 4 && normTeamsName.includes(normSigaaCode)) ||
+            (normSigaaName.length >= 4 && normTeamsName.includes(normSigaaName)) ||
+            (normTeamsName.length >= 4 && normSigaaName.includes(normTeamsName))
+          );
+        });
+      }
+
+      if (matchedSigaa) {
+        sigaaToTeams.get(matchedSigaa.id)!.push(tc);
+      } else {
+        unmatchedTeamsCourses.push(tc);
+      }
+    }
+
     const disciplines: Discipline[] = sigaaCourses.map((sc) => {
       const linkedAprender = sigaaToAprender.get(sc.id) || [];
-      const totalUnread = (sc.unreadCount || 0) + linkedAprender.reduce((acc, c) => acc + (c.unreadCount || 0), 0);
-      const totalPending = (sc.pendingAssignmentsCount || 0) + linkedAprender.reduce((acc, c) => acc + (c.pendingAssignmentsCount || 0), 0);
+      const linkedTeams = sigaaToTeams.get(sc.id) || [];
+      const totalUnread = (sc.unreadCount || 0) +
+        linkedAprender.reduce((acc, c) => acc + (c.unreadCount || 0), 0) +
+        linkedTeams.reduce((acc, c) => acc + (c.unreadCount || 0), 0);
+      const totalPending = (sc.pendingAssignmentsCount || 0) +
+        linkedAprender.reduce((acc, c) => acc + (c.pendingAssignmentsCount || 0), 0) +
+        linkedTeams.reduce((acc, c) => acc + (c.pendingAssignmentsCount || 0), 0);
 
       return {
         id: sc.id,
@@ -130,34 +215,20 @@ export class GetCoursesUseCase {
         schedule: sc.schedule,
         sigaaCourse: sc,
         aprenderCourses: linkedAprender,
+        teamsCourses: linkedTeams,
         url: sc.url,
         unreadCount: totalUnread,
         pendingAssignmentsCount: totalPending,
       };
     });
 
-    // Se houver outras plataformas (como Teams), inclui no rol
-    for (const oc of otherCourses) {
-      disciplines.push({
-        id: oc.id,
-        code: oc.code,
-        name: oc.name,
-        semester: oc.semester,
-        professor: oc.professor,
-        classroom: oc.classroom,
-        schedule: oc.schedule,
-        aprenderCourses: [],
-        url: oc.url,
-        unreadCount: oc.unreadCount || 0,
-        pendingAssignmentsCount: oc.pendingAssignmentsCount || 0,
-      });
-    }
-
     disciplines.sort((a, b) => a.name.localeCompare(b.name));
 
     return {
       disciplines,
+      unmatchedCourses: [...unmatchedAprenderCourses, ...unmatchedTeamsCourses],
       unmatchedAprenderCourses,
+      otherCourses,
     };
   }
 
