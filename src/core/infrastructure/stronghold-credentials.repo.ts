@@ -24,7 +24,8 @@ let hasHydratedFromVault = false;
 let sharedHydratePromise: Promise<void> | null = null;
 
 export class StrongholdCredentialsRepository implements ICredentialsRepository {
-  private vaultPassword = 'unb-aggregator-internal-vault-key';
+  private vaultPassword = 'sarue-unb-internal-vault-key';
+  private legacyVaultPassword = 'unb-aggregator-internal-vault-key';
 
   private async getStore() {
     if (!isTauriEnvironment()) return null;
@@ -52,7 +53,15 @@ export class StrongholdCredentialsRepository implements ICredentialsRepository {
 
         let stronghold = sharedCachedStronghold;
         if (!stronghold) {
-          stronghold = await Stronghold.load(vaultPath, this.vaultPassword);
+          try {
+            stronghold = await Stronghold.load(vaultPath, this.vaultPassword);
+          } catch {
+            try {
+              stronghold = await Stronghold.load(vaultPath, this.legacyVaultPassword);
+            } catch {
+              stronghold = await Stronghold.load(vaultPath, this.vaultPassword);
+            }
+          }
           sharedCachedStronghold = stronghold;
         }
 

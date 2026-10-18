@@ -30,7 +30,7 @@ export class TauriGradeRepository implements IGradeRepository {
   private async getDb(): Promise<Database | null> {
     try {
       const { default: Database } = await import('@tauri-apps/plugin-sql');
-      const db = await Database.load('sqlite:unb_aggregator.db');
+      const db = await Database.load('sqlite:sarue_unb.db');
       await db.execute(`
         CREATE TABLE IF NOT EXISTS saved_grades (
           id TEXT PRIMARY KEY,

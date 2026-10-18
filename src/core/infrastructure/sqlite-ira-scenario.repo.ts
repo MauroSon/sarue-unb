@@ -10,7 +10,7 @@ function isTauriEnvironment(): boolean {
 
 const SCENARIO_ROW_ID = 'current';
 
-// Cache global da conexão (mesmo banco unb_aggregator.db do feed)
+// Cache global da conexão (mesmo banco sarue_unb.db do feed)
 let cachedDbPromise: Promise<Database | null> | null = null;
 
 // Espelho em memória para ambientes sem Tauri (prévia web e testes)
@@ -23,7 +23,7 @@ async function getDatabase(): Promise<Database | null> {
     cachedDbPromise = (async () => {
       try {
         const { default: Database } = await import('@tauri-apps/plugin-sql');
-        const db = await Database.load('sqlite:unb_aggregator.db');
+        const db = await Database.load('sqlite:sarue_unb.db');
         await db.execute(`
           CREATE TABLE IF NOT EXISTS ira_scenario (
             id TEXT PRIMARY KEY,

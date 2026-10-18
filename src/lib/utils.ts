@@ -6,7 +6,7 @@ export function cn(...inputs: ClassValue[]): string {
 }
 
 /** Evento DOM para navegação entre tabs a partir de componentes sem acesso ao estado do App. */
-export const NAVIGATE_EVENT = 'unb-aggregator:navigate';
+export const NAVIGATE_EVENT = 'sarue:navigate';
 
 export function navigateToTab(tab: string): void {
   if (typeof window === 'undefined') return;

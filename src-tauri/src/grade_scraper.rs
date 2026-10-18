@@ -4,7 +4,7 @@ use tokio::sync::RwLock;
 
 const CDN_BASE_URL: &str = "https://raw.githubusercontent.com/kalebhenrique/unb-aggregator/gh-pages/data";
 const GITHUB_PAGES_BASE_URL: &str = "https://kalebhenrique.github.io/unb-aggregator/data";
-const USER_AGENT: &str = "UnB-Aggregator/0.1.0 (Desktop App; Tauri)";
+const USER_AGENT: &str = "Sarue-UnB/0.1.0 (Desktop App; Tauri)";
 
 // Cache em memória para evitar múltiplos downloads de classes.json durante a sessão
 static CLASSES_CACHE: OnceLock<RwLock<Option<Vec<ScrapedDiscipline>>>> = OnceLock::new();

@@ -74,7 +74,7 @@ pub fn run() {
         })
         .invoke_handler(builder.invoke_handler())
         .run(tauri::generate_context!())
-        .expect("erro durante a execução do aplicativo UnB Aggregator");
+        .expect("erro durante a execução do aplicativo Saruê UnB");
 }
 
 #[cfg(test)]

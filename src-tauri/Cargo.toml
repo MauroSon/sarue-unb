@@ -1,5 +1,5 @@
 [package]
-name = "unb_aggregator"
+name = "sarue_unb"
 version = "0.1.0"
 description = "Saruê UnB Desktop App"
 authors = ["UnB Open Source Contributors"]
@@ -7,7 +7,7 @@ license = "Apache-2.0"
 edition = "2021"
 
 [lib]
-name = "unb_aggregator_lib"
+name = "sarue_unb_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [build-dependencies]

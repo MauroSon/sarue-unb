@@ -2,5 +2,5 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 fn main() {
-    unb_aggregator_lib::run();
+    sarue_unb_lib::run();
 }

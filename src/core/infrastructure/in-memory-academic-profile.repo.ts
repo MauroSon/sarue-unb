@@ -6,7 +6,8 @@ import type {
   SigaaHistoryRawResponse,
 } from '../domain/interfaces/academic-profile-repo.interface';
 
-const STORAGE_KEY = 'unb_aggregator_academic_profile_v1';
+const STORAGE_KEY = 'sarue_academic_profile_v1';
+const LEGACY_STORAGE_KEY = 'unb_aggregator_academic_profile_v1';
 
 let sharedCurriculaCache: CurriculumStructure[] | null = null;
 let sharedCurriculaPromise: Promise<CurriculumStructure[]> | null = null;
@@ -22,7 +23,7 @@ export class InMemoryAcademicProfileRepository implements IAcademicProfileReposi
 
     if (typeof localStorage !== 'undefined') {
       try {
-        const raw = localStorage.getItem(STORAGE_KEY);
+        const raw = localStorage.getItem(STORAGE_KEY) || localStorage.getItem(LEGACY_STORAGE_KEY);
         if (raw) {
           const parsed = JSON.parse(raw) as StudentAcademicProfile;
           this.profileInMemory = parsed;
@@ -48,6 +49,7 @@ export class InMemoryAcademicProfileRepository implements IAcademicProfileReposi
     if (typeof localStorage !== 'undefined') {
       try {
         localStorage.removeItem(STORAGE_KEY);
+        localStorage.removeItem(LEGACY_STORAGE_KEY);
       } catch {}
     }
   }

@@ -61,7 +61,7 @@ export async function getDatabase(): Promise<Database | null> {
     cachedDbPromise = (async () => {
       try {
         const { default: Database } = await import('@tauri-apps/plugin-sql');
-        const db = await Database.load('sqlite:unb_aggregator.db');
+        const db = await Database.load('sqlite:sarue_unb.db');
 
         // Cria a tabela de disciplinas (courses)
         await db.execute(`

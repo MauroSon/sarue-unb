@@ -60,7 +60,10 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
         localStorage.removeItem("unb_grade_deptId");
         localStorage.removeItem("unb_grade_year");
         localStorage.removeItem("unb_grade_period");
+        localStorage.removeItem("sarue_academic_profile_v1");
         localStorage.removeItem("unb_aggregator_academic_profile_v1");
+        localStorage.removeItem("sarue_ira_scenario_v1");
+        localStorage.removeItem("unb_aggregator_ira_scenario_v1");
       } catch {}
       // 6. Fecha o diálogo e redireciona imediatamente para o onboarding
       setIsConfirmDialogOpen(false);

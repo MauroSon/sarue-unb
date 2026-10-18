@@ -3,7 +3,8 @@ import type { IIraScenarioRepository } from '../domain/interfaces/ira-scenario-r
 
 // Espelho em localStorage para a prévia web (fora do Tauri): o cenário sobrevive
 // a recarregamentos no dev, sem banco.
-const STORAGE_KEY = 'unb_aggregator_ira_scenario_v1';
+const STORAGE_KEY = 'sarue_ira_scenario_v1';
+const LEGACY_STORAGE_KEY = 'unb_aggregator_ira_scenario_v1';
 
 export class InMemoryIraScenarioRepository implements IIraScenarioRepository {
   private scenarioInMemory: IraScenario | null | undefined;
@@ -15,7 +16,7 @@ export class InMemoryIraScenarioRepository implements IIraScenarioRepository {
 
     if (typeof localStorage !== 'undefined') {
       try {
-        const raw = localStorage.getItem(STORAGE_KEY);
+        const raw = localStorage.getItem(STORAGE_KEY) || localStorage.getItem(LEGACY_STORAGE_KEY);
         if (raw) {
           const parsed = JSON.parse(raw) as IraScenario;
           this.scenarioInMemory = parsed;
@@ -41,6 +42,7 @@ export class InMemoryIraScenarioRepository implements IIraScenarioRepository {
     if (typeof localStorage !== 'undefined') {
       try {
         localStorage.removeItem(STORAGE_KEY);
+        localStorage.removeItem(LEGACY_STORAGE_KEY);
       } catch {}
     }
   }
