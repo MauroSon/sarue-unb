@@ -158,75 +158,87 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   return (
     <aside
-      className={`group h-screen bg-white border-r-2 border-black flex flex-col justify-between transition-[width] duration-200 select-none z-20 shrink-0 ${
+      className={`group h-screen bg-white border-r-2 border-black flex flex-col justify-between transition-[width] duration-300 ease-[cubic-bezier(0.2,0,0,1)] select-none z-20 shrink-0 overflow-x-hidden ${
         isCollapsed ? "w-20" : "w-64"
       }`}
     >
       {/* Topo da Sidebar */}
       <div>
         {/* Header da Sidebar */}
-        <div className="p-4 border-b-2 border-black flex items-center justify-between min-h-[69px]">
-          {!isCollapsed ? (
-            <>
-              {/* Quando expandido: Logo e nome */}
+        <div className="p-4 border-b-2 border-black flex items-center justify-between min-h-[69px] overflow-hidden">
+          <div className="flex items-center min-w-0 flex-1">
+            {/* Logo e Botão de Expandir no hover quando colapsado */}
+            <div className="relative shrink-0 flex items-center justify-center">
               <button
                 type="button"
                 onClick={() => onSelectTab("home")}
                 title="Ir para a Home"
                 aria-label="Ir para a Home"
-                className="cursor-pointer flex items-center gap-3 min-w-0 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-neo-blue focus-visible:ring-offset-2"
+                className={`cursor-pointer w-[42px] h-[42px] border-2 border-black rounded-xl overflow-hidden shadow-[2px_2px_0px_0px_#000] focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-neo-blue focus-visible:ring-offset-2 flex items-center justify-center bg-white transition-opacity duration-200 ${
+                  isCollapsed ? "group-hover:opacity-0" : "opacity-100"
+                }`}
               >
                 <img
                   src="/sarue-logo.png"
                   alt="Saruê UnB"
-                  className="w-[42px] h-[42px] object-cover border-2 border-black rounded-xl shrink-0 shadow-[2px_2px_0px_0px_#000]"
+                  className="w-full h-full object-cover select-none pointer-events-none"
                 />
-                <span className="font-extrabold text-base tracking-tight truncate text-black">
-                  Saruê <span className="text-[#468AFB]">UnB</span>
-                </span>
               </button>
 
-              {/* Botão de Colapsar: só visível no hover-group da sidebar */}
-              <button
-                type="button"
-                onClick={onToggleCollapse}
-                title="Recolher barra lateral"
-                className="cursor-pointer p-1.5 border-2 border-black rounded-lg bg-white hover:bg-neutral-100 text-black shadow-[2px_2px_0px_0px_#000] focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-neo-blue focus-visible:ring-offset-2 hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-[transform,box-shadow,background-color,border-color] opacity-0 group-hover:opacity-100"
-              >
-                <PanelLeftClose className="w-4 h-4 stroke-[2.5]" />
-              </button>
-            </>
-          ) : (
-            /* Quando colapsado: normal exibe o ícone da plataforma, no hover-group substitui pelo botão de expandir */
-            <div className="w-full flex justify-center">
-              {/* Ícone da plataforma (visível por padrão, oculto no hover-group) */}
-              <div className="flex group-hover:hidden items-center justify-center">
-                <button
-                  type="button"
-                  onClick={() => onSelectTab("home")}
-                  title="Ir para a Home"
-                  aria-label="Ir para a Home"
-                  className="cursor-pointer w-[42px] h-[42px] border-2 border-black rounded-xl overflow-hidden shadow-[2px_2px_0px_0px_#000] focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-neo-blue focus-visible:ring-offset-2 flex items-center justify-center bg-white"
-                >
-                  <img
-                    src="/sarue-logo.png"
-                    alt="Saruê UnB"
-                    className="w-full h-full object-cover"
-                  />
-                </button>
-              </div>
-
-              {/* Botão de Expandir (oculto por padrão, substitui o ícone no hover-group) */}
+              {/* Botão de Expandir: visível no hover apenas quando colapsado */}
               <button
                 type="button"
                 onClick={onToggleCollapse}
                 title="Expandir barra lateral"
-                className="cursor-pointer hidden group-hover:flex w-[42px] h-[42px] items-center justify-center border-2 border-black rounded-lg bg-neo-blue hover:bg-neo-blueHover text-white shadow-[2px_2px_0px_0px_#000] focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-neo-blue focus-visible:ring-offset-2 hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-[transform,box-shadow,background-color,border-color]"
+                aria-label="Expandir barra lateral"
+                className={`cursor-pointer absolute inset-0 w-[42px] h-[42px] items-center justify-center border-2 border-black rounded-xl bg-neo-blue hover:bg-neo-blueHover text-white shadow-[2px_2px_0px_0px_#000] focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-neo-blue focus-visible:ring-offset-2 transition-opacity duration-200 flex ${
+                  isCollapsed
+                    ? "opacity-0 group-hover:opacity-100"
+                    : "opacity-0 pointer-events-none"
+                }`}
               >
                 <PanelLeftOpen className="w-5 h-5 stroke-[2.5]" />
               </button>
             </div>
-          )}
+
+            {/* Texto Saruê UnB com expansão/colapso suave */}
+            <div
+              className={`overflow-hidden transition-[max-width,opacity,margin] duration-300 ease-[cubic-bezier(0.2,0,0,1)] ${
+                isCollapsed
+                  ? "max-w-0 opacity-0 ml-0 pointer-events-none"
+                  : "max-w-[150px] opacity-100 ml-3"
+              }`}
+            >
+              <button
+                type="button"
+                onClick={() => onSelectTab("home")}
+                title="Ir para a Home"
+                className="cursor-pointer text-left block focus-visible:outline-hidden"
+              >
+                <span className="font-extrabold text-base tracking-tight whitespace-nowrap text-black block truncate">
+                  Saruê <span className="text-[#468AFB]">UnB</span>
+                </span>
+              </button>
+            </div>
+          </div>
+
+          {/* Botão de Colapsar: visível no hover apenas quando expandido */}
+          <div
+            className={`flex items-center justify-center transition-[max-width,opacity,margin,padding] duration-300 ease-[cubic-bezier(0.2,0,0,1)] ${
+              isCollapsed
+                ? "max-w-0 p-0 opacity-0 ml-0 pointer-events-none overflow-hidden"
+                : "max-w-12 p-1 opacity-0 group-hover:opacity-100 ml-1 overflow-visible"
+            }`}
+          >
+            <button
+              type="button"
+              onClick={onToggleCollapse}
+              title="Recolher barra lateral"
+              className="cursor-pointer p-1.5 border-2 border-black rounded-lg bg-white hover:bg-neutral-100 text-black shadow-[2px_2px_0px_0px_#000] focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-neo-blue focus-visible:ring-offset-2 hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-[transform,box-shadow,background-color,border-color]"
+            >
+              <PanelLeftClose className="w-4 h-4 stroke-[2.5]" />
+            </button>
+          </div>
         </div>
 
         {/* Lista de Navegação - Estilo Opção 1 (Ledger/Binder full-bleed neobrutalism.dev) */}
@@ -246,22 +258,24 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     onClick={() => onSelectTab(item.id)}
                     title={item.label}
                     aria-current={isActive ? "page" : undefined}
-                    className={`cursor-pointer w-full flex items-center select-none focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-neo-blue focus-visible:ring-offset-2 focus-visible:ring-offset-white transition-colors duration-150 ${
-                      isCollapsed
-                        ? "justify-center py-3.5 px-2"
-                        : "gap-3 px-4 py-3.5 text-left"
-                    } ${
+                    className={`cursor-pointer w-full flex items-center select-none focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-neo-blue focus-visible:ring-offset-2 focus-visible:ring-offset-white transition-colors duration-150 py-3.5 px-4 overflow-hidden ${
                       isActive
                         ? "bg-neo-blue text-white font-black"
                         : "bg-white text-neutral-800 hover:bg-neutral-100 font-bold"
                     }`}
                   >
-                    <Icon className="w-5 h-5 shrink-0 stroke-[2.5]" />
-                    {!isCollapsed ? (
-                      <span className="text-sm font-extrabold tracking-tight">
-                        {item.label}
-                      </span>
-                    ) : null}
+                    <div className="w-[42px] h-6 shrink-0 flex items-center justify-center">
+                      <Icon className="w-5 h-5 stroke-[2.5]" />
+                    </div>
+                    <span
+                      className={`text-sm font-extrabold tracking-tight whitespace-nowrap overflow-hidden transition-[max-width,opacity,margin] duration-300 ease-[cubic-bezier(0.2,0,0,1)] ${
+                        isCollapsed
+                          ? "max-w-0 opacity-0 ml-0 pointer-events-none"
+                          : "max-w-44 opacity-100 ml-3"
+                      }`}
+                    >
+                      {item.label}
+                    </span>
                   </button>
                 </li>
               );
@@ -271,50 +285,20 @@ export const Sidebar: React.FC<SidebarProps> = ({
       </div>
 
       {/* Canto Inferior da Sidebar: Botão de Sincronizar com Efeito Macio */}
-      <div className="p-3 border-t-2 border-black">
-        {!isCollapsed ? (
-          <div className="space-y-2">
-            <div className="flex items-center gap-2">
-              <PopoverPrimitive.Root
-                open={syncPopoverOpenValue}
-                onOpenChange={handleSyncPopoverOpenChange}
-              >
-                <PopoverPrimitive.Trigger
-                  type="button"
-                  disabled={!hasConnectedAccounts}
-                  onMouseEnter={openSyncPanel}
-                  onMouseLeave={scheduleSyncPanelClose}
-                  onClick={handleSyncTriggerClick}
-                  className={`min-w-0 flex-1 flex items-center justify-center gap-2 py-2.5 px-4 font-bold text-xs rounded-2xl border-2 transition-[transform,box-shadow,background-color,border-color] duration-150 ease-out select-none ${
-                    !hasConnectedAccounts
-                      ? "bg-neutral-200 text-neutral-400 border-neutral-300 cursor-not-allowed shadow-none"
-                      : "cursor-pointer bg-neo-blue hover:bg-neo-blueHover text-white border-black focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-neo-blue focus-visible:ring-offset-2 focus-visible:ring-offset-white shadow-[2px_2px_0px_0px_#000] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
-                  }`}
-                >
-                  <RefreshCw
-                    className={`w-4 h-4 stroke-[2.5] ${isSyncing || activeSyncStep ? "animate-spin" : ""}`}
-                  />
-                  <span>{isSyncing ? "Sincronizando..." : "Sincronizar"}</span>
-                </PopoverPrimitive.Trigger>
-                <PopoverPrimitive.Portal>
-                  <PopoverPrimitive.Positioner
-                    side="top"
-                    align="center"
-                    sideOffset={8}
-                    className="z-50"
-                  >
-                    {syncPanel}
-                  </PopoverPrimitive.Positioner>
-                </PopoverPrimitive.Portal>
-              </PopoverPrimitive.Root>
-              <DeadlineBell />
-            </div>
-            <p className="text-[11px] text-neutral-500 font-semibold text-center truncate">
-              {formatLastSync(lastSyncedAt)}
-            </p>
-          </div>
-        ) : (
-          <div className="flex flex-col items-center gap-2">
+      <div className="p-4 border-t-2 border-black overflow-hidden">
+        <div
+          className={`relative transition-[height] duration-300 ease-[cubic-bezier(0.2,0,0,1)] ${
+            isCollapsed ? "h-[88px]" : "h-10"
+          }`}
+        >
+          {/* Botão de Sincronizar com Popover */}
+          <div
+            className={`absolute top-0 transition-[width,left,transform] duration-300 ease-[cubic-bezier(0.2,0,0,1)] ${
+              isCollapsed
+                ? "left-1/2 -translate-x-1/2 w-10"
+                : "left-0 translate-x-0 w-[calc(100%-48px)]"
+            }`}
+          >
             <PopoverPrimitive.Root
               open={syncPopoverOpenValue}
               onOpenChange={handleSyncPopoverOpenChange}
@@ -327,30 +311,57 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 onMouseEnter={openSyncPanel}
                 onMouseLeave={scheduleSyncPanelClose}
                 onClick={handleSyncTriggerClick}
-                className={`w-10 h-10 flex items-center justify-center rounded-2xl border-2 transition-[transform,box-shadow,background-color,border-color] duration-150 ease-out select-none ${
+                className={`w-full h-10 flex items-center justify-center font-bold text-xs rounded-2xl border-2 transition-[transform,box-shadow,background-color,border-color] duration-150 select-none ${
                   !hasConnectedAccounts
                     ? "bg-neutral-200 text-neutral-400 border-neutral-300 cursor-not-allowed shadow-none"
                     : "cursor-pointer bg-neo-blue hover:bg-neo-blueHover text-white border-black focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-neo-blue focus-visible:ring-offset-2 focus-visible:ring-offset-white shadow-[2px_2px_0px_0px_#000] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
                 }`}
               >
                 <RefreshCw
-                  className={`w-4 h-4 stroke-[2.5] ${isSyncing || activeSyncStep ? "animate-spin" : ""}`}
+                  className={`w-4 h-4 shrink-0 stroke-[2.5] ${isSyncing || activeSyncStep ? "animate-spin" : ""}`}
                 />
+                <span
+                  className={`whitespace-nowrap overflow-hidden transition-[max-width,opacity,margin] duration-300 ease-[cubic-bezier(0.2,0,0,1)] ${
+                    isCollapsed ? "max-w-0 opacity-0 ml-0 pointer-events-none" : "max-w-32 opacity-100 ml-1.5"
+                  }`}
+                >
+                  {isSyncing ? "Sincronizando..." : "Sincronizar"}
+                </span>
               </PopoverPrimitive.Trigger>
               <PopoverPrimitive.Portal>
                 <PopoverPrimitive.Positioner
-                  side="right"
-                  align="center"
-                  sideOffset={12}
+                  side={isCollapsed ? "right" : "top"}
+                  align={isCollapsed ? "center" : "start"}
+                  sideOffset={isCollapsed ? 12 : 8}
                   className="z-50"
                 >
                   {syncPanel}
                 </PopoverPrimitive.Positioner>
               </PopoverPrimitive.Portal>
             </PopoverPrimitive.Root>
+          </div>
+
+          {/* Sino de Notificações / Prazos */}
+          <div
+            className={`absolute transition-[top,left,transform] duration-300 ease-[cubic-bezier(0.2,0,0,1)] ${
+              isCollapsed
+                ? "top-12 left-1/2 -translate-x-1/2"
+                : "top-0 left-[calc(100%-40px)] translate-x-0"
+            }`}
+          >
             <DeadlineBell />
           </div>
-        )}
+        </div>
+
+        <div
+          className={`overflow-hidden transition-[max-height,opacity,margin] duration-300 ease-[cubic-bezier(0.2,0,0,1)] ${
+            isCollapsed ? "max-h-0 opacity-0 mt-0 pointer-events-none" : "max-h-6 opacity-100 mt-2"
+          }`}
+        >
+          <p className="text-[11px] text-neutral-500 font-semibold text-center truncate">
+            {formatLastSync(lastSyncedAt)}
+          </p>
+        </div>
       </div>
     </aside>
   );
