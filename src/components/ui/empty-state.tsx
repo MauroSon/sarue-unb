@@ -2,8 +2,8 @@ import React from "react";
 import type { LucideIcon } from "lucide-react";
 
 export interface EmptyStateProps {
-  /** Ícone principal do estado vazio (lucide-react). */
-  icon: LucideIcon;
+  /** Ícone opcional do estado vazio (lucide-react). */
+  icon?: LucideIcon;
   /** Título curto em negrito. */
   title: string;
   /** Texto de apoio: explica o estado e aponta o próximo passo. */
@@ -14,11 +14,15 @@ export interface EmptyStateProps {
   iconClassName?: string;
   /** Classes extras no container (ex: margens externas). */
   className?: string;
+  /** Se o mascote Saruê em dúvida deve ser exibido. Padrão: true. */
+  showMascot?: boolean;
+  /** Caminho da imagem do mascote. Padrão: /sarue-doubt.png. */
+  mascotSrc?: string;
 }
 
 /**
  * Estado vazio padronizado do mural (@DESIGN.md): card branco com borda
- * preta, sombra dura e ícone em quadro de material escolar.
+ * preta, sombra dura, mascote Saruê em dúvida e ícone contextual.
  */
 export const EmptyState: React.FC<EmptyStateProps> = ({
   icon: Icon,
@@ -27,16 +31,22 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
   action,
   iconClassName = "bg-pastel-yellow text-black",
   className = "",
+  showMascot = true,
+  mascotSrc = "/sarue-doubt.png",
 }) => {
   return (
     <div
       className={`bg-white border-2 border-black rounded-xl p-8 text-center shadow-neo ${className}`}
     >
-      <div
-        className={`w-12 h-12 border-2 border-black rounded-xl flex items-center justify-center mx-auto mb-3 shadow-neo-sm ${iconClassName}`}
-      >
-        <Icon className="w-6 h-6 stroke-[2.5]" />
-      </div>
+      {showMascot ? (
+        <div className="relative mx-auto mb-4 flex items-center justify-center">
+          <img
+            src={mascotSrc}
+            alt="Mascote Saruê em dúvida"
+            className="w-36 h-36 md:w-44 md:h-44 object-contain select-none pointer-events-none"
+          />
+        </div>
+      ) : null}
 
       <h3 className="text-base font-black text-black mb-1.5">{title}</h3>
 

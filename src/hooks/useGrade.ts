@@ -144,7 +144,12 @@ export function useGrade() {
   const [calendar, setCalendar] = useState<AcademicCalendar | null>(null);
   const [isSemesterStarted, setIsSemesterStarted] = useState<boolean>(true);
   const [isCurrentSemesterMode, setIsCurrentSemesterMode] = useState<boolean>(false);
-  const hasInitializedEnrolledRef = useRef(false);
+  // Assinatura das turmas matriculadas já aplicadas na grade + flag de edição manual.
+  // A auto-aplicação re-sincroniza quando os dados melhoram em ondas (feed do SIGAA
+  // chega antes do catálogo completo raspado da rede), mas para de intervir assim que
+  // o usuário edita a grade por conta própria.
+  const appliedEnrolledSignatureRef = useRef('');
+  const hasEditedGradeRef = useRef(false);
 
   // Disciplinas atualmente matriculadas no Meu Curso
   const enrolledDisciplines = useMemo(() => {
@@ -165,13 +170,24 @@ export function useGrade() {
       // 1. Procura no catálogo allDisciplines por código exato
       const scrapedDisc = allDisciplines.find((ad) => ad.code.toUpperCase() === d.code.toUpperCase());
 
-      // Procura dados complementares no feed de turmas SIGAA (se houver schedule extraído)
-      const matchedFeedCourse = feedCourses.find(
-        (c) =>
-          c.code.toUpperCase().includes(d.code.toUpperCase()) ||
-          c.name.toUpperCase().includes(d.name.toUpperCase()) ||
-          d.name.toUpperCase().includes(c.name.toUpperCase())
-      );
+      // Procura dados complementares no feed de turmas SIGAA (se houver schedule extraído).
+      // Ordem: código exato, nome exato (normalizado sem acento/caixa) e, por último,
+      // inclusão de nome — mas apenas quando aponta para UM único curso do feed. Include
+      // ambíguo (ex.: "ESTRUTURAS DE DADOS" casa teoria e "LABORATÓRIO DE ESTRUTURAS DE
+      // DADOS") ficaria com o horário da turma errada e fabricaria conflito inexistente.
+      const normCode = normalizeText(d.code);
+      const normName = normalizeText(d.name);
+      const matchedFeedCourse =
+        feedCourses.find((c) => normalizeText(c.code) === normCode) ??
+        feedCourses.find((c) => normalizeText(c.name) === normName) ??
+        (() => {
+          const partial = feedCourses.filter(
+            (c) =>
+              normalizeText(c.name).includes(normName) ||
+              normName.includes(normalizeText(c.name))
+          );
+          return partial.length === 1 ? partial[0] : undefined;
+        })();
 
       let matchedClass: ScrapedClass | undefined;
 
@@ -244,18 +260,26 @@ export function useGrade() {
   }, [container, year, period]);
 
   // Se o aluno tiver conta conectada com Meu Curso ativado:
-  // Inicializa com as turmas matriculadas do semestre atual no modo compactado
+  // inicializa com as turmas matriculadas do semestre atual no modo compactado.
+  // Re-aplica sempre que as turmas matriculadas mudarem de composição enquanto a
+  // grade ainda espelha as matrículas — o primeiro snapshot pode ter horários
+  // reconstruídos do feed, antes do catálogo completo chegar da rede. Para de
+  // intervir assim que o usuário edita a grade (toggleClass, solver, limpar etc.).
   useEffect(() => {
-    if (
-      !hasInitializedEnrolledRef.current &&
-      hasConnectedAccount &&
-      isMyCourseActive &&
-      currentEnrolledClasses.length > 0
-    ) {
-      hasInitializedEnrolledRef.current = true;
-      setSelectedClasses(currentEnrolledClasses);
-      setIsCurrentSemesterMode(true);
-    }
+    if (!hasConnectedAccount || !isMyCourseActive) return;
+    if (currentEnrolledClasses.length === 0) return;
+    if (hasEditedGradeRef.current) return;
+
+    const signature = currentEnrolledClasses
+      .map((c) => c.id)
+      .sort()
+      .join('|');
+
+    if (signature === appliedEnrolledSignatureRef.current) return;
+
+    appliedEnrolledSignatureRef.current = signature;
+    setSelectedClasses(currentEnrolledClasses);
+    setIsCurrentSemesterMode(true);
   }, [hasConnectedAccount, isMyCourseActive, currentEnrolledClasses]);
 
   const hasSemesterAlert = Boolean(
@@ -267,6 +291,11 @@ export function useGrade() {
       setFeedbackMessage('Nenhuma turma matriculada disponível para restaurar agora.');
       return;
     }
+    hasEditedGradeRef.current = false;
+    appliedEnrolledSignatureRef.current = currentEnrolledClasses
+      .map((c) => c.id)
+      .sort()
+      .join('|');
     setSelectedClasses(currentEnrolledClasses);
     setIsCurrentSemesterMode(true);
     // Opções antigas do solver não correspondem mais à grade restaurada
@@ -279,6 +308,7 @@ export function useGrade() {
   }, [currentEnrolledClasses]);
 
   const startNewPlanning = useCallback(() => {
+    hasEditedGradeRef.current = true;
     setSelectedClasses([]);
     setIsCurrentSemesterMode(false);
     setFeedbackMessage('Grade limpa para novo planejamento!');
@@ -510,6 +540,7 @@ export function useGrade() {
 
   // Adiciona ou remove turma
   const toggleClass = useCallback((cls: ScrapedClass) => {
+    hasEditedGradeRef.current = true;
     setIsCurrentSemesterMode(false);
     setSelectedClasses((prev) => {
       const exists = prev.some((c) => c.id === cls.id);
@@ -524,11 +555,13 @@ export function useGrade() {
   }, []);
 
   const removeClass = useCallback((classId: string) => {
+    hasEditedGradeRef.current = true;
     setIsCurrentSemesterMode(false);
     setSelectedClasses((prev) => prev.filter((c) => c.id !== classId));
   }, []);
 
   const clearGrade = useCallback(() => {
+    hasEditedGradeRef.current = true;
     setIsCurrentSemesterMode(false);
     setSelectedClasses([]);
     setConflicts([]);
@@ -545,6 +578,7 @@ export function useGrade() {
         return;
       }
 
+      hasEditedGradeRef.current = true;
       setIsSolving(true);
       setFeedbackMessage(null);
 
@@ -587,6 +621,7 @@ export function useGrade() {
   const applyOption = useCallback(
     (index: number) => {
       if (index >= 0 && index < scheduleOptions.length) {
+        hasEditedGradeRef.current = true;
         setCurrentOptionIndex(index);
         setSelectedClasses(scheduleOptions[index].classes);
       }

@@ -1,7 +1,7 @@
 [package]
 name = "unb_aggregator"
 version = "0.1.0"
-description = "UnB Aggregator Desktop App"
+description = "Saruê UnB Desktop App"
 authors = ["UnB Open Source Contributors"]
 license = "Apache-2.0"
 edition = "2021"

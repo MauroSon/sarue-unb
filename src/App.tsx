@@ -10,6 +10,7 @@ import { TooltipProvider, Toaster } from '@/components/ui';
 import { useCredentials } from './hooks/useCredentials';
 import { SyncProvider, useSync } from './context/SyncContext';
 import { DeadlineProvider } from './context/DeadlineContext';
+import { WelcomeSyncDialog } from './components/onboarding/WelcomeSyncDialog';
 import { useContainer } from './context/ContainerContext';
 import { NAVIGATE_EVENT } from './lib/utils';
 
@@ -17,8 +18,15 @@ type AppStep = 'onboarding' | 'main';
 
 const AppShell: React.FC = () => {
   const { repos } = useContainer();
-  const { hasCredentials, isLoading: isCheckingAuth } = useCredentials();
+  const { hasCredentials, isLoading: isCheckingAuth, allCredentials } = useCredentials();
   const { syncAll, isSyncing, lastSyncedAt, steps: syncSteps } = useSync();
+
+  // Plataformas de fato conectadas (ordem do cofre), para o dialog de boas-vindas
+  const connectedPlatforms = [
+    allCredentials.sigaa ? 'SIGAA' : null,
+    allCredentials.aprender3 ? 'Aprender 3' : null,
+    allCredentials.teams?.isConnected ? 'Microsoft Teams' : null,
+  ].filter((p): p is string => Boolean(p));
 
   const [step, setStep] = useState<AppStep>('onboarding');
   const [currentTab, setCurrentTab] = useState<NavTab>('home');
@@ -27,6 +35,10 @@ const AppShell: React.FC = () => {
   // feed (SQLite persistente) provam uma sessão anterior, mesmo que o cofre
   // de credenciais esteja vazio ou indisponível.
   const [hasLocalData, setHasLocalData] = useState<boolean | null>(null);
+  // Ritual pós-cadastro: dialog de boas-vindas abre ao entrar; ao dispensá-lo,
+  // o popover de andamento abre ancorado no botão de Sincronização da Sidebar.
+  const [welcomeOpen, setWelcomeOpen] = useState(false);
+  const [syncPopoverOpen, setSyncPopoverOpen] = useState(false);
 
   React.useEffect(() => {
     let cancelled = false;
@@ -86,9 +98,11 @@ const AppShell: React.FC = () => {
   if ((isCheckingAuth || hasLocalData === null) && !bootstrapped.current) {
     return (
       <div className="min-h-screen bg-canvas bg-grid flex flex-col items-center justify-center space-y-4">
-        <div className="w-12 h-12 bg-unb-blue text-white border-2 border-black rounded-lg flex items-center justify-center font-black text-lg shadow-[4px_4px_0px_0px_#000]">
-          UnB
-        </div>
+        <img
+          src="/sarue-logo.png"
+          alt="Saruê UnB"
+          className="w-12 h-12 object-cover border-2 border-black rounded-xl shadow-[4px_4px_0px_0px_#000]"
+        />
         <div className="inline-block animate-spin border-2 border-black border-t-transparent rounded-full h-6 w-6" />
         <p className="text-xs font-bold text-neutral-700">
           Verificando Cofre Seguro...
@@ -105,6 +119,8 @@ const AppShell: React.FC = () => {
       <OnboardingScreen
         onComplete={() => {
           setStep('main');
+          // Ritual pós-cadastro: dialog abre; popover abre quando o dialog é dispensado
+          setWelcomeOpen(true);
           syncAll();
         }}
         onExplore={() => setStep('main')}
@@ -127,6 +143,8 @@ const AppShell: React.FC = () => {
         lastSyncedAt={lastSyncedAt}
         hasConnectedAccounts={Boolean(hasCredentials)}
         syncSteps={syncSteps}
+        syncPopoverOpen={syncPopoverOpen}
+        onSyncPopoverOpenChange={setSyncPopoverOpen}
       />
 
       {/* Área Central de Conteúdo (Sem Header global, títulos direto no corpo) */}
@@ -146,6 +164,14 @@ const AppShell: React.FC = () => {
           )}
         </main>
       </div>
+      <WelcomeSyncDialog
+        open={welcomeOpen}
+        onOpenChange={(open) => {
+          setWelcomeOpen(open);
+          if (!open) setSyncPopoverOpen(true);
+        }}
+        platforms={connectedPlatforms}
+      />
     </div>
     </DeadlineProvider>
   );

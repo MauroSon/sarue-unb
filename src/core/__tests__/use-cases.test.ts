@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { createContainer } from '../container';
 
-describe('Clean Architecture Use Cases - UnB Aggregator', () => {
+describe('Clean Architecture Use Cases - Saruê UnB', () => {
   let container: ReturnType<typeof createContainer>;
 
   beforeEach(async () => {

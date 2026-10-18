@@ -1,5 +1,5 @@
 ---
-name: UnB Aggregator
+name: Saruê UnB
 description: Feed acadêmico unificado da UnB com visual de mural de adesivos — borda preta declarada, sombra dura sem blur, cores de material escolar
 colors:
   pen-blue: "#2563EB"
@@ -154,7 +154,7 @@ components:
     rounded: "4px"
 ---
 
-# Design System: UnB Aggregator
+# Design System: Saruê UnB
 
 ## Overview
 
@@ -232,7 +232,7 @@ Versões lavadas das cores de ação, usadas como fundo de cards variante e aler
 **Character:** Geométrica e arredondada, com personalidade de app jovem — o peso extremo (800, teto real da família Plus Jakarta Sans, variable 200–800; usos `font-black` renderizam 800) dá voz de marcador grosso, enquanto 500/600 mantêm corpo de produto legível.
 
 ### Hierarchy
-- **Display** (800, clamp(2.25rem, 5vw, 3rem), 1.1, tracking -0.02em): título de boas-vindas no onboarding ("UnB Aggregator"). Único momento de hero.
+- **Display** (800, clamp(2.25rem, 5vw, 3rem), 1.1, tracking -0.02em): título de boas-vindas no onboarding ("Saruê UnB"). Único momento de hero.
 - **Title** (800, 1.5rem, 1.25, tracking -0.01em): cabeçalho de página (PageHeader), com ícone azul de 24px ao lado.
 - **Heading** (700, 1.125rem, 1.4, tracking -0.01em): título de card (CardTitle).
 - **Body** (500, 0.875rem, 1.5): conteúdo de cards, descrições, itens de lista. Texto secundário em neutral-600/700 mesma faixa de tamanho.

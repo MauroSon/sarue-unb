@@ -355,7 +355,7 @@ export const PlatformAccountsAccordion: React.FC<
 
   const anyConnected = sigaaSaved || aprenderSaved || teamsConnected;
 
-  // Estado sobe para o footer do wizard (botão Entrar no Aggregator)
+  // Estado sobe para o footer do wizard (botão Entrar no Saruê)
   React.useEffect(() => {
     onActiveChange?.({
       connected: anyConnected,

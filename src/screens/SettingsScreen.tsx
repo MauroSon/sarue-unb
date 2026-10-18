@@ -150,6 +150,18 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
         </div>
       </Card>
 
+      {/* Mascote Saruê dormindo no final da página */}
+      <div className="pt-8 pb-4 flex flex-col items-center justify-center text-center">
+        <img
+          src="/sarue-sleep.png"
+          alt="Mascote Saruê dormindo"
+          className="w-48 md:w-60 h-auto object-contain select-none pointer-events-none"
+        />
+        <p className="text-xs font-bold text-neutral-500 mt-2">
+          Saruê UnB • Tudo configurado e seguro neste dispositivo
+        </p>
+      </div>
+
       {/* Diálogo de Confirmação */}
       <Dialog
         open={isConfirmDialogOpen}
@@ -173,7 +185,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
             </div>
             <DialogDescription>
               Esta ação é definitiva e irreversível. Todos os dados armazenados
-              do UnB Aggregator neste dispositivo serão permanentemente
+              do Saruê UnB neste dispositivo serão permanentemente
               excluídos.
             </DialogDescription>
           </DialogHeader>

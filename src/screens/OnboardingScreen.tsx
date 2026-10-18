@@ -94,9 +94,11 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
       <div className="w-full max-w-2xl mx-auto px-6 pt-6 flex items-center justify-between gap-4 shrink-0">
         <div className="flex-1 flex">
           {step > 1 && (
-            <div className="w-7 h-7 bg-unb-blue text-white border-2 border-black rounded-lg shadow-[2px_2px_0px_0px_#000] flex items-center justify-center">
-              <span className="text-[11px] font-black leading-none">UnB</span>
-            </div>
+            <img
+              src="/sarue-logo.png"
+              alt="Saruê UnB"
+              className="w-7 h-7 object-cover border-2 border-black rounded-lg shadow-[2px_2px_0px_0px_#000]"
+            />
           )}
         </div>
 
@@ -283,13 +285,16 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
                         ? { duration: 0 }
                         : { type: "spring", stiffness: 260, damping: 12 }
                     }
+                    className="flex justify-center"
                   >
-                    <div className="mx-auto w-[72px] h-[72px] bg-unb-blue text-white border-2 border-black rounded-2xl flex items-center justify-center shadow-[4px_4px_0px_0px_#000]">
-                      <span className="text-3xl font-black">UnB</span>
-                    </div>
+                    <img
+                      src="/sarue-logo.png"
+                      alt="Saruê UnB"
+                      className="w-20 h-20 md:w-24 md:h-24 object-cover border-2 border-black rounded-2xl shadow-[4px_4px_0px_0px_#000] select-none pointer-events-none"
+                    />
                   </motion.div>
                   <h1 className="text-4xl md:text-5xl font-black text-black tracking-tight">
-                    UnB <span className="text-unb-blue">Aggregator</span>
+                    Saruê <span className="text-unb-blue">UnB</span>
                   </h1>
                   <p className="text-base md:text-lg font-medium text-neutral-700 max-w-lg mx-auto">
                     Todas as suas plataformas acadêmicas reunidas em um único
@@ -454,7 +459,7 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
               }
             }}
           >
-            <span>Entrar no Aggregator</span>
+            <span>Entrar no Saruê</span>
             <ArrowRight className="w-5 h-5 stroke-[2.5]" />
           </Button>
         )}

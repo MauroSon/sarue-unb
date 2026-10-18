@@ -46,14 +46,15 @@ Restrições e undecided (trabalho futuro não deve tratá-los como promessa):
 
 ## Brand Commitments
 
-- Nome: **UnB Aggregator**.
+- Nome: **Saruê UnB**.
 - Idioma da UI: pt-BR, sempre.
-- Voz atual na copy: direta, informal-técnica, dirigida ao aluno ("suas plataformas acadêmicas reunidas").
+- Mascote: O Saruê (símbolo afetivo da UnB).
+- Voz atual na copy: direta, acolhedora e informal-técnica, dirigida ao aluno ("suas plataformas acadêmicas reunidas").
 
 ## Evidence on Hand
 
 - App funcional com todas as telas implementadas em `src/screens/`.
-- Nenhum asset de marca além do bloco-logo "UnB" renderizado em componente; sem logo arquivo, sem testemunhos, métricas ou cases. Trabalho futuro **não deve fabricar** depoimentos, números de usuários ou provas sociais.
+- Identidade visual com o mascote Saruê (`sarue-hi.png`, `sarue-doubt.png`, `sarue-logo.png`). Trabalho futuro **não deve fabricar** depoimentos, números de usuários ou provas sociais.
 
 ## Product Principles
 
