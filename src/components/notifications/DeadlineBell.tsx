@@ -125,8 +125,8 @@ const DeadlineRow: React.FC<{
 };
 
 /**
- * Sino de prazos no header de conteúdo: badge com pendências dentro de 48h
- * (atrasadas incluídas) e painel-inbox ancorado, agrupado por urgência.
+ * Sino de prazos no header de conteúdo: badge com as pendências da janela do
+ * painel (mesma contagem da lista) e painel-inbox ancorado, agrupado por urgência.
  */
 export const DeadlineBell: React.FC<{ className?: string }> = ({ className }) => {
   const { entries, badgeCount, refresh } = useDeadlines();
@@ -196,7 +196,7 @@ export const DeadlineBell: React.FC<{ className?: string }> = ({ className }) =>
             size="icon"
             aria-label={
               badgeCount > 0
-                ? `Prazos: ${badgeCount} pendência(s) em até 48h`
+                ? `Prazos: ${badgeCount} pendência(s)`
                 : 'Prazos'
             }
             className={cn('relative h-10 w-10 rounded-xl', className)}

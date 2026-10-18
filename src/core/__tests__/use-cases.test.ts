@@ -223,6 +223,70 @@ describe('Clean Architecture Use Cases - UnB Aggregator', () => {
       const fis2Clean = afterIgnored.disciplines.find((d) => d.name === 'FISICA 2');
       expect(fis2Clean?.aprenderCourses.some((c) => c.id === 'aprender-forum-geral')).toBe(false);
     });
+
+    it('deve associar equipes do Teams por sigla (SSTC, OAC) e direcionar turmas para a seção Outros', async () => {
+      await container.repos.feedRepo.saveCourses([
+        {
+          id: 'sigaa-sstc',
+          code: 'ENE0013',
+          name: 'SINAIS E SISTEMAS NO TEMPO CONTÍNUO',
+          semester: '2026.2',
+          platform: 'sigaa',
+        },
+        {
+          id: 'sigaa-oac',
+          code: 'CIC0099',
+          name: 'ORGANIZAÇÃO E ARQUITETURA DE COMPUTADORES',
+          semester: '2026.2',
+          platform: 'sigaa',
+        },
+        {
+          id: 'teams-sstc',
+          code: 'SSTC',
+          name: 'SSTC (2026/2)',
+          semester: '2026.2',
+          platform: 'teams',
+        },
+        {
+          id: 'teams-oac',
+          code: 'OAC',
+          name: 'OAC Prof Ricardo Jacobi',
+          semester: '2026.2',
+          platform: 'teams',
+        },
+        {
+          id: 'teams-monitoria',
+          code: 'MONIT',
+          name: 'Monitoria Geral de Engenharia',
+          semester: '2026.2',
+          platform: 'teams',
+        },
+      ]);
+
+      const result = await container.useCases.getCourses.getDisciplines();
+
+      // Verifica matching automático por sigla do Teams
+      const sstc = result.disciplines.find((d) => d.id === 'sigaa-sstc');
+      expect(sstc).toBeDefined();
+      expect(sstc?.teamsCourses?.length).toBe(1);
+      expect(sstc?.teamsCourses?.[0].id).toBe('teams-sstc');
+
+      const oac = result.disciplines.find((d) => d.id === 'sigaa-oac');
+      expect(oac).toBeDefined();
+      expect(oac?.teamsCourses?.length).toBe(1);
+      expect(oac?.teamsCourses?.[0].id).toBe('teams-oac');
+
+      // Monitoria não associada
+      expect(result.unmatchedCourses.some((c) => c.id === 'teams-monitoria')).toBe(true);
+
+      // Usuário associa a monitoria à seção __others__
+      await container.useCases.getCourses.associateCourse('teams-monitoria', '__others__', false);
+
+      const afterOthers = await container.useCases.getCourses.getDisciplines();
+      expect(afterOthers.otherCourses.length).toBe(1);
+      expect(afterOthers.otherCourses[0].id).toBe('teams-monitoria');
+      expect(afterOthers.unmatchedCourses.some((c) => c.id === 'teams-monitoria')).toBe(false);
+    });
   });
 
   describe('GetFeedUseCase.clear() - Limpeza Total de Feed e Turmas', () => {

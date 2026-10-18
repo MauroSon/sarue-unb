@@ -4,6 +4,7 @@ export * from './domain/entities/credential';
 export * from './domain/entities/course';
 export * from './domain/entities/grade';
 export * from './domain/entities/academic-profile';
+export * from './domain/entities/ira-scenario';
 export * from './domain/entities/academic-calendar';
 export * from './domain/entities/deadline-notification';
 export * from './domain/grade-acronym';
@@ -16,6 +17,7 @@ export * from './domain/interfaces/deadline-notification-repo.interface';
 export * from './domain/interfaces/os-notifier.interface';
 export * from './domain/interfaces/grade-repo.interface';
 export * from './domain/interfaces/academic-profile-repo.interface';
+export * from './domain/interfaces/ira-scenario-repo.interface';
 
 // Use Cases
 export * from './application/save-credentials.use-case';
@@ -32,6 +34,9 @@ export * from './application/manage-grade.use-case';
 export * from './application/manage-academic-profile.use-case';
 export * from './application/get-flowchart.use-case';
 export * from './application/parse-historico.use-case';
+export * from './application/calculate-ira.use-case';
+export * from './application/build-ira-scenario.use-case';
+export * from './application/manage-ira-scenario.use-case';
 export * from './application/get-academic-calendar.use-case';
 
 // DI Container
