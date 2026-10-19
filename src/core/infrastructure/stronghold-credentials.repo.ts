@@ -47,9 +47,10 @@ export class StrongholdCredentialsRepository implements ICredentialsRepository {
       try {
         const { Stronghold } = await import('@tauri-apps/plugin-stronghold');
         const { appLocalDataDir } = await import('@tauri-apps/api/path');
+        const { VAULT_FILE_NAME } = await import('./db-config');
 
         const dataDir = await appLocalDataDir();
-        const vaultPath = `${dataDir}/unb_vault.hold`;
+        const vaultPath = `${dataDir}/${VAULT_FILE_NAME}`;
 
         let stronghold = sharedCachedStronghold;
         if (!stronghold) {

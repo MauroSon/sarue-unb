@@ -61,7 +61,8 @@ export async function getDatabase(): Promise<Database | null> {
     cachedDbPromise = (async () => {
       try {
         const { default: Database } = await import('@tauri-apps/plugin-sql');
-        const db = await Database.load('sqlite:sarue_unb.db');
+        const { SQLITE_DB_NAME } = await import('./db-config');
+        const db = await Database.load(SQLITE_DB_NAME);
 
         // Cria a tabela de disciplinas (courses)
         await db.execute(`
@@ -122,18 +123,6 @@ export async function getDatabase(): Promise<Database | null> {
             updated_at TEXT NOT NULL
           );
         `);
-
-        // Limpa registros mock que possam ter sido persistidos em execuções anteriores no ambiente nativo
-        try {
-          await db.execute(`
-            DELETE FROM courses WHERE id IN ('course-1', 'course-2', 'course-3', 'course-4', 'sigaa-ed', 'teams-mds', 'moodlemat-calc1', 'aprender-apc');
-          `);
-          await db.execute(`
-            DELETE FROM feed_items WHERE id IN ('feed-1', 'feed-2', 'feed-3', 'feed-4', 'feed-5', 'sigaa-aviso-prova-1', 'moodlemat-lista-3', 'teams-sprint-2', 'aprender-vpl-1', 'aprender-aviso-1');
-          `);
-        } catch {
-          // Ignora se não houver registros
-        }
 
         // Remove dados legados do MoodleMat (plataforma descontinuada)
         try {

@@ -11,11 +11,15 @@
     "typecheck": "tsc --noEmit",
     "lint": "eslint src",
     "test": "vitest run",
-    "tauri": "tauri",
+    "tauri": "node scripts/tauri-cli.mjs",
+    "tauri:dev": "node scripts/tauri-cli.mjs dev",
+    "dev:app": "node scripts/tauri-cli.mjs dev",
     "scrape:grade": "node --experimental-strip-types src/scrapers/grade-scraper.ts",
     "scrape:courses": "node --experimental-strip-types src/scrapers/courses-scraper.ts",
     "scrape:calendar": "node --experimental-strip-types src/scrapers/calendar-scraper.ts",
-    "scrape:all": "pnpm run scrape:grade && pnpm run scrape:courses && pnpm run scrape:calendar"
+    "scrape:all": "pnpm run scrape:grade && pnpm run scrape:courses && pnpm run scrape:calendar",
+    "seeds": "node scripts/seed-dev-db.mjs",
+    "seed": "node scripts/seed-dev-db.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.8.0",

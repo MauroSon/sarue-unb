@@ -1,11 +1,121 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { createContainer } from '../container';
+import type { FeedItem } from '../domain/entities/feed-item';
+import type { Course } from '../domain/entities/course';
+import { InMemorySyncRepository } from '../infrastructure/in-memory-sync.repo';
+
+const TEST_COURSES: Course[] = [
+  {
+    id: 'test-course-1',
+    code: 'MAT0025',
+    name: 'Cálculo 1',
+    semester: '2026.1',
+    platform: 'aprender3',
+    professor: 'Prof. Marcelo Silva',
+    classroom: 'PAT AT 02/10',
+    schedule: 'Seg/Qua 10:00 - 11:50',
+    unreadCount: 2,
+    pendingAssignmentsCount: 1,
+  },
+  {
+    id: 'test-course-2',
+    code: 'CIC0004',
+    name: 'Algoritmos e Programação de Computadores',
+    semester: '2026.1',
+    platform: 'aprender3',
+    professor: 'Profa. Renata Garcia',
+    classroom: 'Lab CIC 03',
+    schedule: 'Ter/Qui 08:00 - 09:50',
+    unreadCount: 1,
+    pendingAssignmentsCount: 2,
+  },
+  {
+    id: 'test-course-3',
+    code: 'CIC0090',
+    name: 'Estruturas de Dados',
+    semester: '2026.1',
+    platform: 'sigaa',
+    professor: 'Prof. Carlos Eduardo',
+    classroom: 'PJC BT 110',
+    schedule: 'Seg/Qua 14:00 - 15:50',
+    unreadCount: 3,
+    pendingAssignmentsCount: 0,
+  },
+  {
+    id: 'test-course-4',
+    code: 'FGA0138',
+    name: 'Métodos de Desenvolvimento de Software',
+    semester: '2026.1',
+    platform: 'teams',
+    professor: 'Prof. Fernando Mendes',
+    classroom: 'Teams Online / FGA UED',
+    schedule: 'Ter/Qui 16:00 - 17:50',
+    unreadCount: 4,
+    pendingAssignmentsCount: 1,
+  },
+];
+
+const TEST_FEED_ITEMS: FeedItem[] = [
+  {
+    id: 'test-feed-1',
+    platform: 'aprender3',
+    title: 'Lista 3 de Exercícios: Derivadas e Regra da Cadeia',
+    content: 'A Lista 3 já está disponível para envio.',
+    courseName: 'Cálculo 1',
+    courseCode: 'MAT0025',
+    author: 'Prof. Marcelo Silva',
+    itemType: 'assignment',
+    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(),
+    dueDate: new Date(Date.now() + 1000 * 60 * 60 * 48).toISOString(),
+    isCompleted: false,
+    externalUrl: 'https://aprender3.unb.br/mod/assign/view.php?id=1042',
+  },
+  {
+    id: 'test-feed-2',
+    platform: 'sigaa',
+    title: 'Divulgação das Notas da Prova 1',
+    content: 'As notas da primeira avaliação foram cadastradas.',
+    courseName: 'Estruturas de Dados',
+    courseCode: 'CIC0090',
+    author: 'Prof. Carlos Eduardo',
+    itemType: 'post',
+    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 5).toISOString(),
+    externalUrl: 'https://sigaa.unb.br/sigaa',
+  },
+  {
+    id: 'test-feed-3',
+    platform: 'teams',
+    title: 'Sprint 2: Reunião de Alinhamento',
+    content: 'Disponibilizado o link da gravação.',
+    courseName: 'Métodos de Desenvolvimento de Software',
+    courseCode: 'FGA0138',
+    author: 'Prof. Fernando Mendes',
+    itemType: 'post',
+    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 20).toISOString(),
+    externalUrl: 'https://teams.microsoft.com',
+  },
+  {
+    id: 'test-feed-4',
+    platform: 'aprender3',
+    title: 'Projeto Prático 1',
+    content: 'Submissão do código-fonte.',
+    courseName: 'Algoritmos e Programação de Computadores',
+    courseCode: 'CIC0004',
+    author: 'Profa. Renata Garcia',
+    itemType: 'assignment',
+    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 12).toISOString(),
+    dueDate: new Date(Date.now() + 1000 * 60 * 60 * 24).toISOString(),
+    isCompleted: false,
+    externalUrl: 'https://aprender3.unb.br/mod/vpl/view.php?id=38192',
+  },
+];
 
 describe('Clean Architecture Use Cases - Saruê UnB', () => {
   let container: ReturnType<typeof createContainer>;
 
   beforeEach(async () => {
-    container = createContainer();
+    const syncRepo = new InMemorySyncRepository(TEST_FEED_ITEMS, TEST_COURSES);
+    container = createContainer({ repos: { syncRepo } });
     await container.repos.feedRepo.clear();
   });
 

@@ -1,0 +1,13 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "Saruê UnB (Dev)",
+  "identifier": "br.unb.sarue.dev",
+  "app": {
+    "windows": [
+      {
+        "label": "main",
+        "title": "Saruê UnB (Dev)"
+      }
+    ]
+  }
+}

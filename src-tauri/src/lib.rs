@@ -57,7 +57,13 @@ pub fn run() {
                 .unwrap_or_else(|_| std::path::PathBuf::from("."));
 
             let _ = std::fs::create_dir_all(&app_data_dir);
-            let salt_path = app_data_dir.join("vault.salt");
+
+            let salt_filename = if cfg!(debug_assertions) {
+                "vault_dev.salt"
+            } else {
+                "vault.salt"
+            };
+            let salt_path = app_data_dir.join(salt_filename);
 
             app.handle()
                 .plugin(tauri_plugin_stronghold::Builder::with_argon2(&salt_path).build())?;
