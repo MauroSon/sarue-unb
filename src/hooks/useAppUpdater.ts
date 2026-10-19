@@ -1,6 +1,7 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { check, type Update } from '@tauri-apps/plugin-updater';
 import { relaunch } from '@tauri-apps/plugin-process';
+import { getVersion } from '@tauri-apps/api/app';
 
 export type UpdaterStatus =
   | 'idle'
@@ -29,7 +30,19 @@ export function useAppUpdater() {
   const [updateInfo, setUpdateInfo] = useState<UpdateInfo | null>(null);
   const [progress, setProgress] = useState<DownloadProgress | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  // Versão instalada (tauri.conf.json); "0.1.0" é só o fallback enquanto o
+  // Tauri não responde ou em dev no navegador.
+  const [currentVersion, setCurrentVersion] = useState('0.1.0');
   const pendingUpdateRef = useRef<Update | null>(null);
+  const lastPercentRef = useRef(-1);
+
+  useEffect(() => {
+    getVersion()
+      .then(setCurrentVersion)
+      .catch((err) =>
+        console.warn('Não foi possível ler a versão do app:', err),
+      );
+  }, []);
 
   const checkForUpdates = useCallback(async (silent = false) => {
     if (!silent) {
@@ -87,16 +100,27 @@ export function useAppUpdater() {
         switch (event.event) {
           case 'Started':
             totalBytes = event.data.contentLength ?? 0;
+            lastPercentRef.current = -1;
             setProgress({ downloaded: 0, total: totalBytes, percent: 0 });
             break;
-          case 'Progress':
+          case 'Progress': {
             downloadedBytes += event.data.chunkLength;
+            // A UI só lê o percentual inteiro: re-renderiza só quando ele muda,
+            // não a cada chunk baixado.
             const pct =
               totalBytes > 0
                 ? Math.min(100, Math.round((downloadedBytes / totalBytes) * 100))
                 : 0;
-            setProgress({ downloaded: downloadedBytes, total: totalBytes, percent: pct });
+            if (pct !== lastPercentRef.current) {
+              lastPercentRef.current = pct;
+              setProgress({
+                downloaded: downloadedBytes,
+                total: totalBytes,
+                percent: pct,
+              });
+            }
             break;
+          }
           case 'Finished':
             setProgress({ downloaded: totalBytes, total: totalBytes, percent: 100 });
             break;
@@ -123,25 +147,14 @@ export function useAppUpdater() {
     }
   }, []);
 
-  const resetStatus = useCallback(() => {
-    setStatus('idle');
-    setErrorMessage(null);
-  }, []);
-
   return {
     status,
+    currentVersion,
     updateInfo,
     progress,
     errorMessage,
     checkForUpdates,
     downloadAndInstall,
     relaunchApp,
-    resetStatus,
-    isChecking: status === 'checking',
-    isDownloading: status === 'downloading',
-    isAvailable: status === 'available',
-    isUpToDate: status === 'up-to-date',
-    isReadyToRestart: status === 'ready-to-restart',
-    isError: status === 'error',
   };
 }
