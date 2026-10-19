@@ -68,6 +68,14 @@ pub fn run() {
             app.handle()
                 .plugin(tauri_plugin_notification::init())?;
 
+            #[cfg(desktop)]
+            {
+                app.handle()
+                    .plugin(tauri_plugin_updater::Builder::new().build())?;
+                app.handle()
+                    .plugin(tauri_plugin_process::init())?;
+            }
+
             log::info!("Plugins Tauri Stronghold e SQL (SQLite) inicializados com sucesso.");
 
             Ok(())

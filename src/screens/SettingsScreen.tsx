@@ -17,7 +17,8 @@ import { useFeed } from "../hooks/useFeed";
 import { resetMyCourseCache } from "../hooks/useMyCourse";
 import { useContainer } from "../context/ContainerContext";
 import { useOptionalSync } from "../context/SyncContext";
-import { Settings, AlertCircle, Scale, GitBranch, Trash2, RotateCcw } from "lucide-react";
+import { Settings, AlertCircle, Scale, GitBranch, Trash2, RotateCcw, Sparkles, RefreshCw, Download } from "lucide-react";
+import { useAppUpdater } from "../hooks/useAppUpdater";
 
 export interface SettingsScreenProps {
   onResetCredentials: () => void;
@@ -30,6 +31,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
   const { clearFeedData } = useFeed();
   const { clearAll, allCredentials } = useCredentials();
   const syncContext = useOptionalSync();
+  const updater = useAppUpdater();
 
   // Modo explorar: nenhuma conta conectada — o botão da zona de perigo vira
   // "Voltar para o Onboarding", mas a ação continua apagando tudo (grades,
@@ -84,6 +86,105 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
       <div className="max-w-2xl">
         <PlatformAccountsAccordion animated={false} initialOpenPlatform={null} allowAllClosed />
       </div>
+
+      {/* Atualizações do Aplicativo */}
+      <Card className="bg-white rounded-lg p-5 border-2 border-black shadow-[4px_4px_0px_0px_#000]">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-2 mb-1">
+              <Sparkles className="w-5 h-5 stroke-[2.5] text-neo-blue" />
+              <h4 className="text-sm font-black uppercase tracking-tight text-black">
+                Atualizações do Aplicativo
+              </h4>
+              <span className="text-[11px] font-extrabold px-2 py-0.5 rounded-md bg-neutral-100 border-2 border-black text-neutral-800 shadow-[1px_1px_0px_0px_#000]">
+                v0.1.0
+              </span>
+            </div>
+            <p className="text-xs font-semibold text-neutral-600">
+              {updater.isChecking
+                ? "Consultando GitHub Releases em busca de novas versões..."
+                : updater.isDownloading
+                ? `Baixando atualização (${updater.progress?.percent ?? 0}%)...`
+                : updater.isReadyToRestart
+                ? "Atualização baixada com sucesso! Reinicie o aplicativo para concluir."
+                : updater.isAvailable
+                ? `Nova versão ${updater.updateInfo?.version} disponível para instalação!`
+                : updater.isUpToDate
+                ? "Você está utilizando a versão mais recente do Saruê UnB."
+                : updater.isError
+                ? `Não foi possível verificar atualizações: ${updater.errorMessage}`
+                : "Mantenha o Saruê UnB sempre atualizado com as últimas correções e novidades."}
+            </p>
+          </div>
+
+          <div className="flex items-center gap-2 shrink-0">
+            {updater.isReadyToRestart ? (
+              <Button
+                type="button"
+                variant="primary"
+                size="md"
+                onClick={() => updater.relaunchApp()}
+                className="bg-emerald-500 hover:bg-emerald-600 text-white border-2 border-black shadow-[2px_2px_0px_0px_#000]"
+              >
+                <RotateCcw className="w-4 h-4 stroke-[2.5]" />
+                <span>Reiniciar e Aplicar</span>
+              </Button>
+            ) : updater.isAvailable ? (
+              <Button
+                type="button"
+                variant="primary"
+                size="md"
+                disabled={updater.isDownloading}
+                isLoading={updater.isDownloading}
+                onClick={() => updater.downloadAndInstall()}
+                className="bg-neo-blue hover:bg-neo-blueHover text-white border-2 border-black shadow-[2px_2px_0px_0px_#000]"
+              >
+                <Download className="w-4 h-4 stroke-[2.5]" />
+                <span>
+                  {updater.isDownloading
+                    ? `Baixando ${updater.progress?.percent ?? 0}%`
+                    : "Baixar e Atualizar"}
+                </span>
+              </Button>
+            ) : (
+              <Button
+                type="button"
+                variant="outline"
+                size="md"
+                disabled={updater.isChecking}
+                isLoading={updater.isChecking}
+                onClick={() => updater.checkForUpdates()}
+                className="border-2 border-black bg-white hover:bg-neutral-100 shadow-[2px_2px_0px_0px_#000]"
+              >
+                <RefreshCw
+                  className={`w-4 h-4 stroke-[2.5] ${
+                    updater.isChecking ? "animate-spin" : ""
+                  }`}
+                />
+                <span>
+                  {updater.isChecking ? "Verificando..." : "Verificar Atualizações"}
+                </span>
+              </Button>
+            )}
+          </div>
+        </div>
+
+        {/* Barra de progresso durante o download */}
+        {updater.isDownloading && updater.progress && (
+          <div className="mt-4 pt-3 border-t-2 border-black/10">
+            <div className="w-full h-3 bg-neutral-200 rounded-full overflow-hidden border-2 border-black">
+              <div
+                className="h-full bg-neo-blue transition-all duration-300"
+                style={{ width: `${updater.progress.percent}%` }}
+              />
+            </div>
+            <div className="flex justify-between text-[11px] font-bold text-neutral-600 mt-1.5">
+              <span>Baixando arquivos da versão {updater.updateInfo?.version}...</span>
+              <span>{updater.progress.percent}%</span>
+            </div>
+          </div>
+        )}
+      </Card>
 
       {/* Licença e Código Aberto */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t-2 border-black/10">
