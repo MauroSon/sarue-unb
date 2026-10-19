@@ -112,6 +112,10 @@ pnpm install
 Para rodar a aplicação desktop completa com o backend Rust, banco SQLite e cofre Stronghold ativo:
 
 ```bash
+# 1. Popula o banco local de desenvolvimento com dados realistas (opcional, para testes rápidos)
+pnpm seeds
+
+# 2. Inicia o aplicativo em ambiente de desenvolvimento (br.unb.sarue.dev)
 pnpm tauri dev
 ```
 
@@ -121,6 +125,20 @@ Para iterar com velocidade na interface e componentes visuais sem compilar o bac
 
 ```bash
 pnpm dev
+```
+
+---
+
+### 🌱 Banco de Dados Local & Seeds de Desenvolvimento
+
+O Saruê UnB adota uma política de **isolamento estrito entre desenvolvimento e produção**:
+
+```bash
+# Popula o SQLite de dev com turmas, feed de avisos/tarefas, histórico escolar e simulação de IRA
+pnpm seeds
+
+# Caso queira resetar o banco de dev antes de reinserir os dados
+pnpm seeds --clean
 ```
 
 ---
