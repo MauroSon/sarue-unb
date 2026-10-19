@@ -438,6 +438,7 @@ async function main() {
   const outDir = path.resolve(getArg('--out-dir', process.env.OUTPUT_DIR || './data'));
   const limitStr = getArg('--limit', '');
   const limit = limitStr ? parseInt(limitStr, 10) : undefined;
+  const shardStr = getArg('--shard', '');
   const targetCourseId = getArg('--course', '');
   const enrichLimitStr = getArg('--enrich-limit', '0');
   const enrichLimit = parseInt(enrichLimitStr, 10) || 0;
@@ -467,6 +468,21 @@ async function main() {
 
   if (limit && limit > 0) {
     coursesToProcess = coursesToProcess.slice(0, limit);
+  }
+
+  if (shardStr && shardStr.includes('/')) {
+    const [partStr, totalStr] = shardStr.split('/');
+    const part = parseInt(partStr, 10);
+    const total = parseInt(totalStr, 10);
+    if (part >= 1 && total >= 1 && part <= total) {
+      const chunkSize = Math.ceil(coursesToProcess.length / total);
+      const start = (part - 1) * chunkSize;
+      const end = Math.min(start + chunkSize, coursesToProcess.length);
+      console.log(
+        `[CoursesScraper] Sharding ativo: parte ${part} de ${total} (processando ${end - start} cursos: índices ${start} a ${end - 1} de ${coursesToProcess.length}).`
+      );
+      coursesToProcess = coursesToProcess.slice(start, end);
+    }
   }
 
   console.log(`[CoursesScraper] Coletando estruturas curriculares para ${coursesToProcess.length} cursos...`);

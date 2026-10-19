@@ -7,20 +7,22 @@ on:
   workflow_dispatch:
     inputs:
       enrich_limit:
-        description: 'Limite de componentes com pré-requisitos/equivalências enriquecidos por estrutura'
+        description: 'Limite de componentes com pré-requisitos/equivalências enriquecidos por estrutura (0 = sem limite)'
         required: false
-        default: '25'
+        default: '0'
 
 concurrency:
   group: scrape-sigaa-data
   cancel-in-progress: false
 
 jobs:
-  scrape-and-publish:
-    name: Scrape Cursos/Currículos e Publicar em gh-pages
+  scrape-shards:
+    name: Scrape Cursos (Parte ${{ matrix.shard }})
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: ['1/2', '2/2']
 
     steps:
       - name: Checkout do repositório
@@ -40,10 +42,46 @@ jobs:
       - name: Instalar dependências
         run: pnpm install --frozen-lockfile
 
-      - name: Executar scraping de cursos e estruturas curriculares
+      - name: Executar scraping da Parte ${{ matrix.shard }}
         run: |
+          SHARD_NUM=$(echo "${{ matrix.shard }}" | tr '/' '-')
           pnpm run scrape:courses \
-            --enrich-limit "${{ inputs.enrich_limit || '25' }}" \
+            --shard "${{ matrix.shard }}" \
+            --enrich-limit "${{ inputs.enrich_limit || '0' }}" \
+            --out-dir "./dist-shard-$SHARD_NUM"
+
+      - name: Upload artifact do shard
+        uses: actions/upload-artifact@v4
+        with:
+          name: courses-shard-${{ matrix.shard == '1/2' && '1' || '2' }}
+          path: ./dist-shard-*
+          retention-days: 1
+
+  merge-and-publish:
+    name: Unificar Shards e Publicar em gh-pages
+    needs: scrape-shards
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout do repositório
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Baixar todos os artifacts dos shards
+        uses: actions/download-artifact@v4
+        with:
+          path: ./downloaded-shards
+
+      - name: Unificar dados dos shards
+        run: |
+          node scripts/merge-courses-shards.mjs \
+            --parent-dir ./downloaded-shards \
             --out-dir ./dist-data
 
       - name: Publicar dados estáticos na branch órfã gh-pages
