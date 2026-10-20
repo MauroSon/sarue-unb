@@ -1,1 +1,2334 @@
-[]
+[
+  {
+    "id": "414099",
+    "name": "ADMINISTRAÇÃO",
+    "degree": "Bacharelado",
+    "shift": "NOTURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "coordinator": "OLINDA MARIA GOMES LESSES",
+    "curricula_ids": [
+      "458",
+      "436",
+      "93",
+      "94",
+      "95"
+    ]
+  },
+  {
+    "id": "414112",
+    "name": "ADMINISTRAÇÃO",
+    "degree": "Bacharelado",
+    "shift": "DIURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "coordinator": "CARLA PEIXOTO BORGES",
+    "curricula_ids": [
+      "456",
+      "457",
+      "435",
+      "205",
+      "206",
+      "207",
+      "208"
+    ]
+  },
+  {
+    "id": "414130",
+    "name": "CIÊNCIAS CONTÁBEIS",
+    "degree": "Bacharelado",
+    "shift": "DIURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "coordinator": "FRANCISCA APARECIDA DE SOUZA",
+    "curricula_ids": [
+      "3104145",
+      "441",
+      "442",
+      "227"
+    ]
+  },
+  {
+    "id": "414131",
+    "name": "CIÊNCIAS CONTÁBEIS",
+    "degree": "Bacharelado",
+    "shift": "NOTURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "coordinator": "EDMILSON SOARES CAMPOS",
+    "curricula_ids": [
+      "3311050",
+      "443",
+      "444",
+      "221",
+      "104"
+    ]
+  },
+  {
+    "id": "414437",
+    "name": "ARTES CÊNICAS",
+    "degree": "Licenciatura",
+    "shift": "DIURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "coordinator": "FRANCIANE SALGADO DE PAULA",
+    "curricula_ids": [
+      "4005588",
+      "148",
+      "149",
+      "150",
+      "151",
+      "152"
+    ]
+  },
+  {
+    "id": "702696",
+    "name": "ARTES CÊNICAS",
+    "degree": "Licenciatura",
+    "shift": "NOTURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "coordinator": "JULIA GUIMARAES MENDES",
+    "curricula_ids": [
+      "4005579",
+      "153",
+      "154"
+    ]
+  },
+  {
+    "id": "414436",
+    "name": "ARTES CÊNICAS - INTERPRETAÇÃO TEATRAL",
+    "degree": "Bacharelado",
+    "shift": "DIURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "coordinator": "ALISSON ARAUJO DE ALMEIDA",
+    "curricula_ids": [
+      "468",
+      "469",
+      "430",
+      "145",
+      "146",
+      "147"
+    ]
+  },
+  {
+    "id": "21916613",
+    "name": "TURISMO",
+    "degree": "Bacharelado",
+    "shift": "DIURNO",
+    "campus": "BRASÍLIA",
+    "modality": "A Distância",
+    "coordinator": "FAGNO TAVARES DE OLIVEIRA",
+    "curricula_ids": [
+      "21928022"
+    ]
+  },
+  {
+    "id": "414088",
+    "name": "TURISMO",
+    "degree": "Bacharelado",
+    "shift": "DIURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "coordinator": "ANA ROSA DOMINGUES DOS SANTOS",
+    "curricula_ids": [
+      "431472",
+      "434",
+      "203"
+    ]
+  },
+  {
+    "id": "414599",
+    "name": "CIÊNCIA DA COMPUTAÇÃO",
+    "degree": "Bacharelado",
+    "shift": "DIURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "coordinator": "ROBERTA BARBOSA OLIVEIRA",
+    "curricula_ids": [
+      "21913495",
+      "17289988",
+      "3164480",
+      "355",
+      "356",
+      "347",
+      "230",
+      "231",
+      "115",
+      "116"
+    ]
+  },
+  {
+    "id": "414608",
+    "name": "COMPUTAÇÃO",
+    "degree": "Licenciatura",
+    "shift": "NOTURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "coordinator": "MARIA DE FATIMA RAMOS BRANDAO",
+    "curricula_ids": [
+      "357",
+      "348",
+      "232",
+      "117"
+    ]
+  },
+  {
+    "id": "414610",
+    "name": "ENGENHARIA DE COMPUTAÇÃO",
+    "degree": "Bacharelado",
+    "shift": "DIURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "coordinator": "GUILHERME NOVAES RAMOS",
+    "curricula_ids": [
+      "19821268",
+      "16287691",
+      "354",
+      "156"
+    ]
+  },
+  {
+    "id": "414407",
+    "name": "CIÊNCIAS SOCIAIS - ANTROPOLOGIA",
+    "degree": "Bacharelado",
+    "shift": "DIURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "coordinator": "JULIANA BRAZ DIAS",
+    "curricula_ids": [
+      "20508933",
+      "2",
+      "3",
+      "4",
+      "5"
+    ]
+  },
+  {
+    "id": "414970",
+    "name": "DESIGN - PROGRAMAÇÃO VISUAL",
+    "degree": "Bacharelado",
+    "shift": "DIURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "curricula_ids": []
+  },
+  {
+    "id": "414971",
+    "name": "DESIGN - PROJETO DO PRODUTO",
+    "degree": "Bacharelado",
+    "shift": "DIURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "coordinator": "FLAVIA MARIETA MAGALHAES ROCHA RIGONI",
+    "curricula_ids": [
+      "20125882",
+      "432",
+      "238",
+      "239"
+    ]
+  },
+  {
+    "id": "414291",
+    "name": "SAÚDE COLETIVA",
+    "degree": "Bacharelado",
+    "shift": "NOTURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "coordinator": "MARCUS TOLENTINO SILVA",
+    "curricula_ids": [
+      "182",
+      "183"
+    ]
+  },
+  {
+    "id": "414699",
+    "name": "CIÊNCIAS ECONÔMICAS",
+    "degree": "Bacharelado",
+    "shift": "DIURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "coordinator": "DEBORAH OLIVEIRA MARTINS DOS REIS",
+    "curricula_ids": [
+      "19793648",
+      "418",
+      "209",
+      "210",
+      "113",
+      "114"
+    ]
+  },
+  {
+    "id": "414342",
+    "name": "ENGENHARIA FLORESTAL",
+    "degree": "Engenheiro Florestal",
+    "shift": "DIURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "coordinator": "LEONARDO JOB BIALI",
+    "curricula_ids": [
+      "15982599",
+      "4055980",
+      "405",
+      "77",
+      "78",
+      "79"
+    ]
+  },
+  {
+    "id": "414404",
+    "name": "CIÊNCIAS SOCIAIS",
+    "degree": "Bacharelado",
+    "shift": "DIURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "coordinator": "RAPHAEL LANA SEABRA",
+    "curricula_ids": []
+  },
+  {
+    "id": "21775010",
+    "name": "CIÊNCIAS SOCIAIS - LATINO-AMERICANAS",
+    "degree": "Bacharelado",
+    "shift": "DIURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "curricula_ids": [
+      "21775377",
+      "461",
+      "462",
+      "415",
+      "233",
+      "234",
+      "235",
+      "42"
+    ]
+  },
+  {
+    "id": "414345",
+    "name": "ENGENHARIA AMBIENTAL",
+    "degree": "Engenheiro",
+    "shift": "DIURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "coordinator": "CARLOS HENRIQUE RIBEIRO LIMA",
+    "curricula_ids": [
+      "3170716",
+      "364",
+      "365",
+      "178"
+    ]
+  },
+  {
+    "id": "20559118",
+    "name": "ENGENHARIA AMBIENTAL E SANITÁRIA",
+    "degree": "Bacharelado",
+    "shift": "DIURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "coordinator": "CARLOS HENRIQUE RIBEIRO LIMA",
+    "curricula_ids": [
+      "20704949"
+    ]
+  },
+  {
+    "id": "414350",
+    "name": "ENGENHARIA CIVIL",
+    "degree": "Engenheiro Civil",
+    "shift": "DIURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "coordinator": "FABIO ZANCHETTA",
+    "curricula_ids": [
+      "363",
+      "68",
+      "69"
+    ]
+  },
+  {
+    "id": "414330",
+    "name": "ENGENHARIA DE REDES DE COMUNICAÇÃO",
+    "degree": "Bacharelado",
+    "shift": "DIURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "coordinator": "JOAO JOSE COSTA GONDIM",
+    "curricula_ids": [
+      "16226712",
+      "3210927",
+      "371",
+      "372",
+      "373",
+      "73",
+      "74"
+    ]
+  },
+  {
+    "id": "414360",
+    "name": "ENGENHARIA ELÉTRICA",
+    "degree": "Engenheiro Eletricista",
+    "shift": "DIURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "coordinator": "ALEX DA ROSA",
+    "curricula_ids": [
+      "19804668",
+      "4298737",
+      "463",
+      "451",
+      "366",
+      "70",
+      "71",
+      "72"
+    ]
+  },
+  {
+    "id": "414295",
+    "name": "ENFERMAGEM",
+    "degree": "Enfermeiro",
+    "shift": "DIURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "coordinator": "TACIANA SILVEIRA PASSOS",
+    "curricula_ids": [
+      "330",
+      "185"
+    ]
+  },
+  {
+    "id": "414368",
+    "name": "ENGENHARIA MECÂNICA",
+    "degree": "Engenheiro Mecânico",
+    "shift": "DIURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "coordinator": "ANDRE VON BORRIES LOPES",
+    "curricula_ids": [
+      "20390955",
+      "367",
+      "75",
+      "76"
+    ]
+  },
+  {
+    "id": "414326",
+    "name": "ENGENHARIA DE PRODUÇÃO",
+    "degree": "Bacharelado",
+    "shift": "NOTURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "coordinator": "MARCELO CARNEIRO GONCALVES",
+    "curricula_ids": [
+      "21717546",
+      "2146042",
+      "361",
+      "163",
+      "164"
+    ]
+  },
+  {
+    "id": "414620",
+    "name": "ESTATÍSTICA",
+    "degree": "Bacharelado",
+    "shift": "DIURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "coordinator": "JOSE AUGUSTO FIORUCCI",
+    "curricula_ids": [
+      "16178441",
+      "3346950",
+      "460",
+      "310",
+      "311",
+      "1"
+    ]
+  },
+  {
+    "id": "414137",
+    "name": "COMUNICAÇÃO SOCIAL - COMUNICAÇÃO ORGANIZACIONAL",
+    "degree": "Bacharelado",
+    "shift": "NOTURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "coordinator": "ELEN CRISTINA GERALDES",
+    "curricula_ids": [
+      "8649242",
+      "188",
+      "189",
+      "190"
+    ]
+  },
+  {
+    "id": "414151",
+    "name": "COMUNICAÇÃO SOCIAL - AUDIOVISUAL",
+    "degree": "Bacharelado",
+    "shift": "DIURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "coordinator": "EMILIA SILVEIRA SILBERSTEIN",
+    "curricula_ids": [
+      "287",
+      "288",
+      "289",
+      "290",
+      "23"
+    ]
+  },
+  {
+    "id": "414156",
+    "name": "COMUNICAÇÃO SOCIAL - PUBLICIDADE E PROPAGANDA",
+    "degree": "Bacharelado",
+    "shift": "DIURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "coordinator": "SUELEN BRANDES MARQUES VALENTE",
+    "curricula_ids": [
+      "437",
+      "438",
+      "393",
+      "285",
+      "286"
+    ]
+  },
+  {
+    "id": "414165",
+    "name": "JORNALISMO",
+    "degree": "Bacharelado",
+    "shift": "DIURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "coordinator": "SOLANO DOS SANTOS NASCIMENTO",
+    "curricula_ids": [
+      "21956849",
+      "3154402",
+      "394",
+      "395",
+      "396"
+    ]
+  },
+  {
+    "id": "414181",
+    "name": "ARQUITETURA E URBANISMO",
+    "degree": "Arquiteto e Urbanista",
+    "shift": "NOTURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "coordinator": "LEANDRO DE SOUSA CRUZ",
+    "curricula_ids": [
+      "370",
+      "175"
+    ]
+  },
+  {
+    "id": "414180",
+    "name": "ARQUITETURA E URBANISMO",
+    "degree": "Arquiteto e Urbanista",
+    "shift": "DIURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "coordinator": "JULIANA ANDRADE BORGES DE SOUSA",
+    "curricula_ids": [
+      "369",
+      "252",
+      "67"
+    ]
+  },
+  {
+    "id": "414196",
+    "name": "AGRONOMIA",
+    "degree": "Engenheiro Agrônomo",
+    "shift": "DIURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "coordinator": "ALINE MONDINI CALIL RACANICCI",
+    "curricula_ids": [
+      "449",
+      "211",
+      "24",
+      "25",
+      "10"
+    ]
+  },
+  {
+    "id": "414198",
+    "name": "GESTÃO DE AGRONEGÓCIOS",
+    "degree": "Bacharelado",
+    "shift": "NOTURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "coordinator": "THIAGO DIAS TROMBETA",
+    "curricula_ids": [
+      "17247742",
+      "328",
+      "179"
+    ]
+  },
+  {
+    "id": "414202",
+    "name": "MEDICINA VETERINÁRIA",
+    "degree": "Médico Veterinário",
+    "shift": "DIURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "coordinator": "CRISTIANE DA SILVA PEREIRA",
+    "curricula_ids": [
+      "240",
+      "241",
+      "176",
+      "177"
+    ]
+  },
+  {
+    "id": "414931",
+    "name": "ARQUIVOLOGIA",
+    "degree": "Bacharelado",
+    "shift": "NOTURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "coordinator": "CYNTHIA RONCAGLIO",
+    "curricula_ids": [
+      "1141625",
+      "96",
+      "97"
+    ]
+  },
+  {
+    "id": "414940",
+    "name": "BIBLIOTECONOMIA",
+    "degree": "Bacharelado",
+    "shift": "DIURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "coordinator": "RODRIGO RABELLO DA SILVA",
+    "curricula_ids": [
+      "212",
+      "213",
+      "214",
+      "215",
+      "98"
+    ]
+  },
+  {
+    "id": "702704",
+    "name": "MUSEOLOGIA",
+    "degree": "Bacharelado",
+    "shift": "DIURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "coordinator": "DEBORAH SILVA SANTOS",
+    "curricula_ids": [
+      "4005580",
+      "167",
+      "168",
+      "169"
+    ]
+  },
+  {
+    "id": "414287",
+    "name": "FARMÁCIA",
+    "degree": "Bacharelado",
+    "shift": "NOTURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "coordinator": "RAFAEL MOTA PINHEIRO",
+    "curricula_ids": [
+      "2071865",
+      "338",
+      "186",
+      "187"
+    ]
+  },
+  {
+    "id": "414286",
+    "name": "FARMÁCIA",
+    "degree": "Bacharelado",
+    "shift": "DIURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "coordinator": "GERLON DE ALMEIDA RIBEIRO OLIVEIRA",
+    "curricula_ids": [
+      "339",
+      "284"
+    ]
+  },
+  {
+    "id": "414915",
+    "name": "ENGENHARIA",
+    "degree": "Bacharelado",
+    "shift": "DIURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "coordinator": "MATHEUS BERNARDINI DE SOUZA",
+    "curricula_ids": [
+      "131",
+      "132"
+    ]
+  },
+  {
+    "id": "414916",
+    "name": "ENGENHARIA AEROESPACIAL",
+    "degree": "Bacharelado",
+    "shift": "DIURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "coordinator": "SEBASTIEN ROLAND MARIE JOSEPH RONDINEAU",
+    "curricula_ids": [
+      "20498334",
+      "3156195",
+      "228",
+      "229"
+    ]
+  },
+  {
+    "id": "414919",
+    "name": "ENGENHARIA AUTOMOTIVA",
+    "degree": "Bacharelado",
+    "shift": "DIURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "coordinator": "HIMILSYS HERNANDEZ GONZALEZ",
+    "curricula_ids": [
+      "24005685",
+      "3125746",
+      "450",
+      "352",
+      "137",
+      "138",
+      "139"
+    ]
+  },
+  {
+    "id": "414922",
+    "name": "ENGENHARIA DE ENERGIA",
+    "degree": "Bacharelado",
+    "shift": "DIURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "coordinator": "ANDREIA ALVES COSTA LINDINGER",
+    "curricula_ids": [
+      "16288625",
+      "453",
+      "401",
+      "135",
+      "136"
+    ]
+  },
+  {
+    "id": "414924",
+    "name": "ENGENHARIA DE SOFTWARE",
+    "degree": "Bacharelado",
+    "shift": "DIURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "coordinator": "JOHN LENON CARDOSO GARDENGHI",
+    "curricula_ids": [
+      "16220281",
+      "411",
+      "140"
+    ]
+  },
+  {
+    "id": "414926",
+    "name": "ENGENHARIA ELETRÔNICA",
+    "degree": "Bacharelado",
+    "shift": "DIURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "coordinator": "MARCUS VINICIUS BATISTUTA",
+    "curricula_ids": [
+      "17281739",
+      "3695360",
+      "4005590",
+      "368",
+      "133",
+      "134"
+    ]
+  },
+  {
+    "id": "414902",
+    "name": "ENFERMAGEM",
+    "degree": "Enfermeiro",
+    "shift": "DIURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "coordinator": "JULIANA MACHADO SCHARDOSIM",
+    "curricula_ids": [
+      "15632479",
+      "4005589",
+      "452",
+      "341",
+      "126"
+    ]
+  },
+  {
+    "id": "414906",
+    "name": "FARMÁCIA",
+    "degree": "Bacharelado",
+    "shift": "DIURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "coordinator": "ELIANA FORTES GRIS",
+    "curricula_ids": [
+      "15687684",
+      "399",
+      "329",
+      "125"
+    ]
+  },
+  {
+    "id": "414908",
+    "name": "FISIOTERAPIA",
+    "degree": "Bacharelado",
+    "shift": "DIURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "coordinator": "OSMAIR GOMES DE MACEDO",
+    "curricula_ids": [
+      "16117915",
+      "342",
+      "343",
+      "127"
+    ]
+  },
+  {
+    "id": "414909",
+    "name": "FONOAUDIOLOGIA",
+    "degree": "Bacharelado",
+    "shift": "DIURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "coordinator": "VALERIA REIS DO CANTO PEREIRA",
+    "curricula_ids": [
+      "8670611",
+      "243",
+      "3922458"
+    ]
+  },
+  {
+    "id": "414912",
+    "name": "SAÚDE COLETIVA",
+    "degree": "Bacharelado",
+    "shift": "DIURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "coordinator": "JOSE ANTONIO ITURRI DE LA MATA",
+    "curricula_ids": [
+      "8473280",
+      "459",
+      "400",
+      "129",
+      "130"
+    ]
+  },
+  {
+    "id": "414914",
+    "name": "TERAPIA OCUPACIONAL",
+    "degree": "Bacharelado",
+    "shift": "DIURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "coordinator": "JULIANA VALERIA DE MELO",
+    "curricula_ids": [
+      "16383069",
+      "350",
+      "351",
+      "128"
+    ]
+  },
+  {
+    "id": "414220",
+    "name": "DIREITO",
+    "degree": "Bacharelado",
+    "shift": "DIURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "curricula_ids": [
+      "439",
+      "440",
+      "101",
+      "102",
+      "103"
+    ]
+  },
+  {
+    "id": "414221",
+    "name": "DIREITO",
+    "degree": "Bacharelado",
+    "shift": "NOTURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "curricula_ids": [
+      "445",
+      "446",
+      "110",
+      "111",
+      "112"
+    ]
+  },
+  {
+    "id": "414231",
+    "name": "PEDAGOGIA",
+    "degree": "Licenciatura",
+    "shift": "DIURNO",
+    "campus": "BRASÍLIA",
+    "modality": "A Distância",
+    "coordinator": "RAQUEL DE ALMEIDA MORAES",
+    "curricula_ids": [
+      "2001727",
+      "291",
+      "292",
+      "120"
+    ]
+  },
+  {
+    "id": "414229",
+    "name": "PEDAGOGIA",
+    "degree": "Licenciatura",
+    "shift": "DIURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "coordinator": "ANA RAQUEL COSTA DIAS",
+    "curricula_ids": [
+      "465",
+      "397",
+      "16",
+      "17",
+      "18",
+      "19"
+    ]
+  },
+  {
+    "id": "414230",
+    "name": "PEDAGOGIA",
+    "degree": "Licenciatura",
+    "shift": "NOTURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "coordinator": "JANIELLE DA SILVA MELO RABELO",
+    "curricula_ids": [
+      "466",
+      "398",
+      "20",
+      "21",
+      "22"
+    ]
+  },
+  {
+    "id": "414274",
+    "name": "EDUCAÇÃO FÍSICA",
+    "degree": "Licenciatura",
+    "shift": "DIURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "coordinator": "JESSICA SERAFIM FRASSON",
+    "curricula_ids": [
+      "16275955",
+      "480",
+      "481",
+      "242",
+      "27"
+    ]
+  },
+  {
+    "id": "414276",
+    "name": "EDUCAÇÃO FÍSICA",
+    "degree": "Bacharelado",
+    "shift": "DIURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "coordinator": "ROMULO MAIA CARLOS FONSECA",
+    "curricula_ids": [
+      "16275661",
+      "362",
+      "222"
+    ]
+  },
+  {
+    "id": "15958221",
+    "name": "EDUCAÇÃO FÍSICA - CICLO BÁSICO",
+    "degree": "Bacharelado",
+    "shift": "DIURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "coordinator": "ROMULO MAIA CARLOS FONSECA",
+    "curricula_ids": [
+      "16275462"
+    ]
+  },
+  {
+    "id": "414714",
+    "name": "FILOSOFIA",
+    "degree": "Licenciatura",
+    "shift": "DIURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "coordinator": "ALFREDO ROQUE DE OLIVEIRA FREIRE FILHO",
+    "curricula_ids": [
+      "265",
+      "266",
+      "267",
+      "46",
+      "47"
+    ]
+  },
+  {
+    "id": "414713",
+    "name": "FILOSOFIA",
+    "degree": "Bacharelado",
+    "shift": "DIURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "coordinator": "ROGERIO ALESSANDRO DE MELLO BASALI",
+    "curricula_ids": [
+      "419",
+      "262",
+      "263",
+      "264",
+      "482",
+      "483"
+    ]
+  },
+  {
+    "id": "414715",
+    "name": "FILOSOFIA",
+    "degree": "Licenciatura",
+    "shift": "NOTURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "coordinator": "RODRIGO DE ALVARENGA FREIRE",
+    "curricula_ids": [
+      "360",
+      "191"
+    ]
+  },
+  {
+    "id": "414280",
+    "name": "MEDICINA",
+    "degree": "Médico",
+    "shift": "DIURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "coordinator": "GERALDO MAGELA FERNANDES",
+    "curricula_ids": [
+      "3280626",
+      "374",
+      "180",
+      "181",
+      "26"
+    ]
+  },
+  {
+    "id": "414333",
+    "name": "ENGENHARIA MECATRÔNICA - CONTROLE E AUTOMAÇÃO",
+    "degree": "Engenheiro de Controle e Automação",
+    "shift": "DIURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "coordinator": "MARCUS VINICIUS LAMAR",
+    "curricula_ids": [
+      "4063880",
+      "390",
+      "391",
+      "80"
+    ]
+  },
+  {
+    "id": "702702",
+    "name": "CIÊNCIAS NATURAIS",
+    "degree": "Licenciatura",
+    "shift": "DIURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "coordinator": "MARIA CRISTINA DE OLIVEIRA",
+    "curricula_ids": [
+      "4005581",
+      "299",
+      "253"
+    ]
+  },
+  {
+    "id": "702703",
+    "name": "CIÊNCIAS NATURAIS",
+    "degree": "Licenciatura",
+    "shift": "NOTURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "coordinator": "WESCLEY WELL VICENTE BEZERRA",
+    "curricula_ids": [
+      "4005582",
+      "300",
+      "141",
+      "142"
+    ]
+  },
+  {
+    "id": "414881",
+    "name": "EDUCAÇÃO DO CAMPO - CIÊNCIAS DA NATUREZA",
+    "degree": "Licenciatura",
+    "shift": "DIURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "coordinator": "MIKHAEL AEL ROCHA ALVES",
+    "curricula_ids": [
+      "430398",
+      "346"
+    ]
+  },
+  {
+    "id": "414882",
+    "name": "EDUCAÇÃO DO CAMPO - CIÊNCIAS DA NATUREZA E MATEMÁTICA",
+    "degree": "Licenciatura",
+    "shift": "DIURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "coordinator": "MIKHAEL AEL ROCHA ALVES",
+    "curricula_ids": []
+  },
+  {
+    "id": "414885",
+    "name": "EDUCAÇÃO DO CAMPO - LINGUAGENS, ARTES E LITERATURA",
+    "degree": "Licenciatura",
+    "shift": "DIURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "coordinator": "MIKHAEL AEL ROCHA ALVES",
+    "curricula_ids": [
+      "430293",
+      "402",
+      "345",
+      "121"
+    ]
+  },
+  {
+    "id": "414886",
+    "name": "EDUCAÇÃO DO CAMPO - MATEMÁTICA",
+    "degree": "Licenciatura",
+    "shift": "DIURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "coordinator": "MIKHAEL AEL ROCHA ALVES",
+    "curricula_ids": [
+      "430188",
+      "344"
+    ]
+  },
+  {
+    "id": "414888",
+    "name": "GESTÃO AMBIENTAL",
+    "degree": "Bacharelado",
+    "shift": "NOTURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "coordinator": "LUIZ FABRICIO ZARA",
+    "curricula_ids": [
+      "19943711",
+      "448",
+      "143"
+    ]
+  },
+  {
+    "id": "414889",
+    "name": "GESTÃO DO AGRONEGÓCIO",
+    "degree": "Bacharelado",
+    "shift": "DIURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "coordinator": "MAURO EDUARDO DEL GROSSI",
+    "curricula_ids": [
+      "1792717",
+      "81"
+    ]
+  },
+  {
+    "id": "414730",
+    "name": "GEOGRAFIA",
+    "degree": "Bacharelado",
+    "shift": "DIURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "coordinator": "FERNANDO LUIZ ARAUJO SOBRINHO",
+    "curricula_ids": [
+      "295",
+      "52"
+    ]
+  },
+  {
+    "id": "414731",
+    "name": "GEOGRAFIA",
+    "degree": "Licenciatura",
+    "shift": "DIURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "coordinator": "ANA CAROLINA DOS SANTOS MARQUES",
+    "curricula_ids": [
+      "1143277",
+      "429",
+      "53",
+      "54"
+    ]
+  },
+  {
+    "id": "414093",
+    "name": "GESTÃO DE POLÍTICAS PÚBLICAS",
+    "degree": "Bacharelado",
+    "shift": "NOTURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "coordinator": "PAULO RICARDO DA COSTA REIS",
+    "curricula_ids": [
+      "471",
+      "340",
+      "165",
+      "166"
+    ]
+  },
+  {
+    "id": "702700",
+    "name": "HISTÓRIA",
+    "degree": "Bacharelado",
+    "shift": "DIURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "coordinator": "BARBARA MANGUEIRA DO NASCIMENTO",
+    "curricula_ids": [
+      "4005585",
+      "421",
+      "422",
+      "423",
+      "244",
+      "245",
+      "246",
+      "247",
+      "49",
+      "48"
+    ]
+  },
+  {
+    "id": "414748",
+    "name": "HISTÓRIA",
+    "degree": "Licenciatura",
+    "shift": "NOTURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "coordinator": "VINICIUS BIVAR MARRA PEREIRA",
+    "curricula_ids": [
+      "4005587",
+      "410",
+      "158",
+      "159"
+    ]
+  },
+  {
+    "id": "414745",
+    "name": "HISTÓRIA",
+    "degree": "Licenciatura",
+    "shift": "DIURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "coordinator": "LEA MARIA CARRER IAMASHITA",
+    "curricula_ids": [
+      "4005586",
+      "424",
+      "425",
+      "426",
+      "248",
+      "249",
+      "250",
+      "251",
+      "50"
+    ]
+  },
+  {
+    "id": "414371",
+    "name": "BIOTECNOLOGIA",
+    "degree": "Bacharelado",
+    "shift": "DIURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "coordinator": "ELIANE FERREIRA NORONHA",
+    "curricula_ids": [
+      "349",
+      "204"
+    ]
+  },
+  {
+    "id": "414393",
+    "name": "CIÊNCIAS BIOLÓGICAS",
+    "degree": "Licenciatura",
+    "shift": "DIURNO",
+    "campus": "BRASÍLIA",
+    "modality": "A Distância",
+    "curricula_ids": []
+  },
+  {
+    "id": "414391",
+    "name": "CIÊNCIAS BIOLÓGICAS",
+    "degree": "Bacharelado",
+    "shift": "DIURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "coordinator": "MARCOS ANTONIO DOS SANTOS SILVA FERRAZ",
+    "curricula_ids": [
+      "413",
+      "254",
+      "255",
+      "256",
+      "257",
+      "258",
+      "40"
+    ]
+  },
+  {
+    "id": "414392",
+    "name": "CIÊNCIAS BIOLÓGICAS",
+    "degree": "Licenciatura",
+    "shift": "NOTURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "coordinator": "THIAGO JOSE DE CARVALHO ANDRE",
+    "curricula_ids": [
+      "2178782",
+      "358",
+      "359",
+      "259",
+      "260",
+      "261",
+      "41"
+    ]
+  },
+  {
+    "id": "20429361",
+    "name": "INTELIGÊNCIA ARTIFICIAL",
+    "degree": "Bacharelado",
+    "shift": "DIURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "coordinator": "GUILHERME SOUZA RODRIGUES",
+    "curricula_ids": [
+      "20433770",
+      "20433669",
+      "20433568",
+      "20429530"
+    ]
+  },
+  {
+    "id": "414687",
+    "name": "GEOGRAFIA",
+    "degree": "Licenciatura",
+    "shift": "DIURNO",
+    "campus": "BRASÍLIA",
+    "modality": "A Distância",
+    "coordinator": "RAFAEL RODRIGUES DA FRANCA",
+    "curricula_ids": [
+      "1136165",
+      "377",
+      "144"
+    ]
+  },
+  {
+    "id": "434774",
+    "name": "ARTES VISUAIS",
+    "degree": "Licenciatura",
+    "shift": "DIURNO",
+    "campus": "BRASÍLIA",
+    "modality": "A Distância",
+    "coordinator": "PEDRO ERNESTO FREITAS LIMA",
+    "curricula_ids": [
+      "1185214",
+      "4005592",
+      "4005591"
+    ]
+  },
+  {
+    "id": "414430",
+    "name": "MÚSICA",
+    "degree": "Licenciatura",
+    "shift": "DIURNO",
+    "campus": "BRASÍLIA",
+    "modality": "A Distância",
+    "coordinator": "ULIANA DIAS CAMPOS FERLIM",
+    "curricula_ids": [
+      "2108790",
+      "273",
+      "274"
+    ]
+  },
+  {
+    "id": "694213",
+    "name": "TEATRO",
+    "degree": "Licenciatura",
+    "shift": "DIURNO",
+    "campus": "BRASÍLIA",
+    "modality": "A Distância",
+    "coordinator": "TIAGO ELIAS MUNDIM",
+    "curricula_ids": [
+      "3929923",
+      "4035263"
+    ]
+  },
+  {
+    "id": "414664",
+    "name": "FÍSICA",
+    "degree": "Licenciatura",
+    "shift": "DIURNO",
+    "campus": "BRASÍLIA",
+    "modality": "A Distância",
+    "coordinator": "ALESSANDRA FERREIRA ALBERNAZ",
+    "curricula_ids": [
+      "447",
+      "3922691"
+    ]
+  },
+  {
+    "id": "414663",
+    "name": "FÍSICA",
+    "degree": "Bacharelado",
+    "shift": "DIURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "coordinator": "RAFAEL BESSE",
+    "curricula_ids": [
+      "323",
+      "324",
+      "28",
+      "29",
+      "4052096"
+    ]
+  },
+  {
+    "id": "414657",
+    "name": "FÍSICA",
+    "degree": "Licenciatura",
+    "shift": "NOTURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "coordinator": "LETICIA GONCALVES NUNES COELHO",
+    "curricula_ids": [
+      "454",
+      "403",
+      "30",
+      "31",
+      "32"
+    ]
+  },
+  {
+    "id": "414662",
+    "name": "FÍSICA COMPUTACIONAL",
+    "degree": "Bacharelado",
+    "shift": "DIURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "curricula_ids": [
+      "33"
+    ]
+  },
+  {
+    "id": "414667",
+    "name": "CIÊNCIAS AMBIENTAIS",
+    "degree": "Bacharelado",
+    "shift": "NOTURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "coordinator": "LUCAS VITOR DE CARVALHO SOUSA",
+    "curricula_ids": [
+      "2102853",
+      "327",
+      "2117712",
+      "326",
+      "2117194",
+      "157",
+      "325",
+      "2116377"
+    ]
+  },
+  {
+    "id": "414669",
+    "name": "GEOFÍSICA",
+    "degree": "Bacharelado",
+    "shift": "DIURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "coordinator": "MARCELO PERES ROCHA",
+    "curricula_ids": [
+      "19991094",
+      "455",
+      "155"
+    ]
+  },
+  {
+    "id": "414677",
+    "name": "GEOLOGIA",
+    "degree": "Geólogo",
+    "shift": "DIURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "coordinator": "TATI DE ALMEIDA",
+    "curricula_ids": [
+      "17426666",
+      "375",
+      "8",
+      "9"
+    ]
+  },
+  {
+    "id": "22308018",
+    "name": "COMUNICAÇÃO ASSISTIVA: TRADUÇÃO E INTERPRETAÇÃO EM LÍNGUA BRASILEIRA DE SINAIS (LIBRAS) EM CONTEXTO COMUNITÁRIO",
+    "degree": "Tecnólogo",
+    "shift": "INTEGRAL",
+    "campus": "BRASÍLIA",
+    "modality": "A Distância",
+    "coordinator": "FABIANE ELIAS PAGY",
+    "curricula_ids": [
+      "22309112"
+    ]
+  },
+  {
+    "id": "414772",
+    "name": "LETRAS - LÍNGUA PORTUGUESA E RESPECTIVA LITERATURA",
+    "degree": "Licenciatura",
+    "shift": "DIURNO",
+    "campus": "BRASÍLIA",
+    "modality": "A Distância",
+    "coordinator": "ROBERTA CANTARELA",
+    "curricula_ids": [
+      "8751344",
+      "385",
+      "118",
+      "119"
+    ]
+  },
+  {
+    "id": "414775",
+    "name": "LETRAS - TRADUÇÃO - ESPANHOL",
+    "degree": "Bacharelado",
+    "shift": "NOTURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "coordinator": "LILY MARTINEZ EVANGELISTA",
+    "curricula_ids": [
+      "17640127",
+      "384",
+      "160"
+    ]
+  },
+  {
+    "id": "414961",
+    "name": "PSICOLOGIA",
+    "degree": "Licenciatura",
+    "shift": "DIURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "coordinator": "LARISSA MEDEIROS MARINHO DOS SANTOS",
+    "curricula_ids": [
+      "414",
+      "314",
+      "315",
+      "316",
+      "83",
+      "84"
+    ]
+  },
+  {
+    "id": "414960",
+    "name": "PSICOLOGIA",
+    "degree": "Bacharelado",
+    "shift": "DIURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "coordinator": "LARISSA MEDEIROS MARINHO DOS SANTOS",
+    "curricula_ids": [
+      "406",
+      "407",
+      "312",
+      "313",
+      "82"
+    ]
+  },
+  {
+    "id": "414962",
+    "name": "PSICOLOGIA",
+    "degree": "Psicólogo",
+    "shift": "DIURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "coordinator": "LARISSA MEDEIROS MARINHO DOS SANTOS",
+    "curricula_ids": [
+      "408",
+      "409",
+      "317",
+      "318",
+      "85",
+      "86"
+    ]
+  },
+  {
+    "id": "414892",
+    "name": "CIÊNCIA POLÍTICA",
+    "degree": "Bacharelado",
+    "shift": "DIURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "coordinator": "JOSCIMAR SOUZA SILVA",
+    "curricula_ids": [
+      "19758325",
+      "105",
+      "106",
+      "107",
+      "108",
+      "109",
+      "7"
+    ]
+  },
+  {
+    "id": "414862",
+    "name": "ENGENHARIA QUÍMICA",
+    "degree": "Bacharelado",
+    "shift": "DIURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "coordinator": "ALEXANDRE PEREZ UMPIERRE",
+    "curricula_ids": [
+      "225",
+      "226"
+    ]
+  },
+  {
+    "id": "414871",
+    "name": "QUÍMICA",
+    "degree": "Licenciatura",
+    "shift": "NOTURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "coordinator": "JHENIFFER MICHELINE CORTEZ",
+    "curricula_ids": [
+      "16222869",
+      "308",
+      "309",
+      "39"
+    ]
+  },
+  {
+    "id": "414870",
+    "name": "QUÍMICA",
+    "degree": "Bacharelado",
+    "shift": "DIURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "coordinator": "MARYENE ALVES CAMARGO",
+    "curricula_ids": [
+      "17954427",
+      "376",
+      "306",
+      "307",
+      "38"
+    ]
+  },
+  {
+    "id": "414873",
+    "name": "QUÍMICA TECNOLÓGICA",
+    "degree": "Bacharelado",
+    "shift": "DIURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "coordinator": "FERNANDA RIBEIRO DO CARMO DAMASCENO",
+    "curricula_ids": [
+      "8977458",
+      "331",
+      "332",
+      "333",
+      "170"
+    ]
+  },
+  {
+    "id": "414899",
+    "name": "RELAÇÕES INTERNACIONAIS",
+    "degree": "Bacharelado",
+    "shift": "DIURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "coordinator": "JULIANO DA SILVA CORTINHAS",
+    "curricula_ids": [
+      "428",
+      "51"
+    ]
+  },
+  {
+    "id": "414779",
+    "name": "LETRAS - LÍNGUA E LITERATURA JAPONESA",
+    "degree": "Licenciatura",
+    "shift": "NOTURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "coordinator": "KIMIKO UCHIGASAKI PINHEIRO",
+    "curricula_ids": [
+      "21580805",
+      "65",
+      "66"
+    ]
+  },
+  {
+    "id": "414782",
+    "name": "LETRAS - LÍNGUA ESPANHOLA E LITERATURA ESPANHOLA E HISPANO-AMERICANA",
+    "degree": "Licenciatura",
+    "shift": "NOTURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "coordinator": "CAMILLA GUIMARAES SANTERO PONTES",
+    "curricula_ids": [
+      "16697304",
+      "58",
+      "59"
+    ]
+  },
+  {
+    "id": "414795",
+    "name": "LETRAS - LÍNGUA FRANCESA E RESPECTIVA LITERATURA",
+    "degree": "Bacharelado",
+    "shift": "DIURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "coordinator": "MAURICIO OLIVEIRA SANTOS",
+    "curricula_ids": [
+      "21946158",
+      "380",
+      "196"
+    ]
+  },
+  {
+    "id": "414796",
+    "name": "LETRAS - LÍNGUA FRANCESA E RESPECTIVA LITERATURA",
+    "degree": "Licenciatura",
+    "shift": "DIURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "coordinator": "ANNE LOUISE DIAS",
+    "curricula_ids": [
+      "21936167",
+      "381",
+      "197",
+      "198"
+    ]
+  },
+  {
+    "id": "702701",
+    "name": "LETRAS - LÍNGUA INGLESA E RESPECTIVA LITERATURA",
+    "degree": "Licenciatura",
+    "shift": "DIURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "coordinator": "AVRAM STANLEY BLUM",
+    "curricula_ids": [
+      "16047599",
+      "3916147",
+      "4005583",
+      "383",
+      "201",
+      "202",
+      "60"
+    ]
+  },
+  {
+    "id": "414809",
+    "name": "LETRAS - LÍNGUA INGLESA E RESPECTIVA LITERATURA",
+    "degree": "Bacharelado",
+    "shift": "DIURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "coordinator": "PAWEL JERZY HEJMANOWSKI",
+    "curricula_ids": [
+      "8892502",
+      "382",
+      "199",
+      "200"
+    ]
+  },
+  {
+    "id": "414813",
+    "name": "LETRAS - TRADUÇÃO - FRANCÊS",
+    "degree": "Bacharelado",
+    "shift": "DIURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "coordinator": "ECLAIR ANTONIO ALMEIDA FILHO",
+    "curricula_ids": [
+      "20104348",
+      "64",
+      "3922776"
+    ]
+  },
+  {
+    "id": "414822",
+    "name": "LETRAS - TRADUÇÃO - INGLÊS",
+    "degree": "Bacharelado",
+    "shift": "DIURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "coordinator": "VALMI HATJE FAGGION",
+    "curricula_ids": [
+      "63",
+      "3923221"
+    ]
+  },
+  {
+    "id": "414823",
+    "name": "LÍNGUAS ESTRANGEIRAS APLICADAS - MSI",
+    "degree": "Bacharelado",
+    "shift": "DIURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "coordinator": "FERNANDA ALENCAR PEREIRA",
+    "curricula_ids": [
+      "19787482",
+      "174",
+      "3923645"
+    ]
+  },
+  {
+    "id": "414844",
+    "name": "LETRAS - LÍNGUA PORTUGUESA E RESPECTIVA LITERATURA",
+    "degree": "Licenciatura",
+    "shift": "DIURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "coordinator": "RONALDO MANGUEIRA LIMA JUNIOR",
+    "curricula_ids": [
+      "20155499",
+      "193",
+      "194",
+      "195"
+    ]
+  },
+  {
+    "id": "414843",
+    "name": "LETRAS - LÍNGUA PORTUGUESA E RESPECTIVA LITERATURA",
+    "degree": "Bacharelado",
+    "shift": "DIURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "coordinator": "GABRIEL VICTOR ROCHA PINEZI",
+    "curricula_ids": [
+      "378",
+      "192",
+      "55"
+    ]
+  },
+  {
+    "id": "414845",
+    "name": "LETRAS - LÍNGUA PORTUGUESA E RESPECTIVA LITERATURA",
+    "degree": "Licenciatura",
+    "shift": "NOTURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "coordinator": "CINTIA DA SILVA PACHECO",
+    "curricula_ids": [
+      "20160627",
+      "379",
+      "56",
+      "57"
+    ]
+  },
+  {
+    "id": "414848",
+    "name": "LETRAS - PORTUGUÊS DO BRASIL COMO SEGUNDA LÍNGUA",
+    "degree": "Licenciatura",
+    "shift": "DIURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "coordinator": "JANAINA DE AQUINO FERRAZ",
+    "curricula_ids": [
+      "334",
+      "61",
+      "62"
+    ]
+  },
+  {
+    "id": "414849",
+    "name": "LÍNGUA DE SINAIS BRASILEIRA - PORTUGUÊS COMO SEGUNDA LÍNGUA",
+    "degree": "Licenciatura",
+    "shift": "DIURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "coordinator": "GLAUCIO DE CASTRO JUNIOR",
+    "curricula_ids": [
+      "22155902",
+      "335",
+      "336",
+      "337"
+    ]
+  },
+  {
+    "id": "414639",
+    "name": "MATEMÁTICA",
+    "degree": "Bacharelado",
+    "shift": "DIURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "curricula_ids": [
+      "15894324",
+      "353",
+      "35",
+      "36"
+    ]
+  },
+  {
+    "id": "414640",
+    "name": "MATEMÁTICA",
+    "degree": "Licenciatura",
+    "shift": "NOTURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "coordinator": "JOSE ANTONIO OLIVEIRA DE FREITAS",
+    "curricula_ids": [
+      "17324299",
+      "304",
+      "305",
+      "37"
+    ]
+  },
+  {
+    "id": "414638",
+    "name": "MATEMÁTICA",
+    "degree": "Licenciatura",
+    "shift": "DIURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "coordinator": "TARCISIO CASTRO SILVA",
+    "curricula_ids": [
+      "17580551",
+      "412",
+      "301",
+      "302",
+      "303",
+      "34"
+    ]
+  },
+  {
+    "id": "414459",
+    "name": "MÚSICA",
+    "degree": "Licenciatura",
+    "shift": "DIURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "coordinator": "ALEXEI ALVES DE QUEIROZ",
+    "curricula_ids": [
+      "17690645",
+      "5069939",
+      "268",
+      "3929235"
+    ]
+  },
+  {
+    "id": "702698",
+    "name": "MÚSICA",
+    "degree": "Bacharelado",
+    "shift": "DIURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "curricula_ids": [
+      "4052098",
+      "3929184"
+    ]
+  },
+  {
+    "id": "414460",
+    "name": "MÚSICA",
+    "degree": "Licenciatura",
+    "shift": "NOTURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "coordinator": "SIMONE LACORTE RECOVA",
+    "curricula_ids": [
+      "19773552",
+      "161",
+      "162"
+    ]
+  },
+  {
+    "id": "414465",
+    "name": "MÚSICA - CANTO",
+    "degree": "Bacharelado",
+    "shift": "DIURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "coordinator": "BEATRIZ DUARTE PEREIRA DE MAGALHAES CASTRO",
+    "curricula_ids": [
+      "87",
+      "88"
+    ]
+  },
+  {
+    "id": "414469",
+    "name": "MÚSICA - CLARINETA",
+    "degree": "Bacharelado",
+    "shift": "DIURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "coordinator": "BEATRIZ DUARTE PEREIRA DE MAGALHAES CASTRO",
+    "curricula_ids": [
+      "6",
+      "3923944"
+    ]
+  },
+  {
+    "id": "414473",
+    "name": "MÚSICA - COMPOSIÇÃO",
+    "degree": "Bacharelado",
+    "shift": "DIURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "coordinator": "BEATRIZ DUARTE PEREIRA DE MAGALHAES CASTRO",
+    "curricula_ids": [
+      "7122365",
+      "282",
+      "92"
+    ]
+  },
+  {
+    "id": "414479",
+    "name": "MÚSICA - CONTRABAIXO",
+    "degree": "Bacharelado",
+    "shift": "DIURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "coordinator": "BEATRIZ DUARTE PEREIRA DE MAGALHAES CASTRO",
+    "curricula_ids": [
+      "270",
+      "3924314"
+    ]
+  },
+  {
+    "id": "414484",
+    "name": "MÚSICA - FAGOTE",
+    "degree": "Bacharelado",
+    "shift": "DIURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "coordinator": "BEATRIZ DUARTE PEREIRA DE MAGALHAES CASTRO",
+    "curricula_ids": [
+      "279",
+      "3924682"
+    ]
+  },
+  {
+    "id": "414489",
+    "name": "MÚSICA - FLAUTA",
+    "degree": "Bacharelado",
+    "shift": "DIURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "coordinator": "BEATRIZ DUARTE PEREIRA DE MAGALHAES CASTRO",
+    "curricula_ids": [
+      "280",
+      "3925061"
+    ]
+  },
+  {
+    "id": "414495",
+    "name": "MÚSICA - OBOÉ",
+    "degree": "Bacharelado",
+    "shift": "DIURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "coordinator": "BEATRIZ DUARTE PEREIRA DE MAGALHAES CASTRO",
+    "curricula_ids": [
+      "278",
+      "3925429"
+    ]
+  },
+  {
+    "id": "414500",
+    "name": "MÚSICA - PIANO",
+    "degree": "Bacharelado",
+    "shift": "DIURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "coordinator": "BEATRIZ DUARTE PEREIRA DE MAGALHAES CASTRO",
+    "curricula_ids": [
+      "281",
+      "4052097"
+    ]
+  },
+  {
+    "id": "414504",
+    "name": "MÚSICA - REGÊNCIA",
+    "degree": "Bacharelado",
+    "shift": "DIURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "coordinator": "BEATRIZ DUARTE PEREIRA DE MAGALHAES CASTRO",
+    "curricula_ids": [
+      "433",
+      "3925798"
+    ]
+  },
+  {
+    "id": "414509",
+    "name": "MÚSICA - SAXOFONE",
+    "degree": "Bacharelado",
+    "shift": "DIURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "coordinator": "BEATRIZ DUARTE PEREIRA DE MAGALHAES CASTRO",
+    "curricula_ids": [
+      "271",
+      "3926177"
+    ]
+  },
+  {
+    "id": "414513",
+    "name": "MÚSICA - TROMBONE",
+    "degree": "Bacharelado",
+    "shift": "DIURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "coordinator": "BEATRIZ DUARTE PEREIRA DE MAGALHAES CASTRO",
+    "curricula_ids": [
+      "283",
+      "3926567"
+    ]
+  },
+  {
+    "id": "1841275",
+    "name": "MÚSICA - TROMPA",
+    "degree": "Bacharelado",
+    "shift": "DIURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "coordinator": "BEATRIZ DUARTE PEREIRA DE MAGALHAES CASTRO",
+    "curricula_ids": [
+      "4065322",
+      "3927006"
+    ]
+  },
+  {
+    "id": "414523",
+    "name": "MÚSICA - TROMPETE",
+    "degree": "Bacharelado",
+    "shift": "DIURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "coordinator": "BEATRIZ DUARTE PEREIRA DE MAGALHAES CASTRO",
+    "curricula_ids": [
+      "269",
+      "3927309"
+    ]
+  },
+  {
+    "id": "414528",
+    "name": "MÚSICA - VIOLA",
+    "degree": "Bacharelado",
+    "shift": "DIURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "coordinator": "BEATRIZ DUARTE PEREIRA DE MAGALHAES CASTRO",
+    "curricula_ids": [
+      "276",
+      "3927676"
+    ]
+  },
+  {
+    "id": "414533",
+    "name": "MÚSICA - VIOLÃO",
+    "degree": "Bacharelado",
+    "shift": "DIURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "coordinator": "BEATRIZ DUARTE PEREIRA DE MAGALHAES CASTRO",
+    "curricula_ids": [
+      "272",
+      "3928817"
+    ]
+  },
+  {
+    "id": "414538",
+    "name": "MÚSICA - VIOLINO",
+    "degree": "Bacharelado",
+    "shift": "DIURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "coordinator": "BEATRIZ DUARTE PEREIRA DE MAGALHAES CASTRO",
+    "curricula_ids": [
+      "275",
+      "3928044"
+    ]
+  },
+  {
+    "id": "414543",
+    "name": "MÚSICA - VIOLONCELO",
+    "degree": "Bacharelado",
+    "shift": "DIURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "coordinator": "BEATRIZ DUARTE PEREIRA DE MAGALHAES CASTRO",
+    "curricula_ids": [
+      "277",
+      "3928450"
+    ]
+  },
+  {
+    "id": "414314",
+    "name": "NUTRIÇÃO",
+    "degree": "Nutricionista",
+    "shift": "DIURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "coordinator": "LEANDRO DA CUNHA BAIA",
+    "curricula_ids": [
+      "464",
+      "220",
+      "123"
+    ]
+  },
+  {
+    "id": "414321",
+    "name": "ODONTOLOGIA",
+    "degree": "Cirurgião Dentista",
+    "shift": "DIURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "coordinator": "ALINE URSULA ROCHA FERNANDES",
+    "curricula_ids": [
+      "184",
+      "3929696"
+    ]
+  },
+  {
+    "id": "414765",
+    "name": "SERVIÇO SOCIAL",
+    "degree": "Bacharelado",
+    "shift": "NOTURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "coordinator": "ANDREIA DE OLIVEIRA",
+    "curricula_ids": [
+      "427",
+      "171",
+      "172",
+      "173"
+    ]
+  },
+  {
+    "id": "414764",
+    "name": "SERVIÇO SOCIAL",
+    "degree": "Bacharelado",
+    "shift": "DIURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "coordinator": "MICHELLY FERREIRA MONTEIRO ELIAS",
+    "curricula_ids": [
+      "319",
+      "320",
+      "124"
+    ]
+  },
+  {
+    "id": "702695",
+    "name": "CIÊNCIAS SOCIAIS",
+    "degree": "Licenciatura",
+    "shift": "DIURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "coordinator": "SAYONARA DE AMORIM GONCALVES LEAL",
+    "curricula_ids": [
+      "4005584",
+      "416",
+      "417",
+      "43",
+      "44",
+      "45"
+    ]
+  },
+  {
+    "id": "414425",
+    "name": "CIÊNCIAS SOCIAIS - SOCIOLOGIA",
+    "degree": "Bacharelado",
+    "shift": "DIURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "curricula_ids": [
+      "7479425",
+      "216",
+      "217",
+      "218",
+      "219"
+    ]
+  },
+  {
+    "id": "414544",
+    "name": "ARTES VISUAIS",
+    "degree": "Licenciatura",
+    "shift": "DIURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "coordinator": "LUISA DE ARAUJO GUNTHER",
+    "curricula_ids": [
+      "467"
+    ]
+  },
+  {
+    "id": "414553",
+    "name": "ARTES VISUAIS",
+    "degree": "Licenciatura",
+    "shift": "DIURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "coordinator": "LUISA DE ARAUJO GUNTHER",
+    "curricula_ids": [
+      "3921944",
+      "386",
+      "387",
+      "478",
+      "479",
+      "12",
+      "13"
+    ]
+  },
+  {
+    "id": "414552",
+    "name": "ARTES VISUAIS",
+    "degree": "Bacharelado",
+    "shift": "DIURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "coordinator": "RODRIGO DE ALMEIDA CRUZ",
+    "curricula_ids": [
+      "19831661",
+      "296",
+      "297",
+      "298",
+      "477",
+      "11"
+    ]
+  },
+  {
+    "id": "414551",
+    "name": "ARTES VISUAIS",
+    "degree": "Licenciatura",
+    "shift": "NOTURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "coordinator": "CHRISTUS MENEZES DA NOBREGA",
+    "curricula_ids": [
+      "470",
+      "388",
+      "389",
+      "14",
+      "15"
+    ]
+  },
+  {
+    "id": "414435",
+    "name": "TEORIA, CRÍTICA E HISTÓRIA DA ARTE",
+    "degree": "Bacharelado",
+    "shift": "NOTURNO",
+    "campus": "BRASÍLIA",
+    "modality": "Presencial",
+    "coordinator": "DANIEL FERNANDES BATISTA DE OLIVEIRA",
+    "curricula_ids": [
+      "1177924",
+      "404",
+      "223",
+      "224"
+    ]
+  }
+]
