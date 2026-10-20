@@ -2,8 +2,8 @@ use serde::{Deserialize, Serialize};
 use std::sync::OnceLock;
 use tokio::sync::RwLock;
 
-const CDN_BASE_URL: &str = "https://raw.githubusercontent.com/kalebhenrique/unb-aggregator/gh-pages/data";
-const GITHUB_PAGES_BASE_URL: &str = "https://kalebhenrique.github.io/unb-aggregator/data";
+const CDN_BASE_URL: &str = "https://raw.githubusercontent.com/kalebhenrique/sarue-unb/gh-pages/data";
+const GITHUB_PAGES_BASE_URL: &str = "https://kalebhenrique.github.io/sarue-unb/data";
 const USER_AGENT: &str = "Sarue-UnB/0.1.0 (Desktop App; Tauri)";
 
 // Cache em memória para evitar múltiplos downloads de classes.json durante a sessão

@@ -659,9 +659,17 @@ export class InMemoryGradeRepository implements IGradeRepository {
 
   async getCourseCurriculum(courseId: string): Promise<CurriculumStructure[]> {
     if (!this.curriculaCache && typeof fetch !== 'undefined') {
-      try {
-        const res = await fetch('/data/curricula.json');
-        if (res.ok) {
+      const candidateUrls = [
+        '/data/curricula.json',
+        'https://kalebhenrique.github.io/sarue-unb/data/curricula.json',
+        'https://raw.githubusercontent.com/kalebhenrique/sarue-unb/gh-pages/data/curricula.json',
+      ];
+
+      for (const url of candidateUrls) {
+        try {
+          const res = await fetch(url);
+          if (!res.ok) continue;
+
           interface RawCurriculumDiscipline {
             code: string;
             name: string;
@@ -689,7 +697,7 @@ export class InMemoryGradeRepository implements IGradeRepository {
           }
 
           const raw = (await res.json()) as RawCurriculumStructure[];
-          if (Array.isArray(raw)) {
+          if (Array.isArray(raw) && raw.length > 0) {
             const mapDisc = (d: RawCurriculumDiscipline) => ({
               code: d.code,
               name: d.name,
@@ -715,9 +723,10 @@ export class InMemoryGradeRepository implements IGradeRepository {
               electiveDisciplines: (curr.elective_disciplines || []).map(mapDisc),
               complementaryDisciplines: (curr.complementary_disciplines || []).map(mapDisc),
             }));
+            break;
           }
-        }
-      } catch {}
+        } catch {}
+      }
     }
 
     if (this.curriculaCache) {

@@ -65,9 +65,17 @@ export class InMemoryAcademicProfileRepository implements IAcademicProfileReposi
 
     sharedCurriculaPromise = (async () => {
       if (typeof fetch !== 'undefined') {
-        try {
-          const res = await fetch('/data/curricula.json');
-          if (res.ok) {
+        const candidateUrls = [
+          '/data/curricula.json',
+          'https://kalebhenrique.github.io/sarue-unb/data/curricula.json',
+          'https://raw.githubusercontent.com/kalebhenrique/sarue-unb/gh-pages/data/curricula.json',
+        ];
+
+        for (const url of candidateUrls) {
+          try {
+            const res = await fetch(url);
+            if (!res.ok) continue;
+
             const raw = (await res.json()) as Array<{
               id: string;
               course_id: string;
@@ -112,7 +120,7 @@ export class InMemoryAcademicProfileRepository implements IAcademicProfileReposi
               }>;
             }>;
 
-            if (Array.isArray(raw)) {
+            if (Array.isArray(raw) && raw.length > 0) {
               const mapDisc = (d: {
                 code: string;
                 name: string;
@@ -168,9 +176,9 @@ export class InMemoryAcademicProfileRepository implements IAcademicProfileReposi
               sharedCurriculaCache = mapped;
               return mapped;
             }
+          } catch (e) {
+            console.warn(`[InMemoryAcademicProfileRepository] Erro ao carregar currículos de ${url}:`, e);
           }
-        } catch (e) {
-          console.warn('[InMemoryAcademicProfileRepository] Erro ao carregar /data/curricula.json:', e);
         }
       }
 

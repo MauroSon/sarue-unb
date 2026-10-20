@@ -1,6 +1,32 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 
+async function findDataDirs(dir) {
+  const dirs = [];
+  try {
+    const entries = await fs.readdir(dir, { withFileTypes: true });
+    let hasData = false;
+    for (const entry of entries) {
+      if (entry.isFile() && (entry.name === 'courses.json' || entry.name === 'curricula.json')) {
+        hasData = true;
+        break;
+      }
+    }
+    if (hasData) {
+      dirs.push(dir);
+    }
+    for (const entry of entries) {
+      if (entry.isDirectory()) {
+        const nested = await findDataDirs(path.join(dir, entry.name));
+        dirs.push(...nested);
+      }
+    }
+  } catch {
+    // ignora diretórios inacessíveis
+  }
+  return dirs;
+}
+
 async function main() {
   const args = process.argv.slice(2);
   const getArg = (flag, def) => {
@@ -22,46 +48,42 @@ async function main() {
 
   const parentDir = getArg('--parent-dir', '');
   if (parentDir) {
-    try {
-      const entries = await fs.readdir(path.resolve(parentDir), { withFileTypes: true });
-      for (const entry of entries) {
-        if (entry.isDirectory()) {
-          inputDirs.push(path.resolve(parentDir, entry.name));
-        }
-      }
-    } catch (e) {
-      console.warn(`[MergeCoursesShards] Aviso ao listar parent-dir ${parentDir}: ${e.message}`);
-    }
+    const discovered = await findDataDirs(path.resolve(parentDir));
+    inputDirs.push(...discovered);
   }
 
   if (inputDirs.length === 0) {
     // Tenta detectar dist-data-1, dist-data-2 ou pastas dentro de artifacts
     const defaultCandidates = ['./dist-data-1', './dist-data-2'];
     for (const d of defaultCandidates) {
-      try {
-        const stat = await fs.stat(d);
-        if (stat.isDirectory()) inputDirs.push(path.resolve(d));
-      } catch {}
+      const discovered = await findDataDirs(path.resolve(d));
+      inputDirs.push(...discovered);
     }
   }
 
-  console.log(`[MergeCoursesShards] Iniciando unificação de ${inputDirs.length} partes.`);
-  console.log(`[MergeCoursesShards] Pastas de entrada:`, inputDirs);
+  const uniqueInputDirs = Array.from(new Set(inputDirs));
+
+  console.log(`[MergeCoursesShards] Iniciando unificação de ${uniqueInputDirs.length} partes.`);
+  console.log(`[MergeCoursesShards] Pastas de entrada:`, uniqueInputDirs);
   console.log(`[MergeCoursesShards] Pasta de saída: ${outDir}`);
 
   await fs.mkdir(outDir, { recursive: true });
 
-  let allCourses = [];
+  const allCoursesMap = new Map();
   const allCurriculaMap = new Map();
 
-  for (const dir of inputDirs) {
+  for (const dir of uniqueInputDirs) {
     // 1. Lê courses.json
     try {
       const coursesPath = path.join(dir, 'courses.json');
       const coursesRaw = await fs.readFile(coursesPath, 'utf-8');
       const courses = JSON.parse(coursesRaw);
-      if (courses.length > allCourses.length) {
-        allCourses = courses;
+      if (Array.isArray(courses)) {
+        for (const course of courses) {
+          if (!allCoursesMap.has(course.id) || (course.curricula_ids && course.curricula_ids.length > 0)) {
+            allCoursesMap.set(course.id, course);
+          }
+        }
       }
     } catch (e) {
       console.warn(`[MergeCoursesShards] Aviso ao ler courses.json em ${dir}: ${e.message}`);
@@ -80,7 +102,14 @@ async function main() {
     }
   }
 
+  const allCourses = Array.from(allCoursesMap.values());
   const mergedCurricula = Array.from(allCurriculaMap.values());
+
+  if (allCourses.length === 0 || mergedCurricula.length === 0) {
+    throw new Error(
+      `[MergeCoursesShards] Proteção acionada: nenhum curso (${allCourses.length}) ou currículo (${mergedCurricula.length}) válido encontrado nos shards! Abortando para não sobrescrever dados existentes na gh-pages.`
+    );
+  }
 
   // Mapeia os currículos unificados para os seus respectivos cursos
   const courseCurriculaIds = new Map();
