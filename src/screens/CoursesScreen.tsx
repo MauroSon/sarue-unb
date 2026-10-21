@@ -10,6 +10,7 @@ import {
   Pagination,
   toast,
   EmptyState,
+  Skeleton,
 } from "@/components/ui";
 import {
   GraduationCap,
@@ -40,6 +41,7 @@ export const CoursesScreen: React.FC = () => {
     otherCourses,
     items,
     isLoading,
+    hasLoadedOnce,
     toggleTaskCompleted,
     archiveFeedItem,
     showArchived,
@@ -95,14 +97,38 @@ export const CoursesScreen: React.FC = () => {
     }
   }, [unmatchedCourses, resolvingCourse]);
 
-  if (isLoading && !selectedDiscipline) {
+  if (isLoading && !hasLoadedOnce && !selectedDiscipline) {
     return (
       <PageContainer>
-        <div className="p-12 text-center bg-white border-2 border-black rounded-lg shadow-[4px_4px_0px_0px_#000]">
-          <div className="inline-block animate-spin border-2 border-black border-t-transparent rounded-full h-8 w-8 mb-3" />
-          <p className="text-sm font-bold text-black">
-            Carregando Disciplinas...
-          </p>
+        <PageHeader icon={GraduationCap} title="Disciplinas do Semestre" />
+        <div
+          className="grid grid-cols-1 md:grid-cols-2 gap-4"
+          role="status"
+          aria-busy="true"
+        >
+          <span className="sr-only">Carregando disciplinas...</span>
+          {[1, 2, 3, 4].map((i) => (
+            <Card
+              key={i}
+              className="bg-white rounded-lg p-5 shadow-[4px_4px_0px_0px_#000] flex flex-col justify-between space-y-4"
+            >
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <Skeleton className="h-5 w-16 rounded-md" />
+                  <Skeleton className="h-5 w-20 rounded-md" />
+                </div>
+                <Skeleton className="h-6 w-3/4 rounded-md" />
+                <div className="flex gap-3 pt-1">
+                  <Skeleton className="h-4 w-24 rounded-md" />
+                  <Skeleton className="h-4 w-20 rounded-md" />
+                </div>
+              </div>
+              <div className="pt-3 border-t-2 border-black/10 flex justify-between items-center">
+                <Skeleton className="h-4 w-28 rounded-md" />
+                <Skeleton className="h-4 w-16 rounded-md" />
+              </div>
+            </Card>
+          ))}
         </div>
       </PageContainer>
     );
@@ -160,26 +186,30 @@ export const CoursesScreen: React.FC = () => {
 
     return (
       <PageContainer>
-        {/* Barra superior de navegação para voltar */}
-        <div className="flex items-center gap-3">
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => {
-              setSelectedDiscipline(null);
-              setDrillSearchQuery("");
-              setDrillCategory("all");
-              setShowArchived(false);
-            }}
-            className="cursor-pointer flex items-center gap-1.5 font-bold"
-          >
-            <ArrowLeft className="w-4 h-4 stroke-[2.5]" />
-            <span>Voltar para Disciplinas</span>
-          </Button>
-        </div>
+        {/* Título Padronizado da Página com Nome da Disciplina e Ação de Voltar */}
+        <PageHeader
+          icon={GraduationCap}
+          title={selectedDiscipline.name}
+          actions={
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                setSelectedDiscipline(null);
+                setDrillSearchQuery("");
+                setDrillCategory("all");
+                setShowArchived(false);
+              }}
+              className="cursor-pointer flex items-center gap-1.5 font-bold"
+            >
+              <ArrowLeft className="w-3.5 h-3.5 stroke-[2.5]" />
+              <span>Voltar</span>
+            </Button>
+          }
+        />
 
-        {/* Cabeçalho da Disciplina com Detalhes e Acessos */}
+        {/* Detalhes e Acessos da Disciplina */}
         <div className="bg-white border-2 border-black rounded-lg p-6 shadow-[4px_4px_0px_0px_#000] space-y-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex flex-wrap items-center gap-2">
@@ -202,10 +232,6 @@ export const CoursesScreen: React.FC = () => {
               Semestre {selectedDiscipline.semester}
             </span>
           </div>
-
-          <h2 className="text-xl md:text-2xl font-black text-black leading-tight">
-            {selectedDiscipline.name}
-          </h2>
 
           <div className="flex flex-wrap gap-4 text-xs font-semibold text-neutral-700 pt-1 border-t-2 border-black/10">
             {selectedDiscipline.professor ? (

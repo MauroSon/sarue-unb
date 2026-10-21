@@ -31,7 +31,9 @@ export class GetCoursesUseCase {
 
   async execute(): Promise<Course[]> {
     const courses = await this.feedRepo.getCourses();
-    return [...courses].sort((a, b) => a.name.localeCompare(b.name));
+    return [...courses]
+      .filter((c) => !normalizeCourseText(c.name).includes('ESPACO DO ALUNO'))
+      .sort((a, b) => a.name.localeCompare(b.name));
   }
 
   async getDisciplines(): Promise<GetDisciplinesResult> {
@@ -44,7 +46,11 @@ export class GetCoursesUseCase {
     }
 
     const sigaaCourses = allCourses.filter((c) => c.platform === 'sigaa');
-    const aprenderCourses = allCourses.filter((c) => c.platform === 'aprender3');
+    const aprenderCourses = allCourses.filter(
+      (c) =>
+        c.platform === 'aprender3' &&
+        !normalizeCourseText(c.name).includes('ESPACO DO ALUNO')
+    );
     const teamsCourses = allCourses.filter(
       (c) =>
         c.platform === 'teams' &&

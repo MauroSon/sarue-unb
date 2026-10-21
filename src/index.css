@@ -92,3 +92,9 @@
   right: auto;
   background: transparent;
 }
+
+/* Oculta os botões nativos de revelar senha e limpar do Edge / WebView2 no Windows */
+input::-ms-reveal,
+input::-ms-clear {
+  display: none;
+}

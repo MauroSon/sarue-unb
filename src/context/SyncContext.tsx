@@ -10,6 +10,7 @@ import { useContainer } from "./ContainerContext";
 import { useCredentials } from "../hooks/useCredentials";
 import { notifyMyCourseListeners } from "../hooks/useMyCourse";
 import { notifyFeedListeners } from "../hooks/useFeed";
+import { toast } from "@/components/ui";
 
 export type SyncStepId = "sigaa" | "aprender3" | "teams" | "myCourse" | "ghPages";
 
@@ -179,6 +180,7 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({
       );
 
       let sigaaSuccess = false;
+      let sigaaError = false;
 
       const sigaaPromise = (async () => {
         if (!hasSigaa) {
@@ -198,6 +200,7 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({
           const res = await useCases.syncPlatforms.execute(["sigaa"]);
           if (isCancelled()) return;
           if (res.errors?.sigaa) {
+            sigaaError = true;
             updateStep("sigaa", {
               status: "error",
               message: res.errors.sigaa,
@@ -219,6 +222,7 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({
           }
         } catch (err: unknown) {
           if (isCancelled()) return;
+          sigaaError = true;
           updateStep("sigaa", {
             status: "error",
             message:
@@ -232,6 +236,9 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({
       const hasAprender = Boolean(
         aprenderCreds?.cpf?.trim() && aprenderCreds?.senha,
       );
+
+      let aprenderSuccess = false;
+      let aprenderError = false;
 
       const aprenderPromise = (async () => {
         if (!hasAprender) {
@@ -251,11 +258,13 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({
           const res = await useCases.syncPlatforms.execute(["aprender3"]);
           if (isCancelled()) return;
           if (res.errors?.aprender3) {
+            aprenderError = true;
             updateStep("aprender3", {
               status: "error",
               message: res.errors.aprender3,
             });
           } else {
+            aprenderSuccess = true;
             const a3Courses = res.courses.filter(
               (c) => c.platform === "aprender3",
             );
@@ -271,6 +280,7 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({
           }
         } catch (err: unknown) {
           if (isCancelled()) return;
+          aprenderError = true;
           updateStep("aprender3", {
             status: "error",
             message:
@@ -356,6 +366,33 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({
       setIsSyncing(false);
       notifyFeedListeners();
       notifySyncComplete();
+
+      const totalConfigured = (hasSigaa ? 1 : 0) + (hasAprender ? 1 : 0);
+      const totalErrors = (sigaaError ? 1 : 0) + (aprenderError ? 1 : 0);
+      const totalSuccess = (sigaaSuccess ? 1 : 0) + (aprenderSuccess ? 1 : 0);
+
+      if (totalConfigured > 0 && totalSuccess === 0 && totalErrors > 0) {
+        toast.add({
+          title: "Erro na sincronização",
+          description: "Não foi possível conectar às plataformas acadêmicas.",
+          type: "danger",
+          timeout: 5000,
+        });
+      } else if (totalErrors > 0 && totalSuccess > 0) {
+        toast.add({
+          title: "Sincronização com avisos",
+          description: "Algumas plataformas não puderam ser sincronizadas.",
+          type: "warning",
+          timeout: 5000,
+        });
+      } else if (totalSuccess > 0 || totalConfigured === 0) {
+        toast.add({
+          title: "Sincronização concluída",
+          description: "Seus dados foram atualizados com sucesso.",
+          type: "success",
+          timeout: 4000,
+        });
+      }
 
       // 5. Sincronização do Teams (100% não-bloqueante em segundo plano após liberar a UI)
       if (hasTeams && !isCancelled()) {

@@ -39,6 +39,7 @@ export const CredentialsStep: React.FC<CredentialsStepProps> = ({
       </motion.div>
 
       <PlatformAccountsAccordion
+        showTeams={false}
         registerFinish={(finish) => {
           finishRef.current = finish;
           // A ação de concluir do wizard salva o que falta e entra no app

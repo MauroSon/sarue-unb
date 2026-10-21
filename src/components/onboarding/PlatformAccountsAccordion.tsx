@@ -40,6 +40,8 @@ export interface PlatformAccountsAccordionProps {
   initialOpenPlatform?: PlatformType | null;
   /** Permite fechar a gaveta aberta mesmo sem tudo conectado (Settings; onboarding mantém uma aberta) */
   allowAllClosed?: boolean;
+  /** Exibir a plataforma Microsoft Teams (padrão true; false no onboarding) */
+  showTeams?: boolean;
 }
 
 /**
@@ -57,6 +59,7 @@ export const PlatformAccountsAccordion: React.FC<
   animated = true,
   initialOpenPlatform = "sigaa",
   allowAllClosed = false,
+  showTeams = true,
 }) => {
   const {
     saveSigaa,
@@ -115,7 +118,8 @@ export const PlatformAccountsAccordion: React.FC<
     useState(false);
   const [isDisconnectingAll, setIsDisconnectingAll] = useState(false);
 
-  const allConnected = sigaaSaved && aprenderSaved && teamsConnected;
+  const allConnected =
+    sigaaSaved && aprenderSaved && (showTeams ? teamsConnected : true);
 
   // Um adesivo aberto por vez. Fechar o aberto é permitido com tudo conectado
   // ou quando allowAllClosed (Settings). Aprender 3 e Teams exigem o SIGAA primeiro.
@@ -151,7 +155,11 @@ export const PlatformAccountsAccordion: React.FC<
         setSigaaSuccessMsg(res.detail || "Conectado ao SIGAA com sucesso!");
         // Gaveta seguinte: SIGAA fica marcado como conectado e abre a próxima pendente
         setOpenPlatform(
-          !aprenderSaved ? "aprender3" : !teamsConnected ? "teams" : "sigaa",
+          !aprenderSaved
+            ? "aprender3"
+            : showTeams && !teamsConnected
+              ? "teams"
+              : "sigaa",
         );
       } else {
         setSigaaSaved(false);
@@ -231,7 +239,9 @@ export const PlatformAccountsAccordion: React.FC<
         setAprenderSuccessMsg(
           res.detail || "Conectado ao Aprender 3 com sucesso!",
         );
-        setOpenPlatform(!teamsConnected ? "teams" : "aprender3");
+        setOpenPlatform(
+          showTeams && !teamsConnected ? "teams" : "aprender3",
+        );
       } else {
         setAprenderSaved(false);
         setAprenderSuccessMsg(null);
@@ -392,14 +402,18 @@ export const PlatformAccountsAccordion: React.FC<
       block: "bg-platform-aprender3",
       icon: <BookOpen className="w-5 h-5 text-black stroke-[2.5]" />,
     },
-    {
-      id: "teams",
-      name: "Microsoft Teams (Beta)",
-      hint: "Login interativo",
-      isSaved: teamsConnected,
-      block: "bg-platform-teams",
-      icon: <Video className="w-5 h-5 text-black stroke-[2.5]" />,
-    },
+    ...(showTeams
+      ? [
+          {
+            id: "teams" as PlatformType,
+            name: "Microsoft Teams (Beta)",
+            hint: "Login interativo",
+            isSaved: teamsConnected,
+            block: "bg-platform-teams",
+            icon: <Video className="w-5 h-5 text-black stroke-[2.5]" />,
+          },
+        ]
+      : []),
   ];
 
   return (
@@ -517,7 +531,18 @@ export const PlatformAccountsAccordion: React.FC<
                   >
                     <div className="px-4 pb-4 pt-3 border-t-2 border-black/10 space-y-3">
                       {p.id === "sigaa" && (
-                        <>
+                        <form
+                          onSubmit={(e) => {
+                            e.preventDefault();
+                            if (isVerifying || isLoading) return;
+                            if (sigaaSaved) {
+                              void handleDisconnectSigaa();
+                            } else {
+                              void handleConnectSigaa();
+                            }
+                          }}
+                          className="space-y-3"
+                        >
                           <Input
                             label="Matrícula SIGAA"
                             placeholder="Ex: 202012345"
@@ -549,15 +574,11 @@ export const PlatformAccountsAccordion: React.FC<
                           ) : null}
                           <div className="flex justify-end pt-1">
                             <Button
+                              type="submit"
                               size="md"
                               variant={sigaaSaved ? "destructive" : "default"}
                               isLoading={isVerifying}
                               disabled={isVerifying || isLoading}
-                              onClick={
-                                sigaaSaved
-                                  ? handleDisconnectSigaa
-                                  : handleConnectSigaa
-                              }
                             >
                               {sigaaSaved ? (
                                 <LogOut className="w-3.5 h-3.5 stroke-[2.5]" />
@@ -573,11 +594,22 @@ export const PlatformAccountsAccordion: React.FC<
                               </span>
                             </Button>
                           </div>
-                        </>
+                        </form>
                       )}
 
                       {p.id === "aprender3" && (
-                        <>
+                        <form
+                          onSubmit={(e) => {
+                            e.preventDefault();
+                            if (isVerifying || isLoading) return;
+                            if (aprenderSaved) {
+                              void handleDisconnectAprender3();
+                            } else {
+                              void handleConnectAprender3();
+                            }
+                          }}
+                          className="space-y-3"
+                        >
                           <Input
                             label="CPF (somente números ou formatado)"
                             placeholder="Ex: 000.000.000-00"
@@ -609,17 +641,13 @@ export const PlatformAccountsAccordion: React.FC<
                           ) : null}
                           <div className="flex justify-end pt-1">
                             <Button
+                              type="submit"
                               size="md"
                               variant={
                                 aprenderSaved ? "destructive" : "default"
                               }
                               isLoading={isVerifying}
                               disabled={isVerifying || isLoading}
-                              onClick={
-                                aprenderSaved
-                                  ? handleDisconnectAprender3
-                                  : handleConnectAprender3
-                              }
                             >
                               {aprenderSaved ? (
                                 <LogOut className="w-3.5 h-3.5 stroke-[2.5]" />
@@ -635,7 +663,7 @@ export const PlatformAccountsAccordion: React.FC<
                               </span>
                             </Button>
                           </div>
-                        </>
+                        </form>
                       )}
 
                       {p.id === "teams" && (

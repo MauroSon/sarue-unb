@@ -179,13 +179,13 @@ describe('Clean Architecture Use Cases - Saruê UnB', () => {
       const feed = await container.useCases.getFeed.execute();
       expect(feed.length).toBeGreaterThan(0);
 
-      // Validação de ordenação cronológica
+      // Validação de ordenação cronológica decrescente por createdAt (mais recentes primeiro)
       for (let i = 0; i < feed.length - 1; i++) {
         const current = feed[i];
         const next = feed[i + 1];
-        if (current.itemType === 'assignment' && next.itemType === 'assignment' && current.dueDate && next.dueDate) {
-          expect(new Date(current.dueDate).getTime()).toBeLessThanOrEqual(new Date(next.dueDate).getTime());
-        }
+        expect(new Date(current.createdAt).getTime()).toBeGreaterThanOrEqual(
+          new Date(next.createdAt).getTime()
+        );
       }
     });
 
@@ -332,6 +332,22 @@ describe('Clean Architecture Use Cases - Saruê UnB', () => {
       expect(afterIgnored.unmatchedAprenderCourses.length).toBe(0);
       const fis2Clean = afterIgnored.disciplines.find((d) => d.name === 'FISICA 2');
       expect(fis2Clean?.aprenderCourses.some((c) => c.id === 'aprender-forum-geral')).toBe(false);
+    });
+
+    it('deve ignorar a turma institucional Espaço do Aluno', async () => {
+      await container.repos.feedRepo.saveCourses([
+        {
+          id: 'aprender-espaco-aluno',
+          code: 'UNB0000',
+          name: 'Espaço do Aluno - Comunidade Geral UnB',
+          semester: '2026.2',
+          platform: 'aprender3',
+        },
+      ]);
+      const result = await container.useCases.getCourses.getDisciplines();
+      expect(result.unmatchedAprenderCourses.some((c) => c.id === 'aprender-espaco-aluno')).toBe(false);
+      const all = await container.useCases.getCourses.execute();
+      expect(all.some((c) => c.id === 'aprender-espaco-aluno')).toBe(false);
     });
 
     it('deve associar equipes do Teams por sigla (SSTC, OAC) e direcionar turmas para a seção Outros', async () => {

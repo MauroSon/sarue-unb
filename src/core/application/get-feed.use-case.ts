@@ -11,14 +11,14 @@ export class GetFeedUseCase {
   async execute(filters?: FeedFilterOptions): Promise<FeedItem[]> {
     const items = await this.feedRepo.getItems(filters);
 
-    // Garante que o feed sempre seja entregue ordenado cronologicamente
+    // Garante que o feed sempre seja entregue ordenado rigorosamente dos mais recentes para os mais antigos
     return [...items].sort((a, b) => {
-      // Se ambos forem tarefas com prazo definido, ordena por prazo mais próximo primeiro
-      if (a.itemType === 'assignment' && b.itemType === 'assignment' && a.dueDate && b.dueDate) {
-        return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime();
+      const timeA = new Date(a.createdAt).getTime() || 0;
+      const timeB = new Date(b.createdAt).getTime() || 0;
+      if (timeB !== timeA) {
+        return timeB - timeA;
       }
-      // Ordenação padrão por createdAt decrescente
-      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+      return b.id.localeCompare(a.id);
     });
   }
 

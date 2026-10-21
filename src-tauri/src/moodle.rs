@@ -413,6 +413,15 @@ pub fn parse_course_code_and_name(fullname: &str, shortname: &str) -> (String, S
     (code, clean_name, semester)
 }
 
+pub fn is_ignored_moodle_course(fullname: &str, shortname: &str) -> bool {
+    let lower_full = fullname.to_lowercase();
+    let lower_short = shortname.to_lowercase();
+    lower_full.contains("espaço do aluno")
+        || lower_full.contains("espaco do aluno")
+        || lower_short.contains("espaço do aluno")
+        || lower_short.contains("espaco do aluno")
+}
+
 pub fn parse_moodle_courses_ws(json_val: &Value) -> Result<Vec<Course>, String> {
     let mut courses = Vec::new();
     let courses_arr = json_val
@@ -432,6 +441,10 @@ pub fn parse_moodle_courses_ws(json_val: &Value) -> Result<Vec<Course>, String> 
 
         let fullname = item.get("fullname").and_then(|s| s.as_str()).unwrap_or("Disciplina");
         let shortname = item.get("shortname").and_then(|s| s.as_str()).unwrap_or("");
+
+        if is_ignored_moodle_course(fullname, shortname) {
+            continue;
+        }
         let viewurl = item
             .get("viewurl")
             .and_then(|s| s.as_str())
@@ -493,6 +506,9 @@ pub fn scrape_courses_html(html: &str) -> Vec<Course> {
 
         seen_ids.insert(id_str.clone());
         let (code, name, semester) = parse_course_code_and_name(&clean_text, "");
+        if is_ignored_moodle_course(&clean_text, &code) {
+            continue;
+        }
         let viewurl = if href.starts_with("http") {
             href.to_string()
         } else {
@@ -604,6 +620,10 @@ pub fn parse_moodle_calendar_events_with_now(json_val: &Value, now_epoch: i64) -
                     })
                     .or_else(|| Some("A3".to_string()));
 
+                if is_ignored_moodle_course(&course_name, course_code.as_deref().unwrap_or("")) {
+                    continue;
+                }
+
                 let raw_url = ev
                     .get("action")
                     .and_then(|a| a.get("url"))
@@ -705,6 +725,10 @@ pub fn parse_moodle_calendar_events_with_now(json_val: &Value, now_epoch: i64) -
                     .map(|s| s.to_string())
                     .or_else(|| code_regex.captures(&c_fullname).map(|cap| cap[1].to_string()))
                     .or_else(|| Some("A3".to_string()));
+
+                if is_ignored_moodle_course(&c_fullname, c_code.as_deref().unwrap_or("")) {
+                    continue;
+                }
 
                 if let Some(assignments) = c_obj.get("assignments").and_then(|a| a.as_array()) {
                     for assign in assignments {
@@ -853,6 +877,10 @@ pub fn scrape_calendar_html(html: &str, now_epoch: i64) -> Vec<FeedItem> {
             .captures(&course_name)
             .map(|c| c[1].to_string())
             .or_else(|| Some("A3".to_string()));
+
+        if is_ignored_moodle_course(&course_name, course_code.as_deref().unwrap_or("")) {
+            continue;
+        }
 
         let desc = if let Some(ref sel) = desc_sel {
             element
@@ -1306,6 +1334,12 @@ mod tests {
                             "fullname": "IFD0177 - FISICA 2 EXPERIMENTAL - Turma 03 - 2026/2",
                             "shortname": "FISICA 2 EXP 03_2026.2",
                             "viewurl": "https://aprender3.unb.br/course/view.php?id=30937"
+                        },
+                        {
+                            "id": 99999,
+                            "fullname": "Espaço do Aluno - Comunidade Geral UnB",
+                            "shortname": "ESP_ALUNO",
+                            "viewurl": "https://aprender3.unb.br/course/view.php?id=99999"
                         }
                     ]
                 }
