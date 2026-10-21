@@ -30,9 +30,9 @@ export function useAppUpdater() {
   const [updateInfo, setUpdateInfo] = useState<UpdateInfo | null>(null);
   const [progress, setProgress] = useState<DownloadProgress | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  // Versão instalada (tauri.conf.json); "0.1.0" é só o fallback enquanto o
+  // Versão instalada (tauri.conf.json); "0.1.1" é só o fallback enquanto o
   // Tauri não responde ou em dev no navegador.
-  const [currentVersion, setCurrentVersion] = useState('0.1.0');
+  const [currentVersion, setCurrentVersion] = useState('0.1.1');
   const pendingUpdateRef = useRef<Update | null>(null);
   const lastPercentRef = useRef(-1);
 

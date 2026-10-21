@@ -22,6 +22,21 @@ export interface PatchNotesEntry {
 
 export const PATCH_NOTES: PatchNotesEntry[] = [
   {
+    version: "0.1.1",
+    date: "21/10/2026",
+    title: "Melhorias de UI, UX e estabilidade",
+    items: [
+      "Feed: ordenação cronológica corrigida, exibindo sempre os mais recentes primeiro.",
+      "Disciplinas: novo layout padronizado com botão voltar no cabeçalho e loading com skeleton.",
+      "Configurações: envio com a tecla Enter nos campos de credenciais do accordion.",
+      "Onboarding: login do Teams movido exclusivamente para as Configurações.",
+      "Aprender 3: turma institucional 'Espaço do Aluno' ignorada automaticamente no scraping.",
+      "Sincronização: notificação toast ao concluir a atualização das plataformas.",
+      "Windows: eliminação do flash de janela cmd ao abrir links externos (GitHub e LinkedIn).",
+      "Windows: remoção do botão nativo duplicado de ver senha no WebView2.",
+    ],
+  },
+  {
     version: "0.1.0",
     date: "19/10/2026",
     title: "Lançamento inicial",
