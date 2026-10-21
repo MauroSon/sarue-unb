@@ -10,6 +10,7 @@
  */
 
 import { spawn } from 'node:child_process';
+import { createRequire } from 'node:module';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -27,14 +28,30 @@ if (isDev && !hasConfig) {
   args.splice(1, 0, '--config', devConfigPath);
 }
 
-const binName = process.platform === 'win32' ? 'tauri.cmd' : 'tauri';
-const tauriBin = path.join(rootDir, 'node_modules', '.bin', binName);
-
-const child = spawn(tauriBin, args, {
+let command;
+let spawnArgs;
+const spawnOptions = {
   cwd: rootDir,
   stdio: 'inherit',
   env: process.env,
-});
+};
+
+try {
+  const require = createRequire(import.meta.url);
+  const tauriPkgPath = require.resolve('@tauri-apps/cli/package.json');
+  const tauriEntry = path.join(path.dirname(tauriPkgPath), 'tauri.js');
+  command = process.execPath;
+  spawnArgs = [tauriEntry, ...args];
+} catch {
+  const binName = process.platform === 'win32' ? 'tauri.cmd' : 'tauri';
+  command = path.join(rootDir, 'node_modules', '.bin', binName);
+  spawnArgs = args;
+  if (process.platform === 'win32') {
+    spawnOptions.shell = true;
+  }
+}
+
+const child = spawn(command, spawnArgs, spawnOptions);
 
 child.on('error', (err) => {
   console.error('❌ Falha ao iniciar a CLI do Tauri:', err.message);
