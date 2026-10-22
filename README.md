@@ -112,10 +112,6 @@ pnpm install
 Para rodar a aplicação desktop completa com o backend Rust, banco SQLite e cofre Stronghold ativo:
 
 ```bash
-# 1. Popula o banco local de desenvolvimento com dados realistas (opcional, para testes rápidos)
-pnpm seeds
-
-# 2. Inicia o aplicativo em ambiente de desenvolvimento (br.unb.sarue.dev)
 pnpm tauri dev
 ```
 
