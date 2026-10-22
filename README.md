@@ -1,5 +1,5 @@
 <h1 align="center">
-<strong>Saruê UnB 0.1</strong>
+<strong>Saruê UnB 0.2</strong>
 </h1>
 
 <p align="center">
