@@ -28,6 +28,12 @@ fn get_curricula_lock() -> &'static RwLock<Option<Vec<CurriculumStructure>>> {
     CURRICULA_CACHE.get_or_init(|| RwLock::new(None))
 }
 
+static COURSE_CURRICULA_CACHE: OnceLock<RwLock<Option<(String, Vec<CurriculumStructure>)>>> = OnceLock::new();
+
+fn get_course_curricula_lock() -> &'static RwLock<Option<(String, Vec<CurriculumStructure>)>> {
+    COURSE_CURRICULA_CACHE.get_or_init(|| RwLock::new(None))
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize, specta::Type)]
 pub struct Department {
     pub id: String,
@@ -311,6 +317,34 @@ impl SigaaGradeScraper {
 
     /// Obtém as estruturas curriculares de um curso
     pub async fn fetch_course_curriculum(course_id: &str) -> Result<Vec<CurriculumStructure>, String> {
+        // course_id do catálogo é numérico; a checagem barra path traversal no nome de arquivo
+        let safe_id =
+            !course_id.is_empty() && course_id.chars().all(|c| c.is_ascii_alphanumeric());
+
+        // 1. Arquivo por curso no CDN (~centenas de KB) — evita baixar curricula.json
+        //    inteiro (~40 MB) quando só as matrizes de um curso importam.
+        if safe_id {
+            {
+                let lock = get_course_curricula_lock().read().await;
+                if let Some((cached_id, cached)) = &*lock {
+                    if cached_id == course_id {
+                        return Ok(cached.clone());
+                    }
+                }
+            }
+
+            let file_name = format!("curricula/{}.json", course_id);
+            if let Ok(per_course) =
+                Self::fetch_static_json::<Vec<CurriculumStructure>>(&file_name).await
+            {
+                if !per_course.is_empty() {
+                    let mut lock = get_course_curricula_lock().write().await;
+                    *lock = Some((course_id.to_string(), per_course.clone()));
+                    return Ok(per_course);
+                }
+            }
+        }
+
         {
             let lock = get_curricula_lock().read().await;
             if let Some(cached) = &*lock {

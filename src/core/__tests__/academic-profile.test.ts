@@ -666,5 +666,118 @@ Currículo: 1741/1
       expect(resetada?.manualUncompletedCodes).toEqual([]);
       expect(statusDe(resetada!)).toBe('in_progress');
     });
+
+    it('deve salvar e resetar currículo customizado', async () => {
+      const baseProfile: StudentAcademicProfile = {
+        matricula: '202000000',
+        courseName: 'ENGENHARIA DE COMPUTAÇÃO',
+        level: 'GRADUAÇÃO',
+        admissionYear: '2022.1',
+        completedDisciplines: [],
+        manualCompletedCodes: [],
+        manualUncompletedCodes: [],
+        updatedAt: new Date().toISOString(),
+      };
+      await repo.saveProfile(baseProfile);
+
+      const customCurriculum: CurriculumStructure = {
+        ...MOCK_CURRICULUM,
+        id: 'custom_123',
+        mandatoryDisciplines: [
+          ...MOCK_CURRICULUM.mandatoryDisciplines,
+          {
+            code: 'OPT999',
+            name: 'TÓPICOS ESPECIAIS',
+            workloadHours: 60,
+            level: 0,
+            nature: 'Optativa',
+            prerequisites: [],
+            equivalences: [],
+          },
+        ],
+      };
+
+      const updated = await manageUseCase.saveCustomCurriculum(customCurriculum);
+      expect(updated.customCurriculum).toBeDefined();
+      expect(updated.customCurriculum?.mandatoryDisciplines.some((d) => d.code === 'OPT999')).toBe(true);
+
+      const profile = await manageUseCase.getProfile();
+      expect(profile?.customCurriculum?.mandatoryDisciplines.length).toBe(MOCK_CURRICULUM.mandatoryDisciplines.length + 1);
+
+      const afterReset = await manageUseCase.resetCustomCurriculum();
+      expect(afterReset.customCurriculum).toBeUndefined();
+    });
+
+    it('deve obter nota de matéria equivalente concluída no fluxograma', () => {
+      // Perfil com MAT0137 concluída com menção MS (equivalente de MAT0025)
+      const profile: StudentAcademicProfile = {
+        matricula: '202000000',
+        courseName: 'ENGENHARIA DE COMPUTAÇÃO',
+        level: 'GRADUAÇÃO',
+        admissionYear: '2022.1',
+        completedDisciplines: [
+          {
+            code: 'MAT0137',
+            name: 'CÁLCULO 1',
+            workloadHours: 90,
+            situation: 'APR',
+            isCompleted: true,
+            grade: 'MS',
+          },
+        ],
+        manualCompletedCodes: [],
+        manualUncompletedCodes: [],
+        updatedAt: new Date().toISOString(),
+      };
+
+      const flowchart = new GetFlowchartUseCase().execute(MOCK_CURRICULUM, profile);
+      const mat0025 = flowchart.semesters
+        .flatMap((s) => s.disciplines)
+        .find((d) => d.code === 'MAT0025');
+
+      expect(mat0025).toBeDefined();
+      expect(mat0025?.status).toBe('completed');
+      // Deve trazer a menção MS obtida pela equivalente
+      expect(mat0025?.grade).toBe('MS');
+    });
+
+    it('deve incluir optativas de interesse com pré-requisitos nos semestres da grade', () => {
+      const curriculumWithElective: CurriculumStructure = {
+        ...MOCK_CURRICULUM,
+        electiveDisciplines: [
+          {
+            code: 'OPT0001',
+            name: 'DEEP LEARNING APLICADO',
+            workloadHours: 60,
+            level: 5,
+            nature: 'Optativa',
+            prerequisites: ['CIC0004'],
+            equivalences: [],
+          },
+        ],
+      };
+
+      const profile: StudentAcademicProfile = {
+        matricula: '202000000',
+        courseName: 'ENGENHARIA DE COMPUTAÇÃO',
+        level: 'GRADUAÇÃO',
+        admissionYear: '2022.1',
+        completedDisciplines: [],
+        manualCompletedCodes: [],
+        manualUncompletedCodes: [],
+        updatedAt: new Date().toISOString(),
+      };
+
+      const flowchart = new GetFlowchartUseCase().execute(curriculumWithElective, profile);
+      const sem5 = flowchart.semesters.find((s) => s.level === 5);
+      expect(sem5).toBeDefined();
+      const opt = sem5?.disciplines.find((d) => d.code === 'OPT0001');
+      expect(opt).toBeDefined();
+      expect(opt?.nature).toBe('Optativa');
+      expect(opt?.prerequisites).toContain('CIC0004');
+      // Como CIC0004 não está concluída, OPT0001 deve estar bloqueada
+      expect(opt?.status).toBe('locked');
+      expect(opt?.missingPrerequisites.length).toBeGreaterThan(0);
+    });
   });
 });

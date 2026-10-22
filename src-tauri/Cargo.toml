@@ -1,6 +1,6 @@
 [package]
 name = "sarue_unb"
-version = "0.1.1"
+version = "0.2.0"
 description = "Saruê UnB Desktop App"
 authors = ["UnB Open Source Contributors"]
 license = "Apache-2.0"
@@ -38,6 +38,7 @@ zeroize = "1"
 tauri-plugin-window-state = "2"
 tauri-plugin-updater = "2"
 tauri-plugin-process = "2"
+tauri-plugin-autostart = "2"
 
 # Otimiza as primitivas criptográficas do Stronghold (Argon2id + Scrypt/Salsa20/SHA2/ChaCha20) em modo dev/test.
 # Sem isso, Stronghold.load / Stronghold.save em opt-level=0 leva ~45-90s de 100% CPU e trava o app.

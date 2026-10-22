@@ -1,9 +1,8 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { ArrowLeft, ScrollText } from "lucide-react";
 import {
   Badge,
   Button,
-  Card,
   PageContainer,
   PageHeader,
 } from "@/components/ui";
@@ -18,49 +17,60 @@ export interface PatchNotesViewProps {
 
 /** Selo de versão: adesivo pill com borda preta e sombra dura de ação. */
 const versionPillClass =
-  "inline-flex items-center rounded-full border-2 border-black bg-white px-3 py-0.5 text-xs font-extrabold text-black shadow-[2px_2px_0px_0px_#000]";
+  "inline-flex items-center rounded-full border-2 border-black bg-white px-3.5 py-1 text-sm font-extrabold text-black shadow-[2px_2px_0px_0px_#000]";
 
-const PatchNotesEntryCard: React.FC<{
+const PatchNotesEntryItem: React.FC<{
   entry: PatchNotesEntry;
   isCurrent: boolean;
 }> = ({ entry, isCurrent }) => (
-  <Card variant={isCurrent ? "yellow" : "default"} className="p-5">
+  <section className="border-b-2 border-black/15 pb-6 last:border-b-0 space-y-2.5">
     <div className="flex flex-wrap items-center gap-2">
-      <span className={versionPillClass}>v{entry.version}</span>
+      <span className={cn(versionPillClass, isCurrent && "bg-neo-yellow")}>
+        v{entry.version}
+      </span>
       {isCurrent && (
         <Badge variant="success" size="sm">
-          Atual
+          Versão Atual
         </Badge>
       )}
-      <span className="ml-auto text-[11px] font-bold text-neutral-600">
+      <span className="ml-auto text-xs font-bold text-neutral-500">
         {entry.date}
       </span>
     </div>
 
-    <h3 className="mt-2.5 text-sm font-black uppercase tracking-tight text-black">
+    <h3 className="text-base md:text-lg font-black tracking-tight text-black">
       {entry.title}
     </h3>
 
-    <ul className="mt-2 space-y-1.5">
+    <ul className="space-y-1.5 pt-0.5">
       {entry.items.map((item, index) => (
         <li key={index} className="flex items-start gap-2">
           <span
             aria-hidden="true"
-            className="mt-[6px] h-1.5 w-1.5 shrink-0 rounded-[2px] bg-black"
+            className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-[2px] bg-black"
           />
-          <span className="text-xs font-medium leading-relaxed text-neutral-700">
+          <span className="text-xs md:text-sm font-semibold leading-relaxed text-neutral-800">
             {item}
           </span>
         </li>
       ))}
     </ul>
-  </Card>
+  </section>
 );
 
 export const PatchNotesView: React.FC<PatchNotesViewProps> = ({
   onBack,
   currentVersion,
 }) => {
+  useEffect(() => {
+    // Rola o container scrollável da aplicação (<main>) para o topo
+    const mainEl = document.querySelector("main");
+    if (mainEl) {
+      mainEl.scrollTo({ top: 0, behavior: "instant" });
+    }
+    window.scrollTo({ top: 0, behavior: "instant" });
+  }, []);
+
   return (
     <PageContainer>
       <PageHeader
@@ -74,9 +84,9 @@ export const PatchNotesView: React.FC<PatchNotesViewProps> = ({
         }
       />
 
-      <div className={cn("w-full max-w-2xl space-y-4")}>
+      <div className={cn("w-full max-w-3xl space-y-6")}>
         {PATCH_NOTES.map((entry) => (
-          <PatchNotesEntryCard
+          <PatchNotesEntryItem
             key={entry.version}
             entry={entry}
             isCurrent={entry.version === currentVersion}

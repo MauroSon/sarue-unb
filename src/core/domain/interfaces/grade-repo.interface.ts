@@ -10,6 +10,6 @@ export interface IGradeRepository {
   solveSchedules(classes: ScrapedClass[], preferenceShift?: 'M' | 'T' | 'N'): Promise<ScheduleOption[]>;
   checkConflicts(classes: ScrapedClass[]): Promise<string[]>;
   saveGrade(grade: SavedGrade): Promise<void>;
-  getSavedGrade(): Promise<SavedGrade | null>;
-  clearSavedGrade(): Promise<void>;
+  getSavedGrade(semester?: string): Promise<SavedGrade | null>;
+  clearSavedGrade(semester?: string): Promise<void>;
 }

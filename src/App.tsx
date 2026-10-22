@@ -11,13 +11,15 @@ import { useCredentials } from './hooks/useCredentials';
 import { SyncProvider, useSync } from './context/SyncContext';
 import { DeadlineProvider } from './context/DeadlineContext';
 import { WelcomeSyncDialog } from './components/onboarding/WelcomeSyncDialog';
+import { WithdrawalDeadlineDialog } from './components/notifications/WithdrawalDeadlineDialog';
 import { useContainer } from './context/ContainerContext';
+import type { AcademicCalendar } from './core';
 import { NAVIGATE_EVENT } from './lib/utils';
 
 type AppStep = 'onboarding' | 'main';
 
 const AppShell: React.FC = () => {
-  const { repos } = useContainer();
+  const { repos, useCases } = useContainer();
   const { hasCredentials, isLoading: isCheckingAuth, allCredentials } = useCredentials();
   const { syncAll, isSyncing, lastSyncedAt, steps: syncSteps } = useSync();
 
@@ -31,6 +33,7 @@ const AppShell: React.FC = () => {
   const [step, setStep] = useState<AppStep>('onboarding');
   const [currentTab, setCurrentTab] = useState<NavTab>('home');
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState<boolean>(false);
+  const [currentCalendar, setCurrentCalendar] = useState<AcademicCalendar | null>(null);
   // Indica se o app já foi usado antes: perfil acadêmico salvo ou cursos no
   // feed (SQLite persistente) provam uma sessão anterior, mesmo que o cofre
   // de credenciais esteja vazio ou indisponível.
@@ -44,6 +47,12 @@ const AppShell: React.FC = () => {
     let cancelled = false;
     (async () => {
       try {
+        const calendars = await useCases.getAcademicCalendar.execute();
+        if (!cancelled && calendars.length > 0) {
+          const current = calendars.find((c) => c.isCurrent) || calendars[0];
+          setCurrentCalendar(current);
+        }
+
         const profile = await repos.academicProfileRepo.getProfile();
         if (cancelled) return;
         if (profile) {
@@ -172,6 +181,7 @@ const AppShell: React.FC = () => {
         }}
         platforms={connectedPlatforms}
       />
+      <WithdrawalDeadlineDialog calendar={currentCalendar} />
     </div>
     </DeadlineProvider>
   );

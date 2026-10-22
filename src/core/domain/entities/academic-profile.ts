@@ -31,6 +31,8 @@ export interface StudentAcademicProfile {
   admissionYear: string;
   curriculumCode?: string;
   curriculumId?: string;
+  /** Matriz customizada editada pelo discente (com matérias incluídas, equivalências e optativas de interesse) */
+  customCurriculum?: CurriculumStructure;
   completedDisciplines: CompletedDiscipline[];
   manualCompletedCodes: string[];
   manualUncompletedCodes: string[];

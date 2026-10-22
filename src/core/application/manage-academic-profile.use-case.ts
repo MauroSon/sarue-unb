@@ -17,6 +17,10 @@ export class ManageAcademicProfileUseCase {
     return this.repo.getAllCurricula();
   }
 
+  async getCurriculaForCourse(courseId: string): Promise<CurriculumStructure[]> {
+    return this.repo.getCurriculaForCourse(courseId);
+  }
+
   async saveProfile(profile: StudentAcademicProfile): Promise<void> {
     await this.repo.saveProfile(profile);
   }
@@ -113,6 +117,38 @@ export class ManageAcademicProfileUseCase {
     return updated;
   }
 
+  async saveCustomCurriculum(customCurriculum: CurriculumStructure): Promise<StudentAcademicProfile> {
+    const current = await this.repo.getProfile();
+    if (!current) {
+      throw new Error('Nenhum perfil acadêmico carregado para editar currículo.');
+    }
+
+    const updated: StudentAcademicProfile = {
+      ...current,
+      customCurriculum,
+      updatedAt: new Date().toISOString(),
+    };
+
+    await this.repo.saveProfile(updated);
+    return updated;
+  }
+
+  async resetCustomCurriculum(): Promise<StudentAcademicProfile> {
+    const current = await this.repo.getProfile();
+    if (!current) {
+      throw new Error('Nenhum perfil acadêmico carregado para restaurar currículo.');
+    }
+
+    const updated: StudentAcademicProfile = {
+      ...current,
+      customCurriculum: undefined,
+      updatedAt: new Date().toISOString(),
+    };
+
+    await this.repo.saveProfile(updated);
+    return updated;
+  }
+
   async setCurriculum(curriculum: CurriculumStructure): Promise<StudentAcademicProfile> {
     const current = (await this.repo.getProfile()) || {
       matricula: '',
@@ -164,10 +200,11 @@ export class ManageAcademicProfileUseCase {
     });
 
     const currentProfile = await this.repo.getProfile();
-    // Preserva eventuais marcações manuais anteriores
+    // Preserva eventuais marcações manuais e matriz customizada anteriores
     if (currentProfile) {
       parseResult.profile.manualCompletedCodes = currentProfile.manualCompletedCodes || [];
       parseResult.profile.manualUncompletedCodes = currentProfile.manualUncompletedCodes || [];
+      parseResult.profile.customCurriculum = currentProfile.customCurriculum;
     }
 
     // Se o usuário apagou os dados/credenciais enquanto o histórico era baixado, não regrava o perfil

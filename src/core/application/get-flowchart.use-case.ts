@@ -5,7 +5,7 @@ import type {
   FlowchartSemester,
   StudentAcademicProfile,
 } from '../domain/entities/academic-profile';
-import type { CurriculumStructure } from '../domain/entities/course';
+import type { CurriculumStructure, CurriculumDiscipline } from '../domain/entities/course';
 
 export class GetFlowchartUseCase {
   execute(
@@ -81,11 +81,54 @@ export class GetFlowchartUseCase {
       return false;
     };
 
-    // 3. Monta o grafo de pós-requisitos (disciplinas que dependem de uma dada matéria)
-    const mandatoryList = curriculum.mandatoryDisciplines || [];
+    const getEffectiveDetails = (targetCode: string, equivalences: string[] = []): { grade?: string; situation?: string } | undefined => {
+      const direct = disciplineDetailsMap.get(targetCode);
+      if (direct && (direct.grade || direct.situation === 'APR' || direct.situation === 'DISP')) {
+        return direct;
+      }
+      const allEqs = new Set([...equivalences, ...(canonicalEquivalences[targetCode] || [])]);
+      for (const eq of allEqs) {
+        if (effectiveCompletedCodes.has(eq)) {
+          const eqDetails = disciplineDetailsMap.get(eq);
+          if (eqDetails) return eqDetails;
+        }
+      }
+      return direct;
+    };
+
+    // 3. Monta a lista de disciplinas da grade: obrigatórias + optativas/complementares cadastradas com semestre
+    const rawGradeList: CurriculumDiscipline[] = [
+      ...(curriculum.mandatoryDisciplines || []).map((m) => ({
+        ...m,
+        level: m.level && m.level > 0 ? m.level : 1,
+      })),
+      ...(curriculum.electiveDisciplines || [])
+        .filter((e) => e.level && e.level > 0)
+        .map((e) => ({
+          ...e,
+          nature: e.nature || 'Optativa',
+        })),
+      ...(curriculum.complementaryDisciplines || [])
+        .filter((c) => c.level && c.level > 0)
+        .map((c) => ({
+          ...c,
+          nature: c.nature || 'Complementar',
+        })),
+    ];
+
+    const seenGradeCodes = new Set<string>();
+    const gradeList: CurriculumDiscipline[] = [];
+    for (const disc of rawGradeList) {
+      if (!seenGradeCodes.has(disc.code)) {
+        seenGradeCodes.add(disc.code);
+        gradeList.push(disc);
+      }
+    }
+
+    // Grafo de pós-requisitos (disciplinas que dependem de uma dada matéria)
     const unlockedMap = new Map<string, Set<string>>();
 
-    for (const disc of mandatoryList) {
+    for (const disc of gradeList) {
       for (const prereq of disc.prerequisites || []) {
         if (!unlockedMap.has(prereq)) {
           unlockedMap.set(prereq, new Set());
@@ -94,7 +137,7 @@ export class GetFlowchartUseCase {
       }
     }
 
-    // 4. Classifica cada disciplina obrigatória
+    // 4. Classifica cada disciplina da grade (obrigatórias e optativas de interesse)
     const enrichedMandatory: FlowchartDiscipline[] = [];
     let completedMandatoryCount = 0;
     let completedHours = 0;
@@ -102,25 +145,33 @@ export class GetFlowchartUseCase {
     let availableCount = 0;
 
     // Avaliador de expressões lógicas de pré-requisitos
-    for (const disc of mandatoryList) {
+    for (const disc of gradeList) {
       const code = disc.code;
       const hours = disc.workloadHours || 60;
-      totalHours += hours;
+      const isOptativa = disc.nature === 'Optativa';
+      if (!isOptativa) {
+        totalHours += hours;
+      }
 
       const isCompleted = isCompletedOrEquivalent(code, disc.equivalences);
       const isEnrolled = inProgressCodes.has(code);
-      const details = disciplineDetailsMap.get(code);
+      const details = getEffectiveDetails(code, disc.equivalences);
 
       // Avaliação booleana de pré-requisitos (E / OU / parênteses)
       const isPrereqSatisfied = (prereqCode: string): boolean => {
-        const prereqObj = mandatoryList.find((m) => m.code === prereqCode);
+        const prereqObj = gradeList.find((m) => m.code === prereqCode);
         const prereqEquivs = prereqObj?.equivalences || [];
         return isCompletedOrEquivalent(prereqCode, prereqEquivs);
       };
 
       const getPrereqLabel = (prereqCode: string): string => {
-        const prereqObj = mandatoryList.find((m) => m.code === prereqCode)
-          || (curriculum.electiveDisciplines || []).find((m) => m.code === prereqCode);
+        const prereqObj = gradeList.find((m) => m.code === prereqCode)
+          || (allCurricula
+            ? allCurricula.flatMap((c) => [
+                ...(c.mandatoryDisciplines || []),
+                ...(c.electiveDisciplines || []),
+              ]).find((m) => m.code === prereqCode)
+            : undefined);
         return prereqObj ? `${prereqCode} (${prereqObj.name})` : prereqCode;
       };
 
@@ -134,8 +185,10 @@ export class GetFlowchartUseCase {
       let status: FlowchartDiscipline['status'];
       if (isCompleted) {
         status = 'completed';
-        completedMandatoryCount++;
-        completedHours += hours;
+        if (!isOptativa) {
+          completedMandatoryCount++;
+          completedHours += hours;
+        }
       } else if (isEnrolled) {
         status = 'in_progress';
       } else if (evalPrereqs.isSatisfied) {
@@ -152,7 +205,7 @@ export class GetFlowchartUseCase {
         code: disc.code,
         name: disc.name,
         workloadHours: hours,
-        level: disc.level || 1,
+        level: disc.level && disc.level > 0 ? disc.level : 1,
         nature: disc.nature,
         status,
         grade: details?.grade,
@@ -169,6 +222,7 @@ export class GetFlowchartUseCase {
     const semesterMap = new Map<number, FlowchartDiscipline[]>();
     for (const disc of enrichedMandatory) {
       const lvl = disc.level;
+      if (lvl <= 0) continue;
       if (!semesterMap.has(lvl)) {
         semesterMap.set(lvl, []);
       }
@@ -247,7 +301,7 @@ export class GetFlowchartUseCase {
     const isNativeCurriculum =
       !profile.curriculumCode || profile.curriculumCode === curriculum.code;
 
-    const totalMandatory = mandatoryList.length;
+    const totalMandatory = gradeList.filter((m) => m.nature !== 'Optativa' && m.nature !== 'Complementar').length;
     const progressPct = totalMandatory > 0
       ? Math.round((completedMandatoryCount / totalMandatory) * 100)
       : 0;
@@ -282,7 +336,7 @@ export class GetFlowchartUseCase {
     };
 
     // 8. Disciplinas cursadas pelo aluno que são optativas / fora da grade obrigatória
-    const mandatoryCodeSet = new Set(mandatoryList.map((m) => m.code));
+    const mandatoryCodeSet = new Set(gradeList.map((m) => m.code));
     const electiveCompletedDisciplines = (profile.completedDisciplines || [])
       .filter((d) => d.isCompleted && !mandatoryCodeSet.has(d.code))
       .map((d) => {

@@ -314,7 +314,8 @@ const DEMO_DISCIPLINES: Record<string, ScrapedDiscipline[]> = {
 };
 
 
-let inMemorySavedGrade: SavedGrade | null = null;
+const inMemorySavedGrades = new Map<string, SavedGrade>();
+let inMemoryLatestGrade: SavedGrade | null = null;
 
 export class InMemoryGradeRepository implements IGradeRepository {
   private departmentsCache: Department[] | null = null;
@@ -773,14 +774,26 @@ export class InMemoryGradeRepository implements IGradeRepository {
   }
 
   async saveGrade(grade: SavedGrade): Promise<void> {
-    inMemorySavedGrade = grade;
+    inMemorySavedGrades.set(grade.semester, grade);
+    inMemoryLatestGrade = grade;
   }
 
-  async getSavedGrade(): Promise<SavedGrade | null> {
-    return inMemorySavedGrade;
+  async getSavedGrade(semester?: string): Promise<SavedGrade | null> {
+    if (semester) {
+      return inMemorySavedGrades.get(semester) ?? null;
+    }
+    return inMemoryLatestGrade;
   }
 
-  async clearSavedGrade(): Promise<void> {
-    inMemorySavedGrade = null;
+  async clearSavedGrade(semester?: string): Promise<void> {
+    if (semester) {
+      inMemorySavedGrades.delete(semester);
+      if (inMemoryLatestGrade?.semester === semester) {
+        inMemoryLatestGrade = null;
+      }
+    } else {
+      inMemorySavedGrades.clear();
+      inMemoryLatestGrade = null;
+    }
   }
 }

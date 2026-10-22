@@ -3,6 +3,7 @@ import { useContainer } from '../context/ContainerContext';
 import { useCredentials } from './useCredentials';
 import { useMyCourse } from './useMyCourse';
 import { useFeed } from './useFeed';
+import { toast } from '@/components/ui';
 import type {
   Department,
   SemesterOption,
@@ -13,6 +14,12 @@ import type {
   AcademicCalendar,
 } from '@/core';
 import { generateAcronyms, parseScheduleCode } from '@/core';
+
+// Listeners para atualização da grade entre telas
+const gradeUpdateListeners = new Set<() => void>();
+export function notifyGradeUpdate() {
+  gradeUpdateListeners.forEach((fn) => fn());
+}
 
 // Cache em memória de disciplinas por depto-ano-período
 const disciplinesCache = new Map<string, ScrapedDiscipline[]>();
@@ -55,6 +62,21 @@ export const ALL_DEPARTMENTS_ITEM: Department = {
   name: 'Todos os departamentos (UnB Geral)',
 };
 
+// Período ativo da Grade, lido por outras telas sem montar o hook.
+// Aceita apenas períodos válidos (1 ou 2); corrige seleções legadas como '3' ou '4'.
+export function getActiveGradePeriod(): { year: string; period: string } {
+  try {
+    const storedYear = localStorage.getItem('unb_grade_year');
+    const storedPeriod = localStorage.getItem('unb_grade_period');
+    return {
+      year: storedYear && /^\d{4}$/.test(storedYear) ? storedYear : '2026',
+      period: storedPeriod === '1' || storedPeriod === '2' ? storedPeriod : '2',
+    };
+  } catch {
+    return { year: '2026', period: '2' };
+  }
+}
+
 export function useGrade() {
   const container = useContainer();
 
@@ -68,24 +90,13 @@ export function useGrade() {
   // Sempre abre em "Todos os departamentos" — sem persistir a escolha de departamento
   const [selectedDeptId, setSelectedDeptIdState] = useState<string>('ALL');
 
-  const [year, setYearState] = useState<string>(() => {
-    try {
-      const stored = localStorage.getItem('unb_grade_year');
-      return stored && /^\d{4}$/.test(stored) ? stored : '2026';
-    } catch {
-      return '2026';
-    }
-  });
+  const [year, setYearState] = useState<string>(
+    () => getActiveGradePeriod().year,
+  );
 
-  const [period, setPeriodState] = useState<string>(() => {
-    try {
-      const stored = localStorage.getItem('unb_grade_period');
-      // Apenas períodos válidos (1 ou 2) são aceitos; corrige seleções legadas como '3' ou '4'
-      return stored === '1' || stored === '2' ? stored : '2';
-    } catch {
-      return '2';
-    }
-  });
+  const [period, setPeriodState] = useState<string>(
+    () => getActiveGradePeriod().period,
+  );
 
   const setSelectedDeptId = useCallback((id: string) => {
     setSelectedDeptIdState(id);
@@ -362,11 +373,14 @@ export function useGrade() {
           }
         }
 
-        // Tenta carregar grade salva do SQLite (inclusive grade vazia salva de propósito)
-        const saved = await container.useCases.manageGrade.get();
+        // Tenta carregar grade salva do semestre atual
+        const semKey = `${year}.${period}`;
+        const saved = await container.useCases.manageGrade.get(semKey);
         savedGradeCache = saved;
         if (isMounted && saved) {
+          hasEditedGradeRef.current = true;
           setSelectedClasses(saved.selectedClasses ?? []);
+          setIsCurrentSemesterMode(false);
         }
       } catch {
         // Inicialização com degradação elegante
@@ -378,7 +392,56 @@ export function useGrade() {
     return () => {
       isMounted = false;
     };
-  }, [container]);
+  }, [container, year, period]);
+
+  // Carrega a grade salva do semestre ao alternar de semestre
+  useEffect(() => {
+    let isMounted = true;
+    const semKey = `${year}.${period}`;
+
+    async function loadSemesterGrade() {
+      try {
+        const saved = await container.useCases.manageGrade.get(semKey);
+        if (!isMounted) return;
+        savedGradeCache = saved;
+        if (saved) {
+          hasEditedGradeRef.current = true;
+          setSelectedClasses(saved.selectedClasses ?? []);
+          setIsCurrentSemesterMode(false);
+          setScheduleOptions([]);
+          setCurrentOptionIndex(0);
+        } else {
+          // Se for o semestre atual do calendário e o aluno tiver turmas matriculadas
+          const isCurrentSem = (year === '2026' && period === '2') || semesters.some((s) => s.year === year && s.period === period && s.isCurrent);
+          if (isCurrentSem && currentEnrolledClasses.length > 0 && !hasEditedGradeRef.current) {
+            setSelectedClasses(currentEnrolledClasses);
+            setIsCurrentSemesterMode(true);
+          } else {
+            // Novo planejamento limpo para o semestre
+            hasEditedGradeRef.current = false;
+            setSelectedClasses([]);
+            setIsCurrentSemesterMode(false);
+            setScheduleOptions([]);
+            setCurrentOptionIndex(0);
+          }
+        }
+      } catch (e) {
+        console.warn('Erro ao carregar grade do semestre:', e);
+      }
+    }
+
+    loadSemesterGrade();
+
+    const listener = () => {
+      loadSemesterGrade();
+    };
+    gradeUpdateListeners.add(listener);
+
+    return () => {
+      isMounted = false;
+      gradeUpdateListeners.delete(listener);
+    };
+  }, [year, period, container, semesters, currentEnrolledClasses]);
 
   // Mapa de departamentos para lookup O(1) de nomes
   const departmentsMap = useMemo(() => {
@@ -651,6 +714,14 @@ export function useGrade() {
     }
   }, [container, selectedClasses, year, period]);
 
+  // Envia disciplina para a grade do semestre adequado
+  const sendDisciplineToGrade = useCallback(
+    async (code: string, name: string) => {
+      await sendDisciplineToGradeAction(container, code, name);
+    },
+    [container]
+  );
+
   return {
     departments,
     departmentsMap,
@@ -698,7 +769,104 @@ export function useGrade() {
     enrolledCount: currentEnrolledClasses.length,
     restoreEnrolledClasses,
     startNewPlanning,
+    sendDisciplineToGrade,
   };
+}
+
+export async function sendDisciplineToGradeAction(
+  container: ReturnType<typeof useContainer>,
+  code: string,
+  name: string
+) {
+  try {
+    const calendars = await container.useCases.getAcademicCalendar.execute();
+    const currentCal = calendars.find((c) => c.isCurrent) || calendars[0];
+    const now = new Date();
+
+    const isDateInRange = (period?: { inicio: string; fim: string }) => {
+      if (!period?.inicio || !period?.fim) return false;
+      const start = new Date(`${period.inicio}T00:00:00`).getTime();
+      const end = new Date(`${period.fim}T23:59:59`).getTime();
+      const current = now.getTime();
+      return current >= start && current <= end;
+    };
+
+    const isEnrolling =
+      isDateInRange(currentCal?.periodoMatricula) ||
+      isDateInRange(currentCal?.periodoRematricula) ||
+      isDateInRange(currentCal?.periodoMatriculaExtraordinaria);
+
+    const isStarted = currentCal
+      ? await container.useCases.getAcademicCalendar.isSemesterStarted(currentCal.year, currentCal.period, now)
+      : true;
+
+    let targetYear = currentCal?.year || '2026';
+    let targetPeriod = currentCal?.period || '2';
+
+    // Se o semestre atual já começou e não está no período de matrículas/rematrícula, planeja para o próximo semestre!
+    if (isStarted && !isEnrolling) {
+      if (targetPeriod === '1') {
+        targetPeriod = '2';
+      } else {
+        targetYear = String(parseInt(targetYear, 10) + 1);
+        targetPeriod = '1';
+      }
+    }
+
+    const targetSemester = `${targetYear}.${targetPeriod}`;
+
+    // Busca turmas da matéria no catálogo
+    let foundClasses: ScrapedClass[] = [];
+    try {
+      const disciplines = await container.useCases.scrapeClasses.execute('ALL', targetYear, targetPeriod);
+      const matched = disciplines.find((d) => d.code.toUpperCase() === code.toUpperCase());
+      if (matched && matched.classes.length > 0) {
+        foundClasses = matched.classes;
+      }
+    } catch {}
+
+    const selectedClass: ScrapedClass = foundClasses[0] || {
+      id: `plan-${code}-01`,
+      disciplineCode: code,
+      disciplineName: name,
+      classCode: '01',
+      teachers: [],
+      classroom: 'A definir',
+      scheduleCode: 'A definir',
+      scheduleSlots: [],
+    };
+
+    const existingGrade = await container.useCases.manageGrade.get(targetSemester);
+    const existingClasses = existingGrade?.selectedClasses || [];
+    const updatedClasses = [
+      ...existingClasses.filter((c) => c.disciplineCode.toUpperCase() !== code.toUpperCase()),
+      selectedClass,
+    ];
+
+    await container.useCases.manageGrade.save({
+      id: `grade-${targetYear}-${targetPeriod}`,
+      name: `Grade ${targetSemester}`,
+      semester: targetSemester,
+      selectedClasses: updatedClasses,
+      updatedAt: new Date().toISOString(),
+    });
+
+    notifyGradeUpdate();
+
+    toast.add({
+      title: 'Enviada para o Montar Grade!',
+      description: `${code} - ${name} foi adicionada ao planejamento de ${targetSemester}.`,
+      type: 'success',
+      timeout: 4500,
+    });
+  } catch (e) {
+    console.error('Erro ao enviar disciplina para grade:', e);
+    toast.add({
+      title: 'Erro ao enviar disciplina',
+      description: 'Não foi possível adicionar a disciplina ao Montar Grade.',
+      type: 'error',
+    });
+  }
 }
 
 function errMsg(e: unknown): string {

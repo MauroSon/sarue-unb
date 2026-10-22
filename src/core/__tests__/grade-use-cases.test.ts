@@ -237,5 +237,63 @@ describe('Clean Architecture Grade & Web Scraping Use Cases', () => {
       is_current: false,
     });
   });
+
+  it('deve salvar e restaurar grades independentes por semestre', async () => {
+    const classSem1: ScrapedClass = {
+      id: 'CIC0004-01',
+      disciplineCode: 'CIC0004',
+      disciplineName: 'APC',
+      classCode: '01',
+      teachers: ['Prof. Teste'],
+      classroom: 'PAT',
+      scheduleCode: '24M12',
+      scheduleSlots: [],
+    };
+
+    const classSem2: ScrapedClass = {
+      id: 'MAT0025-01',
+      disciplineCode: 'MAT0025',
+      disciplineName: 'CÁLCULO 1',
+      classCode: '01',
+      teachers: ['Prof. Teste 2'],
+      classroom: 'ICC',
+      scheduleCode: '35T12',
+      scheduleSlots: [],
+    };
+
+    // Salvar grade para 2026.2
+    await container.useCases.manageGrade.save({
+      id: 'grade-2026.2',
+      name: 'Planejamento 2026.2',
+      selectedClasses: [classSem1],
+      semester: '2026.2',
+      updatedAt: new Date().toISOString(),
+    });
+    // Salvar grade para 2027.1
+    await container.useCases.manageGrade.save({
+      id: 'grade-2027.1',
+      name: 'Planejamento 2027.1',
+      selectedClasses: [classSem2],
+      semester: '2027.1',
+      updatedAt: new Date().toISOString(),
+    });
+
+    // Recuperar 2026.2
+    const savedSem1 = await container.useCases.manageGrade.get('2026.2');
+    expect(savedSem1).not.toBeNull();
+    expect(savedSem1?.semester).toBe('2026.2');
+    expect(savedSem1?.selectedClasses[0].disciplineCode).toBe('CIC0004');
+
+    // Recuperar 2027.1
+    const savedSem2 = await container.useCases.manageGrade.get('2027.1');
+    expect(savedSem2).not.toBeNull();
+    expect(savedSem2?.semester).toBe('2027.1');
+    expect(savedSem2?.selectedClasses[0].disciplineCode).toBe('MAT0025');
+
+    // Limpar apenas 2026.2
+    await container.useCases.manageGrade.clear('2026.2');
+    expect(await container.useCases.manageGrade.get('2026.2')).toBeNull();
+    expect(await container.useCases.manageGrade.get('2027.1')).not.toBeNull();
+  });
 });
 

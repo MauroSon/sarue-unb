@@ -2,11 +2,14 @@ import React, { useState, useMemo } from "react";
 import { useMyCourse } from "../hooks/useMyCourse";
 import { FlowchartStats } from "../components/flowchart/FlowchartStats";
 import { IraCalculatorScreen } from "./IraCalculatorScreen";
+import { CurriculumEditorScreen } from "./CurriculumEditorScreen";
 import { FlowchartList } from "../components/flowchart/FlowchartList";
 import { FlowchartDiagram } from "../components/flowchart/FlowchartDiagram";
 import { CurrentlyEnrolledPanel } from "../components/flowchart/CurrentlyEnrolledPanel";
 import { CurriculumSelectorDialog } from "../components/flowchart/CurriculumSelectorDialog";
 import { MyCourseSkeleton } from "../components/flowchart/MyCourseSkeleton";
+import { useContainer } from "../context/ContainerContext";
+import { sendDisciplineToGradeAction } from "../hooks/useGrade";
 import {
   PageContainer,
   PageHeader,
@@ -34,6 +37,7 @@ type ViewMode = "list" | "map";
 let cachedViewMode: ViewMode = "list";
 
 export const MyCourseScreen: React.FC = () => {
+  const container = useContainer();
   const {
     profile,
     curriculum,
@@ -49,7 +53,7 @@ export const MyCourseScreen: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState<FilterType>("all");
   const [isCurriculumDialogOpen, setIsCurriculumDialogOpen] = useState(false);
-  const [view, setView] = useState<"overview" | "ira-calculator">("overview");
+  const [view, setView] = useState<"overview" | "ira-calculator" | "curriculum-editor">("overview");
   const [viewMode, setViewMode] = useState<ViewMode>(cachedViewMode);
 
   const switchViewMode = (mode: ViewMode) => {
@@ -125,6 +129,10 @@ export const MyCourseScreen: React.FC = () => {
     return <IraCalculatorScreen onBack={() => setView("overview")} />;
   }
 
+  if (view === "curriculum-editor") {
+    return <CurriculumEditorScreen onBack={() => setView("overview")} />;
+  }
+
   if (isLoading && !profile) {
     return (
       <PageContainer>
@@ -159,15 +167,27 @@ export const MyCourseScreen: React.FC = () => {
             )}
 
             {profile && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setIsCurriculumDialogOpen(true)}
-                title="Trocar ou explorar outra matriz curricular da UnB"
-              >
-                <SlidersHorizontal className="w-4 h-4 stroke-[2.5]" />
-                Trocar Matriz
-              </Button>
+              <>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setView("curriculum-editor")}
+                  title="Editar disciplinas, inserir optativas ou customizar o currículo"
+                >
+                  <BookOpen className="w-4 h-4 stroke-[2.5]" />
+                  Gerenciar Currículo
+                </Button>
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setIsCurriculumDialogOpen(true)}
+                  title="Trocar ou explorar outra matriz curricular da UnB"
+                >
+                  <SlidersHorizontal className="w-4 h-4 stroke-[2.5]" />
+                  Trocar Matriz
+                </Button>
+              </>
             )}
           </div>
         }
@@ -347,12 +367,18 @@ export const MyCourseScreen: React.FC = () => {
                   visibleCodes={filteredCodesSet}
                   disciplineNames={disciplineNames}
                   onToggle={toggleDiscipline}
+                  onSendToGrade={(code, name) =>
+                    sendDisciplineToGradeAction(container, code, name)
+                  }
                 />
               ) : (
                 <FlowchartDiagram
                   flowchartData={flowchartData}
                   visibleCodes={filteredCodesSet}
                   onToggle={toggleDiscipline}
+                  onSendToGrade={(code, name) =>
+                    sendDisciplineToGradeAction(container, code, name)
+                  }
                 />
               )}
             </section>

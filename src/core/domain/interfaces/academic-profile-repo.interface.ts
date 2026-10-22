@@ -25,5 +25,10 @@ export interface IAcademicProfileRepository {
   saveProfile(profile: StudentAcademicProfile): Promise<void>;
   clearProfile(): Promise<void>;
   getAllCurricula(): Promise<CurriculumStructure[]>;
+  /**
+   * Matrizes de um único curso (por course_id do catálogo de cursos).
+   * Evita baixar o catálogo inteiro da UnB quando só o curso do discente importa.
+   */
+  getCurriculaForCourse(courseId: string): Promise<CurriculumStructure[]>;
   fetchSigaaHistory(creds: SigaaCredentials): Promise<SigaaHistoryRawResponse>;
 }

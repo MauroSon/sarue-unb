@@ -11,11 +11,11 @@ export class ManageGradeUseCase {
     await this.gradeRepo.saveGrade(grade);
   }
 
-  async get(): Promise<SavedGrade | null> {
-    return this.gradeRepo.getSavedGrade();
+  async get(semester?: string): Promise<SavedGrade | null> {
+    return this.gradeRepo.getSavedGrade(semester);
   }
 
-  async clear(): Promise<void> {
-    await this.gradeRepo.clearSavedGrade();
+  async clear(semester?: string): Promise<void> {
+    await this.gradeRepo.clearSavedGrade(semester);
   }
 }

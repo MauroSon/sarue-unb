@@ -11,7 +11,9 @@ export type BadgeTypeVariant =
   | 'neutral'
   | 'success'
   | 'primary'
-  | 'outline';
+  | 'outline'
+  | 'purple'
+  | 'yellow';
 
 export interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
   variant?: BadgeTypeVariant;
@@ -38,6 +40,8 @@ export const Badge: React.FC<BadgeProps> = ({
     success: 'bg-neo-green text-black border-2 border-black shadow-[2px_2px_0px_0px_#000]',
     primary: 'bg-neo-blue text-white border-2 border-black shadow-[2px_2px_0px_0px_#000]',
     outline: 'bg-white text-black border-2 border-black shadow-[2px_2px_0px_0px_#000]',
+    purple: 'bg-neo-purple text-black border-2 border-black shadow-[2px_2px_0px_0px_#000]',
+    yellow: 'bg-neo-yellow text-black border-2 border-black shadow-[2px_2px_0px_0px_#000]',
   };
 
   const sizeStyles = {

@@ -80,6 +80,11 @@ pub fn run() {
                     .plugin(tauri_plugin_updater::Builder::new().build())?;
                 app.handle()
                     .plugin(tauri_plugin_process::init())?;
+                app.handle()
+                    .plugin(tauri_plugin_autostart::init(
+                        tauri_plugin_autostart::MacosLauncher::LaunchAgent,
+                        None,
+                    ))?;
             }
 
             log::info!("Plugins Tauri Stronghold e SQL (SQLite) inicializados com sucesso.");

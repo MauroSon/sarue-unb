@@ -27,8 +27,19 @@ import {
   Unlock,
   ZoomIn,
   ZoomOut,
+  CalendarPlus,
+  RotateCcw,
 } from "lucide-react";
-import { Button, Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui";
+import {
+  Button,
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from "@/components/ui";
 import type { FlowchartData, FlowchartDiscipline } from "@/core";
 
 type DisciplineStatus = "completed" | "in_progress" | "available" | "locked";
@@ -40,6 +51,7 @@ interface DisciplineNodeData extends Record<string, unknown> {
   dim: boolean;
   inChain: boolean;
   onToggle: ToggleFn;
+  onSendToGrade?: (code: string, name: string) => void;
 }
 
 type DisciplineFlowNode = Node<DisciplineNodeData, "discipline">;
@@ -51,6 +63,7 @@ export interface FlowchartDiagramProps {
   /** Códigos que passam busca + filtro atuais: os demais esmaecem (cadeias preservadas) */
   visibleCodes: Set<string>;
   onToggle: ToggleFn;
+  onSendToGrade?: (code: string, name: string) => void;
 }
 
 const NODE_W = 212;
@@ -93,75 +106,183 @@ const STATUS_STYLE: Record<
   },
 };
 
-// Nó-adesivo: conteúdo (raio 8px, sombra 4px) com física de card clicável (escala 4px).
-// Clique = mesma ação da lista: marcar/desmarcar concluída.
+// Nó-adesivo: conteúdo (raio 8px, sombra 4px) com física de card clicável.
+// Clique = abre menu com opção de marcar/desmarcar concluída OU enviar para Montar Grade.
 function DisciplineNode({ data }: NodeProps<DisciplineFlowNode>) {
-  const { discipline: d, dim, onToggle } = data;
+  const { discipline: d, dim, onToggle, onSendToGrade } = data;
   const status = d.status as DisciplineStatus;
   const s = STATUS_STYLE[status];
   const isCompleted = status === "completed";
+  const isOptativa = d.nature === "Optativa";
+
+  let stickerBg = s.sticker;
+  let textColor = s.name;
+  let metaColor = s.meta;
+
+  if (isOptativa) {
+    if (status === "available") {
+      stickerBg = "bg-neo-purple";
+      textColor = "text-black";
+      metaColor = "text-black/70";
+    } else if (status === "locked") {
+      stickerBg = "bg-pastel-purple";
+      textColor = "text-neutral-700";
+      metaColor = "text-neutral-500";
+    } else if (status === "completed") {
+      stickerBg = "bg-pastel-purple";
+      textColor = "text-black";
+      metaColor = "text-black/60";
+    }
+  }
 
   return (
-    <Tooltip>
-      <TooltipTrigger
-        type="button"
-        onClick={() => onToggle(d.code, isCompleted)}
-        aria-label={
-          isCompleted
-            ? `Desmarcar ${d.name} como concluída`
-            : `Marcar ${d.name} como concluída`
-        }
-        className={`w-[212px] h-[78px] min-h-[78px] p-2 flex flex-col gap-1 text-left border-2 border-black rounded-lg shadow-[4px_4px_0_0_#000] cursor-pointer transition-[transform,box-shadow,opacity] duration-150 ease-out hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0_0_#000] active:translate-x-[4px] active:translate-y-[4px] active:shadow-none focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-neo-blue focus-visible:ring-offset-2 ${s.sticker} ${
-          dim ? "opacity-30" : "opacity-100"
-        }`}
-      >
-        <span className="flex items-center gap-1 w-full min-w-0">
-          <span className="font-mono text-[11px] font-black px-1 py-px bg-white border border-black rounded text-black shrink-0">
-            {d.code}
-          </span>
-          <span
-            className="ml-auto text-[11px] font-black px-1 py-px bg-white border border-black rounded text-black shrink-0"
-            title={`${d.level}º semestre sugerido`}
+    <div className="relative">
+      <DropdownMenu>
+        <Tooltip>
+          <TooltipTrigger
+            render={
+              <DropdownMenuTrigger
+                render={
+                  <div
+                    role="button"
+                    tabIndex={0}
+                    aria-label={`Opções para ${d.code} - ${d.name}`}
+                    className={`group w-[212px] h-[78px] min-h-[78px] p-2 flex flex-col gap-1 text-left border-2 border-black rounded-lg shadow-[4px_4px_0_0_#000] cursor-pointer transition-[transform,box-shadow,opacity] duration-150 ease-out hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0_0_#000] active:translate-x-[4px] active:translate-y-[4px] active:shadow-none focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-neo-blue focus-visible:ring-offset-2 select-none ${stickerBg} ${
+                      dim ? "opacity-30" : "opacity-100"
+                    }`}
+                  />
+                }
+              />
+            }
           >
-            {d.level}º
-          </span>
-          {s.icon}
-        </span>
-        <span
-          className={`text-[11px] font-black leading-[1.25] line-clamp-2 ${s.name}`}
-          title={d.name}
-        >
-          {d.name}
-        </span>
-        <span className={`text-[11px] font-bold ${s.meta}`}>{d.workloadHours}h</span>
-      </TooltipTrigger>
-      <TooltipContent className="pointer-events-none text-left max-w-[260px]">
-        <p className="font-black">{d.name}</p>
-        <p className="font-mono text-[11px] font-bold text-neutral-600 mb-1">
-          {d.code} · {d.workloadHours}h · {d.level}º semestre
-        </p>
-        <p className="font-bold">
-          {s.label}
-          {isCompleted && d.grade ? ` · Nota ${d.grade}` : ""}
-        </p>
-        {status === "locked" && d.missingPrerequisites.length > 0 && (
-          <>
-            <p className="font-black mt-1">Falta:</p>
-            <ul className="space-y-0.5">
-              {d.missingPrerequisites.map((m, i) => (
-                <li key={i} className="font-medium">
-                  {m}
-                </li>
-              ))}
-            </ul>
-          </>
-        )}
-        {d.prerequisites.length > 0 && status !== "locked" && (
-          <p className="font-bold mt-1">
-            {d.prerequisites.length} pré-requisito(s)
-          </p>
-        )}
-      </TooltipContent>
+            <span className="flex items-center gap-1.5 w-full min-w-0">
+              <span className="font-mono text-[11px] font-black px-1 py-px bg-white border border-black rounded text-black shrink-0">
+                {d.code}
+              </span>
+              {isOptativa && (
+                <span className="text-[9px] font-black uppercase px-1.5 py-0.5 bg-neo-purple text-black border-2 border-black rounded-full shrink-0 shadow-none">
+                  Optativa
+                </span>
+              )}
+              <span
+                className="ml-auto text-[11px] font-black px-1 py-px bg-white border border-black rounded text-black shrink-0"
+                title={d.level === 0 ? "Optativa de interesse" : `${d.level}º semestre sugerido`}
+              >
+                {d.level === 0 ? "OPT" : `${d.level}º`}
+              </span>
+
+              {/* Botão rápido no hover: Enviar para o Montar Grade (do lado esquerdo do ícone de status) */}
+              {onSendToGrade && (
+                <button
+                  type="button"
+                  title="Enviar para o Montar Grade"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onSendToGrade(d.code, d.name);
+                  }}
+                  className="opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-opacity p-0.5 rounded bg-white hover:bg-pastel-yellow border border-black text-black cursor-pointer shadow-neo-xs shrink-0"
+                >
+                  <CalendarPlus className="w-3 h-3 stroke-[2.5]" />
+                </button>
+              )}
+
+              {/* Ícone de status (cursando, bloqueado, disponível, etc) com clique de toggle rápido */}
+              <button
+                type="button"
+                title={isCompleted ? "Desmarcar disciplina" : "Marcar como concluída"}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onToggle(d.code, isCompleted);
+                }}
+                className="cursor-pointer hover:scale-110 transition-transform shrink-0"
+              >
+                {s.icon}
+              </button>
+            </span>
+
+            <span
+              className={`text-[11px] font-black leading-[1.25] line-clamp-2 ${textColor}`}
+              title={d.name}
+            >
+              {d.name}
+            </span>
+            <span className={`text-[11px] font-bold ${metaColor}`}>{d.workloadHours}h</span>
+          </TooltipTrigger>
+
+          <TooltipContent className="pointer-events-none text-left max-w-[260px]">
+            <p className="font-black">{d.name}</p>
+            <p className="font-mono text-[11px] font-bold text-neutral-600 mb-1">
+              {d.code} · {d.workloadHours}h · {d.level === 0 ? "Optativa" : `${d.level}º semestre`} {isOptativa ? "· Optativa de interesse" : ""}
+            </p>
+            <p className="font-bold">
+              {s.label}
+              {isCompleted && d.grade ? ` · Nota ${d.grade}` : ""}
+            </p>
+            {status === "locked" && d.missingPrerequisites.length > 0 && (
+              <>
+                <p className="font-black mt-1">Falta:</p>
+                <ul className="space-y-0.5">
+                  {d.missingPrerequisites.map((m, i) => (
+                    <li key={i} className="font-medium">
+                      {m}
+                    </li>
+                  ))}
+                </ul>
+              </>
+            )}
+            {d.prerequisites.length > 0 && status !== "locked" && (
+              <p className="font-bold mt-1">
+                {d.prerequisites.length} pré-requisito(s)
+              </p>
+            )}
+          </TooltipContent>
+        </Tooltip>
+
+        <DropdownMenuContent side="bottom" align="start" className="w-64 p-1.5 shadow-[4px_4px_0_0_#000] border-2 border-black bg-white">
+          <div className="px-2 py-1.5 mb-1 border-b-2 border-black/10">
+            <span className="font-mono text-[10px] font-black uppercase text-neutral-500">
+              {d.code} · {d.workloadHours}h
+            </span>
+            <p className="text-xs font-black text-black leading-tight line-clamp-2 mt-0.5">
+              {d.name}
+            </p>
+          </div>
+
+          <DropdownMenuItem
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggle(d.code, isCompleted);
+            }}
+            className="gap-2 cursor-pointer"
+          >
+            {isCompleted ? (
+              <>
+                <RotateCcw className="w-4 h-4 stroke-[2.5]" />
+                <span>Desmarcar como concluída</span>
+              </>
+            ) : (
+              <>
+                <Check className="w-4 h-4 stroke-[3] text-neo-green" />
+                <span>Marcar como concluída</span>
+              </>
+            )}
+          </DropdownMenuItem>
+
+          {onSendToGrade && (
+            <DropdownMenuItem
+              onClick={(e) => {
+                e.stopPropagation();
+                onSendToGrade(d.code, d.name);
+              }}
+              className="gap-2 cursor-pointer"
+            >
+              <CalendarPlus className="w-4 h-4 stroke-[2.5] text-neo-blue" />
+              <span>Enviar para o Montar Grade</span>
+            </DropdownMenuItem>
+          )}
+        </DropdownMenuContent>
+      </DropdownMenu>
+
       {/* Pinos de papel: handles minúsculos onde a caneta encosta no adesivo */}
       <Handle
         type="target"
@@ -173,7 +294,7 @@ function DisciplineNode({ data }: NodeProps<DisciplineFlowNode>) {
         position={Position.Right}
         className="!w-1.5 !h-1.5 !min-w-0 !min-h-0 !bg-black !border-black !rounded-full"
       />
-    </Tooltip>
+    </div>
   );
 }
 
@@ -274,6 +395,7 @@ function FlowMinimap({
           {layout.discs.map((d) => {
             const p = layout.positions.get(d.code);
             if (!p) return null;
+            const bg = d.nature === "Optativa" ? "#c084fc" : STATUS_HEX[d.status as DisciplineStatus];
             return (
               <span
                 key={d.code}
@@ -284,7 +406,7 @@ function FlowMinimap({
                   top: (p.y - bounds.minY) * scale + PAD,
                   width: Math.max(4, NODE_W * scale),
                   height: Math.max(2, NODE_H * scale),
-                  background: STATUS_HEX[d.status as DisciplineStatus],
+                  background: bg,
                   border: "1px solid #000",
                   borderRadius: 2,
                 }}
@@ -483,6 +605,7 @@ export const FlowchartDiagram: React.FC<FlowchartDiagramProps> = ({
   flowchartData,
   visibleCodes,
   onToggle,
+  onSendToGrade,
 }) => {
   const [hoveredCode, setHoveredCode] = useState<string | null>(null);
   const canvasRef = useRef<HTMLDivElement>(null);
@@ -635,6 +758,7 @@ export const FlowchartDiagram: React.FC<FlowchartDiagramProps> = ({
         if (
           !node ||
           node.data.onToggle !== onToggle ||
+          node.data.onSendToGrade !== onSendToGrade ||
           node.data.discipline !== d
         ) {
           node = {
@@ -647,14 +771,14 @@ export const FlowchartDiagram: React.FC<FlowchartDiagramProps> = ({
             initialHeight: NODE_H,
             measured: { width: NODE_W, height: NODE_H },
             style: { width: NODE_W, height: NODE_H, visibility: "visible" },
-            data: { discipline: d, dim, inChain, onToggle },
+            data: { discipline: d, dim, inChain, onToggle, onSendToGrade },
             draggable: false,
           };
           nodeCache.current.set(key, node);
         }
         return node;
       }),
-    [layout, chain, visibleCodes, onToggle],
+    [layout, chain, visibleCodes, onToggle, onSendToGrade],
   );
 
   const edgeCache = useRef(new Map<string, PenFlowEdge>());

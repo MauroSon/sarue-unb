@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import type { FlowchartDiscipline, FlowchartSemester } from "@/core";
-import { Check, CircleDotDashed, Lock, Unlock } from "lucide-react";
+import { Check, CircleDotDashed, Lock, Unlock, CalendarPlus } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import {
   Accordion,
   AccordionContent,
@@ -19,6 +20,7 @@ export interface FlowchartListProps {
   onToggle: (code: string, isEffectivelyCompleted: boolean) => void;
   /** Mapa código → nome para exibir nomes reais dos pré-requisitos no tooltip */
   disciplineNames?: Map<string, string>;
+  onSendToGrade?: (code: string, name: string) => void;
 }
 
 // Ícone de estado da disciplina: só o ícone (concluída não tem), tooltip explica
@@ -109,12 +111,14 @@ const DisciplineRow: React.FC<{
   d: FlowchartDiscipline;
   onToggle: (code: string, isEffectivelyCompleted: boolean) => void;
   disciplineNames?: Map<string, string>;
-}> = React.memo(({ d, onToggle, disciplineNames }) => {
+  onSendToGrade?: (code: string, name: string) => void;
+}> = React.memo(({ d, onToggle, disciplineNames, onSendToGrade }) => {
   const isCompleted = d.status === "completed";
+  const isOptativa = d.nature === "Optativa";
 
   return (
     <div
-      className={`flex items-center gap-3 px-4 py-2 transition-colors duration-150 hover:bg-neutral-50 ${
+      className={`group flex items-center gap-2.5 px-4 py-2 transition-colors duration-150 hover:bg-neutral-50 ${
         isCompleted ? "bg-neutral-50/70" : "bg-white"
       }`}
     >
@@ -146,9 +150,15 @@ const DisciplineRow: React.FC<{
         )}
       </button>
 
-      <span className="font-mono text-[11px] font-black px-1.5 py-0.5 bg-white border border-black rounded-md shrink-0">
+      <span className="font-mono text-[11px] font-black px-1.5 py-0.5 border border-black rounded-md shrink-0 bg-white text-black">
         {d.code}
       </span>
+
+      {isOptativa && (
+        <Badge variant="purple" size="sm" className="shrink-0 font-black shadow-none">
+          Optativa
+        </Badge>
+      )}
 
       <span
         className={`flex-1 min-w-0 truncate text-xs font-bold ${
@@ -161,7 +171,22 @@ const DisciplineRow: React.FC<{
         {d.name}
       </span>
 
-      {/* Estado (só ícone) à esquerda da pill de pré-requisitos */}
+      {/* Botão rápido no hover: Enviar para o Montar Grade */}
+      {onSendToGrade && (
+        <Tooltip>
+          <TooltipTrigger
+            type="button"
+            onClick={() => onSendToGrade(d.code, d.name)}
+            aria-label={`Enviar ${d.name} para o Montar Grade`}
+            className="cursor-pointer p-1 rounded-md border border-black bg-white hover:bg-pastel-yellow text-neutral-700 hover:text-black transition-all shrink-0 shadow-neo-xs opacity-0 group-hover:opacity-100 focus-visible:opacity-100"
+          >
+            <CalendarPlus className="w-3.5 h-3.5 stroke-[2.5]" />
+          </TooltipTrigger>
+          <TooltipContent>Enviar para o Montar Grade</TooltipContent>
+        </Tooltip>
+      )}
+
+      {/* Estado (ícone de cursando, bloqueado, etc.) */}
       <StatusIcon d={d} />
 
       {/* Pré-requisitos: uma pill com tooltip, em vez de códigos soltos */}
@@ -186,10 +211,12 @@ export const FlowchartList: React.FC<FlowchartListProps> = ({
   visibleCodes,
   onToggle,
   disciplineNames,
+  onSendToGrade,
 }) => {
-  // Semestres que têm disciplina visível com o filtro/busca atuais
-  const visible = semesters.filter((sem) =>
-    sem.disciplines.some((d) => visibleCodes.has(d.code)),
+  // Semestres que têm disciplina visível com o filtro/busca atuais (apenas semestres > 0)
+  const visible = semesters.filter(
+    (sem) =>
+      sem.level > 0 && sem.disciplines.some((d) => visibleCodes.has(d.code)),
   );
 
   // Semestres abertos: preferência salva no localStorage vence; sem preferência,
@@ -264,6 +291,7 @@ export const FlowchartList: React.FC<FlowchartListProps> = ({
                     d={d}
                     onToggle={onToggle}
                     disciplineNames={disciplineNames}
+                    onSendToGrade={onSendToGrade}
                   />
                 ))}
               </div>

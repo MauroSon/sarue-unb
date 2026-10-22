@@ -1,5 +1,5 @@
 import type { StudentAcademicProfile } from '../domain/entities/academic-profile';
-import type { CurriculumStructure } from '../domain/entities/course';
+import type { CurriculumDiscipline, CurriculumStructure } from '../domain/entities/course';
 import type { SigaaCredentials } from '../domain/entities/credential';
 import type {
   IAcademicProfileRepository,
@@ -12,6 +12,67 @@ const LEGACY_STORAGE_KEY = 'unb_aggregator_academic_profile_v1';
 let sharedCurriculaCache: CurriculumStructure[] | null = null;
 let sharedCurriculaPromise: Promise<CurriculumStructure[]> | null = null;
 export const sharedDisciplineNameMap = new Map<string, string>();
+
+interface RawCurriculumDiscipline {
+  code: string;
+  name: string;
+  workload_hours: number;
+  level?: number | null;
+  nature: 'Obrigatória' | 'Optativa' | 'Complementar';
+  prerequisites_raw?: string | null;
+  prerequisites?: string[];
+  equivalences_raw?: string | null;
+  equivalences?: string[];
+}
+
+interface RawCurriculumStructure {
+  id: string;
+  course_id: string;
+  course_name: string;
+  code: string;
+  created_year?: string | null;
+  status: string;
+  shift?: string | null;
+  total_hours?: number | null;
+  mandatory_disciplines?: RawCurriculumDiscipline[];
+  elective_disciplines?: RawCurriculumDiscipline[];
+  complementary_disciplines?: RawCurriculumDiscipline[];
+}
+
+function mapCurriculumStructure(c: RawCurriculumStructure): CurriculumStructure {
+  const mapDisc = (d: RawCurriculumDiscipline): CurriculumDiscipline => {
+    if (d.code && d.name && !sharedDisciplineNameMap.has(d.code)) {
+      sharedDisciplineNameMap.set(d.code, d.name);
+    }
+    return {
+      code: d.code,
+      name: d.name,
+      workloadHours: d.workload_hours,
+      level: d.level ?? undefined,
+      nature: d.nature,
+      prerequisitesRaw: d.prerequisites_raw ?? undefined,
+      prerequisites: d.prerequisites || [],
+      equivalencesRaw: d.equivalences_raw ?? undefined,
+      equivalences: d.equivalences || [],
+    };
+  };
+  return {
+    id: c.id,
+    courseId: c.course_id,
+    courseName: c.course_name,
+    code: c.code,
+    createdYear: c.created_year ?? undefined,
+    status: c.status,
+    shift: c.shift ?? undefined,
+    totalHours: c.total_hours ?? undefined,
+    mandatoryDisciplines: (c.mandatory_disciplines || []).map(mapDisc),
+    electiveDisciplines: (c.elective_disciplines || []).map(mapDisc),
+    complementaryDisciplines: (c.complementary_disciplines || []).map(mapDisc),
+  };
+}
+
+// Cache por curso: course_id -> matrizes (evita re-baixar o arquivo do curso)
+const sharedCurriculaByCourse = new Map<string, Promise<CurriculumStructure[]>>();
 
 export class InMemoryAcademicProfileRepository implements IAcademicProfileRepository {
   private profileInMemory: StudentAcademicProfile | null = null;
@@ -121,17 +182,7 @@ export class InMemoryAcademicProfileRepository implements IAcademicProfileReposi
             }>;
 
             if (Array.isArray(raw) && raw.length > 0) {
-              const mapDisc = (d: {
-                code: string;
-                name: string;
-                workload_hours: number;
-                level?: number | null;
-                nature: 'Obrigatória' | 'Optativa' | 'Complementar';
-                prerequisites_raw?: string | null;
-                prerequisites?: string[];
-                equivalences_raw?: string | null;
-                equivalences?: string[];
-              }) => {
+              const mapDisc = (d: RawCurriculumDiscipline) => {
                 if (d.code && d.name && !sharedDisciplineNameMap.has(d.code)) {
                   sharedDisciplineNameMap.set(d.code, d.name);
                 }
@@ -190,6 +241,43 @@ export class InMemoryAcademicProfileRepository implements IAcademicProfileReposi
     } finally {
       sharedCurriculaPromise = null;
     }
+  }
+
+  async getCurriculaForCourse(courseId: string): Promise<CurriculumStructure[]> {
+    if (!courseId) return [];
+
+    const cached = sharedCurriculaByCourse.get(courseId);
+    if (cached) return cached;
+
+    const promise = (async () => {
+      if (typeof fetch !== 'undefined') {
+        const candidateUrls = [
+          `/data/curricula/${courseId}.json`,
+          `https://kalebhenrique.github.io/sarue-unb/data/curricula/${courseId}.json`,
+          `https://raw.githubusercontent.com/kalebhenrique/sarue-unb/gh-pages/data/curricula/${courseId}.json`,
+        ];
+
+        for (const url of candidateUrls) {
+          try {
+            const res = await fetch(url);
+            if (!res.ok) continue;
+            const raw = (await res.json()) as RawCurriculumStructure[];
+            if (Array.isArray(raw) && raw.length > 0) {
+              return raw.map(mapCurriculumStructure);
+            }
+          } catch (e) {
+            console.warn(`[InMemoryAcademicProfileRepository] Erro ao carregar matrizes do curso ${courseId} em ${url}:`, e);
+          }
+        }
+      }
+      return [];
+    })();
+
+    sharedCurriculaByCourse.set(courseId, promise);
+    const result = await promise;
+    // Falha não fica presa em cache: a próxima chamada tenta de novo
+    if (result.length === 0) sharedCurriculaByCourse.delete(courseId);
+    return result;
   }
 
   async fetchSigaaHistory(creds: SigaaCredentials): Promise<SigaaHistoryRawResponse> {

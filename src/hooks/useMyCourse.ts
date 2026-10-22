@@ -2,10 +2,12 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useContainer } from '../context/ContainerContext';
 import { useCredentials } from './useCredentials';
 import { toast } from '@/components/ui';
+import { normalizeCourseText } from '@/core';
 import type {
   StudentAcademicProfile,
   FlowchartData,
   CurriculumStructure,
+  IGradeRepository,
 } from '@/core';
 
 // Notificador global entre instâncias ativas do hook useMyCourse
@@ -15,10 +17,36 @@ export function notifyMyCourseListeners() {
   myCourseListeners.forEach((fn) => fn());
 }
 
+// Resolve o course_id do curso do perfil no catálogo de cursos (courses.json, ~47 KB).
+// Com ele, o app baixa só as matrizes do curso em vez do catálogo inteiro da UnB.
+export async function resolveCourseIdForProfile(
+  profile: StudentAcademicProfile,
+  gradeRepo: IGradeRepository,
+): Promise<string | null> {
+  if (!profile.courseName) return null;
+  try {
+    const catalog = (await gradeRepo.getCoursesCatalog?.()) || [];
+    if (catalog.length === 0) return null;
+    const target = normalizeCourseText(profile.courseName);
+    const hit =
+      catalog.find((c) => normalizeCourseText(c.name) === target) ||
+      catalog.find((c) => {
+        const n = normalizeCourseText(c.name);
+        return n.length >= 4 && (n.includes(target) || target.includes(n));
+      });
+    return hit ? hit.id : null;
+  } catch (e) {
+    console.warn('[useMyCourse] Não foi possível resolver o curso no catálogo:', e);
+    return null;
+  }
+}
+
 // Cache de sessão: voltar à aba remonta o hook e hidrata daqui, sem tela de
 // carregamento — o catálogo de matrizes é estático na sessão e o perfil vem de
 // leitura local barata. `undefined` = nunca carregado (primeira carga da sessão).
 let cachedCurricula: CurriculumStructure[] | null = null;
+// Escopo do cache de matrizes: course_id do curso carregado ou 'ALL' (catálogo completo)
+let cachedCurriculaScope: string | null = null;
 let cachedProfile: StudentAcademicProfile | null | undefined;
 // Matriz resolvida: sem ela o primeiro render pós-cache renderia a página sem
 // stats e sem lista, e o conteúdo inteiro entraria de uma vez depois (layout shift)
@@ -31,7 +59,7 @@ export function resetMyCourseCache() {
 }
 
 export function useMyCourse() {
-  const { useCases } = useContainer();
+  const { useCases, repos } = useContainer();
   const { allCredentials } = useCredentials();
 
   const [profile, setProfile] = useState<StudentAcademicProfile | null>(() => cachedProfile ?? null);
@@ -47,12 +75,35 @@ export function useMyCourse() {
   // conteúdo troca no lugar, sem skeleton intermediário (@DESIGN.md — piscar é shift).
   const loadData = useCallback(async () => {
     try {
-      const [curricula, currentProfile] = await Promise.all([
-        cachedCurricula ?? useCases.manageAcademicProfile.getAllCurricula(),
-        useCases.manageAcademicProfile.getProfile(),
-      ]);
+      const currentProfile = await useCases.manageAcademicProfile.getProfile();
+
+      // Com perfil (login SIGAA), baixa apenas as matrizes do curso do usuário
+      // (arquivo por curso no CDN) em vez do catálogo inteiro da UnB (~40 MB).
+      // Sem perfil (modo explorar) ou sem casamento no catálogo, cai no fetch completo.
+      let curricula: CurriculumStructure[] = [];
+      let curriculaScope: string | null = null;
+      if (currentProfile) {
+        const courseId = await resolveCourseIdForProfile(currentProfile, repos.gradeRepo);
+        if (courseId) {
+          if (cachedCurricula && cachedCurriculaScope === courseId) {
+            curricula = cachedCurricula;
+            curriculaScope = courseId;
+          } else {
+            curricula = await useCases.manageAcademicProfile.getCurriculaForCourse(courseId);
+            curriculaScope = curricula.length > 0 ? courseId : null;
+          }
+        }
+      }
+      if (curricula.length === 0) {
+        curricula =
+          cachedCurriculaScope === 'ALL' && cachedCurricula
+            ? cachedCurricula
+            : await useCases.manageAcademicProfile.getAllCurricula();
+        curriculaScope = 'ALL';
+      }
 
       cachedCurricula = curricula;
+      cachedCurriculaScope = curriculaScope;
       cachedProfile = currentProfile;
       setAllCurricula(curricula);
 
@@ -210,7 +261,7 @@ export function useMyCourse() {
     } finally {
       setIsLoading(false);
     }
-  }, [useCases]);
+  }, [useCases, repos]);
 
   useEffect(() => {
     loadData();
@@ -225,11 +276,18 @@ export function useMyCourse() {
     };
   }, [loadData]);
 
+  const activeCurriculum = useMemo(() => {
+    if (profile?.customCurriculum) {
+      return profile.customCurriculum;
+    }
+    return selectedCurriculum;
+  }, [profile?.customCurriculum, selectedCurriculum]);
+
   // Calcula o fluxograma quando houver perfil e matriz
   const flowchartData: FlowchartData | null = useMemo(() => {
-    if (!selectedCurriculum || !profile) return null;
-    return useCases.getFlowchart.execute(selectedCurriculum, profile, allCurricula);
-  }, [selectedCurriculum, profile, allCurricula, useCases]);
+    if (!activeCurriculum || !profile) return null;
+    return useCases.getFlowchart.execute(activeCurriculum, profile, allCurricula);
+  }, [activeCurriculum, profile, allCurricula, useCases]);
 
   // Mapa código → nome de disciplina: todas as matrizes carregadas
   // + matriz selecionada + histórico cursado, garantindo nomes reais para qualquer código
@@ -244,11 +302,11 @@ export function useMyCourse() {
         if (!map.has(d.code)) map.set(d.code, d.name);
       }
     }
-    if (selectedCurriculum) {
+    if (activeCurriculum) {
       for (const d of [
-        ...(selectedCurriculum.mandatoryDisciplines || []),
-        ...(selectedCurriculum.electiveDisciplines || []),
-        ...(selectedCurriculum.complementaryDisciplines || []),
+        ...(activeCurriculum.mandatoryDisciplines || []),
+        ...(activeCurriculum.electiveDisciplines || []),
+        ...(activeCurriculum.complementaryDisciplines || []),
       ]) {
         map.set(d.code, d.name);
       }
@@ -257,7 +315,7 @@ export function useMyCourse() {
       if (d.name && d.name !== d.code) map.set(d.code, d.name);
     }
     return map;
-  }, [allCurricula, selectedCurriculum, profile]);
+  }, [allCurricula, activeCurriculum, profile]);
 
   // Alterna uma disciplina manualmente (a UI passa o estado efetivo atual do card)
   const toggleDiscipline = useCallback(async (code: string, isEffectivelyCompleted?: boolean) => {
@@ -367,6 +425,49 @@ export function useMyCourse() {
     }
   }, [useCases]);
 
+  // Salva currículo customizado editado pelo discente
+  const saveCustomCurriculum = useCallback(async (curr: CurriculumStructure) => {
+    try {
+      const updated = await useCases.manageAcademicProfile.saveCustomCurriculum(curr);
+      cachedProfile = updated;
+      setProfile(updated);
+      notifyMyCourseListeners();
+      toast.add({
+        title: 'Currículo atualizado',
+        description: 'Suas alterações no currículo foram salvas com sucesso.',
+        type: 'success',
+      });
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : 'Erro ao salvar currículo';
+      toast.add({
+        title: 'Erro ao salvar currículo',
+        description: msg,
+        type: 'error',
+      });
+    }
+  }, [useCases]);
+
+  // Restaura o currículo para a matriz original da UnB
+  const resetCustomCurriculum = useCallback(async () => {
+    try {
+      const updated = await useCases.manageAcademicProfile.resetCustomCurriculum();
+      cachedProfile = updated;
+      setProfile(updated);
+      notifyMyCourseListeners();
+      toast.add({
+        title: 'Currículo restaurado',
+        description: 'Seu currículo foi restaurado para a matriz original da UnB.',
+        type: 'info',
+      });
+    } catch {
+      toast.add({
+        title: 'Erro ao restaurar',
+        description: 'Não foi possível restaurar a matriz original.',
+        type: 'error',
+      });
+    }
+  }, [useCases]);
+
   // Relações ativas de hover (para destacar pré-requisitos e pós-requisitos)
   const hoverRelations = useMemo(() => {
     if (!hoveredCode || !flowchartData) {
@@ -387,7 +488,9 @@ export function useMyCourse() {
 
   return {
     profile,
-    curriculum: selectedCurriculum,
+    curriculum: activeCurriculum,
+    originalCurriculum: selectedCurriculum,
+    hasCustomCurriculum: Boolean(profile?.customCurriculum),
     allCurricula,
     flowchartData,
     disciplineNames,
@@ -398,6 +501,8 @@ export function useMyCourse() {
     hoverRelations,
     toggleDiscipline,
     resetOverrides,
+    saveCustomCurriculum,
+    resetCustomCurriculum,
     syncSigaa,
     selectCurriculum,
     reload: loadData,

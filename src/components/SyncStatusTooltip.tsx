@@ -84,9 +84,9 @@ export const SyncStatusTooltip: React.FC<SyncStatusTooltipProps> = ({
           <span>Status da Sincronização</span>
         </div>
         <span
-          className={`text-[10px] font-bold px-2 py-0.5 rounded-full border border-black ${
+          className={`text-[11px] font-bold px-2 py-0.5 rounded-full border border-black ${
             isSyncing
-              ? "bg-amber-300 text-black animate-pulse"
+              ? "bg-amber-300 text-black"
               : "bg-emerald-200 text-emerald-950"
           }`}
         >

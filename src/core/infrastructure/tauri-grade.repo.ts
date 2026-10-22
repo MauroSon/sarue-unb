@@ -22,7 +22,8 @@ import type {
 import type { IGradeRepository } from '../domain/interfaces/grade-repo.interface';
 import { InMemoryGradeRepository } from './in-memory-grade.repo';
 
-let inMemorySavedGrade: SavedGrade | null = null;
+const inMemorySavedGrades = new Map<string, SavedGrade>();
+let inMemoryLatestGrade: SavedGrade | null = null;
 
 export class TauriGradeRepository implements IGradeRepository {
   private fallbackRepo = new InMemoryGradeRepository();
@@ -376,7 +377,8 @@ export class TauriGradeRepository implements IGradeRepository {
   }
 
   async saveGrade(grade: SavedGrade): Promise<void> {
-    inMemorySavedGrade = grade;
+    inMemorySavedGrades.set(grade.semester, grade);
+    inMemoryLatestGrade = grade;
     const db = await this.getDb();
     if (db) {
       await db.execute(
@@ -392,42 +394,61 @@ export class TauriGradeRepository implements IGradeRepository {
     }
   }
 
-  async getSavedGrade(): Promise<SavedGrade | null> {
+  async getSavedGrade(semester?: string): Promise<SavedGrade | null> {
     const db = await this.getDb();
     if (db) {
       try {
+        const query = semester
+          ? `SELECT id, name, semester, data, updated_at FROM saved_grades WHERE semester = $1 ORDER BY updated_at DESC LIMIT 1`
+          : `SELECT id, name, semester, data, updated_at FROM saved_grades ORDER BY updated_at DESC LIMIT 1`;
+        const params = semester ? [semester] : [];
         const rows = await db.select<{
           id: string;
           name: string;
           semester: string;
           data: string;
           updated_at: string;
-        }[]>(
-          `SELECT id, name, semester, data, updated_at FROM saved_grades ORDER BY updated_at DESC LIMIT 1`
-        );
+        }[]>(query, params);
         if (rows && rows.length > 0) {
           const row = rows[0];
-          return {
+          const loaded: SavedGrade = {
             id: row.id,
             name: row.name,
             semester: row.semester,
             selectedClasses: JSON.parse(row.data),
             updatedAt: row.updated_at,
           };
+          inMemorySavedGrades.set(loaded.semester, loaded);
+          return loaded;
         }
       } catch (e) {
         console.warn('[TauriGradeRepository] Falha ao ler grade do SQLite:', e);
       }
     }
-    return inMemorySavedGrade;
+    if (semester) {
+      return inMemorySavedGrades.get(semester) ?? null;
+    }
+    return inMemoryLatestGrade;
   }
 
-  async clearSavedGrade(): Promise<void> {
-    inMemorySavedGrade = null;
+  async clearSavedGrade(semester?: string): Promise<void> {
+    if (semester) {
+      inMemorySavedGrades.delete(semester);
+      if (inMemoryLatestGrade?.semester === semester) {
+        inMemoryLatestGrade = null;
+      }
+    } else {
+      inMemorySavedGrades.clear();
+      inMemoryLatestGrade = null;
+    }
     const db = await this.getDb();
     if (db) {
       try {
-        await db.execute('DELETE FROM saved_grades');
+        if (semester) {
+          await db.execute('DELETE FROM saved_grades WHERE semester = $1', [semester]);
+        } else {
+          await db.execute('DELETE FROM saved_grades');
+        }
       } catch (e) {
         console.warn('[TauriGradeRepository] Falha ao limpar saved_grades:', e);
       }

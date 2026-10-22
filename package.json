@@ -1,6 +1,6 @@
 {
   "name": "sarue-unb",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "private": true,
   "type": "module",
   "packageManager": "pnpm@10.14.0",
@@ -18,6 +18,7 @@
     "scrape:courses": "node --experimental-strip-types src/scrapers/courses-scraper.ts",
     "scrape:calendar": "node --experimental-strip-types src/scrapers/calendar-scraper.ts",
     "scrape:all": "pnpm run scrape:grade && pnpm run scrape:courses && pnpm run scrape:calendar",
+    "data:split-curricula": "node scripts/split-curricula.mjs",
     "seeds": "node scripts/seed-dev-db.mjs",
     "seed": "node scripts/seed-dev-db.mjs"
   },
@@ -25,6 +26,7 @@
     "@base-ui/react": "^1.8.0",
     "@dagrejs/dagre": "^3.1.1",
     "@tauri-apps/api": "^2.2.0",
+    "@tauri-apps/plugin-autostart": "^2.7.0",
     "@tauri-apps/plugin-notification": "^2.7.0",
     "@tauri-apps/plugin-process": "^2.4.0",
     "@tauri-apps/plugin-sql": "^2.6.0",

@@ -10,6 +10,59 @@ import { getDatabase } from './sqlite-feed.repo';
 
 const PROFILE_ROW_ID = 'current';
 
+interface CurriculumDisciplineDto {
+  code: string;
+  name: string;
+  workload_hours: number;
+  level?: number | null;
+  nature: string;
+  prerequisites_raw?: string | null;
+  prerequisites?: string[];
+  equivalences_raw?: string | null;
+  equivalences?: string[];
+}
+
+interface CurriculumStructureDto {
+  id: string;
+  course_id: string;
+  course_name: string;
+  code: string;
+  created_year?: string | null;
+  status: string;
+  shift?: string | null;
+  total_hours?: number | null;
+  mandatory_disciplines?: CurriculumDisciplineDto[];
+  elective_disciplines?: CurriculumDisciplineDto[];
+  complementary_disciplines?: CurriculumDisciplineDto[];
+}
+
+function mapCurriculaDto(dtos: CurriculumStructureDto[]): CurriculumStructure[] {
+  const mapDisc = (d: CurriculumDisciplineDto) => ({
+    code: d.code,
+    name: d.name,
+    workloadHours: d.workload_hours,
+    level: d.level ?? undefined,
+    nature: d.nature as 'Obrigatória' | 'Optativa' | 'Complementar',
+    prerequisitesRaw: d.prerequisites_raw ?? undefined,
+    prerequisites: d.prerequisites || [],
+    equivalencesRaw: d.equivalences_raw ?? undefined,
+    equivalences: d.equivalences || [],
+  });
+  return dtos.map((c) => ({
+    id: c.id,
+    courseId: c.course_id,
+    courseName: c.course_name,
+    code: c.code,
+    createdYear: c.created_year ?? undefined,
+    status: c.status,
+    shift: c.shift ?? undefined,
+    totalHours: c.total_hours ?? undefined,
+    mandatoryDisciplines: (c.mandatory_disciplines || []).map(mapDisc),
+    electiveDisciplines: (c.elective_disciplines || []).map(mapDisc),
+    complementaryDisciplines: (c.complementary_disciplines || []).map(mapDisc),
+  }));
+}
+
 let academicTableCreated = false;
 async function ensureAcademicTable(db: NonNullable<Awaited<ReturnType<typeof getDatabase>>>) {
   if (!academicTableCreated) {
@@ -91,55 +144,26 @@ export class TauriAcademicProfileRepository implements IAcademicProfileRepositor
       const { commands } = await import('@/core/infrastructure/bindings');
       const response = await commands.getAllCurricula();
       if (response.status === 'ok' && response.data && response.data.length > 0) {
-        return response.data.map((c) => ({
-          id: c.id,
-          courseId: c.course_id,
-          courseName: c.course_name,
-          code: c.code,
-          createdYear: c.created_year ?? undefined,
-          status: c.status,
-          shift: c.shift ?? undefined,
-          totalHours: c.total_hours ?? undefined,
-          mandatoryDisciplines: (c.mandatory_disciplines || []).map((d) => ({
-            code: d.code,
-            name: d.name,
-            workloadHours: d.workload_hours,
-            level: d.level ?? undefined,
-            nature: d.nature as 'Obrigatória' | 'Optativa' | 'Complementar',
-            prerequisitesRaw: d.prerequisites_raw ?? undefined,
-            prerequisites: d.prerequisites || [],
-            equivalencesRaw: d.equivalences_raw ?? undefined,
-            equivalences: d.equivalences || [],
-          })),
-          electiveDisciplines: (c.elective_disciplines || []).map((d) => ({
-            code: d.code,
-            name: d.name,
-            workloadHours: d.workload_hours,
-            level: d.level ?? undefined,
-            nature: d.nature as 'Obrigatória' | 'Optativa' | 'Complementar',
-            prerequisitesRaw: d.prerequisites_raw ?? undefined,
-            prerequisites: d.prerequisites || [],
-            equivalencesRaw: d.equivalences_raw ?? undefined,
-            equivalences: d.equivalences || [],
-          })),
-          complementaryDisciplines: (c.complementary_disciplines || []).map((d) => ({
-            code: d.code,
-            name: d.name,
-            workloadHours: d.workload_hours,
-            level: d.level ?? undefined,
-            nature: d.nature as 'Obrigatória' | 'Optativa' | 'Complementar',
-            prerequisitesRaw: d.prerequisites_raw ?? undefined,
-            prerequisites: d.prerequisites || [],
-            equivalencesRaw: d.equivalences_raw ?? undefined,
-            equivalences: d.equivalences || [],
-          })),
-        }));
+        return mapCurriculaDto(response.data);
       }
     } catch (e) {
       console.warn('[TauriAcademicProfileRepository] Erro ao buscar via bindings Tauri:', e);
     }
 
     return [];
+  }
+
+  async getCurriculaForCourse(courseId: string): Promise<CurriculumStructure[]> {
+    try {
+      const { commands } = await import('@/core/infrastructure/bindings');
+      const response = await commands.getCourseCurriculum(courseId);
+      if (response.status === 'ok' && response.data && response.data.length > 0) {
+        return mapCurriculaDto(response.data);
+      }
+    } catch (e) {
+      console.warn('[TauriAcademicProfileRepository] Erro ao buscar matrizes do curso via bindings Tauri:', e);
+    }
+    return this.fallbackRepo.getCurriculaForCourse(courseId);
   }
 
   async fetchSigaaHistory(creds: SigaaCredentials): Promise<SigaaHistoryRawResponse> {

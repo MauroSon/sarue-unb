@@ -8,9 +8,10 @@ import React, {
 } from "react";
 import { useContainer } from "./ContainerContext";
 import { useCredentials } from "../hooks/useCredentials";
-import { notifyMyCourseListeners } from "../hooks/useMyCourse";
+import { notifyMyCourseListeners, resolveCourseIdForProfile } from "../hooks/useMyCourse";
 import { notifyFeedListeners } from "../hooks/useFeed";
 import { toast } from "@/components/ui";
+import type { CurriculumStructure } from "@/core";
 
 export type SyncStepId = "sigaa" | "aprender3" | "teams" | "myCourse" | "ghPages";
 
@@ -93,7 +94,7 @@ function notifySyncComplete() {
 export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const { useCases } = useContainer();
+  const { useCases, repos } = useContainer();
   const { allCredentials } = useCredentials();
 
   const [isSyncing, setIsSyncing] = useState<boolean>(false);
@@ -144,21 +145,39 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({
     setIsSyncing(true);
 
     try {
-      // 1. Sincronização do Catálogo UnB (GitHub Pages / CDN)
-      updateStep("ghPages", {
-        status: "syncing",
-        message: "Consultando catálogo de matrizes e turmas da UnB...",
-      });
+      // 1. Sincronização do Catálogo UnB (GitHub Pages / CDN).
+      // Com SIGAA configurado, o passo espera o histórico (Meu Curso) criar o
+      // perfil: é ele que diz qual curso baixar — sem isso a primeira
+      // sincronização baixaria o catálogo inteiro (612 matrizes) sem precisar.
+      const sigaaCreds = allCredentials.sigaa;
+      const hasSigaa = Boolean(
+        sigaaCreds?.matricula?.trim() && sigaaCreds?.senha,
+      );
 
-      const ghPagesPromise = (async () => {
+      const runGhPagesStep = async () => {
         try {
-          const curricula =
-            await useCases.manageAcademicProfile.getAllCurricula();
+          // Mesma política do useMyCourse: com perfil (login SIGAA), baixa só
+          // as matrizes do curso do usuário em vez do catálogo inteiro da UnB.
+          const profile = await useCases.manageAcademicProfile.getProfile();
+          let curricula: CurriculumStructure[] = [];
+          let isCourseScoped = false;
+          if (profile) {
+            const courseId = await resolveCourseIdForProfile(profile, repos.gradeRepo);
+            if (courseId) {
+              curricula = await useCases.manageAcademicProfile.getCurriculaForCourse(courseId);
+              isCourseScoped = curricula.length > 0;
+            }
+          }
+          if (curricula.length === 0) {
+            curricula = await useCases.manageAcademicProfile.getAllCurricula();
+          }
           if (isCancelled()) return;
           updateStep("ghPages", {
             status: "success",
             count: curricula.length,
-            message: `${curricula.length} matrizes curriculares disponíveis`,
+            message: isCourseScoped
+              ? `${curricula.length} matrizes do seu curso disponíveis`
+              : `${curricula.length} matrizes curriculares disponíveis`,
             lastUpdated: new Date().toISOString(),
           });
         } catch (err: unknown) {
@@ -171,14 +190,22 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({
                 : "Falha ao acessar CDN do GitHub Pages",
           });
         }
-      })();
+      };
+
+      if (hasSigaa) {
+        updateStep("ghPages", {
+          status: "syncing",
+          message: "Aguardando histórico do SIGAA para baixar as matrizes do seu curso...",
+        });
+      } else {
+        updateStep("ghPages", {
+          status: "syncing",
+          message: "Consultando catálogo de matrizes e turmas da UnB...",
+        });
+        void runGhPagesStep();
+      }
 
       // 2. Sincronização do SIGAA
-      const sigaaCreds = allCredentials.sigaa;
-      const hasSigaa = Boolean(
-        sigaaCreds?.matricula?.trim() && sigaaCreds?.senha,
-      );
-
       let sigaaSuccess = false;
       let sigaaError = false;
 
@@ -307,7 +334,7 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({
       }
 
       // Aguarda os canais rápidos executando em paralelo (sem competir com o webview do Teams)
-      await Promise.all([ghPagesPromise, sigaaPromise, aprenderPromise]);
+      await Promise.all([sigaaPromise, aprenderPromise]);
       if (isCancelled()) return;
 
       // 4. Sincronização de Meu Curso (depende das credenciais do SIGAA)
@@ -359,6 +386,9 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({
         }
       }
 
+      // Catálogo UnB por curso: roda depois do histórico porque é ele que cria
+      // o perfil (com o curso do discente) na primeira sincronização.
+      await runGhPagesStep();
       if (isCancelled()) return;
 
       const now = new Date().toISOString();
@@ -451,7 +481,7 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({
         syncInFlightRef.current = false;
       }
     }
-  }, [allCredentials, updateStep, useCases]);
+  }, [allCredentials, repos.gradeRepo, updateStep, useCases]);
 
   const value = useMemo(
     () => ({

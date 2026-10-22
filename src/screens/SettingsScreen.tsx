@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import {
   Card,
   Button,
+  Switch,
   PageContainer,
   PageHeader,
   Dialog,
@@ -25,8 +26,10 @@ import {
   Trash2,
   RotateCcw,
   ScrollText,
+  SlidersHorizontal,
 } from "lucide-react";
 import { useAppUpdater } from "../hooks/useAppUpdater";
+import { useAutostart } from "../hooks/useAutostart";
 import { openExternalUrl } from "@/lib/utils";
 import { AppUpdaterCard } from "@/components/settings/AppUpdaterCard";
 import { PatchNotesView } from "@/components/settings/PatchNotesView";
@@ -45,6 +48,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
   // Instância "ociosa" do updater: serve só para ler a versão instalada.
   // O estado quente de download/check vive dentro de AppUpdaterCard.
   const { currentVersion: appVersion } = useAppUpdater();
+  const { isEnabled: isAutostartEnabled, toggle: toggleAutostart, isLoading: isAutostartLoading } = useAutostart();
 
   // Modo explorar: nenhuma conta conectada — o botão da zona de perigo vira
   // "Voltar para o Onboarding", mas a ação continua apagando tudo (grades,
@@ -118,6 +122,43 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
           allowAllClosed
         />
       </div>
+
+      {/* Preferências do Aplicativo */}
+      <Card className="p-5">
+        <div className="flex items-center gap-2 mb-3 pb-2.5 border-b-2 border-black/10">
+          <SlidersHorizontal className="w-4 h-4 stroke-[2.5] text-neo-blue" />
+          <h4 className="text-sm font-black uppercase tracking-tight text-black">
+            Preferências do Aplicativo
+          </h4>
+        </div>
+
+        <div className="divide-y-2 divide-neutral-100">
+          {/* Inicialização com o Sistema */}
+          <div className="flex items-center justify-between gap-4 py-2.5 first:pt-1 last:pb-1">
+            <div className="max-w-md">
+              <span className="text-xs font-black text-black block">
+                Inicialização com o Sistema
+              </span>
+              <p className="text-[11px] font-semibold text-neutral-600 leading-tight mt-0.5">
+                Iniciar o Saruê UnB automaticamente em segundo plano ao ligar o computador para acompanhar prazos e avisos.
+              </p>
+            </div>
+
+            <div className="flex items-center gap-2.5 shrink-0">
+              <span className="text-xs font-bold text-neutral-700">
+                {isAutostartEnabled ? "Ativado" : "Desativado"}
+              </span>
+              <Switch
+                checked={isAutostartEnabled}
+                disabled={isAutostartLoading}
+                onCheckedChange={toggleAutostart}
+                aria-label="Iniciar automaticamente com o sistema"
+              />
+            </div>
+          </div>
+          {/* Futuras preferências com switch serão adicionadas aqui */}
+        </div>
+      </Card>
 
       {/* Atualizações do Aplicativo */}
       <AppUpdaterCard />
