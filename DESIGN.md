@@ -22,6 +22,8 @@ colors:
   pastel-yellow: "#FFF9D2"
   pastel-purple: "#F3E8FF"
   pastel-red: "#FFEBEB"
+  pastel-orange: "#FFEDD5"
+  pastel-sky: "#E0F2FE"
   success-ink: "#15803D"
   error-ink: "#B91C1C"
   ink-black: "#000000"
@@ -171,6 +173,7 @@ O mundo é opaco e de alto contraste. Sombras suaves difusas, vidro fosco, gradi
 - Borda preta de 2px em toda superfície e elemento interativo
 - Sombra dura deslocada, cor preta sólida, blur zero
 - Física de pressionar: hover afunda com snap inteiro, active afunda tudo até a superfície tocar o papel
+- Clique mecânico opcional: som tátil de switch no clique (opt-in em Settings; a navegação é muda)
 - Cores candy de material escolar sobre papel quadriculado (#E8EFF8, grid de 32px)
 - Hierarquia por peso de fonte, não por cinza
 - Raio como affordance (A Regra dos Dois Adesivos): ação 12–16px, conteúdo 8px — clique se distingue de leitura à primeira vista
@@ -217,7 +220,7 @@ Inks escuras da mesma família das cores de ação, usadas como TEXTO e borda in
 - **Thumb de Scroll** (#A3A3A3, hover #737373): scrollbar com borda preta de 2px, mantendo o estilo adesivo.
 
 ### Pastéis (superfícies, nunca texto)
-Versões lavadas das cores de ação, usadas como fundo de cards variante e alerts — sempre com texto preto e borda preta: **Azul Pastel** (#EBF3FF), **Verde Pastel** (#E6F8EE), **Amarelo Pastel** (#FFF9D2), **Lilás Pastel** (#F3E8FF), **Vermelho Pastel** (#FFEBEB).
+Versões lavadas das cores de ação, usadas como fundo de cards variante, alerts, blocos de ícone e filtros — sempre com texto preto e borda preta: **Azul Pastel** (#EBF3FF), **Verde Pastel** (#E6F8EE), **Amarelo Pastel** (#FFF9D2), **Lilás Pastel** (#F3E8FF), **Vermelho Pastel** (#FFEBEB), **Laranja Pastel** (#FFEDD5), **Céu Pastel** (#E0F2FE).
 
 ### Named Rules
 **A Regra do Risco Preto.** Nenhuma superfície ou elemento interativo existe sem borda preta de 2px. A borda é o contorno do adesivo; sem ela o elemento cai fora do mundo.
@@ -255,15 +258,17 @@ Densidade: cards com padding interno de 24px, gaps de 8–16px entre controles, 
 Profundidade é **física e estrutural**: sombras são deslocamentos sólidos de tinta preta, sem blur, sem cor ambiente. Um elemento "senta" sobre o papel e sua sombra diz quanto peso ele tem. A interação muda a física: hover afunda com snap inteiro (o elemento translada o maior número inteiro de pixels da direção da sombra e ela encolhe o equivalente — em sombra de 3px, translate 2px e sombra 1px, ficando a 1px do papel), active afunda tudo (translada o offset completo e a sombra some — a superfície toca o papel), disabled desmira (opacity 50%, sem movimento).
 
 ### Shadow Vocabulary
-- **Sticker micro / Adesivo de ação** (`2px 2px 0 0 #000`, token `neo-sm`): todo botão, tab/chip e micro-ação em repouso; badges, logo-bloco, ícones de collapse.
+- **Sticker micro / Adesivo de ação** (`2px 2px 0 0 #000`, token `neo-sm`): todo botão, tab/chip e micro-ação permanente em repouso; logo-bloco, ícones de collapse.
+- **Micro-adesivo** (`1px 1px 0 0 #000`, token `neo-xs`): o que pesa menos que um adesivo de ação em repouso — blocos de ícone pastel, pills de resultado inline, barra de progresso, micro-ações flutuantes de ferramenta; também é a sombra do estágio hover da escala 2px.
 - **Adesivo de card** (`4px 4px 0 0 #000`, token `neo`): cards, alerts, painéis e popups de conteúdo.
 - **Ênfase máxima** (`6px 6px 0 0 #000`, token `neo-lg`): diálogo modal — a única superfície acima de todo o app.
+- **Sombra tingida de perigo** (`4px 4px 0 0 #DC2626`): exclusiva do Card da Zona de Perigo em Settings — a única sombra colorida do sistema.
 - **Quase-afundado** (`1px 1px 0 0 #000`): estado hover — o elemento translada em snap inteiro o quanto a sombra encolheu (ação 2px: +1px e sombra 1px; card clicável 4px: +2px e sombra 2px).
 - **Pressionado** (`shadow-none` + translate do offset completo): estado active de qualquer elemento interativo — a superfície toca o papel.
 - **Divisores internos**: bordas de 2px pretas entre seções da sidebar; linhas internas de card em black/10–15%.
 
 ### Named Rules
-**A Regra da Sombra Dura.** Sombra é deslocamento sólido preto, nunca blur, nunca rgba difusa, nunca cor. Se precisar de menos profundidade, diminua o deslocamento — não amacie.
+**A Regra da Sombra Dura.** Sombra é deslocamento sólido preto, nunca blur, nunca rgba difusa, nunca cor. Se precisar de menos profundidade, diminua o deslocamento — não amacie. Única exceção declarada: a Zona de Perigo usa a sombra na própria cor do risco (#DC2626) — perigo tinge a própria física, e nenhum outro elemento.
 
 **A Regra do Afundar.** Todo elemento interativo em repouso com sombra dura afunda em dois tempos: no hover, com snap inteiro (ação de sombra 2px: translate +1px na direção da sombra, sombra reduzida a 1px — fica a 1px do papel; card clicável de sombra 4px: +2px e sombra 2px); no active, tudo (translate +offset completo, shadow-none — a superfície toca o papel). Ghost sem sombra mantém micro-afundar de 1px no active. Elemento que levanta no hover (translate negativo ou sombra crescendo) é bug físico.
 
@@ -277,7 +282,8 @@ Profundidade é **física e estrutural**: sombras são deslocamentos sólidos de
 - **Adesivo de ação** (botões, tabs/chips, micro-ações): raio generoso **16px (rounded-2xl)** em md/lg, **12px (rounded-xl)** em sm e ícones, **8px** em micro-ação (h-7 ou menor) + sombra leve de ação **2px 2px**. Redondo e leve — convite ao clique.
 - **Campos** (inputs, selects, textareas): raio médio **12px (rounded-xl)**, sem sombra em repouso — cavidade no papel, nem conteúdo nem ação.
 - **Diálogo modal**: raio de conteúdo **8px** com **Ênfase máxima 6px** — a única superfície que usa neo-lg.
-- **Badges e pills**: círculo completo (9999px), sombra micro 2px.
+- **Badges**: círculo completo (9999px), sem sombra — etiqueta de tinta, não adesivo; pills de resultado inline (fora do componente Badge) levam Micro-adesivo 1px.
+- **Micro-ações flutuantes de ferramenta** (aparecem no hover do grupo, ex. "Enviar para o Monte sua Grade"): raio 6px (rounded-md), borda de 1px, Micro-adesivo 1px — adesivo menor e mais leve; o que vive permanentemente na tela usa o adesivo de ação padrão (borda 2px, sombra 2px).
 
 A distinção se lê de longe: o que tem sombra 2px e raio 16px afunda quando clica; o que tem sombra 4px e raio 8px fica. Elementos pequenos de conteúdo (células da grade, cabeçalhos de dia, blocos de ícone) seguem o raio de conteúdo 8px. A borda-preta-2px continua universal (A Regra do Risco Preto).
 
@@ -290,10 +296,22 @@ A distinção se lê de longe: o que tem sombra 2px e raio 16px afunda quando cl
 - **Primary:** fundo **Azul Caneta Ação**, texto branco, fonte 700; hover **Azul Caneta Pressionado**. Variantes: accent (**Verde Giz**, texto preto; hover **Verde Giz Pressionado** #39D68A), yellow (**Amarelo Marca-Texto**, texto preto; hover #F2DA00), destructive (**Vermelho Correção Forte**, texto branco; hover **Vermelho Erro**), outline (branco, texto preto), ghost (transparente, sem borda visível, sem sombra, hover black/5).
 - **Hover / Focus:** hover afunda com snap inteiro (translate +1px,+1px, sombra 2px→1px — fica a 1px do papel); active afunda tudo (translate +2px,+2px, sombra none — a superfície toca o papel). Ghost, sem sombra, micro-afunda 1px só no active. Transição 150ms ease-out. **Focus via teclado:** ring 2px **Azul Caneta Ação** com offset branco 2px, sem glow — mesmo token do Input. Disabled: opacity 50%, congela a física.
 - **Loading:** spinner circular de borda 2px corrente no lugar do conteúdo.
+- **Som:** clique mecânico opcional no clique de botão, link e checkbox — A Regra do Clique Mecânico (abaixo).
+
+**A Regra do Clique Mecânico.** O som é feedback de objeto, não enfeite: opt-in, desligado por padrão (Switch "Efeito sonoro de botão" em Settings), sample de switch mecânico via Web Audio com pitch jitter de ±3% e ganho a 25% para nunca soar robótico, disparado por um listener global. A encadernação é muda: navegação da sidebar e logo-bloco levam `data-no-sound="true"`. Elemento desabilitado não faz barulho.
 
 ### Chips (tabs e filtros)
 - **Style:** pill retangular raio 12px, borda preta 2px, branco com texto preto; ativa vira **Azul Caneta Ação** com texto branco; contador em sub-pill (Micro, 11px, bold) com cores invertidas.
 - **State:** mesma física de botão na escala 2px, já em snap inteiro (hover +1px,+1px com sombra 2px→1px; active +2px,+2px com sombra none); mesmo ring de foco via teclado.
+- **Filtros de estado (Disciplinas):** Buttons outline `sm` tintados com o pastel da própria família em repouso (Cursando **Azul Pastel**, Disponíveis **Amarelo Pastel**, hover lavado a 40%) e cor cheia da família quando ativos (primary, accent, yellow); rótulo carrega o contador entre parênteses e `title` explica o filtro. Marcador de obrigatória nas listas: asterisco font-black **Vermelho Correção Forte** ao lado do nome.
+
+### Segmented Control (Lista | Mapa)
+- **Container:** cavidade do fichário — branco, borda preta 2px, raio 12px, **sem sombra**; padding interno 2px.
+- **Segmento:** botão interno raio 8px, altura 32px, font-black com ícone Lucide 14px; ativo **Azul Caneta Ação** com texto branco, inativo branco com hover Cinza Papel; micro-afundar de 1px no active; `aria-pressed` marca o estado.
+
+### Switch
+- **Style:** pill 44×24px, borda preta 2px; trilho Cinza (neutral-200) desligado, **Azul Caneta Ação** ligado; thumb branco 18px com borda preta 2px, deslizando em 150ms ease-out.
+- **State:** sem física de afundar — o gesto é o deslize do thumb; ring de foco padrão via teclado. Usado em Settings (autostart, efeito sonoro).
 
 ### Cards / Containers
 - **Corner Style:** 8px (rounded-lg) — adesivo de conteúdo, distinto do botão de ação (16px).
@@ -313,8 +331,8 @@ A distinção se lê de longe: o que tem sombra 2px e raio 16px afunda quando cl
 - **Style:** coluna full-bleed: cada item é uma faixa inteira separada por borda preta 2px (estilo fichário). Item ativo: fundo **Azul Caneta Ação** cheio, texto branco, font-black. Inativo: branco, font-bold, hover Cinza Papel.
 - **States:** sem sombra e sem física de pressionar — a navegação é a encadernação, não um adesivo. Colapsável (264px ↔ 80px); recolhida mostra só ícones centralizados; botões de expandir/recolher aparecem no hover do grupo.
 
-### Badge (sticker de plataforma/tipo)
-- **Style:** pill (9999px), borda preta 2px, sombra micro 2px, padding 2px 12px, texto 0.75rem/700; cor por identidade: Sigaa **Verde Giz**, Aprender 3 **Lápis Laranja**, Teams **Azul Céu**, tarefa **Amarelo Marca-Texto**, urgente **Vermelho Correção Forte** (texto branco), neutra branca.
+### Badge (etiqueta de plataforma/tipo)
+- **Style:** pill (9999px), borda preta 2px, **sem sombra** — etiqueta de tinta colada no papel, não adesivo; padding 2px 12px (md) / 2px 8px (sm), texto 0.75rem/700. Cor por identidade: Sigaa **Verde Giz**, Aprender 3 **Lápis Laranja**, Teams **Azul Céu**, tarefa **Amarelo Marca-Texto**, urgente **Vermelho Correção Forte** (texto branco), primária **Azul Caneta Ação** (texto branco), aviso Cinza Nota (slate-200), neutra/outline branca.
 - **Icon:** Lucide 14–16px, stroke 2.5, opcional à esquerda.
 
 ### Alert
@@ -356,6 +374,8 @@ O componente mais identitário: tabela de 7 colunas (Seg–Sáb) × 15 linhas de
 - **Do** usar Plus Jakarta Sans e ícones Lucide com stroke 2.5; rótulos estruturais em uppercase bold 11–12px (Micro, 11px, para rótulos mínimos).
 - **Do** usar as cores de plataforma como identidade fixa (Sigaa verde, Aprender 3 laranja) em badges e filtros.
 - **Do** usar raio e sombra como affordance (A Regra dos Dois Adesivos): ação 12–16px + sombra 2px; conteúdo 8px + sombra 4px; campo 12px sem sombra.
+- **Do** usar Micro-adesivo 1px (`neo-xs`) em blocos de ícone, pills inline e micro-ações flutuantes; badge fica sem sombra.
+- **Do** dar som mecânico só com opt-in, nunca na navegação nem em elemento desabilitado (A Regra do Clique Mecânico).
 - **Do** usar #2563EB/#DC2626 como fundo sob texto branco; #468AFB/#FF6B6B ficam para marca/bordas.
 
 ### Don't:
@@ -366,5 +386,6 @@ O componente mais identitário: tabela de 7 colunas (Seg–Sáb) × 15 linhas de
 - **Don't** transladar press em meia-pixel (1.5px) — antialiasa a borda e borra o adesivo; snap para inteiro (A Regra do Snap Inteiro).
 - **Don't** enfraquecer texto reduzindo peso abaixo de font-medium; baixe o tom, mantenha o peso (A Regra do Marcador Grosso).
 - **Don't** usar cor de ação cheia como fundo de seção, ou pastel como cor de botão (A Regra do Pastel como Papel).
+- **Don't** tingir sombra de cor fora da Zona de Perigo — a sombra #DC2626 é exclusiva dela (A Regra da Sombra Dura).
 - **Don't** colocar texto pequeno branco sobre **Azul Caneta** (#468AFB) ou **Vermelho Correção** (#FF6B6B) — são marca/borda/acento; fundo interativo sob texto branco é **Azul Caneta Ação** (#2563EB) ou **Vermelho Correção Forte** (#DC2626).
 - **Don't** vestir conteúdo de botão (raio grande + sombra leve) ou botão de conteúdo (raio reto + sombra funda) — e hover nunca levanta o adesivo: sombra só cresce se o elemento for card clicável seguindo a escala 4px.

@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-10-17T22:27:43Z",
-  "title": "Design System: UnB Aggregator",
+  "generatedAt": "2026-10-22T20:34:18Z",
+  "title": "Design System: Saruê UnB",
   "extensions": {
     "colorMeta": {
       "pen-blue": {
@@ -276,6 +276,36 @@
           "#ffe5e5"
         ]
       },
+      "pastel-orange": {
+        "role": "neutral",
+        "displayName": "Laranja Pastel",
+        "canonical": "#FFEDD5",
+        "tonalRamp": [
+          "#2a1000",
+          "#4a1d00",
+          "#7a2f01",
+          "#b34703",
+          "#e66a0d",
+          "#fb923c",
+          "#fdc48b",
+          "#ffedd5"
+        ]
+      },
+      "pastel-sky": {
+        "role": "neutral",
+        "displayName": "Céu Pastel",
+        "canonical": "#E0F2FE",
+        "tonalRamp": [
+          "#041b2b",
+          "#07304d",
+          "#0b4a7a",
+          "#116ca8",
+          "#0ea5e9",
+          "#4dc0fb",
+          "#b6e6fe",
+          "#e0f2fe"
+        ]
+      },
       "success-ink": {
         "role": "neutral",
         "displayName": "Verde OK",
@@ -519,7 +549,12 @@
       {
         "name": "sticker-micro",
         "value": "2px 2px 0 0 #000",
-        "purpose": "Todo elemento de ação em repouso: botões, tabs/chips, micro-ações, badges, logo-bloco, ícones em bloco."
+        "purpose": "Adesivo de ação em repouso: botões, tabs/chips, micro-ações permanentes, logo-bloco, ícones de collapse."
+      },
+      {
+        "name": "sticker-icon",
+        "value": "1px 1px 0 0 #000",
+        "purpose": "Micro-adesivo (token neo-xs): blocos de ícone pastel, pills de resultado inline, barra de progresso, micro-ações flutuantes de ferramenta; também é o estágio hover da escala 2px. Badge não usa sombra."
       },
       {
         "name": "sticker-card",
@@ -530,6 +565,11 @@
         "name": "sticker-max",
         "value": "6px 6px 0 0 #000",
         "purpose": "Ênfase máxima — exclusiva do diálogo modal."
+      },
+      {
+        "name": "danger-tinted",
+        "value": "4px 4px 0 0 #DC2626",
+        "purpose": "Única sombra colorida do sistema: exclusiva do Card da Zona de Perigo em Settings — perigo tinge a própria física, e só ele."
       },
       {
         "name": "sunk-snap",
@@ -552,6 +592,11 @@
         "name": "collapse",
         "value": "200ms ease",
         "purpose": "Expansão/recolhimento da sidebar (264px ↔ 80px)."
+      },
+      {
+        "name": "click-sound",
+        "value": "Web Audio, sample de switch mecânico, playbackRate 0.97–1.03, ganho 0.25",
+        "purpose": "Clique mecânico opcional (A Regra do Clique Mecânico): opt-in via Switch em Settings (localStorage), listener global para button/link/checkbox; sidebar e logo levam data-no-sound; desabilitado é mudo."
       },
       {
         "name": "spinner",
@@ -598,7 +643,7 @@
       "refersTo": "button-accent",
       "description": "Ação positiva de destaque em Verde Giz, texto preto.",
       "html": "<button class=\"ds-btn ds-btn-accent\">Concluir tarefa</button>",
-      "css": ".ds-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:40px;padding:0 20px;font-family:'Plus Jakarta Sans',system-ui,-apple-system,sans-serif;font-size:0.75rem;font-weight:700;border:2px solid #000;border-radius:16px;cursor:pointer;user-select:none;transform:translate(0,0);box-shadow:2px 2px 0 0 #000;transition:transform 150ms ease-out,box-shadow 150ms ease-out,background-color 150ms ease-out,border-color 150ms ease-out;}.ds-btn-accent{background:#46E297;color:#000}.ds-btn-accent:hover{transform:translate(1px,1px);box-shadow:1px 1px 0 0 #000;}.ds-btn-accent:hover{background:#39D68A}.ds-btn-accent:active{transform:translate(2px,2px);box-shadow:none;}\n.ds-btn:focus-visible{outline:none;box-shadow:3px 3px 0px 0px #000,0 0 0 2px #ffffff,0 0 0 4px #2563EB}"
+      "css": ".ds-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:40px;padding:0 20px;font-family:'Plus Jakarta Sans',system-ui,-apple-system,sans-serif;font-size:0.75rem;font-weight:700;border:2px solid #000;border-radius:16px;cursor:pointer;user-select:none;transform:translate(0,0);box-shadow:2px 2px 0 0 #000;transition:transform 150ms ease-out,box-shadow 150ms ease-out,background-color 150ms ease-out,border-color 150ms ease-out;}.ds-btn-accent{background:#46E297;color:#000}.ds-btn-accent:hover{transform:translate(1px,1px);box-shadow:1px 1px 0 0 #000;}.ds-btn-accent:hover{background:#39D68A}.ds-btn-accent:active{transform:translate(2px,2px);box-shadow:none;}.ds-btn:focus-visible{outline:none;box-shadow:2px 2px 0 0 #000,0 0 0 2px #ffffff,0 0 0 4px #2563EB}.ds-btn:disabled{opacity:.5;cursor:not-allowed}"
     },
     {
       "name": "Botão Outline",
@@ -606,7 +651,7 @@
       "refersTo": "button-outline",
       "description": "Ação secundária sobre papel branco; mesma física dos demais.",
       "html": "<button class=\"ds-btn ds-btn-outline\">Cancelar</button>",
-      "css": ".ds-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:40px;padding:0 20px;font-family:'Plus Jakarta Sans',system-ui,-apple-system,sans-serif;font-size:0.75rem;font-weight:700;border:2px solid #000;border-radius:16px;cursor:pointer;user-select:none;transform:translate(0,0);box-shadow:2px 2px 0 0 #000;transition:transform 150ms ease-out,box-shadow 150ms ease-out,background-color 150ms ease-out,border-color 150ms ease-out;}.ds-btn-outline{background:#fff;color:#000}.ds-btn-outline:hover{transform:translate(1px,1px);box-shadow:1px 1px 0 0 #000;}.ds-btn-outline:hover{background:#F5F5F5}.ds-btn-outline:active{transform:translate(2px,2px);box-shadow:none;}\n.ds-btn:focus-visible{outline:none;box-shadow:3px 3px 0px 0px #000,0 0 0 2px #ffffff,0 0 0 4px #2563EB}"
+      "css": ".ds-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:40px;padding:0 20px;font-family:'Plus Jakarta Sans',system-ui,-apple-system,sans-serif;font-size:0.75rem;font-weight:700;border:2px solid #000;border-radius:16px;cursor:pointer;user-select:none;transform:translate(0,0);box-shadow:2px 2px 0 0 #000;transition:transform 150ms ease-out,box-shadow 150ms ease-out,background-color 150ms ease-out,border-color 150ms ease-out;}.ds-btn-outline{background:#fff;color:#000}.ds-btn-outline:hover{transform:translate(1px,1px);box-shadow:1px 1px 0 0 #000;}.ds-btn-outline:hover{background:#F5F5F5}.ds-btn-outline:active{transform:translate(2px,2px);box-shadow:none;}.ds-btn:focus-visible{outline:none;box-shadow:2px 2px 0 0 #000,0 0 0 2px #ffffff,0 0 0 4px #2563EB}.ds-btn:disabled{opacity:.5;cursor:not-allowed}"
     },
     {
       "name": "Campo de Texto",
@@ -621,16 +666,16 @@
       "kind": "card",
       "refersTo": "card-default",
       "description": "Superfície adesivo padrão: branco, borda 2px, sombra 4px, padding 24px.",
-      "html": "<div class=\"ds-card\"><h3 class=\"ds-card-title\">Estátistica Cálculo 2</h3><p class=\"ds-card-desc\">Entrega da lista 3 disponível até sexta-feira.</p></div>",
+      "html": "<div class=\"ds-card\"><h3 class=\"ds-card-title\">Estatística Cálculo 2</h3><p class=\"ds-card-desc\">Entrega da lista 3 disponível até sexta-feira.</p></div>",
       "css": ".ds-card{background:#fff;color:#000;border:2px solid #000;border-radius:8px;box-shadow:4px 4px 0 0 #000;padding:24px;max-width:360px;font-family:'Plus Jakarta Sans',system-ui,-apple-system,sans-serif}.ds-card-title{font-size:1.125rem;font-weight:700;letter-spacing:-0.01em;margin:0 0 4px}.ds-card-desc{font-size:0.875rem;font-weight:500;color:#525252;margin:0;line-height:1.5}"
     },
     {
       "name": "Badge de Plataforma",
       "kind": "chip",
       "refersTo": "badge-sticker",
-      "description": "Sticker pill de identidade: Sigaa em Verde Giz com ícone de verificação.",
+      "description": "Etiqueta de identidade sem sombra: Sigaa em Verde Giz, tinta colada no papel — não adesivo.",
       "html": "<span class=\"ds-badge\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\" width=\"14\" height=\"14\" aria-hidden=\"true\"><path d=\"M20 6 9 17l-5-5\"/></svg>Sigaa</span>",
-      "css": ".ds-badge{display:inline-flex;align-items:center;gap:6px;padding:2px 8px;background:#46E297;color:#000;border:2px solid #000;border-radius:9999px;box-shadow:2px 2px 0 0 #000;font-family:'Plus Jakarta Sans',system-ui,-apple-system,sans-serif;font-size:11px;font-weight:700;user-select:none}"
+      "css": ".ds-badge{display:inline-flex;align-items:center;gap:6px;padding:2px 12px;background:#46E297;color:#000;border:2px solid #000;border-radius:9999px;font-family:'Plus Jakarta Sans',system-ui,-apple-system,sans-serif;font-size:11px;font-weight:700;user-select:none}"
     },
     {
       "name": "Chips de Filtro",
@@ -639,6 +684,22 @@
       "description": "Tabs/filtros: inativa branca, ativa Azul Caneta Ação com contador invertido; física de pressionar na escala 2px.",
       "html": "<div class=\"ds-chips\"><button class=\"ds-chip ds-chip-active\">Todas<span class=\"ds-chip-count ds-chip-count-active\">7</span></button><button class=\"ds-chip\">Aprender 3<span class=\"ds-chip-count\">2</span></button></div>",
       "css": ".ds-chips{display:flex;gap:10px;font-family:'Plus Jakarta Sans',system-ui,-apple-system,sans-serif}.ds-chip{display:inline-flex;align-items:center;gap:8px;padding:6px 14px;background:#fff;color:#404040;font-size:0.75rem;font-weight:700;border:2px solid #000;border-radius:12px;cursor:pointer;user-select:none;transform:translate(0,0);box-shadow:2px 2px 0 0 #000;transition:transform 150ms ease-out,box-shadow 150ms ease-out,background-color 150ms ease-out,border-color 150ms ease-out}.ds-chip:hover{transform:translate(1px,1px);box-shadow:1px 1px 0 0 #000}.ds-chip:active{transform:translate(2px,2px);box-shadow:none}.ds-chip-active{background:#2563EB;color:#fff}.ds-chip-count{padding:2px 8px;background:#2563EB;color:#fff;border-radius:9999px;font-size:11px;font-weight:700}.ds-chip-count-active{background:#fff;color:#2563EB}"
+    },
+    {
+      "name": "Segmented Control",
+      "kind": "custom",
+      "refersTo": "card-default",
+      "description": "Alternador Lista | Mapa: cavidade do fichário (container branco sem sombra), segmento ativo em Azul Caneta Ação.",
+      "html": "<div class=\"ds-seg\" role=\"group\" aria-label=\"Modo de visualização\"><button class=\"ds-seg-btn ds-seg-active\" aria-pressed=\"true\">Lista</button><button class=\"ds-seg-btn\" aria-pressed=\"false\">Mapa</button></div>",
+      "css": ".ds-seg{display:inline-flex;gap:2px;padding:2px;background:#fff;border:2px solid #000;border-radius:12px;font-family:'Plus Jakarta Sans',system-ui,-apple-system,sans-serif}.ds-seg-btn{display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 12px;background:#fff;color:#000;font-size:0.75rem;font-weight:800;border:none;border-radius:8px;cursor:pointer;transition:background 150ms ease-out,transform 150ms ease-out}.ds-seg-btn:hover{background:#F5F5F5}.ds-seg-btn:active{transform:translateY(1px)}.ds-seg-btn:focus-visible{outline:none;box-shadow:0 0 0 2px #fff,0 0 0 4px #2563EB}.ds-seg-active,.ds-seg-active:hover{background:#2563EB;color:#fff}"
+    },
+    {
+      "name": "Switch",
+      "kind": "custom",
+      "refersTo": "card-default",
+      "description": "Pill 44×24px de Settings: trilho Cinza desligado / Azul Caneta Ação ligado, thumb branco com borda preta deslizando.",
+      "html": "<div class=\"ds-switch-row\"><span class=\"ds-switch-label\">Efeito sonoro de botão</span><button type=\"button\" role=\"switch\" aria-checked=\"true\" class=\"ds-switch\"><span class=\"ds-switch-thumb\"></span></button></div>",
+      "css": ".ds-switch-row{display:flex;align-items:center;gap:12px;font-family:'Plus Jakarta Sans',system-ui,-apple-system,sans-serif}.ds-switch-label{font-size:0.75rem;font-weight:800;color:#000}.ds-switch{position:relative;display:inline-flex;align-items:center;width:44px;height:24px;background:#E5E5E5;border:2px solid #000;border-radius:9999px;cursor:pointer;transition:background 150ms ease-out;padding:0}.ds-switch[aria-checked=\"true\"]{background:#2563EB}.ds-switch-thumb{display:block;width:18px;height:18px;background:#fff;border:2px solid #000;border-radius:9999px;transform:translateX(2px);transition:transform 150ms ease-out}.ds-switch[aria-checked=\"true\"] .ds-switch-thumb{transform:translateX(22px)}.ds-switch:focus-visible{outline:none;box-shadow:0 0 0 2px #fff,0 0 0 4px #2563EB}.ds-switch:disabled{opacity:.5;cursor:not-allowed}"
     },
     {
       "name": "Alert Pastel",
@@ -652,7 +713,7 @@
       "name": "Item de Navegação (Ledger)",
       "kind": "nav",
       "refersTo": "card-default",
-      "description": "Faixa inteira do fichário: ativa em Azul Caneta Ação font-black, inativa branca, separada por borda 2px. Sem sombra — a encadernação não é adesivo.",
+      "description": "Faixa inteira do fichário: ativa em Azul Caneta Ação font-black, inativa branca, separada por borda 2px. Sem sombra — a encadernação não é adesivo — e muda por definição (data-no-sound).",
       "html": "<nav class=\"ds-nav\"><button class=\"ds-nav-item ds-nav-active\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\" width=\"18\" height=\"18\" aria-hidden=\"true\"><path d=\"m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z\"/><path d=\"M9 22V12h6v10\"/></svg>Home</button><button class=\"ds-nav-item\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\" width=\"18\" height=\"18\" aria-hidden=\"true\"><path d=\"M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20\"/></svg>Turmas</button></nav>",
       "css": ".ds-nav{display:flex;flex-direction:column;width:240px;font-family:'Plus Jakarta Sans',system-ui,-apple-system,sans-serif}.ds-nav-item{display:flex;align-items:center;gap:12px;width:100%;padding:14px 16px;background:#fff;color:#404040;font-size:0.875rem;font-weight:700;border:none;border-bottom:2px solid #000;border-top:none;border-left:none;border-right:none;text-align:left;cursor:pointer;transition:background 150ms ease-out,color 150ms ease-out}.ds-nav-item:hover{background:#F5F5F5}.ds-nav-active,.ds-nav-active:hover{background:#2563EB;color:#fff;font-weight:800}"
     },
@@ -672,6 +733,7 @@
       "Borda preta de 2px em toda superfície e elemento interativo",
       "Sombra dura deslocada, cor preta sólida, blur zero",
       "Física de pressionar: hover afunda com snap inteiro, active afunda tudo até a superfície tocar o papel",
+      "Clique mecânico opcional: som tátil de switch no clique (opt-in em Settings; a navegação é muda)",
       "Cores candy de material escolar sobre papel quadriculado (#E8EFF8, grid de 32px)",
       "Hierarquia por peso de fonte, não por cinza",
       "Raio como affordance (A Regra dos Dois Adesivos): ação 12–16px, conteúdo 8px — clique se distingue de leitura à primeira vista",
@@ -700,7 +762,7 @@
       },
       {
         "name": "A Regra da Sombra Dura",
-        "body": "Sombra é deslocamento sólido preto, nunca blur, nunca rgba difusa, nunca cor. Se precisar de menos profundidade, diminua o deslocamento — não amacie.",
+        "body": "Sombra é deslocamento sólido preto, nunca blur, nunca rgba difusa, nunca cor. Se precisar de menos profundidade, diminua o deslocamento — não amacie. Única exceção declarada: a Zona de Perigo usa a sombra na própria cor do risco (#DC2626) — perigo tinge a própria física, e nenhum outro elemento.",
         "section": "elevation"
       },
       {
@@ -714,6 +776,11 @@
         "section": "elevation"
       },
       {
+        "name": "A Regra do Clique Mecânico",
+        "body": "O som é feedback de objeto, não enfeite: opt-in, desligado por padrão (Switch \"Efeito sonoro de botão\" em Settings), sample de switch mecânico via Web Audio com pitch jitter de ±3% e ganho a 25% para nunca soar robótico, disparado por um listener global. A encadernação é muda: navegação da sidebar e logo-bloco levam data-no-sound=\"true\". Elemento desabilitado não faz barulho.",
+        "section": "components"
+      },
+      {
         "name": "A Regra do Bloco Sem Borda",
         "body": "Skeleton é conteúdo à espera de tinta: bloco neutro pulsante, nunca adesivo — borda e sombra pertencem ao Card que o contém. Bloco de loading com risco preto finge ser conteúdo.",
         "section": "components"
@@ -722,6 +789,8 @@
     "dos": [
       "Do dar borda preta de 2px a toda superfície e elemento interativo (A Regra do Risco Preto).",
       "Do usar sombra dura deslocada preta (Xpx Xpx 0 0 #000) e física completa: hover afunda com snap inteiro, active afunda tudo, disabled congela.",
+      "Do usar Micro-adesivo 1px (neo-xs) em blocos de ícone, pills inline e micro-ações flutuantes; badge fica sem sombra.",
+      "Do dar som mecânico só com opt-in, nunca na navegação nem em elemento desabilitado (A Regra do Clique Mecânico).",
       "Do construir hierarquia com peso de fonte (800/700/600/500) e usar pastéis como fundo, nunca como cor de ação.",
       "Do usar Plus Jakarta Sans e ícones Lucide com stroke 2.5; rótulos estruturais em uppercase bold 11–12px (Micro, 11px, para rótulos mínimos).",
       "Do usar as cores de plataforma como identidade fixa (Sigaa verde, Aprender 3 laranja) em badges e filtros.",
@@ -731,6 +800,7 @@
     "donts": [
       "Don't usar sombra com blur, box-shadow difusa, rgba ambiente ou elevação estilo Material — sombra dura ou nenhuma.",
       "Don't usar glassmorphism, backdrop-blur, gradientes ou superfícies translúcidas — o mundo é opaco.",
+      "Don't tingir sombra de cor fora da Zona de Perigo — a sombra #DC2626 é exclusiva dela (A Regra da Sombra Dura).",
       "Don't criar elemento interativo com sombra que não afunde no active (A Regra do Afundar).",
       "Don't fazer hover levantar o adesivo (translate negativo ou sombra crescendo) — o adesivo só afunda, com snap inteiro, e fica a 1px do papel em sombra de 3px (A Regra do Afundar).",
       "Don't transladar press em meia-pixel (1.5px) — antialiasa a borda e borra o adesivo; snap para inteiro (A Regra do Snap Inteiro).",
