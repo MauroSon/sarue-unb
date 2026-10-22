@@ -1,7 +1,12 @@
 import React, { useState } from "react";
 import type { FlowchartDiscipline, FlowchartSemester } from "@/core";
-import { Check, CircleDotDashed, Lock, Unlock, CalendarPlus } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import {
+  Check,
+  CircleDotDashed,
+  Lock,
+  Unlock,
+  CalendarPlus,
+} from "lucide-react";
 import {
   Accordion,
   AccordionContent,
@@ -13,6 +18,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { Badge } from "../ui";
 
 export interface FlowchartListProps {
   semesters: FlowchartSemester[];
@@ -38,7 +44,10 @@ const StatusIcon: React.FC<{ d: FlowchartDiscipline }> = ({ d }) => {
   if (d.status === "available") {
     return (
       <Tooltip>
-        <TooltipTrigger aria-label="Disponível" className="shrink-0 cursor-help">
+        <TooltipTrigger
+          aria-label="Disponível"
+          className="shrink-0 cursor-help"
+        >
           <Unlock className="w-3.5 h-3.5 stroke-[2.5] text-neutral-700" />
         </TooltipTrigger>
         <TooltipContent>Disponível: pré-requisitos concluídos</TooltipContent>
@@ -114,11 +123,11 @@ const DisciplineRow: React.FC<{
   onSendToGrade?: (code: string, name: string) => void;
 }> = React.memo(({ d, onToggle, disciplineNames, onSendToGrade }) => {
   const isCompleted = d.status === "completed";
-  const isOptativa = d.nature === "Optativa";
+  const isMandatory = d.nature !== "Optativa" && d.nature !== "Complementar";
 
   return (
     <div
-      className={`group flex items-center gap-2.5 px-4 py-2 transition-colors duration-150 hover:bg-neutral-50 ${
+      className={`group flex items-center gap-3 px-4 py-2.5 transition-colors duration-150 hover:bg-neutral-50 ${
         isCompleted ? "bg-neutral-50/70" : "bg-white"
       }`}
     >
@@ -154,47 +163,57 @@ const DisciplineRow: React.FC<{
         {d.code}
       </span>
 
-      {isOptativa && (
-        <Badge variant="purple" size="sm" className="shrink-0 font-black shadow-none">
-          Optativa
-        </Badge>
-      )}
-
-      <span
-        className={`flex-1 min-w-0 truncate text-xs font-bold ${
-          isCompleted
-            ? "text-neutral-500 line-through decoration-2"
-            : "text-black"
-        }`}
-        title={d.name}
-      >
-        {d.name}
-      </span>
-
-      {/* Botão rápido no hover: Enviar para o Montar Grade */}
-      {onSendToGrade && (
-        <Tooltip>
-          <TooltipTrigger
-            type="button"
-            onClick={() => onSendToGrade(d.code, d.name)}
-            aria-label={`Enviar ${d.name} para o Montar Grade`}
-            className="cursor-pointer p-1 rounded-md border border-black bg-white hover:bg-pastel-yellow text-neutral-700 hover:text-black transition-all shrink-0 shadow-neo-xs opacity-0 group-hover:opacity-100 focus-visible:opacity-100"
+      <div className="flex-1 min-w-0 flex items-center gap-1.5">
+        <span
+          className={`truncate text-xs font-bold ${
+            isCompleted
+              ? "text-neutral-500 line-through decoration-2"
+              : "text-black"
+          }`}
+          title={d.name}
+        >
+          {d.name}
+        </span>
+        {isMandatory && (
+          <span
+            className={`text-sm font-black leading-none shrink-0 ${
+              isCompleted ? "text-neutral-400" : "text-neo-danger"
+            }`}
+            title="Disciplina obrigatória"
+            aria-label="Obrigatória"
           >
-            <CalendarPlus className="w-3.5 h-3.5 stroke-[2.5]" />
-          </TooltipTrigger>
-          <TooltipContent>Enviar para o Montar Grade</TooltipContent>
-        </Tooltip>
-      )}
+            *
+          </span>
+        )}
+      </div>
 
-      {/* Estado (ícone de cursando, bloqueado, etc.) */}
-      <StatusIcon d={d} />
+      {/* Ações e Metadados alinhados à direita */}
+      <div className="flex items-center gap-2.5 shrink-0 ml-auto">
+        {/* Botão rápido no hover: Enviar para o Montar Grade */}
+        {onSendToGrade && (
+          <Tooltip>
+            <TooltipTrigger
+              type="button"
+              onClick={() => onSendToGrade(d.code, d.name)}
+              aria-label={`Enviar ${d.name} para o Montar Grade`}
+              className="cursor-pointer p-1 rounded-md border border-black bg-white hover:bg-pastel-yellow text-neutral-700 hover:text-black transition-all shrink-0 shadow-neo-xs opacity-0 group-hover:opacity-100 focus-visible:opacity-100"
+            >
+              <CalendarPlus className="w-3.5 h-3.5 stroke-[2.5]" />
+            </TooltipTrigger>
+            <TooltipContent>Enviar para o Montar Grade</TooltipContent>
+          </Tooltip>
+        )}
 
-      {/* Pré-requisitos: uma pill com tooltip, em vez de códigos soltos */}
-      <PrereqPill d={d} disciplineNames={disciplineNames} />
+        {/* Estado (ícone de cursando, bloqueado, etc.) */}
+        <StatusIcon d={d} />
 
-      <span className="text-[11px] font-bold text-neutral-600 shrink-0">
-        {d.workloadHours}h
-      </span>
+        {/* Pré-requisitos: uma pill com tooltip, em vez de códigos soltos */}
+        <PrereqPill d={d} disciplineNames={disciplineNames} />
+
+        <span className="text-[11px] font-bold text-neutral-600 w-8 text-right shrink-0">
+          {d.workloadHours}h
+        </span>
+      </div>
     </div>
   );
 });
@@ -272,9 +291,9 @@ export const FlowchartList: React.FC<FlowchartListProps> = ({
               <div className="flex items-center gap-2 flex-1 min-w-0">
                 <span>{sem.level}º Semestre</span>
                 {allCompleted && (
-                  <span className="text-[11px] font-black px-1.5 py-0.5 bg-neo-green text-black border border-black rounded-md normal-case tracking-normal">
+                  <Badge variant="success" size="sm">
                     Concluído
-                  </span>
+                  </Badge>
                 )}
               </div>
               <span className="text-[11px] font-bold text-neutral-600 normal-case tracking-normal shrink-0 mr-2">

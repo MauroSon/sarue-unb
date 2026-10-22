@@ -28,6 +28,10 @@ pub fn builder() -> Builder<tauri::Wry> {
         commands::validate_aprender3_credentials,
         commands::connect_teams,
         commands::disconnect_teams,
+        commands::get_or_create_vault_key,
+        commands::delete_vault_file,
+        commands::backup_vault_file,
+        commands::restore_vault_file,
     ])
 }
 
@@ -106,5 +110,26 @@ mod tests {
                 "../src/core/infrastructure/bindings.ts",
             )
             .expect("Falha ao exportar bindings TypeScript");
+    }
+
+    #[test]
+    #[ignore = "requer keychain local do SO (não hermético em CI)"]
+    fn test_vault_keyring_generation() {
+        let mut key_bytes = [0u8; 32];
+        rand::RngCore::fill_bytes(&mut rand::thread_rng(), &mut key_bytes);
+        let generated_key = key_bytes.iter().map(|b| format!("{:02x}", b)).collect::<String>();
+        assert_eq!(generated_key.len(), 64);
+
+        #[cfg(not(any(target_os = "android", target_os = "ios")))]
+        {
+            let entry = keyring::Entry::new("org.unb.sarue.test", "test_key");
+            if let Ok(entry) = entry {
+                let _ = entry.set_password(&generated_key);
+                if let Ok(retrieved) = entry.get_password() {
+                    assert_eq!(retrieved, generated_key);
+                }
+                let _ = entry.delete_credential();
+            }
+        }
     }
 }

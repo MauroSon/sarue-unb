@@ -22,7 +22,7 @@ export const FlowchartStats: React.FC<FlowchartStatsProps> = ({ metrics, onOpenI
       <div className="bg-white border-2 border-black rounded-xl p-4 shadow-neo flex flex-col justify-between">
         <div className="flex items-center justify-between mb-2">
           <span className="text-xs font-black uppercase tracking-wider text-neutral-600">
-            Integralização SIGAA
+            {metrics.isSimulated ? "Integralização" : "Integralização SIGAA"}
           </span>
           <div className="w-8 h-8 rounded-lg bg-pastel-green border-2 border-black flex items-center justify-center text-black shadow-neo-xs">
             <Award className="w-4 h-4 stroke-[2.5]" />
@@ -35,7 +35,7 @@ export const FlowchartStats: React.FC<FlowchartStatsProps> = ({ metrics, onOpenI
               {percentual.toFixed(1).replace('.0', '')}%
             </span>
             <span className="text-xs font-bold text-neutral-600">
-              integralizado
+              {metrics.isSimulated ? "projetado" : "integralizado"}
             </span>
           </div>
 

@@ -23,6 +23,17 @@ let sharedStoreInitPromise: Promise<{
 let hasHydratedFromVault = false;
 let sharedHydratePromise: Promise<void> | null = null;
 
+export const VAULT_CREDENTIAL_KEYS = [
+  'sigaa_matricula',
+  'sigaa_senha',
+  'aprender3_cpf',
+  'aprender3_senha',
+  'teams_connected',
+  'teams_email',
+  'moodlemat_matricula',
+  'moodlemat_senha',
+] as const;
+
 export class StrongholdCredentialsRepository implements ICredentialsRepository {
   private vaultPassword = 'sarue-unb-internal-vault-key';
   private legacyVaultPassword = 'unb-aggregator-internal-vault-key';
@@ -48,41 +59,120 @@ export class StrongholdCredentialsRepository implements ICredentialsRepository {
         const { Stronghold } = await import('@tauri-apps/plugin-stronghold');
         const { appLocalDataDir } = await import('@tauri-apps/api/path');
         const { VAULT_FILE_NAME } = await import('./db-config');
+        const { commands } = await import('./bindings');
+
+        // Recupera a chave criptográfica segura armazenada no Chaveiro do Sistema Operacional (OS Keyring)
+        let securePassword = this.vaultPassword;
+        try {
+          const keyRes = await commands.getOrCreateVaultKey();
+          if (keyRes.status === 'ok' && keyRes.data) {
+            securePassword = keyRes.data;
+          }
+        } catch (keyErr) {
+          console.warn('[Stronghold] Chave do SO indisponível, usando fallback de segurança:', keyErr);
+        }
 
         const dataDir = await appLocalDataDir();
         const vaultPath = `${dataDir}/${VAULT_FILE_NAME}`;
 
         let stronghold = sharedCachedStronghold;
+        let client = sharedCachedClient;
+
         if (!stronghold) {
           try {
-            stronghold = await Stronghold.load(vaultPath, this.vaultPassword);
-          } catch {
-            try {
-              stronghold = await Stronghold.load(vaultPath, this.legacyVaultPassword);
-            } catch {
-              stronghold = await Stronghold.load(vaultPath, this.vaultPassword);
+            stronghold = await Stronghold.load(vaultPath, securePassword);
+          } catch (loadErr) {
+            console.info('[Stronghold] Não foi possível abrir o cofre com a chave principal. Tentando chave legada ou recuperação...');
+
+            // Se falhou com a chave segura, verifica se é um cofre legado criado anteriormente com a chave fixa.
+            let legacyStronghold: Stronghold | null = null;
+            let legacyPasswordUsed: string | null = null;
+
+            for (const legPass of [this.vaultPassword, this.legacyVaultPassword]) {
+              if (legPass === securePassword) continue;
+              try {
+                legacyStronghold = await Stronghold.load(vaultPath, legPass);
+                legacyPasswordUsed = legPass;
+                break;
+              } catch {}
+            }
+
+            if (legacyStronghold) {
+              console.info(`[Stronghold] Cofre legado detectado (${legacyPasswordUsed}). Iniciando migração segura...`);
+              const migratedData: Array<[string, number[]]> = [];
+              try {
+                const legClient = await legacyStronghold.loadClient('unb_credentials');
+                const legStore = legClient.getStore();
+                for (const k of VAULT_CREDENTIAL_KEYS) {
+                  const val = await legStore.get(k).catch(() => null);
+                  if (val && val.length > 0) migratedData.push([k, Array.from(val)]);
+                }
+              } catch (legClientErr) {
+                console.warn('[Stronghold] Aviso ao extrair credenciais do cliente legado:', legClientErr);
+              }
+
+              try {
+                await legacyStronghold.unload();
+              } catch {}
+
+              // 1. Faz backup seguro do arquivo legado antes de recriar
+              let backedUp = false;
+              try {
+                const bakRes = await commands.backupVaultFile(VAULT_FILE_NAME);
+                backedUp = bakRes.status === 'ok';
+              } catch (bakErr) {
+                console.warn('[Stronghold] Falha ao criar backup do cofre legado:', bakErr);
+              }
+
+              // 2. Inicializa o novo cofre com a chave segura do Chaveiro
+              let migrationSuccess = false;
+              try {
+                stronghold = await Stronghold.load(vaultPath, securePassword);
+                client = await stronghold.createClient('unb_credentials');
+                const newStore = client.getStore();
+                for (const [k, val] of migratedData) {
+                  await newStore.insert(k, val);
+                }
+                await stronghold.save();
+                sharedCachedClient = client;
+                sharedCachedStronghold = stronghold;
+                migrationSuccess = true;
+                console.info('[Stronghold] Cofre migrado com sucesso para o Chaveiro do SO com', migratedData.length, 'credenciais salvas.');
+              } catch (migrateErr) {
+                console.error('[Stronghold] Falha ao re-criptografar cofre sob chave do SO:', migrateErr);
+                // Em caso de falha, restaura o backup imediatamente
+                if (backedUp) {
+                  try {
+                    await commands.restoreVaultFile(VAULT_FILE_NAME);
+                    console.info('[Stronghold] Backup do cofre legado restaurado após falha na migração.');
+                  } catch {}
+                }
+              }
+
+              // 3. Remove o arquivo .bak apenas após confirmação de sucesso
+              if (migrationSuccess && backedUp) {
+                try {
+                  await commands.deleteVaultFile(`${VAULT_FILE_NAME}.bak`);
+                } catch {}
+              }
+            } else {
+              // Nem a chave principal nem as legadas conseguiram abrir o arquivo.
+              // NUNCA apagar o arquivo em disco automaticamente!
+              console.warn('[Stronghold] Não foi possível descriptografar o cofre em disco com as chaves conhecidas. Mantendo sessão em memória.');
             }
           }
           sharedCachedStronghold = stronghold;
         }
 
-        let client = sharedCachedClient;
-        if (!client) {
+        if (!client && stronghold) {
           try {
             client = await stronghold.loadClient('unb_credentials');
           } catch {
             try {
               client = await stronghold.createClient('unb_credentials');
             } catch (createErr) {
-              try {
-                console.error('Recriando cofre Stronghold após falha:', createErr);
-                sharedCachedStronghold = await Stronghold.load(vaultPath, this.vaultPassword);
-                sharedCachedClient = null;
-                client = await sharedCachedStronghold.createClient('unb_credentials');
-              } catch (healErr) {
-                console.error('Stronghold indisponível mesmo após recuperação:', healErr);
-                client = null;
-              }
+              console.error('[Stronghold] Falha ao carregar ou criar cliente no cofre:', createErr);
+              client = null;
             }
           }
           sharedCachedClient = client;
@@ -252,11 +342,9 @@ export class StrongholdCredentialsRepository implements ICredentialsRepository {
 
     const vault = await this.getStore();
     if (!vault) {
-      if (isTauriEnvironment()) {
-        throw new Error(
-          'Cofre seguro indisponível: as credenciais não serão mantidas após reiniciar o app.'
-        );
-      }
+      console.warn(
+        '[Stronghold] Cofre seguro indisponível no momento. Credenciais mantidas em memória para esta sessão.'
+      );
       return;
     }
     const encoder = new TextEncoder();
@@ -284,11 +372,9 @@ export class StrongholdCredentialsRepository implements ICredentialsRepository {
 
     const vault = await this.getStore();
     if (!vault) {
-      if (isTauriEnvironment()) {
-        throw new Error(
-          'Cofre seguro indisponível: as credenciais não serão mantidas após reiniciar o app.'
-        );
-      }
+      console.warn(
+        '[Stronghold] Cofre seguro indisponível no momento. Credenciais mantidas em memória para esta sessão.'
+      );
       return;
     }
     const encoder = new TextEncoder();
@@ -320,11 +406,9 @@ export class StrongholdCredentialsRepository implements ICredentialsRepository {
 
     const vault = await this.getStore();
     if (!vault) {
-      if (isTauriEnvironment()) {
-        throw new Error(
-          'Cofre seguro indisponível: as credenciais não serão mantidas após reiniciar o app.'
-        );
-      }
+      console.warn(
+        '[Stronghold] Cofre seguro indisponível no momento. Credenciais mantidas em memória para esta sessão.'
+      );
       return;
     }
     const encoder = new TextEncoder();
@@ -437,14 +521,9 @@ export class StrongholdCredentialsRepository implements ICredentialsRepository {
       const vault = await this.getStore();
       if (!vault) return;
       try {
-        await vault.store.remove('sigaa_matricula').catch(() => {});
-        await vault.store.remove('sigaa_senha').catch(() => {});
-        await vault.store.remove('aprender3_cpf').catch(() => {});
-        await vault.store.remove('aprender3_senha').catch(() => {});
-        await vault.store.remove('moodlemat_matricula').catch(() => {});
-        await vault.store.remove('moodlemat_senha').catch(() => {});
-        await vault.store.remove('teams_connected').catch(() => {});
-        await vault.store.remove('teams_email').catch(() => {});
+        for (const k of VAULT_CREDENTIAL_KEYS) {
+          await vault.store.remove(k).catch(() => {});
+        }
         await vault.saveVault().catch(() => {});
       } catch {}
     })();

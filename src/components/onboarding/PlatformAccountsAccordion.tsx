@@ -239,9 +239,7 @@ export const PlatformAccountsAccordion: React.FC<
         setAprenderSuccessMsg(
           res.detail || "Conectado ao Aprender 3 com sucesso!",
         );
-        setOpenPlatform(
-          showTeams && !teamsConnected ? "teams" : "aprender3",
-        );
+        setOpenPlatform(showTeams && !teamsConnected ? "teams" : "aprender3");
       } else {
         setAprenderSaved(false);
         setAprenderSuccessMsg(null);
@@ -711,8 +709,8 @@ export const PlatformAccountsAccordion: React.FC<
                         </>
                       )}
 
-                      {/* Erro do formulário ativo */}
-                      {formError ? (
+                      {/* Erro do formulário ativo ou erro global de credenciais */}
+                      {formError || error ? (
                         <div
                           role="alert"
                           className="p-3 bg-pastel-red border-2 border-black rounded-lg flex items-start gap-2.5"
@@ -721,7 +719,7 @@ export const PlatformAccountsAccordion: React.FC<
                             <AlertCircle className="w-3.5 h-3.5 text-ink-error stroke-[3]" />
                           </span>
                           <span className="text-xs font-bold text-ink-error leading-relaxed pt-0.5">
-                            {formError}
+                            {formError || error}
                           </span>
                         </div>
                       ) : null}
@@ -733,21 +731,6 @@ export const PlatformAccountsAccordion: React.FC<
           );
         })}
       </div>
-
-      {/* Erro global do cofre */}
-      {error ? (
-        <div
-          role="alert"
-          className="mt-4 p-3 bg-pastel-red border-2 border-black rounded-lg flex items-start gap-2.5"
-        >
-          <span className="p-1 bg-white border-2 border-black rounded-md shadow-[1px_1px_0px_0px_#000] shrink-0">
-            <AlertCircle className="w-3.5 h-3.5 text-ink-error stroke-[3]" />
-          </span>
-          <span className="text-xs font-bold text-ink-error leading-relaxed pt-0.5">
-            {error}
-          </span>
-        </div>
-      ) : null}
 
       {/* Diálogo: desconectar o SIGAA derruba todas as contas — SIGAA é essencial */}
       <Dialog

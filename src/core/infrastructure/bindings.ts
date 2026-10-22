@@ -28,6 +28,10 @@ export const commands = {
 	validateAprender3Credentials: (cpf: string, senha: string) => typedError<string, string>(__TAURI_INVOKE("validate_aprender3_credentials", { cpf, senha })),
 	connectTeams: (email: string | null) => typedError<TeamsConnectResult, string>(__TAURI_INVOKE("connect_teams", { email })),
 	disconnectTeams: () => typedError<null, string>(__TAURI_INVOKE("disconnect_teams")),
+	getOrCreateVaultKey: () => typedError<string, string>(__TAURI_INVOKE("get_or_create_vault_key")),
+	deleteVaultFile: (filename: string) => typedError<null, string>(__TAURI_INVOKE("delete_vault_file", { filename })),
+	backupVaultFile: (filename: string) => typedError<string, string>(__TAURI_INVOKE("backup_vault_file", { filename })),
+	restoreVaultFile: (filename: string) => typedError<null, string>(__TAURI_INVOKE("restore_vault_file", { filename })),
 };
 
 /* Types */

@@ -85,6 +85,8 @@ export interface FlowchartMetrics {
   chTotalCurriculo?: number;
   chComplementarPendente?: number;
   percentualIntegralizado?: number;
+  /** Indica se as métricas refletem uma simulação com marcações manuais ativas */
+  isSimulated?: boolean;
 }
 
 export interface FlowchartData {

@@ -29,6 +29,7 @@ chrono = { version = "0.4", default-features = false, features = ["clock", "std"
 tauri-specta = { version = "2.0.0-rc.25", features = ["javascript", "typescript"] }
 specta = { version = "2.0.0-rc", features = ["derive"] }
 specta-typescript = "0.0.12"
+rand = "0.8"
 
 [dev-dependencies]
 iota_stronghold = "2.1.0"
@@ -39,6 +40,7 @@ tauri-plugin-window-state = "2"
 tauri-plugin-updater = "2"
 tauri-plugin-process = "2"
 tauri-plugin-autostart = "2"
+keyring = "3"
 
 # Otimiza as primitivas criptográficas do Stronghold (Argon2id + Scrypt/Salsa20/SHA2/ChaCha20) em modo dev/test.
 # Sem isso, Stronghold.load / Stronghold.save em opt-level=0 leva ~45-90s de 100% CPU e trava o app.

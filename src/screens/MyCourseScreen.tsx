@@ -24,13 +24,14 @@ import {
   Search,
   CheckCircle2,
   Unlock,
-  Clock,
   BookOpen,
   List,
   Network,
+  CircleDotDashed,
 } from "lucide-react";
 
-type FilterType = "all" | "completed" | "available" | "in_progress";
+type FilterType =
+  "all" | "pending_mandatory" | "completed" | "in_progress" | "available";
 type ViewMode = "list" | "map";
 
 // Modo de visualização persiste durante a sessão: voltar de outra aba não reseta
@@ -53,7 +54,9 @@ export const MyCourseScreen: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState<FilterType>("all");
   const [isCurriculumDialogOpen, setIsCurriculumDialogOpen] = useState(false);
-  const [view, setView] = useState<"overview" | "ira-calculator" | "curriculum-editor">("overview");
+  const [view, setView] = useState<
+    "overview" | "ira-calculator" | "curriculum-editor"
+  >("overview");
   const [viewMode, setViewMode] = useState<ViewMode>(cachedViewMode);
 
   const switchViewMode = (mode: ViewMode) => {
@@ -83,7 +86,13 @@ export const MyCourseScreen: React.FC = () => {
         norm(d.code).includes(query) ||
         norm(d.name).includes(query);
 
-      const matchFilter = activeFilter === "all" || d.status === activeFilter;
+      const matchFilter =
+        activeFilter === "all" ||
+        (activeFilter === "pending_mandatory"
+          ? d.nature !== "Optativa" &&
+            d.nature !== "Complementar" &&
+            d.status !== "completed"
+          : d.status === activeFilter);
 
       return matchSearch && matchFilter;
     });
@@ -93,7 +102,7 @@ export const MyCourseScreen: React.FC = () => {
     return new Set(filteredDisciplinesForList.map((d) => d.code));
   }, [filteredDisciplinesForList]);
 
-  // Disciplinas matriculadas (MATRICULADA no SIGAA): a resposta direta a "o que estou fazendo agora?"
+  // Disciplinas matriculadas (MATRICULADA no SIGAA): já ordenadas alfabeticamente pelo use-case
   const inProgressDisciplines = useMemo(() => {
     if (!flowchartData) return [];
     if (
@@ -245,21 +254,59 @@ export const MyCourseScreen: React.FC = () => {
                   : "Mapa de cadeias de pré-requisitos"
               }
             >
-              <div className="flex flex-col lg:flex-row lg:items-center gap-3 p-4 border-b-2 border-black">
-                <div className="relative flex-1 min-w-0 lg:max-w-md">
-                  <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
-                  <Input
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="Buscar por código ou nome (ex: APC, Cálculo, CIC0004)..."
-                    aria-label="Buscar disciplina por código ou nome"
-                    className="pl-9 h-9 text-xs bg-white"
-                  />
+              <div className="p-4 border-b-2 border-black space-y-3">
+                {/* Linha 1: Campo de busca amplo + Alternador Lista | Mapa */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div className="relative flex-1 min-w-0">
+                    <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 z-10 pointer-events-none text-neutral-500 stroke-[2.5]" />
+                    <Input
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      placeholder="Buscar por código ou nome (ex: APC, Cálculo, CIC0004)..."
+                      aria-label="Buscar disciplina por código ou nome"
+                      className="pl-10 h-9 text-xs bg-white w-full"
+                    />
+                  </div>
+
+                  {/* Alternador Lista | Mapa */}
+                  <div
+                    role="group"
+                    aria-label="Modo de visualização do fluxograma"
+                    className="flex items-center gap-0.5 p-0.5 bg-white border-2 border-black rounded-xl shrink-0 self-end sm:self-auto"
+                  >
+                    <button
+                      type="button"
+                      onClick={() => switchViewMode("list")}
+                      aria-pressed={viewMode === "list"}
+                      title="Visualização em lista por semestre"
+                      className={`cursor-pointer flex items-center gap-1.5 h-8 px-3 rounded-lg text-xs font-black transition-colors duration-150 active:translate-y-px ${
+                        viewMode === "list"
+                          ? "bg-neo-blue text-white"
+                          : "bg-white text-black hover:bg-neutral-100"
+                      }`}
+                    >
+                      <List className="w-3.5 h-3.5 stroke-[2.5]" />
+                      Lista
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => switchViewMode("map")}
+                      aria-pressed={viewMode === "map"}
+                      title="Visualização em mapa de cadeias de pré-requisitos"
+                      className={`cursor-pointer flex items-center gap-1.5 h-8 px-3 rounded-lg text-xs font-black transition-colors duration-150 active:translate-y-px ${
+                        viewMode === "map"
+                          ? "bg-neo-blue text-white"
+                          : "bg-white text-black hover:bg-neutral-100"
+                      }`}
+                    >
+                      <Network className="w-3.5 h-3.5 stroke-[2.5]" />
+                      Mapa
+                    </button>
+                  </div>
                 </div>
 
-                {/* Filtros de Estado */}
-                <div className="flex flex-wrap items-center gap-1.5 text-xs font-bold lg:ml-auto">
-                  {/* Estado ativo usa o variant do Button; inativo sobrescreve o bg pastel via className (twMerge resolve conflito) */}
+                {/* Linha 2: Barra de Filtros com espaçamento generoso */}
+                <div className="flex flex-wrap items-center gap-2 text-xs font-bold pt-0.5">
                   <Button
                     type="button"
                     variant="outline"
@@ -278,7 +325,37 @@ export const MyCourseScreen: React.FC = () => {
 
                   <Button
                     type="button"
-                    variant={activeFilter === "completed" ? "accent" : "outline"}
+                    variant={
+                      activeFilter === "pending_mandatory"
+                        ? "accent"
+                        : "outline"
+                    }
+                    size="sm"
+                    onClick={() => setActiveFilter("pending_mandatory")}
+                    aria-pressed={activeFilter === "pending_mandatory"}
+                    className={
+                      activeFilter === "pending_mandatory"
+                        ? "gap-1 bg-pastel-yellow border-2 border-black text-black"
+                        : "gap-1 hover:bg-pastel-yellow/40"
+                    }
+                    title="Disciplinas obrigatórias que ainda faltam concluir"
+                  >
+                    <BookOpen className="w-3.5 h-3.5 stroke-[2.5]" />
+                    Faltam Cursar (
+                    {Math.max(
+                      0,
+                      (flowchartData?.metrics.totalMandatoryDisciplines || 0) -
+                        (flowchartData?.metrics.completedMandatoryDisciplines ||
+                          0),
+                    )}
+                    )
+                  </Button>
+
+                  <Button
+                    type="button"
+                    variant={
+                      activeFilter === "completed" ? "accent" : "outline"
+                    }
                     size="sm"
                     onClick={() => setActiveFilter("completed")}
                     aria-pressed={activeFilter === "completed"}
@@ -289,12 +366,15 @@ export const MyCourseScreen: React.FC = () => {
                     }
                   >
                     <CheckCircle2 className="w-3.5 h-3.5 stroke-[2.5]" />
-                    ({flowchartData?.metrics.completedMandatoryDisciplines || 0})
+                    Concluídas (
+                    {flowchartData?.metrics.completedMandatoryDisciplines || 0})
                   </Button>
 
                   <Button
                     type="button"
-                    variant={activeFilter === "in_progress" ? "primary" : "outline"}
+                    variant={
+                      activeFilter === "in_progress" ? "primary" : "outline"
+                    }
                     size="sm"
                     onClick={() => setActiveFilter("in_progress")}
                     aria-pressed={activeFilter === "in_progress"}
@@ -303,14 +383,17 @@ export const MyCourseScreen: React.FC = () => {
                         ? "gap-1"
                         : "gap-1 bg-pastel-blue text-black hover:bg-pastel-blue"
                     }
+                    title="Disciplinas que você está matriculado neste semestre"
                   >
-                    <Clock className="w-3.5 h-3.5 stroke-[2.5]" />
-                    ({flowchartData?.metrics.inProgressCount || 0})
+                    <CircleDotDashed className="w-3.5 h-3.5 stroke-[2.5]" />
+                    Cursando ({flowchartData?.metrics.inProgressCount || 0})
                   </Button>
 
                   <Button
                     type="button"
-                    variant={activeFilter === "available" ? "yellow" : "outline"}
+                    variant={
+                      activeFilter === "available" ? "yellow" : "outline"
+                    }
                     size="sm"
                     onClick={() => setActiveFilter("available")}
                     aria-pressed={activeFilter === "available"}
@@ -319,46 +402,11 @@ export const MyCourseScreen: React.FC = () => {
                         ? "gap-1"
                         : "gap-1 bg-pastel-yellow text-black hover:bg-neo-yellow/40"
                     }
+                    title="Disciplinas liberadas para matrícula (pré-requisitos cumpridos)"
                   >
                     <Unlock className="w-3.5 h-3.5 stroke-[2.5]" />
-                    ({flowchartData?.metrics.availableCount || 0})
+                    Disponíveis ({flowchartData?.metrics.availableCount || 0})
                   </Button>
-                </div>
-
-                {/* Alternador Lista | Mapa */}
-                <div
-                  role="group"
-                  aria-label="Modo de visualização do fluxograma"
-                  className="flex items-center gap-0.5 p-0.5 bg-white border-2 border-black rounded-xl shadow-neo-sm shrink-0"
-                >
-                  <button
-                    type="button"
-                    onClick={() => switchViewMode("list")}
-                    aria-pressed={viewMode === "list"}
-                    title="Visualização em lista por semestre"
-                    className={`cursor-pointer flex items-center gap-1.5 h-7 px-2.5 rounded-lg text-xs font-black transition-colors duration-150 active:translate-y-px ${
-                      viewMode === "list"
-                        ? "bg-neo-blue text-white"
-                        : "bg-white text-black hover:bg-neutral-100"
-                    }`}
-                  >
-                    <List className="w-3.5 h-3.5 stroke-[2.5]" />
-                    Lista
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => switchViewMode("map")}
-                    aria-pressed={viewMode === "map"}
-                    title="Visualização em mapa de cadeias de pré-requisitos"
-                    className={`cursor-pointer flex items-center gap-1.5 h-7 px-2.5 rounded-lg text-xs font-black transition-colors duration-150 active:translate-y-px ${
-                      viewMode === "map"
-                        ? "bg-neo-blue text-white"
-                        : "bg-white text-black hover:bg-neutral-100"
-                    }`}
-                  >
-                    <Network className="w-3.5 h-3.5 stroke-[2.5]" />
-                    Mapa
-                  </button>
                 </div>
               </div>
               {viewMode === "list" ? (

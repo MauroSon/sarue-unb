@@ -6,7 +6,154 @@ use crate::scraper::HiddenWebviewScraper;
 use crate::sigaa::SigaaClient;
 use std::collections::HashMap;
 
-use tauri::{command, AppHandle};
+use tauri::{command, AppHandle, Manager};
+
+fn is_valid_vault_filename(filename: &str) -> bool {
+    matches!(
+        filename,
+        "unb_vault.hold"
+            | "unb_vault_dev.hold"
+            | "unb_vault.hold.bak"
+            | "unb_vault_dev.hold.bak"
+    )
+}
+
+fn is_valid_hex_key(key: &str) -> bool {
+    key.len() == 64 && key.chars().all(|c| c.is_ascii_hexdigit())
+}
+
+#[command]
+#[specta::specta]
+pub fn get_or_create_vault_key(app: AppHandle) -> Result<String, String> {
+    const SERVICE: &str = "org.unb.sarue";
+    const USER: &str = "vault_master_key";
+
+    let data_dir = app
+        .path()
+        .app_local_data_dir()
+        .map_err(|e| format!("Falha ao resolver diretório local de dados: {}", e))?;
+    let _ = std::fs::create_dir_all(&data_dir);
+    let key_file = data_dir.join("vault.key");
+
+    // 1. Verifica se já existe chave persistida no arquivo local seguro
+    if key_file.exists() {
+        if let Ok(content) = std::fs::read_to_string(&key_file) {
+            let trimmed = content.trim().to_string();
+            if is_valid_hex_key(&trimmed) {
+                // Tenta sincronizar com o chaveiro do SO caso este esteja vazio
+                #[cfg(not(any(target_os = "android", target_os = "ios")))]
+                if let Ok(entry) = keyring::Entry::new(SERVICE, USER) {
+                    if entry.get_password().map(|p| !is_valid_hex_key(&p)).unwrap_or(true) {
+                        let _ = entry.set_password(&trimmed);
+                    }
+                }
+                return Ok(trimmed);
+            }
+        }
+    }
+
+    // 2. Tenta recuperar do Chaveiro do Sistema Operacional (Keychain / Credential Manager)
+    #[cfg(not(any(target_os = "android", target_os = "ios")))]
+    {
+        if let Ok(entry) = keyring::Entry::new(SERVICE, USER) {
+            if let Ok(password) = entry.get_password() {
+                let trimmed = password.trim().to_string();
+                if is_valid_hex_key(&trimmed) {
+                    // Garante espelhamento no arquivo de segurança local com permissão 0600
+                    let _ = std::fs::write(&key_file, &trimmed);
+                    #[cfg(unix)]
+                    {
+                        use std::os::unix::fs::PermissionsExt;
+                        let _ = std::fs::set_permissions(&key_file, std::fs::Permissions::from_mode(0o600));
+                    }
+                    return Ok(trimmed);
+                }
+            }
+        }
+    }
+
+    // 3. Se nenhuma chave válida existia, gera uma chave criptográfica forte (256-bit / 64 hex chars)
+    let mut key_bytes = [0u8; 32];
+    rand::RngCore::fill_bytes(&mut rand::thread_rng(), &mut key_bytes);
+    let generated_key = key_bytes
+        .iter()
+        .map(|b| format!("{:02x}", b))
+        .collect::<String>();
+
+    // Salva no Chaveiro do SO
+    #[cfg(not(any(target_os = "android", target_os = "ios")))]
+    if let Ok(entry) = keyring::Entry::new(SERVICE, USER) {
+        let _ = entry.set_password(&generated_key);
+    }
+
+    // Salva no arquivo local com 0600
+    std::fs::write(&key_file, &generated_key)
+        .map_err(|e| format!("Falha ao persistir chave do cofre no disco: {}", e))?;
+
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::PermissionsExt;
+        let _ = std::fs::set_permissions(&key_file, std::fs::Permissions::from_mode(0o600));
+    }
+
+    Ok(generated_key)
+}
+
+#[command]
+#[specta::specta]
+pub fn delete_vault_file(app: AppHandle, filename: String) -> Result<(), String> {
+    if !is_valid_vault_filename(&filename) {
+        return Err("Nome de arquivo de cofre inválido".into());
+    }
+    let data_dir = app
+        .path()
+        .app_local_data_dir()
+        .map_err(|e| format!("Falha ao resolver diretório local de dados: {}", e))?;
+    let path = data_dir.join(&filename);
+    if path.exists() {
+        let _ = std::fs::remove_file(&path);
+    }
+    Ok(())
+}
+
+#[command]
+#[specta::specta]
+pub fn backup_vault_file(app: AppHandle, filename: String) -> Result<String, String> {
+    if !is_valid_vault_filename(&filename) {
+        return Err("Nome de arquivo de cofre inválido".into());
+    }
+    let data_dir = app
+        .path()
+        .app_local_data_dir()
+        .map_err(|e| format!("Falha ao resolver diretório local de dados: {}", e))?;
+    let src = data_dir.join(&filename);
+    let bak_filename = format!("{}.bak", filename);
+    let dst = data_dir.join(&bak_filename);
+    if src.exists() {
+        std::fs::rename(&src, &dst)
+            .map_err(|e| format!("Falha ao criar backup do cofre: {}", e))?;
+    }
+    Ok(bak_filename)
+}
+
+#[command]
+#[specta::specta]
+pub fn restore_vault_file(app: AppHandle, filename: String) -> Result<(), String> {
+    if !is_valid_vault_filename(&filename) {
+        return Err("Nome de arquivo de cofre inválido".into());
+    }
+    let data_dir = app
+        .path()
+        .app_local_data_dir()
+        .map_err(|e| format!("Falha ao resolver diretório local de dados: {}", e))?;
+    let bak_path = data_dir.join(format!("{}.bak", filename));
+    let target_path = data_dir.join(&filename);
+    if bak_path.exists() {
+        std::fs::rename(&bak_path, &target_path)
+            .map_err(|e| format!("Falha ao restaurar backup do cofre: {}", e))?;
+    }
+    Ok(())
+}
 
 #[command]
 #[specta::specta]
