@@ -1,7 +1,7 @@
-import React from 'react';
-import { Info, RotateCcw } from 'lucide-react';
-import { Button } from '@/components/ui';
-import type { IraCalculation } from '@/core';
+import React from "react";
+import { Info, RotateCcw } from "lucide-react";
+import { Button } from "@/components/ui";
+import type { IraCalculation } from "@/core";
 
 export interface IraResultPanelProps {
   calculation: IraCalculation;
@@ -38,8 +38,10 @@ export const IraResultPanel: React.FC<IraResultPanelProps> = ({
   }, [confirmingRestore]);
 
   const hasResult = calculation.ira != null;
-  const hasComparison = !isSimulation && sigaaIra != null && calculation.ira != null;
-  const delta = !isSimulation && sigaaIra != null && calculation.ira != null ? calculation.ira - sigaaIra : null;
+  const delta =
+    !isSimulation && sigaaIra != null && calculation.ira != null
+      ? calculation.ira - sigaaIra
+      : null;
   const deltaAbs = delta != null ? Math.abs(delta) : null;
   const matchesSigaa = deltaAbs != null && deltaAbs < 0.05;
 
@@ -54,9 +56,11 @@ export const IraResultPanel: React.FC<IraResultPanelProps> = ({
             </p>
             <div className="flex items-baseline gap-2">
               <span className="text-5xl font-black text-black tracking-tight">
-                {hasResult ? formatIra(calculation.ira as number) : '—'}
+                {hasResult ? formatIra(calculation.ira as number) : "—"}
               </span>
-              <span className="text-xs font-bold text-neutral-600">escala 0–5</span>
+              <span className="text-xs font-bold text-neutral-600">
+                escala 0–5
+              </span>
             </div>
           </div>
 
@@ -67,23 +71,14 @@ export const IraResultPanel: React.FC<IraResultPanelProps> = ({
             </p>
             <div className="flex items-baseline gap-2 flex-wrap">
               <span className="text-2xl font-black text-neutral-600">
-                {sigaaIra != null ? formatIra(sigaaIra) : '—'}
+                {sigaaIra != null ? formatIra(sigaaIra) : "—"}
               </span>
-              {hasComparison && (
+              {!matchesSigaa && (
                 <span
-                  className={`inline-flex items-center rounded-full border-2 border-black px-2 py-0.5 text-[11px] font-black shadow-neo-xs ${
-                    matchesSigaa ? 'bg-pastel-green text-success-ink' : 'bg-pastel-yellow text-black'
-                  }`}
+                  className="inline-flex items-center rounded-full border-2 border-black px-2 py-0.5 text-[11px] font-black shadow-neo-xs bg-pastel-yellow text-black"
                   title="Diferença entre o cálculo e o IRA oficial do SIGAA"
                 >
-                  {matchesSigaa
-                    ? 'confere com o SIGAA'
-                    : `diferença de ${formatIra(deltaAbs as number)}`}
-                </span>
-              )}
-              {isSimulation && (
-                <span className="inline-flex items-center rounded-full border-2 border-black px-2 py-0.5 text-[11px] font-black bg-highlighter-yellow text-black shadow-neo-xs">
-                  Simulação
+                  {`diferença de ${formatIra(deltaAbs as number)}`}
                 </span>
               )}
             </div>
@@ -92,17 +87,17 @@ export const IraResultPanel: React.FC<IraResultPanelProps> = ({
           {/* Contadores */}
           <div className="lg:ml-auto text-xs font-bold text-neutral-600 space-y-0.5">
             <p>
-              <span className="text-black font-extrabold">{calculation.mentionCount}</span> disciplina
-              {calculation.mentionCount === 1 ? '' : 's'} com menção
-            </p>
-            <p>
-              <span className="text-black font-extrabold">{formatCredits(calculation.creditsSum)}</span> créditos somados
+              <span className="text-black font-extrabold">
+                {calculation.mentionCount}
+              </span>{" "}
+              disciplina
+              {calculation.mentionCount === 1 ? "" : "s"} com menção
             </p>
             <p>
               <span className="text-black font-extrabold">
-                {calculation.trancadasObrigatorias + calculation.trancadasOptativas}
-              </span>{' '}
-              trancadas
+                {formatCredits(calculation.creditsSum)}
+              </span>{" "}
+              créditos somados
             </p>
           </div>
 
@@ -110,11 +105,7 @@ export const IraResultPanel: React.FC<IraResultPanelProps> = ({
           {canRestore && (
             <div className="flex flex-col items-start lg:items-end gap-1">
               {confirmingRestore ? (
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  onClick={onRestore}
-                >
+                <Button variant="destructive" size="sm" onClick={onRestore}>
                   Confirmar restauração
                 </Button>
               ) : (
@@ -140,17 +131,18 @@ export const IraResultPanel: React.FC<IraResultPanelProps> = ({
             <div className="flex items-start gap-2.5 bg-pastel-yellow border-2 border-black rounded-lg px-3 py-2">
               <Info className="w-4 h-4 stroke-[2.5] shrink-0 mt-0.5" />
               <p className="text-xs font-semibold text-black">
-                Você está simulando — o IRA do SIGAA continua mostrando seu histórico real.
-                Restaure o cenário real para comparar com o oficial.
+                Você está simulando — o IRA do SIGAA continua mostrando seu
+                histórico real. Restaure o cenário real para comparar com o
+                oficial.
               </p>
             </div>
           ) : (
             <div className="flex items-start gap-2.5 bg-pastel-yellow border-2 border-black rounded-lg px-3 py-2">
               <Info className="w-4 h-4 stroke-[2.5] shrink-0 mt-0.5" />
               <p className="text-xs font-semibold text-black">
-                O cálculo pode divergir do SIGAA (reaproveitamentos, recontagens e reprovações
-                antigas). A diferença indicada acima é a margem de erro esperada quando você
-                prever semestres futuros.
+                O cálculo pode divergir do SIGAA (reaproveitamentos, recontagens
+                e reprovações antigas). A diferença indicada acima é a margem de
+                erro esperada quando você prever semestres futuros.
               </p>
             </div>
           )}
@@ -161,5 +153,7 @@ export const IraResultPanel: React.FC<IraResultPanelProps> = ({
 };
 
 function formatCredits(value: number): string {
-  return Number.isInteger(value) ? String(value) : value.toFixed(1).replace('.', ',');
+  return Number.isInteger(value)
+    ? String(value)
+    : value.toFixed(1).replace(".", ",");
 }

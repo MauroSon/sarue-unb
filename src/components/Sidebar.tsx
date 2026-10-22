@@ -171,6 +171,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <div className="relative shrink-0 flex items-center justify-center">
               <button
                 type="button"
+                data-no-sound="true"
                 onClick={() => onSelectTab("home")}
                 title="Ir para a Home"
                 aria-label="Ir para a Home"
@@ -211,6 +212,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             >
               <button
                 type="button"
+                data-no-sound="true"
                 onClick={() => onSelectTab("home")}
                 title="Ir para a Home"
                 className="cursor-pointer text-left block focus-visible:outline-hidden"
@@ -242,7 +244,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </div>
 
         {/* Lista de Navegação - Estilo Opção 1 (Ledger/Binder full-bleed neobrutalism.dev) */}
-        <nav className="border-b-2 border-black">
+        <nav data-no-sound="true" className="border-b-2 border-black">
           <ul className="flex flex-col">
             {navItems.map((item) => {
               const Icon = item.icon;

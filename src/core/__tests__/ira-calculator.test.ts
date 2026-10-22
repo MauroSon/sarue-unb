@@ -122,30 +122,77 @@ describe('CalculateIraUseCase', () => {
     expect(result.ira).toBe(5);
   });
 
-  it('penaliza trancamentos: 0,6 obrigatória, 0,4 optativa, denominador N + trancadas', () => {
+  it('não penaliza trancamentos no IRA conforme Resolução CEPE nº 093/2018', () => {
     const disciplines = Array.from({ length: 10 }, (_, i) => disc('SS', 6, `d${i}`));
     const scenario = makeScenario({
       semesters: [{ id: 's1', label: '1º Semestre', kind: 'history', disciplines }],
       baseTrancadasObrigatorias: 1,
+      baseTrancadasOptativas: 2,
     });
 
     const result = calc.execute(scenario);
-    // (1 - 0.6/11) * 5
-    expect(result.ira).toBeCloseTo(4.7273, 3);
-    expect(result.trancamentoFactor).toBeCloseTo(10.4 / 11, 5);
+    // Trancamentos não reduzem o IRA de 5 (Resolução CEPE nº 093/2018)
+    expect(result.ira).toBe(5);
+    expect(result.trancadasObrigatorias).toBe(1);
+    expect(result.trancadasOptativas).toBe(2);
   });
 
-  it('extras de trancamento simulados somam às bases do histórico', () => {
-    const disciplines = Array.from({ length: 5 }, (_, i) => disc('SS', 6, `d${i}`));
+  it('aplica pesos progressivos por semestre min(6, semestre) da Resolução CEG nº 0001/2020', () => {
     const scenario = makeScenario({
-      semesters: [{ id: 's1', label: '1º Semestre', kind: 'history', disciplines }],
-      extraTrancadasOptativas: 2,
+      semesters: [
+        {
+          id: 's1',
+          label: '1º Semestre',
+          kind: 'history',
+          // Semestre 1: peso 1 -> 5 * 4 * 1 = 20, créditos ponderados: 4 * 1 = 4
+          disciplines: [disc('SS', 4, 'd1')],
+        },
+        {
+          id: 's2',
+          label: '2º Semestre',
+          kind: 'history',
+          // Semestre 2: peso 2 -> 3 * 4 * 2 = 24, créditos ponderados: 4 * 2 = 8
+          disciplines: [disc('MM', 4, 'd2')],
+        },
+        {
+          id: 's3',
+          label: '3º Semestre',
+          kind: 'history',
+          // Semestre 3: peso 3 -> 4 * 4 * 3 = 48, créditos ponderados: 4 * 3 = 12
+          disciplines: [disc('MS', 4, 'd3')],
+        },
+      ],
     });
 
     const result = calc.execute(scenario);
-    // (1 - 0.8/7) * 5
-    expect(result.ira).toBeCloseTo(4.4286, 3);
-    expect(result.trancadasOptativas).toBe(2);
+    // Soma ponderada: 20 + 24 + 48 = 92
+    // Créditos reais: 4 + 4 + 4 = 12
+    // Créditos ponderados (denominador): 4*1 + 4*2 + 4*3 = 24
+    // IRA: 92 / 24 = 3.8333... (diferente da média simples que seria 4.0)
+    expect(result.weightedSum).toBe(92);
+    expect(result.creditsSum).toBe(12);
+    expect(result.weightedCreditsSum).toBe(24);
+    expect(result.ira).toBeCloseTo(92 / 24, 4);
+  });
+
+  it('limita o peso semestral no teto 6 a partir do 6º semestre', () => {
+    const scenario = makeScenario({
+      semesters: [
+        {
+          id: 's7',
+          label: '7º Semestre',
+          kind: 'history',
+          // Semestre 7: peso min(6, 7) = 6 -> 4 * 4 * 6 = 96, créd ponderados: 4 * 6 = 24, créd reais: 4
+          disciplines: [disc('MS', 4, 'd7')],
+        },
+      ],
+    });
+
+    const result = calc.execute(scenario);
+    expect(result.weightedSum).toBe(96);
+    expect(result.creditsSum).toBe(4);
+    expect(result.weightedCreditsSum).toBe(24);
+    expect(result.ira).toBe(4);
   });
 
   it('linha sem créditos conta no N mas não no somatório de créditos', () => {
@@ -537,7 +584,39 @@ describe('ajuste de trancamentos', () => {
     expect(base.trancadasObrigatorias).toBe(2);
     expect(discounted.trancadasObrigatorias).toBe(0);
     expect(overDiscounted.trancadasObrigatorias).toBe(0);
-    expect(discounted.ira).toBeGreaterThan(base.ira as number);
-    expect(overDiscounted.ira).toBe(discounted.ira);
+    expect(base.ira).toBe(5);
+    expect(discounted.ira).toBe(5);
+    expect(overDiscounted.ira).toBe(5);
+  });
+
+  it('aplica o fator de correção baseado no histórico oficial do SIGAA mantendo limites 0-5', () => {
+    const calc = new CalculateIraUseCase();
+    const scenario = makeScenario({
+      semesters: [
+        {
+          id: 's1',
+          label: '1º Semestre',
+          kind: 'history',
+          disciplines: [
+            disc('MS', 4, 'd1'), // 4 * 4 * 1 = 16
+            disc('MM', 4, 'd2'), // 3 * 4 * 1 = 12
+          ],
+        },
+      ],
+    });
+
+    // Média bruta: (16 + 12) / 8 = 3.50
+    const rawCalc = calc.execute(scenario, 0);
+    expect(rawCalc.rawIra).toBe(3.5);
+    expect(rawCalc.ira).toBe(3.5);
+
+    // Ajuste com offset de calibração (-0.15): 3.50 - 0.15 = 3.35
+    const adjustedCalc = calc.execute(scenario, -0.15);
+    expect(adjustedCalc.rawIra).toBe(3.5);
+    expect(adjustedCalc.ira).toBe(3.35);
+
+    // Limites de segurança (nunca ultrapassa 5 nem fica negativo)
+    expect(calc.execute(scenario, 2.0).ira).toBe(5.0);
+    expect(calc.execute(scenario, -4.0).ira).toBe(0.0);
   });
 });

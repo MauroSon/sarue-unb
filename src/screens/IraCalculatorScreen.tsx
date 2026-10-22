@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowLeft, Calculator, GraduationCap, Minus, Plus } from 'lucide-react';
+import { ArrowLeft, Calculator, GraduationCap, Plus } from 'lucide-react';
 import { useMyCourse } from '@/hooks/useMyCourse';
 import { useContainer } from '@/context/ContainerContext';
 import {
@@ -95,9 +95,17 @@ export const IraCalculatorScreen: React.FC<IraCalculatorScreenProps> = ({ onBack
     return () => clearTimeout(t);
   }, [scenario, hydrated, isSimulation, useCases]);
 
+  // Fator de correção baseado no IRA oficial do discente que veio do histórico do SIGAA
+  const correctionOffset = React.useMemo(() => {
+    if (profile?.ira == null || !realScenario) return 0;
+    const baseCalc = IRA_CALCULATOR_INSTANCE.execute(realScenario, 0);
+    if (baseCalc.rawIra == null) return 0;
+    return profile.ira - baseCalc.rawIra;
+  }, [profile?.ira, realScenario]);
+
   const calculation = React.useMemo(
-    () => (scenario ? IRA_CALCULATOR_INSTANCE.execute(scenario) : null),
-    [scenario],
+    () => (scenario ? IRA_CALCULATOR_INSTANCE.execute(scenario, correctionOffset) : null),
+    [scenario, correctionOffset],
   );
 
   // --- Handlers do cenário (atualizações imutáveis) ---
@@ -200,23 +208,6 @@ export const IraCalculatorScreen: React.FC<IraCalculatorScreenProps> = ({ onBack
     });
   }, [updateScenario]);
 
-  const handleAdjustExtraTrancadas = React.useCallback(
-    (kind: 'obrigatorias' | 'optativas', delta: number) => {
-      updateScenario((prev) => ({
-        ...prev,
-        extraTrancadasObrigatorias: Math.max(
-          -prev.baseTrancadasObrigatorias,
-          prev.extraTrancadasObrigatorias + (kind === 'obrigatorias' ? delta : 0),
-        ),
-        extraTrancadasOptativas: Math.max(
-          -prev.baseTrancadasOptativas,
-          prev.extraTrancadasOptativas + (kind === 'optativas' ? delta : 0),
-        ),
-      }));
-    },
-    [updateScenario],
-  );
-
   const handleRestore = React.useCallback(async () => {
     await useCases.manageIraScenario.clear();
     setScenario(useCases.buildIraScenario.execute(profile!, curriculum));
@@ -283,41 +274,6 @@ export const IraCalculatorScreen: React.FC<IraCalculatorScreenProps> = ({ onBack
         canRestore={hasSavedScenario && isSimulation}
         onRestore={handleRestore}
       />
-
-      {/* Trancamentos extras simulados */}
-      <section className="bg-white border-2 border-black rounded-lg shadow-neo p-4">
-        <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-          <div className="sm:mr-auto">
-            <p className="text-[11px] font-black uppercase tracking-wider text-neutral-600">
-              Trancamentos
-            </p>
-            <p className="text-xs font-bold text-neutral-600 mt-0.5">
-              Do histórico: <span className="text-black font-extrabold">{scenario.baseTrancadasObrigatorias} obrigatória(s) e {scenario.baseTrancadasOptativas} optativa(s)</span>.
-              Ajuste livremente — desconte o que não deveria contar ou simule trancamentos futuros.
-            </p>
-          </div>
-          <div className="flex items-center gap-5">
-            <div className="flex items-center gap-1.5">
-              <span className="text-xs font-black text-black">Obrigatórias: {calculation.trancadasObrigatorias}</span>
-              <Button variant="outline" size="icon" className="w-8 h-8" aria-label="Adicionar trancamento obrigatório extra" onClick={() => handleAdjustExtraTrancadas('obrigatorias', 1)}>
-                <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
-              </Button>
-              <Button variant="outline" size="icon" className="w-8 h-8" aria-label="Remover trancamento obrigatório extra" onClick={() => handleAdjustExtraTrancadas('obrigatorias', -1)} disabled={calculation.trancadasObrigatorias === 0}>
-                <Minus className="w-3.5 h-3.5 stroke-[2.5]" />
-              </Button>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <span className="text-xs font-black text-black">Optativas: {calculation.trancadasOptativas}</span>
-              <Button variant="outline" size="icon" className="w-8 h-8" aria-label="Adicionar trancamento optativo extra" onClick={() => handleAdjustExtraTrancadas('optativas', 1)}>
-                <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
-              </Button>
-              <Button variant="outline" size="icon" className="w-8 h-8" aria-label="Remover trancamento optativo extra" onClick={() => handleAdjustExtraTrancadas('optativas', -1)} disabled={calculation.trancadasOptativas === 0} >
-                <Minus className="w-3.5 h-3.5 stroke-[2.5]" />
-              </Button>
-            </div>
-          </div>
-        </div>
-      </section>
 
       {/* Grade de semestres: 4 colunas no desktop */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 items-start">

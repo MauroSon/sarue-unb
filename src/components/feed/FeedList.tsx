@@ -1,8 +1,26 @@
-import React, { useMemo } from 'react';
-import { Badge, Button, DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator } from '@/components/ui';
-import type { Discipline, FeedItem } from '@/core';
-import { Archive, ArchiveRestore, Circle, CheckCircle, Check, ClipboardList, ExternalLink, FileText, MoreHorizontal } from 'lucide-react';
-import { openExternalUrl } from '../../lib/utils';
+import React, { useMemo } from "react";
+import {
+  Badge,
+  Button,
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+} from "@/components/ui";
+import type { Discipline, FeedItem } from "@/core";
+import {
+  Archive,
+  ArchiveRestore,
+  Circle,
+  CheckCircle,
+  Check,
+  ClipboardList,
+  ExternalLink,
+  FileText,
+  MoreHorizontal,
+} from "lucide-react";
+import { openExternalUrl } from "../../lib/utils";
 
 export interface FeedListProps {
   items: FeedItem[];
@@ -14,9 +32,9 @@ export interface FeedListProps {
 }
 
 const PLATFORM_LABELS: Record<string, string> = {
-  aprender3: 'Aprender 3',
-  sigaa: 'Sigaa',
-  teams: 'Teams',
+  aprender3: "Aprender 3",
+  sigaa: "Sigaa",
+  teams: "Teams",
 };
 
 const formatDate = (dateStr: string) => {
@@ -24,21 +42,22 @@ const formatDate = (dateStr: string) => {
   if (Number.isNaN(date.getTime())) {
     return dateStr;
   }
-  return date.toLocaleDateString('pt-BR', {
-    day: '2-digit',
-    month: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
+  return date.toLocaleDateString("pt-BR", {
+    day: "2-digit",
+    month: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
   });
 };
 
 // Prazo curto para o pill da direita; urgência manda na cor
 const getDueStatus = (dueDateStr?: string) => {
   if (!dueDateStr) return null;
-  const diffHours = (new Date(dueDateStr).getTime() - Date.now()) / (1000 * 60 * 60);
-  if (diffHours < 0) return { label: 'Encerrado', isUrgent: true };
-  if (diffHours <= 24) return { label: '<24h', isUrgent: true };
-  if (diffHours <= 48) return { label: '2 dias', isUrgent: false };
+  const diffHours =
+    (new Date(dueDateStr).getTime() - Date.now()) / (1000 * 60 * 60);
+  if (diffHours < 0) return { label: "Encerrado", isUrgent: true };
+  if (diffHours <= 24) return { label: "<24h", isUrgent: true };
+  if (diffHours <= 48) return { label: "2 dias", isUrgent: false };
   return { label: null, isUrgent: false };
 };
 
@@ -69,26 +88,29 @@ export const FeedList: React.FC<FeedListProps> = ({
   return (
     <ul role="list" className="divide-y-2 divide-black/10">
       {items.map((item) => {
-        const isAssignment = item.itemType === 'assignment';
+        const isAssignment = item.itemType === "assignment";
         const dueStatus = isAssignment ? getDueStatus(item.dueDate) : null;
         const platformLabel = PLATFORM_LABELS[item.platform] ?? item.platform;
         const titleTone = item.isCompleted
-          ? 'text-neutral-600 line-through'
+          ? "text-neutral-600 line-through"
           : item.isArchived
-          ? 'text-neutral-500'
-          : 'text-black';
+            ? "text-neutral-500"
+            : "text-black";
         const TypeIcon = isAssignment ? ClipboardList : FileText;
-        const disciplineLabel = disciplineNames.get(item.courseName) || item.courseName || item.courseCode;
+        const disciplineLabel =
+          disciplineNames.get(item.courseName) ||
+          item.courseName ||
+          item.courseCode;
 
         return (
           <li
             key={item.id}
             className={`flex items-center gap-3 px-4 md:px-5 py-4 transition-colors duration-150 ${
               item.isCompleted
-                ? 'bg-neutral-100/80 hover:bg-neutral-200/70'
+                ? "bg-neutral-100/80 hover:bg-neutral-200/70"
                 : item.isArchived
-                ? 'bg-neutral-50/70 hover:bg-neutral-100/70'
-                : 'hover:bg-neutral-50'
+                  ? "bg-neutral-50/70 hover:bg-neutral-100/70"
+                  : "hover:bg-neutral-50"
             }`}
           >
             {/* Indicador interativo de conclusão para tarefas ou ícone de tipo para avisos */}
@@ -96,12 +118,20 @@ export const FeedList: React.FC<FeedListProps> = ({
               <button
                 type="button"
                 onClick={() => onToggleComplete(item.id, item.isCompleted)}
-                title={item.isCompleted ? 'Marcar como não concluído' : 'Marcar como concluído'}
-                aria-label={item.isCompleted ? 'Marcar como não concluído' : 'Marcar como concluído'}
+                title={
+                  item.isCompleted
+                    ? "Marcar como não concluído"
+                    : "Marcar como concluído"
+                }
+                aria-label={
+                  item.isCompleted
+                    ? "Marcar como não concluído"
+                    : "Marcar como concluído"
+                }
                 className={`w-5 h-5 rounded-md border-2 border-black flex items-center justify-center shrink-0 cursor-pointer transition-[transform,box-shadow,background-color] duration-150 ease-out shadow-[1px_1px_0px_0px_#000] hover:translate-x-[0.5px] hover:translate-y-[0.5px] hover:shadow-none active:translate-x-[1px] active:translate-y-[1px] ${
                   item.isCompleted
-                    ? 'bg-neo-green text-black'
-                    : 'bg-white hover:bg-neutral-100 text-neutral-400'
+                    ? "bg-neo-green text-black"
+                    : "bg-white hover:bg-neutral-100 text-neutral-400"
                 }`}
               >
                 {item.isCompleted ? (
@@ -109,7 +139,10 @@ export const FeedList: React.FC<FeedListProps> = ({
                 ) : null}
               </button>
             ) : (
-              <TypeIcon className="w-4 h-4 stroke-[2.5] shrink-0 text-neutral-700" aria-hidden />
+              <TypeIcon
+                className="w-4 h-4 stroke-[2.5] shrink-0 text-neutral-700"
+                aria-hidden
+              />
             )}
 
             {/* Título + meta */}
@@ -126,16 +159,17 @@ export const FeedList: React.FC<FeedListProps> = ({
                   {platformLabel}
                 </Badge>
                 {showDiscipline && disciplineLabel ? (
-                  <span
-                    className="shrink-0 inline-block max-w-[160px] truncate text-[11px] font-bold text-neutral-700 bg-neutral-100 px-2 py-0.5 border-2 border-black rounded-full shadow-[2px_2px_0px_0px_#000]"
-                    title={item.courseName}
-                  >
+                  <Badge variant="neutral" size="sm" title={item.courseName}>
                     {disciplineLabel}
-                  </span>
+                  </Badge>
                 ) : null}
-                <span className="truncate whitespace-nowrap">Enviado em {formatDate(item.createdAt)}</span>
+                <span className="truncate whitespace-nowrap">
+                  Enviado em {formatDate(item.createdAt)}
+                </span>
                 {item.dueDate ? (
-                  <span className="truncate whitespace-nowrap">· Entrega {formatDate(item.dueDate)}</span>
+                  <span className="truncate whitespace-nowrap">
+                    · Entrega {formatDate(item.dueDate)}
+                  </span>
                 ) : null}
               </div>
             </div>
@@ -146,14 +180,16 @@ export const FeedList: React.FC<FeedListProps> = ({
                 {dueStatus.label ? (
                   <span
                     className={`inline-flex items-center px-2 py-0.5 text-[11px] font-bold rounded-full border-2 border-black shadow-[2px_2px_0px_0px_#000] ${
-                      dueStatus.isUrgent ? 'bg-neo-danger text-white' : 'bg-neo-yellow text-black'
+                      dueStatus.isUrgent
+                        ? "bg-neo-danger text-white"
+                        : "bg-neo-yellow text-black"
                     }`}
                   >
                     {dueStatus.label}
                   </span>
                 ) : null}
                 <span className="text-[11px] font-semibold text-neutral-600 whitespace-nowrap">
-                  {item.dueDate ? formatDate(item.dueDate) : ''}
+                  {item.dueDate ? formatDate(item.dueDate) : ""}
                 </span>
               </div>
             ) : null}
@@ -175,13 +211,17 @@ export const FeedList: React.FC<FeedListProps> = ({
               </DropdownMenuTrigger>
               <DropdownMenuContent>
                 {item.externalUrl ? (
-                  <DropdownMenuItem onClick={() => openExternalUrl(item.externalUrl!)}>
+                  <DropdownMenuItem
+                    onClick={() => openExternalUrl(item.externalUrl!)}
+                  >
                     <ExternalLink className="w-3.5 h-3.5" />
                     <span>Abrir no {platformLabel}</span>
                   </DropdownMenuItem>
                 ) : null}
                 {isAssignment && onToggleComplete ? (
-                  <DropdownMenuItem onClick={() => onToggleComplete(item.id, item.isCompleted)}>
+                  <DropdownMenuItem
+                    onClick={() => onToggleComplete(item.id, item.isCompleted)}
+                  >
                     {item.isCompleted ? (
                       <>
                         <Circle className="w-3.5 h-3.5" />
@@ -195,7 +235,9 @@ export const FeedList: React.FC<FeedListProps> = ({
                     )}
                   </DropdownMenuItem>
                 ) : null}
-                {item.externalUrl || (isAssignment && onToggleComplete) ? <DropdownMenuSeparator /> : null}
+                {item.externalUrl || (isAssignment && onToggleComplete) ? (
+                  <DropdownMenuSeparator />
+                ) : null}
                 {item.isArchived ? (
                   onRestore ? (
                     <DropdownMenuItem onClick={() => onRestore(item.id)}>
