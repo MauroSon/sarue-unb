@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useRef } from 'react';
+import { useSyncExternalStore, useEffect } from 'react';
 import { check, type Update } from '@tauri-apps/plugin-updater';
 import { relaunch } from '@tauri-apps/plugin-process';
 import { getVersion } from '@tauri-apps/api/app';
@@ -25,136 +25,256 @@ export interface DownloadProgress {
   percent: number;
 }
 
-export function useAppUpdater() {
-  const [status, setStatus] = useState<UpdaterStatus>('idle');
-  const [updateInfo, setUpdateInfo] = useState<UpdateInfo | null>(null);
-  const [progress, setProgress] = useState<DownloadProgress | null>(null);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  // Versão instalada (tauri.conf.json); "0.1.1" é só o fallback enquanto o
-  // Tauri não responde ou em dev no navegador.
-  const [currentVersion, setCurrentVersion] = useState('0.1.1');
-  const pendingUpdateRef = useRef<Update | null>(null);
-  const lastPercentRef = useRef(-1);
+interface UpdaterStore {
+  status: UpdaterStatus;
+  updateInfo: UpdateInfo | null;
+  progress: DownloadProgress | null;
+  errorMessage: string | null;
+  currentVersion: string;
+}
 
-  useEffect(() => {
-    getVersion()
-      .then(setCurrentVersion)
-      .catch((err) =>
-        console.warn('Não foi possível ler a versão do app:', err),
-      );
-  }, []);
+let store: UpdaterStore = {
+  status: 'idle',
+  updateInfo: null,
+  progress: null,
+  errorMessage: null,
+  currentVersion: '0.1.1',
+};
 
-  const checkForUpdates = useCallback(async (silent = false) => {
-    if (!silent) {
-      setStatus('checking');
-      setErrorMessage(null);
-    }
+let pendingUpdate: Update | null = null;
+const listeners = new Set<() => void>();
+
+function setStore(patch: Partial<UpdaterStore>) {
+  store = { ...store, ...patch };
+  listeners.forEach((listener) => listener());
+}
+
+function subscribe(listener: () => void) {
+  listeners.add(listener);
+  return () => {
+    listeners.delete(listener);
+  };
+}
+
+function getSnapshot(): UpdaterStore {
+  return store;
+}
+
+let versionLoading = false;
+let versionLoaded = false;
+
+export async function loadAppVersion(): Promise<string> {
+  if (versionLoaded) return store.currentVersion;
+  if (versionLoading) return store.currentVersion;
+
+  if (typeof window !== 'undefined' && '__TAURI_INTERNALS__' in window) {
+    versionLoading = true;
     try {
-      const update = await check();
-      if (update?.available) {
-        pendingUpdateRef.current = update;
-        setUpdateInfo({
+      const v = await getVersion();
+      versionLoaded = true;
+      setStore({ currentVersion: v });
+      return v;
+    } catch (err) {
+      console.warn('Não foi possível ler a versão do app:', err);
+    } finally {
+      versionLoading = false;
+    }
+  }
+  return store.currentVersion;
+}
+
+// Inicia leitura assíncrona da versão se ambiente Tauri detectado
+if (typeof window !== 'undefined' && '__TAURI_INTERNALS__' in window) {
+  void loadAppVersion();
+}
+
+/**
+ * Consulta se há atualizações disponíveis no GitHub Releases via Tauri plugin-updater.
+ * Se silent=true, executa em segundo plano sem alterar status de erro na interface.
+ */
+export async function checkForUpdates(silent = false): Promise<Update | null> {
+  if (typeof window === 'undefined' || !('__TAURI_INTERNALS__' in window)) {
+    return null;
+  }
+
+  // Não interrompe download em andamento ou app pronto para reiniciar
+  if (store.status === 'downloading' || store.status === 'ready-to-restart') {
+    return pendingUpdate;
+  }
+
+  if (!silent) {
+    setStore({ status: 'checking', errorMessage: null });
+  }
+
+  try {
+    const update = await check();
+    if (update?.available) {
+      pendingUpdate = update;
+      setStore({
+        status: 'available',
+        updateInfo: {
           version: update.version,
           currentVersion: update.currentVersion,
           date: update.date,
           body: update.body,
-        });
-        setStatus('available');
-        return update;
-      } else {
-        pendingUpdateRef.current = null;
-        setUpdateInfo(null);
-        if (!silent) {
-          setStatus('up-to-date');
-        }
-        return null;
-      }
-    } catch (err) {
-      console.error('Falha ao verificar atualizações:', err);
-      const msg = err instanceof Error ? err.message : String(err);
-      setErrorMessage(msg);
-      if (!silent) {
-        setStatus('error');
-      }
+        },
+        errorMessage: null,
+      });
+      return update;
+    } else {
+      pendingUpdate = null;
+      setStore({
+        status: silent
+          ? store.status === 'available'
+            ? 'idle'
+            : store.status
+          : 'up-to-date',
+        updateInfo: null,
+        errorMessage: null,
+      });
       return null;
     }
-  }, []);
-
-  const downloadAndInstall = useCallback(async () => {
-    const update = pendingUpdateRef.current;
-    if (!update) {
-      setErrorMessage('Nenhuma atualização pronta para download.');
-      setStatus('error');
-      return;
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    if (!silent) {
+      console.error('Falha ao verificar atualizações:', err);
+      setStore({ status: 'error', errorMessage: msg });
+    } else {
+      console.warn('[Updater] Verificação silenciosa em segundo plano falhou:', err);
     }
+    return null;
+  }
+}
 
-    try {
-      setStatus('downloading');
-      setErrorMessage(null);
-      setProgress({ downloaded: 0, total: 0, percent: 0 });
+/**
+ * Baixa e aplica a atualização encontrada.
+ */
+export async function downloadAndInstall(): Promise<void> {
+  const update = pendingUpdate;
+  if (!update) {
+    setStore({
+      status: 'error',
+      errorMessage: 'Nenhuma atualização pronta para download.',
+    });
+    return;
+  }
 
-      let downloadedBytes = 0;
-      let totalBytes = 0;
+  try {
+    setStore({
+      status: 'downloading',
+      errorMessage: null,
+      progress: { downloaded: 0, total: 0, percent: 0 },
+    });
 
-      await update.downloadAndInstall((event) => {
-        switch (event.event) {
-          case 'Started':
-            totalBytes = event.data.contentLength ?? 0;
-            lastPercentRef.current = -1;
-            setProgress({ downloaded: 0, total: totalBytes, percent: 0 });
-            break;
-          case 'Progress': {
-            downloadedBytes += event.data.chunkLength;
-            // A UI só lê o percentual inteiro: re-renderiza só quando ele muda,
-            // não a cada chunk baixado.
-            const pct =
-              totalBytes > 0
-                ? Math.min(100, Math.round((downloadedBytes / totalBytes) * 100))
-                : 0;
-            if (pct !== lastPercentRef.current) {
-              lastPercentRef.current = pct;
-              setProgress({
+    let downloadedBytes = 0;
+    let totalBytes = 0;
+    let lastPercent = -1;
+
+    await update.downloadAndInstall((event) => {
+      switch (event.event) {
+        case 'Started':
+          totalBytes = event.data.contentLength ?? 0;
+          lastPercent = -1;
+          setStore({
+            progress: { downloaded: 0, total: totalBytes, percent: 0 },
+          });
+          break;
+        case 'Progress': {
+          downloadedBytes += event.data.chunkLength;
+          const pct =
+            totalBytes > 0
+              ? Math.min(100, Math.round((downloadedBytes / totalBytes) * 100))
+              : 0;
+          if (pct !== lastPercent) {
+            lastPercent = pct;
+            setStore({
+              progress: {
                 downloaded: downloadedBytes,
                 total: totalBytes,
                 percent: pct,
-              });
-            }
-            break;
+              },
+            });
           }
-          case 'Finished':
-            setProgress({ downloaded: totalBytes, total: totalBytes, percent: 100 });
-            break;
+          break;
         }
-      });
+        case 'Finished':
+          setStore({
+            progress: { downloaded: totalBytes, total: totalBytes, percent: 100 },
+          });
+          break;
+      }
+    });
 
-      setStatus('ready-to-restart');
-    } catch (err) {
-      console.error('Falha no download da atualização:', err);
-      const msg = err instanceof Error ? err.message : String(err);
-      setErrorMessage(msg);
-      setStatus('error');
-    }
+    setStore({ status: 'ready-to-restart' });
+  } catch (err) {
+    console.error('Falha no download da atualização:', err);
+    const msg = err instanceof Error ? err.message : String(err);
+    setStore({ status: 'error', errorMessage: msg });
+  }
+}
+
+/**
+ * Reinicia o aplicativo para concluir a instalação da nova versão.
+ */
+export async function relaunchApp(): Promise<void> {
+  try {
+    await relaunch();
+  } catch (err) {
+    console.error('Falha ao reiniciar o aplicativo:', err);
+    const msg = err instanceof Error ? err.message : String(err);
+    setStore({ status: 'error', errorMessage: msg });
+  }
+}
+
+/**
+ * Hook reativo que retorna boolean indicando se há atualização pronta para o app.
+ * Só aciona re-render quando a disponibilidade de fato mudar (evita ticks de download).
+ */
+export function useUpdateAvailable(): boolean {
+  return useSyncExternalStore(
+    subscribe,
+    () =>
+      store.status === 'available' ||
+      store.status === 'downloading' ||
+      store.status === 'ready-to-restart' ||
+      Boolean(store.updateInfo),
+  );
+}
+
+/**
+ * Hook principal do atualizador do app com estado compartilhado entre os cards e a sidebar.
+ */
+export function useAppUpdater() {
+  const state = useSyncExternalStore(subscribe, getSnapshot);
+
+  useEffect(() => {
+    void loadAppVersion();
   }, []);
 
-  const relaunchApp = useCallback(async () => {
-    try {
-      await relaunch();
-    } catch (err) {
-      console.error('Falha ao reiniciar o aplicativo:', err);
-      const msg = err instanceof Error ? err.message : String(err);
-      setErrorMessage(msg);
-      setStatus('error');
-    }
-  }, []);
+  const hasUpdateAvailable =
+    state.status === 'available' ||
+    state.status === 'downloading' ||
+    state.status === 'ready-to-restart' ||
+    Boolean(state.updateInfo);
 
   return {
-    status,
-    currentVersion,
-    updateInfo,
-    progress,
-    errorMessage,
+    ...state,
+    hasUpdateAvailable,
     checkForUpdates,
     downloadAndInstall,
     relaunchApp,
   };
+}
+
+/**
+ * Utilitário interno para testes unitários resetarem ou injetarem estado do updater.
+ */
+export function __setUpdaterStoreForTesting(
+  patch: Partial<UpdaterStore>,
+  mockPendingUpdate?: Update | null,
+) {
+  if (mockPendingUpdate !== undefined) {
+    pendingUpdate = mockPendingUpdate;
+  }
+  setStore(patch);
 }

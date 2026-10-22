@@ -157,7 +157,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
           <div className="flex items-center justify-between gap-4 py-1">
             <div className="max-w-md">
               <span className="text-xs font-black text-black block">
-                Inicialização com o Sistema
+                Inicialização com o sistema operacional
               </span>
               <p className="text-[11px] font-semibold text-neutral-600 leading-tight mt-0.5">
                 Iniciar o Saruê UnB automaticamente em segundo plano ao ligar o

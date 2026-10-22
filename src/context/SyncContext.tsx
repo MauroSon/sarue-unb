@@ -12,6 +12,7 @@ import { notifyMyCourseListeners, resolveCourseIdForProfile } from "../hooks/use
 import { notifyFeedListeners } from "../hooks/useFeed";
 import { toast } from "@/components/ui";
 import type { CurriculumStructure } from "@/core";
+import { checkForUpdates } from "../hooks/useAppUpdater";
 
 export type SyncStepId = "sigaa" | "aprender3" | "teams" | "myCourse" | "ghPages";
 
@@ -145,6 +146,9 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({
     setIsSyncing(true);
 
     try {
+      // Dispara verificação silenciosa de atualizações do app em segundo plano
+      void checkForUpdates(true);
+
       // 1. Sincronização do Catálogo UnB (GitHub Pages / CDN).
       // Com SIGAA configurado, o passo espera o histórico (Meu Curso) criar o
       // perfil: é ele que diz qual curso baixar — sem isso a primeira

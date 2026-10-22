@@ -8,6 +8,7 @@ import { SettingsScreen } from './screens/SettingsScreen';
 import { Sidebar, type NavTab } from './components/Sidebar';
 import { TooltipProvider, Toaster } from '@/components/ui';
 import { useCredentials } from './hooks/useCredentials';
+import { useUpdateAvailable } from './hooks/useAppUpdater';
 import { SyncProvider, useSync } from './context/SyncContext';
 import { DeadlineProvider } from './context/DeadlineContext';
 import { WelcomeSyncDialog } from './components/onboarding/WelcomeSyncDialog';
@@ -23,6 +24,7 @@ const AppShell: React.FC = () => {
   const { repos, useCases } = useContainer();
   const { hasCredentials, isLoading: isCheckingAuth, allCredentials } = useCredentials();
   const { syncAll, isSyncing, lastSyncedAt, steps: syncSteps } = useSync();
+  const hasUpdateAvailable = useUpdateAvailable();
 
   // Plataformas de fato conectadas (ordem do cofre), para o dialog de boas-vindas
   const connectedPlatforms = [
@@ -157,6 +159,7 @@ const AppShell: React.FC = () => {
         onSync={syncAll}
         lastSyncedAt={lastSyncedAt}
         hasConnectedAccounts={Boolean(hasCredentials)}
+        hasUpdateAvailable={hasUpdateAvailable}
         syncSteps={syncSteps}
         syncPopoverOpen={syncPopoverOpen}
         onSyncPopoverOpenChange={setSyncPopoverOpen}

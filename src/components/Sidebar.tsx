@@ -12,6 +12,7 @@ import {
 import { Popover as PopoverPrimitive } from "@base-ui/react/popover";
 import { SyncStatusTooltip } from "./SyncStatusTooltip";
 import { DeadlineBell } from "./notifications/DeadlineBell";
+import { useUpdateAvailable } from "../hooks/useAppUpdater";
 import type { SyncStepInfo } from "../context/SyncContext";
 
 export type NavTab = "home" | "courses" | "grade" | "my-course" | "settings";
@@ -25,6 +26,7 @@ export interface SidebarProps {
   onSync?: () => void;
   lastSyncedAt?: string | null;
   hasConnectedAccounts?: boolean;
+  hasUpdateAvailable?: boolean;
   syncSteps?: Record<
     "sigaa" | "aprender3" | "teams" | "myCourse" | "ghPages",
     SyncStepInfo
@@ -43,10 +45,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onSync,
   lastSyncedAt,
   hasConnectedAccounts = false,
+  hasUpdateAvailable: propHasUpdateAvailable,
   syncSteps,
   syncPopoverOpen,
   onSyncPopoverOpenChange,
 }) => {
+  const hookHasUpdateAvailable = useUpdateAvailable();
+  const hasUpdate = propHasUpdateAvailable ?? hookHasUpdateAvailable;
+
   // Popover de status: controlado pelo AppShell (ritual pós-cadastro), com fallback interno
   const [internalSyncPopoverOpen, setInternalSyncPopoverOpen] =
     React.useState(false);
@@ -249,6 +255,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             {navItems.map((item) => {
               const Icon = item.icon;
               const isActive = currentTab === item.id;
+              const isSettingsWithUpdate = item.id === "settings" && hasUpdate;
 
               return (
                 <li
@@ -266,18 +273,38 @@ export const Sidebar: React.FC<SidebarProps> = ({
                         : "bg-white text-neutral-800 hover:bg-neutral-100 font-bold"
                     }`}
                   >
-                    <div className="w-[42px] h-6 shrink-0 flex items-center justify-center">
+                    <div className="w-[42px] h-6 shrink-0 flex items-center justify-center relative">
                       <Icon className="w-5 h-5 stroke-[2.5]" />
+                      {isSettingsWithUpdate && isCollapsed && (
+                        <span
+                          aria-hidden="true"
+                          className={`absolute top-0.5 right-2 w-2 h-2 rounded-full ${
+                            isActive ? "bg-white" : "bg-neo-blue"
+                          }`}
+                        />
+                      )}
                     </div>
-                    <span
-                      className={`text-sm font-extrabold tracking-tight whitespace-nowrap overflow-hidden transition-[max-width,opacity,margin] duration-300 ease-[cubic-bezier(0.2,0,0,1)] ${
+                    <div
+                      className={`flex items-center min-w-0 transition-[max-width,opacity,margin] duration-300 ease-[cubic-bezier(0.2,0,0,1)] ${
                         isCollapsed
                           ? "max-w-0 opacity-0 ml-0 pointer-events-none"
                           : "max-w-44 opacity-100 ml-3"
                       }`}
                     >
-                      {item.label}
-                    </span>
+                      <span className="text-sm font-extrabold tracking-tight whitespace-nowrap truncate">
+                        {item.label}
+                      </span>
+                      {isSettingsWithUpdate && (
+                        <span
+                          data-testid="sidebar-update-dot"
+                          aria-label="Atualização disponível"
+                          title="Atualização disponível"
+                          className={`w-2 h-2 rounded-full shrink-0 ml-2 ${
+                            isActive ? "bg-white" : "bg-neo-blue"
+                          }`}
+                        />
+                      )}
+                    </div>
                   </button>
                 </li>
               );

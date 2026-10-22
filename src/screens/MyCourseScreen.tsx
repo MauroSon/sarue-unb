@@ -268,21 +268,30 @@ export const MyCourseScreen: React.FC = () => {
                     />
                   </div>
 
-                  {/* Alternador Lista | Mapa */}
+                  {/* Alternador Lista | Mapa — o adesivo de ação desliza para a cavidade do segmento ativo */}
                   <div
                     role="group"
                     aria-label="Modo de visualização do fluxograma"
-                    className="flex items-center gap-0.5 p-0.5 bg-white border-2 border-black rounded-xl shrink-0 self-end sm:self-auto"
+                    className="relative grid grid-cols-2 gap-0.5 p-0.5 bg-white border-2 border-black rounded-xl shrink-0 self-end sm:self-auto"
                   >
+                    {/* Thumb-adesivo: pill Azul Caneta que desliza entre as cavidades (transform, 150ms) */}
+                    <span
+                      aria-hidden="true"
+                      className={`pointer-events-none absolute top-0.5 bottom-0.5 left-0.5 w-[calc(50%-3px)] rounded-lg bg-neo-blue transition-transform duration-150 ease-out ${
+                        viewMode === "map"
+                          ? "translate-x-[calc(100%+2px)]"
+                          : "translate-x-0"
+                      }`}
+                    />
                     <button
                       type="button"
                       onClick={() => switchViewMode("list")}
                       aria-pressed={viewMode === "list"}
                       title="Visualização em lista por semestre"
-                      className={`cursor-pointer flex items-center gap-1.5 h-8 px-3 rounded-lg text-xs font-black transition-colors duration-150 active:translate-y-px ${
+                      className={`relative cursor-pointer flex items-center justify-center gap-1.5 h-8 px-3 rounded-lg text-xs font-black transition-colors duration-150 active:translate-y-px focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-neo-blue focus-visible:ring-offset-2 ${
                         viewMode === "list"
-                          ? "bg-neo-blue text-white"
-                          : "bg-white text-black hover:bg-neutral-100"
+                          ? "text-white"
+                          : "text-black hover:bg-neutral-100"
                       }`}
                     >
                       <List className="w-3.5 h-3.5 stroke-[2.5]" />
@@ -293,10 +302,10 @@ export const MyCourseScreen: React.FC = () => {
                       onClick={() => switchViewMode("map")}
                       aria-pressed={viewMode === "map"}
                       title="Visualização em mapa de cadeias de pré-requisitos"
-                      className={`cursor-pointer flex items-center gap-1.5 h-8 px-3 rounded-lg text-xs font-black transition-colors duration-150 active:translate-y-px ${
+                      className={`relative cursor-pointer flex items-center justify-center gap-1.5 h-8 px-3 rounded-lg text-xs font-black transition-colors duration-150 active:translate-y-px focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-neo-blue focus-visible:ring-offset-2 ${
                         viewMode === "map"
-                          ? "bg-neo-blue text-white"
-                          : "bg-white text-black hover:bg-neutral-100"
+                          ? "text-white"
+                          : "text-black hover:bg-neutral-100"
                       }`}
                     >
                       <Network className="w-3.5 h-3.5 stroke-[2.5]" />

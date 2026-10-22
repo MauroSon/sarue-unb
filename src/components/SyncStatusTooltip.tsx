@@ -14,7 +14,10 @@ import {
 import type { SyncStepInfo, SyncStepStatus } from "../context/SyncContext";
 
 interface SyncStatusTooltipProps {
-  steps: Record<"sigaa" | "aprender3" | "teams" | "myCourse" | "ghPages", SyncStepInfo>;
+  steps: Record<
+    "sigaa" | "aprender3" | "teams" | "myCourse" | "ghPages",
+    SyncStepInfo
+  >;
   isSyncing: boolean;
   lastSyncedAt: string | null;
 }
@@ -83,15 +86,6 @@ export const SyncStatusTooltip: React.FC<SyncStatusTooltipProps> = ({
         <div className="flex items-center gap-1.5 font-black text-xs uppercase tracking-wider">
           <span>Status da Sincronização</span>
         </div>
-        <span
-          className={`text-[11px] font-bold px-2 py-0.5 rounded-full border border-black ${
-            isSyncing
-              ? "bg-amber-300 text-black"
-              : "bg-emerald-200 text-emerald-950"
-          }`}
-        >
-          {isSyncing ? "Sincronizando..." : "Concluído"}
-        </span>
       </div>
 
       {/* Lista das 4 sincronizações */}

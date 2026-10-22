@@ -306,8 +306,9 @@ A distinção se lê de longe: o que tem sombra 2px e raio 16px afunda quando cl
 - **Filtros de estado (Disciplinas):** Buttons outline `sm` tintados com o pastel da própria família em repouso (Cursando **Azul Pastel**, Disponíveis **Amarelo Pastel**, hover lavado a 40%) e cor cheia da família quando ativos (primary, accent, yellow); rótulo carrega o contador entre parênteses e `title` explica o filtro. Marcador de obrigatória nas listas: asterisco font-black **Vermelho Correção Forte** ao lado do nome.
 
 ### Segmented Control (Lista | Mapa)
-- **Container:** cavidade do fichário — branco, borda preta 2px, raio 12px, **sem sombra**; padding interno 2px.
-- **Segmento:** botão interno raio 8px, altura 32px, font-black com ícone Lucide 14px; ativo **Azul Caneta Ação** com texto branco, inativo branco com hover Cinza Papel; micro-afundar de 1px no active; `aria-pressed` marca o estado.
+- **Container:** cavidade do fichário — branco, borda preta 2px, raio 12px, **sem sombra**; padding interno 2px, duas colunas iguais.
+- **Thumb-adesivo:** o segmento ativo é o adesivo de ação — pill **Azul Caneta Ação** (raio 8px) que desliza de cavidade em cavidade em 150ms ease-out, sempre via `transform` (nunca `left`/`top`); reduced-motion já pula direto pelas transições globais de 1ms. O adesivo é `aria-hidden` e `pointer-events-none` — quem carrega o estado é o botão.
+- **Segmento:** botão interno raio 8px, altura 32px, font-black com ícone Lucide 14px, transparente sobre a cavidade (inativo ganha Cinza Papel no hover, texto vira branco sobre o thumb); micro-afundar de 1px no active; `aria-pressed` marca o estado; ring de foco padrão via teclado.
 
 ### Switch
 - **Style:** pill 44×24px, borda preta 2px; trilho Cinza (neutral-200) desligado, **Azul Caneta Ação** ligado; thumb branco 18px com borda preta 2px, deslizando em 150ms ease-out.
