@@ -22,6 +22,18 @@ export interface PatchNotesEntry {
 
 export const PATCH_NOTES: PatchNotesEntry[] = [
   {
+    version: "0.2.1",
+    date: "22/10/2026",
+    title: "Segurança do Cofre, Correções no IRA e Atualizador Integrado",
+    items: [
+      "Atualizações automáticas: verificação em segundo plano ao sincronizar com indicador visual na barra lateral.",
+      "Cofre seguro resiliente: migração protegida com backup atômico e prevenção de perda de dados.",
+      "Calculadora de IRA corrigida: separação precisa de créditos reais e cálculo ponderado oficial (CEG 0001/2020).",
+      "Projeções futuras: indexação progressiva de semestres simulados para estimativas confiáveis.",
+      "Efeitos sonoros de clique opcional",
+    ],
+  },
+  {
     version: "0.2.0",
     date: "21/10/2026",
     title: "Gerenciamento de Currículo e Grades por Semestre",
