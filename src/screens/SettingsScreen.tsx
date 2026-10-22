@@ -33,6 +33,11 @@ import { useAutostart } from "../hooks/useAutostart";
 import { openExternalUrl } from "@/lib/utils";
 import { AppUpdaterCard } from "@/components/settings/AppUpdaterCard";
 import { PatchNotesView } from "@/components/settings/PatchNotesView";
+import {
+  isSoundEffectsEnabled,
+  setSoundEffectsEnabled,
+  playButtonClickSound,
+} from "@/lib/sound-effects";
 
 export interface SettingsScreenProps {
   onResetCredentials: () => void;
@@ -48,7 +53,11 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
   // Instância "ociosa" do updater: serve só para ler a versão instalada.
   // O estado quente de download/check vive dentro de AppUpdaterCard.
   const { currentVersion: appVersion } = useAppUpdater();
-  const { isEnabled: isAutostartEnabled, toggle: toggleAutostart, isLoading: isAutostartLoading } = useAutostart();
+  const {
+    isEnabled: isAutostartEnabled,
+    toggle: toggleAutostart,
+    isLoading: isAutostartLoading,
+  } = useAutostart();
 
   // Modo explorar: nenhuma conta conectada — o botão da zona de perigo vira
   // "Voltar para o Onboarding", mas a ação continua apagando tudo (grades,
@@ -62,6 +71,17 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
   const [isWiping, setIsWiping] = useState(false);
   const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
   const [isViewingPatchNotes, setIsViewingPatchNotes] = useState(false);
+  const [isSoundActive, setIsSoundActive] = useState(() =>
+    isSoundEffectsEnabled(),
+  );
+
+  const handleToggleSound = (checked: boolean) => {
+    setIsSoundActive(checked);
+    setSoundEffectsEnabled(checked);
+    if (checked) {
+      void playButtonClickSound();
+    }
+  };
 
   const handleConfirmWipe = async () => {
     setIsWiping(true);
@@ -132,15 +152,16 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
           </h4>
         </div>
 
-        <div className="divide-y-2 divide-neutral-100">
+        <div className="space-y-4">
           {/* Inicialização com o Sistema */}
-          <div className="flex items-center justify-between gap-4 py-2.5 first:pt-1 last:pb-1">
+          <div className="flex items-center justify-between gap-4 py-1">
             <div className="max-w-md">
               <span className="text-xs font-black text-black block">
                 Inicialização com o Sistema
               </span>
               <p className="text-[11px] font-semibold text-neutral-600 leading-tight mt-0.5">
-                Iniciar o Saruê UnB automaticamente em segundo plano ao ligar o computador para acompanhar prazos e avisos.
+                Iniciar o Saruê UnB automaticamente em segundo plano ao ligar o
+                computador para acompanhar prazos e avisos.
               </p>
             </div>
 
@@ -156,7 +177,29 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
               />
             </div>
           </div>
-          {/* Futuras preferências com switch serão adicionadas aqui */}
+
+          {/* Feedback Sonoro / Switch Mecânico */}
+          <div className="flex items-center justify-between gap-4 py-1">
+            <div className="max-w-md">
+              <span className="text-xs font-black text-black block">
+                Efeito sonoro de botão
+              </span>
+              <p className="text-[11px] font-semibold text-neutral-600 leading-tight mt-0.5">
+                Som suave de clique macio tátil ao clicar em botões.
+              </p>
+            </div>
+
+            <div className="flex items-center gap-2.5 shrink-0">
+              <span className="text-xs font-bold text-neutral-700">
+                {isSoundActive ? "Ativado" : "Desativado"}
+              </span>
+              <Switch
+                checked={isSoundActive}
+                onCheckedChange={handleToggleSound}
+                aria-label="Ativar efeito sonoro de botão"
+              />
+            </div>
+          </div>
         </div>
       </Card>
 

@@ -15,6 +15,7 @@ import { WithdrawalDeadlineDialog } from './components/notifications/WithdrawalD
 import { useContainer } from './context/ContainerContext';
 import type { AcademicCalendar } from './core';
 import { NAVIGATE_EVENT } from './lib/utils';
+import { initSoundEffectsListener } from './lib/sound-effects';
 
 type AppStep = 'onboarding' | 'main';
 
@@ -42,6 +43,11 @@ const AppShell: React.FC = () => {
   // o popover de andamento abre ancorado no botão de Sincronização da Sidebar.
   const [welcomeOpen, setWelcomeOpen] = useState(false);
   const [syncPopoverOpen, setSyncPopoverOpen] = useState(false);
+
+  // Inicializa o feedback sonoro de cliques mecânicos
+  React.useEffect(() => {
+    return initSoundEffectsListener();
+  }, []);
 
   React.useEffect(() => {
     let cancelled = false;
