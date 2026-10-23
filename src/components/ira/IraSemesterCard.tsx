@@ -53,7 +53,7 @@ export const IraSemesterCard: React.FC<IraSemesterCardProps> = ({
           <h3 className="text-xs font-black text-black tracking-tight truncate" title={semester.label}>
             {semester.label}
           </h3>
-          {semesterIra != null && (
+          {semesterIra != null && Number.isFinite(semesterIra) && (
             <span className="text-[11px] font-black text-black tabular-nums shrink-0" title="IRA deste semestre (sem penalidade de trancamento)">
               {semesterIra.toFixed(2)}
             </span>

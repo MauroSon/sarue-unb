@@ -22,6 +22,15 @@ export interface PatchNotesEntry {
 
 export const PATCH_NOTES: PatchNotesEntry[] = [
   {
+    version: "0.2.2",
+    date: "22/10/2026",
+    title: "Hotfix: Estabilidade Gerais",
+    items: [
+      "Calculadora de IRA: correção de travamento ao exibir cenários simulados na plataforma Windows.",
+      "Adição de nova tela de error.",
+    ],
+  },
+  {
     version: "0.2.1",
     date: "22/10/2026",
     title: "Segurança do Cofre, Correções no IRA e Atualizador Integrado",

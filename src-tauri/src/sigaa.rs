@@ -234,15 +234,21 @@ impl SigaaClient {
             .captures(&clean_html)
             .map(|c| c.get(1).unwrap().as_str().trim().to_string());
 
-        let ira_re = Regex::new(r#"IRA:\s*</acronym></td>\s*<td[^>]*><div[^>]*>([\d.]+)"#).unwrap();
+        let ira_re = Regex::new(r#"IRA:\s*</acronym></td>\s*<td[^>]*><div[^>]*>([\d.,]+)"#).unwrap();
         let ira = ira_re
             .captures(&clean_html)
-            .and_then(|c| c.get(1).unwrap().as_str().parse::<f64>().ok());
+            .and_then(|c| {
+                let s = c.get(1).unwrap().as_str().replace(',', ".");
+                s.parse::<f64>().ok()
+            });
 
-        let mp_re = Regex::new(r#"MP:\s*</acronym></td>\s*<td[^>]*><div[^>]*>([\d.]+)"#).unwrap();
+        let mp_re = Regex::new(r#"MP:\s*</acronym></td>\s*<td[^>]*><div[^>]*>([\d.,]+)"#).unwrap();
         let mp = mp_re
             .captures(&clean_html)
-            .and_then(|c| c.get(1).unwrap().as_str().parse::<f64>().ok());
+            .and_then(|c| {
+                let s = c.get(1).unwrap().as_str().replace(',', ".");
+                s.parse::<f64>().ok()
+            });
 
         let ch_obrig_re = Regex::new(r#"CH\.\s*Obrigat[óo]ria\s*Pendente\s*</td>\s*<td[^>]*>\s*(\d+)"#).unwrap();
         let ch_obrigatoria_pendente = ch_obrig_re
@@ -948,6 +954,12 @@ mod tests {
         assert_eq!(profile.mp, Some(3.5493));
         assert_eq!(profile.ch_obrigatoria_pendente, Some(990));
         assert_eq!(profile.ch_optativa_pendente, Some(240));
+
+        // Suporta vírgula decimal pt-BR (ex: "3,6238")
+        let html_comma = html.replace("3.6238", "3,6238").replace("3.5493", "3,5493");
+        let profile_comma = SigaaClient::parse_discente_profile(&html_comma, "202000000");
+        assert_eq!(profile_comma.ira, Some(3.6238));
+        assert_eq!(profile_comma.mp, Some(3.5493));
         assert_eq!(profile.ch_total_curriculo, Some(3480));
         assert_eq!(profile.ch_complementar_pendente, Some(0));
         assert_eq!(profile.percentual_integralizado, Some(65.0));

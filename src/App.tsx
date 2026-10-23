@@ -6,7 +6,7 @@ import { GradeBuilderScreen } from './screens/GradeBuilderScreen';
 import { MyCourseScreen } from './screens/MyCourseScreen';
 import { SettingsScreen } from './screens/SettingsScreen';
 import { Sidebar, type NavTab } from './components/Sidebar';
-import { TooltipProvider, Toaster } from '@/components/ui';
+import { TooltipProvider, Toaster, ErrorBoundary } from '@/components/ui';
 import { useCredentials } from './hooks/useCredentials';
 import { useUpdateAvailable } from './hooks/useAppUpdater';
 import { SyncProvider, useSync } from './context/SyncContext';
@@ -168,18 +168,20 @@ const AppShell: React.FC = () => {
       {/* Área Central de Conteúdo (Sem Header global, títulos direto no corpo) */}
       <div className="flex-1 flex flex-col h-screen overflow-hidden">
         <main className="flex-1 overflow-y-auto px-4 py-6 md:px-8 md:py-8">
-          {currentTab === 'home' && <DashboardScreen />}
-          {currentTab === 'courses' && <CoursesScreen />}
-          {currentTab === 'grade' && <GradeBuilderScreen />}
-          {currentTab === 'my-course' && <MyCourseScreen />}
-          {currentTab === 'settings' && (
-            <SettingsScreen
-              onResetCredentials={() => {
-                setStep('onboarding');
-                setCurrentTab('home');
-              }}
-            />
-          )}
+          <ErrorBoundary key={currentTab} onReset={() => setCurrentTab('home')}>
+            {currentTab === 'home' && <DashboardScreen />}
+            {currentTab === 'courses' && <CoursesScreen />}
+            {currentTab === 'grade' && <GradeBuilderScreen />}
+            {currentTab === 'my-course' && <MyCourseScreen />}
+            {currentTab === 'settings' && (
+              <SettingsScreen
+                onResetCredentials={() => {
+                  setStep('onboarding');
+                  setCurrentTab('home');
+                }}
+              />
+            )}
+          </ErrorBoundary>
         </main>
       </div>
       <WelcomeSyncDialog

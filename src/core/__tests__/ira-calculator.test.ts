@@ -619,4 +619,35 @@ describe('ajuste de trancamentos', () => {
     expect(calc.execute(scenario, 2.0).ira).toBe(5.0);
     expect(calc.execute(scenario, -4.0).ira).toBe(0.0);
   });
+
+  it('é resiliente a semestres com label corrompido, disciplines nulo ou offset NaN', () => {
+    const calc = new CalculateIraUseCase();
+    const scenario: IraScenario = {
+      semesters: [
+        {
+          id: 's_corrupted',
+          label: 'Semestre Especial de Verão',
+          kind: 'history',
+          // @ts-expect-error teste com disciplinas malformadas
+          disciplines: [null, undefined, { id: 'd1', credits: NaN, mention: 'SS' }],
+        },
+        {
+          id: 's_empty',
+          label: '',
+          kind: 'history',
+          disciplines: [],
+        },
+      ],
+      baseTrancadasObrigatorias: 0,
+      baseTrancadasOptativas: 0,
+      extraTrancadasObrigatorias: 0,
+      extraTrancadasOptativas: 0,
+      updatedAt: '2026-01-01',
+    };
+
+    expect(() => calc.execute(scenario, NaN)).not.toThrow();
+    const result = calc.execute(scenario, NaN);
+    expect(result.ira).toBeNull();
+    expect(result.correctionOffset).toBe(0);
+  });
 });

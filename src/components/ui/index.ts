@@ -16,3 +16,4 @@ export * from './toast';
 export * from './tooltip';
 export * from './accordion';
 export * from './switch';
+export * from './error-boundary';

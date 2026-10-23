@@ -25,13 +25,14 @@ import {
 
 const IRA_CALCULATOR_INSTANCE = new CalculateIraUseCase();
 
-function stripScenario(s: IraScenario) {
+function stripScenario(s: IraScenario | null | undefined): string {
+  if (!s) return "";
   return JSON.stringify({
-    semesters: s.semesters,
-    baseTrancadasObrigatorias: s.baseTrancadasObrigatorias,
-    baseTrancadasOptativas: s.baseTrancadasOptativas,
-    extraTrancadasObrigatorias: s.extraTrancadasObrigatorias,
-    extraTrancadasOptativas: s.extraTrancadasOptativas,
+    semesters: s.semesters || [],
+    baseTrancadasObrigatorias: s.baseTrancadasObrigatorias || 0,
+    baseTrancadasOptativas: s.baseTrancadasOptativas || 0,
+    extraTrancadasObrigatorias: s.extraTrancadasObrigatorias || 0,
+    extraTrancadasOptativas: s.extraTrancadasOptativas || 0,
   });
 }
 
@@ -55,18 +56,33 @@ export const IraCalculatorScreen: React.FC<IraCalculatorScreenProps> = ({ onBack
     if (bootstrapped || isLoading) return;
     let cancelled = false;
     (async () => {
-      const saved = await useCases.manageIraScenario.get();
-      if (cancelled) return;
-      // Cenário salvo só vale se veio do mesmo conteúdo de histórico; perfil
-      // novo (menções, trancadas, períodos) reconstrói o cenário real.
-      if (saved && profile && saved.profileSignature === scenarioProfileSignature(profile)) {
-        setScenario(saved);
-        setHasSavedScenario(true);
-      } else if (profile) {
-        setScenario(useCases.buildIraScenario.execute(profile, curriculum));
+      try {
+        const saved = await useCases.manageIraScenario.get();
+        if (cancelled) return;
+        // Cenário salvo só vale se veio do mesmo conteúdo de histórico; perfil
+        // novo (menções, trancadas, períodos) reconstrói o cenário real.
+        if (
+          saved &&
+          Array.isArray(saved.semesters) &&
+          profile &&
+          saved.profileSignature === scenarioProfileSignature(profile)
+        ) {
+          setScenario(saved);
+          setHasSavedScenario(true);
+        } else if (profile) {
+          setScenario(useCases.buildIraScenario.execute(profile, curriculum));
+        }
+      } catch (err) {
+        console.warn('[IraCalculatorScreen] Erro ao carregar cenário:', err);
+        if (profile) {
+          setScenario(useCases.buildIraScenario.execute(profile, curriculum));
+        }
+      } finally {
+        if (!cancelled) {
+          setHydrated(true);
+          setBootstrapped(true);
+        }
       }
-      setHydrated(true);
-      setBootstrapped(true);
     })();
     return () => {
       cancelled = true;
@@ -97,9 +113,9 @@ export const IraCalculatorScreen: React.FC<IraCalculatorScreenProps> = ({ onBack
 
   // Fator de correção baseado no IRA oficial do discente que veio do histórico do SIGAA
   const correctionOffset = React.useMemo(() => {
-    if (profile?.ira == null || !realScenario) return 0;
+    if (profile?.ira == null || !Number.isFinite(profile.ira) || !realScenario) return 0;
     const baseCalc = IRA_CALCULATOR_INSTANCE.execute(realScenario, 0);
-    if (baseCalc.rawIra == null) return 0;
+    if (baseCalc.rawIra == null || !Number.isFinite(baseCalc.rawIra)) return 0;
     return profile.ira - baseCalc.rawIra;
   }, [profile?.ira, realScenario]);
 
