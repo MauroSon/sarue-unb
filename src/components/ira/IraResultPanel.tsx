@@ -14,7 +14,8 @@ export interface IraResultPanelProps {
   onRestore: () => void;
 }
 
-function formatIra(value: number): string {
+function formatIra(value: number | null | undefined): string {
+  if (value == null || !Number.isFinite(value)) return "—";
   return value.toFixed(2);
 }
 
@@ -37,13 +38,15 @@ export const IraResultPanel: React.FC<IraResultPanelProps> = ({
     return () => clearTimeout(t);
   }, [confirmingRestore]);
 
-  const hasResult = calculation.ira != null;
+  const hasResult = calculation?.ira != null && Number.isFinite(calculation.ira);
+  const hasOfficialIra = sigaaIra != null && Number.isFinite(sigaaIra);
+
   const delta =
-    !isSimulation && sigaaIra != null && calculation.ira != null
-      ? calculation.ira - sigaaIra
+    !isSimulation && hasOfficialIra && hasResult
+      ? calculation.ira! - sigaaIra!
       : null;
-  const deltaAbs = delta != null ? Math.abs(delta) : null;
-  const matchesSigaa = deltaAbs != null && deltaAbs < 0.05;
+  const deltaAbs = delta != null && Number.isFinite(delta) ? Math.abs(delta) : null;
+  const hasDiscrepancy = deltaAbs != null && deltaAbs >= 0.05;
 
   return (
     <div>
@@ -56,7 +59,7 @@ export const IraResultPanel: React.FC<IraResultPanelProps> = ({
             </p>
             <div className="flex items-baseline gap-2">
               <span className="text-5xl font-black text-black tracking-tight">
-                {hasResult ? formatIra(calculation.ira as number) : "—"}
+                {hasResult ? formatIra(calculation.ira) : "—"}
               </span>
               <span className="text-xs font-bold text-neutral-600">
                 escala 0–5
@@ -71,14 +74,14 @@ export const IraResultPanel: React.FC<IraResultPanelProps> = ({
             </p>
             <div className="flex items-baseline gap-2 flex-wrap">
               <span className="text-2xl font-black text-neutral-600">
-                {sigaaIra != null ? formatIra(sigaaIra) : "—"}
+                {hasOfficialIra ? formatIra(sigaaIra) : "—"}
               </span>
-              {!matchesSigaa && (
+              {hasDiscrepancy && deltaAbs != null && (
                 <span
                   className="inline-flex items-center rounded-full border-2 border-black px-2 py-0.5 text-[11px] font-black shadow-neo-xs bg-pastel-yellow text-black"
                   title="Diferença entre o cálculo e o IRA oficial do SIGAA"
                 >
-                  {`diferença de ${formatIra(deltaAbs as number)}`}
+                  {`diferença de ${formatIra(deltaAbs)}`}
                 </span>
               )}
             </div>
@@ -88,14 +91,14 @@ export const IraResultPanel: React.FC<IraResultPanelProps> = ({
           <div className="lg:ml-auto text-xs font-bold text-neutral-600 space-y-0.5">
             <p>
               <span className="text-black font-extrabold">
-                {calculation.mentionCount}
+                {calculation?.mentionCount ?? 0}
               </span>{" "}
               disciplina
-              {calculation.mentionCount === 1 ? "" : "s"} com menção
+              {calculation?.mentionCount === 1 ? "" : "s"} com menção
             </p>
             <p>
               <span className="text-black font-extrabold">
-                {formatCredits(calculation.creditsSum)}
+                {formatCredits(calculation?.creditsSum ?? 0)}
               </span>{" "}
               créditos somados
             </p>
@@ -136,7 +139,7 @@ export const IraResultPanel: React.FC<IraResultPanelProps> = ({
                 oficial.
               </p>
             </div>
-          ) : (
+          ) : hasDiscrepancy ? (
             <div className="flex items-start gap-2.5 bg-pastel-yellow border-2 border-black rounded-lg px-3 py-2">
               <Info className="w-4 h-4 stroke-[2.5] shrink-0 mt-0.5" />
               <p className="text-xs font-semibold text-black">
@@ -145,7 +148,7 @@ export const IraResultPanel: React.FC<IraResultPanelProps> = ({
                 erro esperada quando você prever semestres futuros.
               </p>
             </div>
-          )}
+          ) : null}
         </div>
       </div>
     </div>

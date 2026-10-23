@@ -16,6 +16,7 @@ import {
   Button,
   Input,
   EmptyState,
+  ErrorBoundary,
 } from "@/components/ui";
 import {
   GraduationCap,
@@ -135,7 +136,16 @@ export const MyCourseScreen: React.FC = () => {
   }, [allCurricula, profile?.courseName]);
 
   if (view === "ira-calculator") {
-    return <IraCalculatorScreen onBack={() => setView("overview")} />;
+    return (
+      <ErrorBoundary
+        key="ira-calculator"
+        fallbackTitle="Não foi possível abrir a Calculadora de IRA"
+        fallbackDescription="Ocorreu um erro inesperado ao carregar o cenário. Seus dados estão preservados."
+        onReset={() => setView("overview")}
+      >
+        <IraCalculatorScreen onBack={() => setView("overview")} />
+      </ErrorBoundary>
+    );
   }
 
   if (view === "curriculum-editor") {

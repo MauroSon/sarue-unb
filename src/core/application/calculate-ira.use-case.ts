@@ -45,16 +45,18 @@ export class CalculateIraUseCase {
     const semesterIras: Record<string, number | null> = {};
 
     // Identifica semestres de histórico, atual e futuros para indexação progressiva contínua
-    const historySemesters = scenario.semesters.filter((s) => s.kind === 'history');
-    const hasCurrent = scenario.semesters.some((s) => s.kind === 'current');
-    const futureSemesters = scenario.semesters.filter((s) => s.kind === 'future');
+    const semestersList = scenario?.semesters || [];
+    const historySemesters = semestersList.filter((s) => s.kind === 'history');
+    const hasCurrent = semestersList.some((s) => s.kind === 'current');
+    const futureSemesters = semestersList.filter((s) => s.kind === 'future');
 
-    scenario.semesters.forEach((semester, sIdx) => {
+    semestersList.forEach((semester, sIdx) => {
       let semesterIndex = 1;
 
       if (semester.kind === 'history') {
         const match = semester.label?.match(/^(\d+)º/);
-        semesterIndex = match ? parseInt(match[1], 10) : sIdx + 1;
+        const parsed = match ? parseInt(match[1], 10) : NaN;
+        semesterIndex = Number.isFinite(parsed) && parsed > 0 ? parsed : sIdx + 1;
       } else if (semester.kind === 'current') {
         semesterIndex = Math.max(1, historySemesters.length + 1);
       } else if (semester.kind === 'future') {
@@ -69,8 +71,9 @@ export class CalculateIraUseCase {
       let semWeighted = 0;
       let semCredits = 0;
 
-      for (const d of semester.disciplines) {
-        if (d.mention != null && d.credits >= 0) {
+      const disciplinesList = semester.disciplines || [];
+      for (const d of disciplinesList) {
+        if (d && d.mention != null && typeof d.credits === 'number' && d.credits >= 0 && Number.isFinite(d.credits)) {
           const mentionVal = IRA_MENTION_VALUES[d.mention as keyof typeof IRA_MENTION_VALUES] ?? 0;
           weightedSum += mentionVal * d.credits * semesterWeight;
           weightedCreditsSum += d.credits * semesterWeight;
@@ -83,34 +86,40 @@ export class CalculateIraUseCase {
       }
 
       semesterIras[semester.id] =
-        semester.disciplines.length > 0 && semCredits > 0 ? semWeighted / semCredits : null;
+        disciplinesList.length > 0 && semCredits > 0 && Number.isFinite(semWeighted / semCredits)
+          ? semWeighted / semCredits
+          : null;
     });
 
     // Contadores de trancamento mantidos apenas para visualização e dados informativos;
     // pela Resolução CEPE nº 093/2018, o trancamento não aplica mais penalidade ao IRA.
     const trancadasObrigatorias = Math.max(
       0,
-      scenario.baseTrancadasObrigatorias + scenario.extraTrancadasObrigatorias,
+      (scenario?.baseTrancadasObrigatorias || 0) + (scenario?.extraTrancadasObrigatorias || 0),
     );
     const trancadasOptativas = Math.max(
       0,
-      scenario.baseTrancadasOptativas + scenario.extraTrancadasOptativas,
+      (scenario?.baseTrancadasOptativas || 0) + (scenario?.extraTrancadasOptativas || 0),
     );
 
     const rawIra =
-      mentionCount > 0 && weightedCreditsSum > 0
+      mentionCount > 0 && weightedCreditsSum > 0 && Number.isFinite(weightedSum / weightedCreditsSum)
         ? weightedSum / weightedCreditsSum
         : null;
 
+    const safeOffset = typeof correctionOffset === 'number' && Number.isFinite(correctionOffset)
+      ? correctionOffset
+      : 0;
+
     const ira =
-      rawIra != null
-        ? Math.max(0, Math.min(5, Number((rawIra + correctionOffset).toFixed(4))))
+      rawIra != null && Number.isFinite(rawIra + safeOffset)
+        ? Math.max(0, Math.min(5, Number((rawIra + safeOffset).toFixed(4))))
         : null;
 
     return {
       ira,
       rawIra,
-      correctionOffset,
+      correctionOffset: safeOffset,
       weightedSum,
       creditsSum: rawCreditsSum,
       weightedCreditsSum,
