@@ -11,6 +11,12 @@ pub struct MoodleClient {
     _client: Client,
 }
 
+impl Default for MoodleClient {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl MoodleClient {
     pub fn new() -> Self {
         let client = Client::builder()
@@ -51,8 +57,9 @@ impl MoodleClient {
             .await
             .map_err(|e| format!("Falha ao ler página de login do Aprender 3: {}", e))?;
 
-        let logintoken = extract_logintoken(&login_html)
-            .ok_or_else(|| "Não foi possível extrair o logintoken de segurança do Aprender 3.".to_string())?;
+        let logintoken = extract_logintoken(&login_html).ok_or_else(|| {
+            "Não foi possível extrair o logintoken de segurança do Aprender 3.".to_string()
+        })?;
 
         // 2. POST de autenticação com cookies preservados
         let mut params = HashMap::new();
@@ -84,10 +91,14 @@ impl MoodleClient {
                 || post_text.contains("loginerrormsg")
                 || post_text.contains("Credenciais inválidas")
             {
-                return Err("CPF ou senha incorretos no Aprender 3. Verifique seus dados.".to_string());
+                return Err(
+                    "CPF ou senha incorretos no Aprender 3. Verifique seus dados.".to_string(),
+                );
             }
             if post_text.contains("id=\"loginbtn\"") {
-                return Err("Falha na autenticação do Aprender 3. Verifique seu CPF e senha.".to_string());
+                return Err(
+                    "Falha na autenticação do Aprender 3. Verifique seu CPF e senha.".to_string(),
+                );
             }
         }
 
@@ -207,7 +218,8 @@ impl MoodleClient {
         {
             if let Ok(body_text) = cal_res.text().await {
                 if let Ok(json_val) = serde_json::from_str::<Value>(&body_text) {
-                    calendar_feed_items = parse_moodle_calendar_events_with_now(&json_val, now_epoch);
+                    calendar_feed_items =
+                        parse_moodle_calendar_events_with_now(&json_val, now_epoch);
                 }
             }
         }
@@ -288,7 +300,11 @@ impl MoodleClient {
 
         for cal_item in calendar_feed_items {
             let is_duplicate = if let Some(ref u) = cal_item.external_url {
-                seen_mod_urls.contains(u) || cmid_re.captures(u).map(|c| seen_cmids.contains(&c[1])).unwrap_or(false)
+                seen_mod_urls.contains(u)
+                    || cmid_re
+                        .captures(u)
+                        .map(|c| seen_cmids.contains(&c[1]))
+                        .unwrap_or(false)
             } else {
                 false
             };
@@ -313,7 +329,8 @@ impl MoodleClient {
                     let matches_course = if let Some(code) = &item.course_code {
                         let c_code = code.to_lowercase();
                         let target_code = course.code.to_lowercase();
-                        !c_code.is_empty() && (target_code.contains(&c_code) || c_code.contains(&target_code))
+                        !c_code.is_empty()
+                            && (target_code.contains(&c_code) || c_code.contains(&target_code))
                     } else {
                         let c_name = item.course_name.to_lowercase();
                         let target_name = course.name.to_lowercase();
@@ -439,7 +456,10 @@ pub fn parse_moodle_courses_ws(json_val: &Value) -> Result<Vec<Course>, String> 
             _ => continue,
         };
 
-        let fullname = item.get("fullname").and_then(|s| s.as_str()).unwrap_or("Disciplina");
+        let fullname = item
+            .get("fullname")
+            .and_then(|s| s.as_str())
+            .unwrap_or("Disciplina");
         let shortname = item.get("shortname").and_then(|s| s.as_str()).unwrap_or("");
 
         if is_ignored_moodle_course(fullname, shortname) {
@@ -462,6 +482,7 @@ pub fn parse_moodle_courses_ws(json_val: &Value) -> Result<Vec<Course>, String> 
             professor: None,
             classroom: None,
             schedule: None,
+            turma: None,
             unread_count: Some(0),
             pending_assignments_count: Some(0),
             url: Some(viewurl),
@@ -524,6 +545,7 @@ pub fn scrape_courses_html(html: &str) -> Vec<Course> {
             professor: None,
             classroom: None,
             schedule: None,
+            turma: None,
             unread_count: Some(0),
             pending_assignments_count: Some(0),
             url: Some(viewurl),
@@ -616,7 +638,9 @@ pub fn parse_moodle_calendar_events_with_now(json_val: &Value, now_epoch: i64) -
                     .and_then(|s| s.as_str())
                     .map(|s| s.to_string())
                     .or_else(|| {
-                        code_regex.captures(&course_name).map(|cap| cap[1].to_string())
+                        code_regex
+                            .captures(&course_name)
+                            .map(|cap| cap[1].to_string())
                     })
                     .or_else(|| Some("A3".to_string()));
 
@@ -661,9 +685,15 @@ pub fn parse_moodle_calendar_events_with_now(json_val: &Value, now_epoch: i64) -
 
                 // 2. Ação já enviada ou não requer mais envio pelo aluno
                 let is_submitted = if let Some(action) = ev.get("action") {
-                    let actionable = action.get("actionable").and_then(|a| a.as_bool()).unwrap_or(true);
+                    let actionable = action
+                        .get("actionable")
+                        .and_then(|a| a.as_bool())
+                        .unwrap_or(true);
                     let name = action.get("name").and_then(|n| n.as_str()).unwrap_or("");
-                    let itemcount = action.get("itemcount").and_then(|c| c.as_i64()).unwrap_or(1);
+                    let itemcount = action
+                        .get("itemcount")
+                        .and_then(|c| c.as_i64())
+                        .unwrap_or(1);
 
                     !actionable
                         || itemcount == 0
@@ -723,7 +753,11 @@ pub fn parse_moodle_calendar_events_with_now(json_val: &Value, now_epoch: i64) -
                     .get("shortname")
                     .and_then(|s| s.as_str())
                     .map(|s| s.to_string())
-                    .or_else(|| code_regex.captures(&c_fullname).map(|cap| cap[1].to_string()))
+                    .or_else(|| {
+                        code_regex
+                            .captures(&c_fullname)
+                            .map(|cap| cap[1].to_string())
+                    })
                     .or_else(|| Some("A3".to_string()));
 
                 if is_ignored_moodle_course(&c_fullname, c_code.as_deref().unwrap_or("")) {
@@ -744,7 +778,10 @@ pub fn parse_moodle_calendar_events_with_now(json_val: &Value, now_epoch: i64) -
                         let assign_url = if cmid > 0 {
                             format!("https://aprender3.unb.br/mod/assign/view.php?id={}", cmid)
                         } else {
-                            format!("https://aprender3.unb.br/mod/assign/view.php?id={}", assign_id)
+                            format!(
+                                "https://aprender3.unb.br/mod/assign/view.php?id={}",
+                                assign_id
+                            )
                         };
 
                         // Evita duplicatas se o evento já veio via calendário
@@ -767,8 +804,14 @@ pub fn parse_moodle_calendar_events_with_now(json_val: &Value, now_epoch: i64) -
                         };
 
                         let duedate = assign.get("duedate").and_then(|d| d.as_i64()).unwrap_or(0);
-                        let cutoffdate = assign.get("cutoffdate").and_then(|d| d.as_i64()).unwrap_or(0);
-                        let timemodified = assign.get("timemodified").and_then(|d| d.as_i64()).unwrap_or(0);
+                        let cutoffdate = assign
+                            .get("cutoffdate")
+                            .and_then(|d| d.as_i64())
+                            .unwrap_or(0);
+                        let timemodified = assign
+                            .get("timemodified")
+                            .and_then(|d| d.as_i64())
+                            .unwrap_or(0);
 
                         let due_date_iso = if duedate > 0 {
                             Some(format_epoch_iso(duedate))
@@ -819,12 +862,15 @@ pub fn scrape_calendar_html(html: &str, now_epoch: i64) -> Vec<FeedItem> {
     let mut seen_ids = HashSet::new();
 
     let document = Html::parse_document(html);
-    let event_sel = match Selector::parse("div.event[data-event-id], div[data-type='event'], .calendar-event-box") {
+    let event_sel = match Selector::parse(
+        "div.event[data-event-id], div[data-type='event'], .calendar-event-box",
+    ) {
         Ok(s) => s,
         Err(_) => return items,
     };
     let name_sel = Selector::parse("h3.name a, .name a, h3.name, .card-title a, .card-title").ok();
-    let course_sel = Selector::parse(".course a, .card-header, .description a[href*='course/view.php']").ok();
+    let course_sel =
+        Selector::parse(".course a, .card-header, .description a[href*='course/view.php']").ok();
     let desc_sel = Selector::parse(".description, .card-body").ok();
     let date_sel = Selector::parse(".date, .date a").ok();
     let code_re = Regex::new(r"\b([A-Z]{3}\d{4})\b").unwrap();
@@ -956,7 +1002,9 @@ pub fn parse_moodle_date_to_epoch(text: &str, fallback_year: i32) -> Option<i64>
     };
 
     // Formato 1: "1 out. 2026, 23:50" ou "quinta-feira, 1 out. 2026, 23:50" ou "18 out. 2026, 23:59"
-    let re_with_year = Regex::new(r"(\d{1,2})\s+([a-zA-ZçÇáéíóúâêôãõ]+)\.?\s+(\d{4}),?\s*(\d{1,2}):(\d{2})").ok()?;
+    let re_with_year =
+        Regex::new(r"(\d{1,2})\s+([a-zA-ZçÇáéíóúâêôãõ]+)\.?\s+(\d{4}),?\s*(\d{1,2}):(\d{2})")
+            .ok()?;
     if let Some(cap) = re_with_year.captures(text) {
         let day: u32 = cap[1].parse().ok()?;
         let month = month_num(&cap[2])?;
@@ -973,7 +1021,8 @@ pub fn parse_moodle_date_to_epoch(text: &str, fallback_year: i32) -> Option<i64>
     }
 
     // Formato 2: "20 outubro, 23:59" (sem ano explícito)
-    let re_no_year = Regex::new(r"(\d{1,2})\s+([a-zA-ZçÇáéíóúâêôãõ]+)\.?,?\s*(\d{1,2}):(\d{2})").ok()?;
+    let re_no_year =
+        Regex::new(r"(\d{1,2})\s+([a-zA-ZçÇáéíóúâêôãõ]+)\.?,?\s*(\d{1,2}):(\d{2})").ok()?;
     if let Some(cap) = re_no_year.captures(text) {
         let day: u32 = cap[1].parse().ok()?;
         let month = month_num(&cap[2])?;
@@ -1022,11 +1071,7 @@ pub fn is_activity_page_submitted(html: &str) -> bool {
         || (lower.contains("resumo da tentativa") && lower.contains("finalizada"))
 }
 
-pub fn scrape_course_modules_html(
-    html: &str,
-    course: &Course,
-    now_epoch: i64,
-) -> Vec<FeedItem> {
+pub fn scrape_course_modules_html(html: &str, course: &Course, now_epoch: i64) -> Vec<FeedItem> {
     let mut items = Vec::new();
     let mut seen_ids = HashSet::new();
 
@@ -1068,9 +1113,10 @@ pub fn scrape_course_modules_html(
             .attr("data-id")
             .map(|s| s.to_string())
             .or_else(|| {
-                element.value().attr("id").and_then(|id| {
-                    id.strip_prefix("module-").map(|s| s.to_string())
-                })
+                element
+                    .value()
+                    .attr("id")
+                    .and_then(|id| id.strip_prefix("module-").map(|s| s.to_string()))
             });
 
         let cmid = match cmid {
@@ -1090,9 +1136,10 @@ pub fn scrape_course_modules_html(
             .map(|s| s.trim().to_string())
             .or_else(|| {
                 instance_sel.as_ref().and_then(|sel| {
-                    element.select(sel).next().map(|el| {
-                        el.text().collect::<Vec<_>>().join(" ").trim().to_string()
-                    })
+                    element
+                        .select(sel)
+                        .next()
+                        .map(|el| el.text().collect::<Vec<_>>().join(" ").trim().to_string())
                 })
             })
             .filter(|s| !s.is_empty())
@@ -1124,7 +1171,10 @@ pub fn scrape_course_modules_html(
                 }
             })
             .unwrap_or_else(|| {
-                format!("https://aprender3.unb.br/mod/{}/view.php?id={}", modtype, cmid)
+                format!(
+                    "https://aprender3.unb.br/mod/{}/view.php?id={}",
+                    modtype, cmid
+                )
             });
 
         let mut due_epoch: Option<i64> = None;
@@ -1229,7 +1279,7 @@ pub fn scrape_course_modules_html(
 
 fn format_epoch_iso(seconds: i64) -> String {
     let days_since_epoch = seconds / 86400;
-    let time_of_day = (seconds % 86400 + 86400) % 86400;
+    let time_of_day = seconds.rem_euclid(86400);
     let hour = time_of_day / 3600;
     let minute = (time_of_day % 3600) / 60;
     let second = time_of_day % 60;
@@ -1548,13 +1598,28 @@ mod tests {
         assert_eq!(items.len(), 3);
 
         let pass_ev = items.iter().find(|i| i.id == "aprender-event-201").unwrap();
-        assert_eq!(pass_ev.is_completed, Some(true), "Evento passado deve ser concluído");
+        assert_eq!(
+            pass_ev.is_completed,
+            Some(true),
+            "Evento passado deve ser concluído"
+        );
 
         let fut_ev = items.iter().find(|i| i.id == "aprender-event-202").unwrap();
-        assert_eq!(fut_ev.is_completed, Some(false), "Evento futuro pendente não deve ser concluído");
+        assert_eq!(
+            fut_ev.is_completed,
+            Some(false),
+            "Evento futuro pendente não deve ser concluído"
+        );
 
-        let pass_assign = items.iter().find(|i| i.id == "aprender-assign-502").unwrap();
-        assert_eq!(pass_assign.is_completed, Some(true), "Tarefa antiga fora do calendário deve ser concluída");
+        let pass_assign = items
+            .iter()
+            .find(|i| i.id == "aprender-assign-502")
+            .unwrap();
+        assert_eq!(
+            pass_assign.is_completed,
+            Some(true),
+            "Tarefa antiga fora do calendário deve ser concluída"
+        );
     }
 
     #[test]
@@ -1657,6 +1722,7 @@ mod tests {
             professor: None,
             classroom: None,
             schedule: None,
+            turma: None,
             unread_count: None,
             pending_assignments_count: None,
             url: None,
@@ -1666,18 +1732,30 @@ mod tests {
         assert_eq!(items.len(), 3);
 
         // 1656160: Venceu em 01/10/2026 (passado relativo a reference_now) -> concluído
-        let it1 = items.iter().find(|i| i.id == "aprender-cm-1656160").unwrap();
+        let it1 = items
+            .iter()
+            .find(|i| i.id == "aprender-cm-1656160")
+            .unwrap();
         assert_eq!(it1.title, "Planejamento_Mov de Precessão");
         assert_eq!(it1.is_completed, Some(true));
-        assert_eq!(it1.external_url, Some("https://aprender3.unb.br/mod/assign/view.php?id=1656160".to_string()));
+        assert_eq!(
+            it1.external_url,
+            Some("https://aprender3.unb.br/mod/assign/view.php?id=1656160".to_string())
+        );
 
         // 1655629: Fechou em 11/10/2026 (passado relativo a reference_now) -> concluído
-        let it2 = items.iter().find(|i| i.id == "aprender-cm-1655629").unwrap();
+        let it2 = items
+            .iter()
+            .find(|i| i.id == "aprender-cm-1655629")
+            .unwrap();
         assert_eq!(it2.title, "Teste 5 - T2");
         assert_eq!(it2.is_completed, Some(true));
 
         // 1628465: Vence em 18/10/2026 (futuro relativo a reference_now) -> não concluído
-        let it3 = items.iter().find(|i| i.id == "aprender-cm-1628465").unwrap();
+        let it3 = items
+            .iter()
+            .find(|i| i.id == "aprender-cm-1628465")
+            .unwrap();
         assert_eq!(it3.title, "Entrega Gerador de Imediatos");
         assert_eq!(it3.is_completed, Some(false));
     }
@@ -1688,7 +1766,9 @@ mod tests {
         let cpf = std::env::var("APRENDER3_CPF").unwrap_or_default();
         let senha = std::env::var("APRENDER3_SENHA").unwrap_or_default();
         if cpf.is_empty() || senha.is_empty() {
-            println!("APRENDER3_CPF ou APRENDER3_SENHA não definidas no ambiente, pulando teste live.");
+            println!(
+                "APRENDER3_CPF ou APRENDER3_SENHA não definidas no ambiente, pulando teste live."
+            );
             return;
         }
 
@@ -1700,26 +1780,67 @@ mod tests {
 
         println!("=== COURSES ({}): ===", courses.len());
         for c in &courses {
-            println!("Course: id={}, code={}, name={}, pending={:?}", c.id, c.code, c.name, c.pending_assignments_count);
+            println!(
+                "Course: id={}, code={}, name={}, pending={:?}",
+                c.id, c.code, c.name, c.pending_assignments_count
+            );
         }
 
         println!("=== ITEMS ({}): ===", items.len());
         for it in &items {
-            println!("Item: id={}, title={}, due={:?}, completed={:?}, url={:?}", it.id, it.title, it.due_date, it.is_completed, it.external_url);
+            println!(
+                "Item: id={}, title={}, due={:?}, completed={:?}, url={:?}",
+                it.id, it.title, it.due_date, it.is_completed, it.external_url
+            );
         }
 
         // Verifica que as 3 atividades alvo foram encontradas
-        let item_1656160 = items.iter().find(|i| i.id == "aprender-cm-1656160" || i.external_url.as_deref().unwrap_or("").contains("id=1656160"));
-        assert!(item_1656160.is_some(), "Atividade 1656160 deve estar presente nos itens");
+        let item_1656160 = items.iter().find(|i| {
+            i.id == "aprender-cm-1656160"
+                || i.external_url
+                    .as_deref()
+                    .unwrap_or("")
+                    .contains("id=1656160")
+        });
+        assert!(
+            item_1656160.is_some(),
+            "Atividade 1656160 deve estar presente nos itens"
+        );
         let it_1656160 = item_1656160.unwrap();
-        assert_eq!(it_1656160.is_completed, Some(true), "1656160 já venceu e foi entregue, deve chegar concluída");
+        assert_eq!(
+            it_1656160.is_completed,
+            Some(true),
+            "1656160 já venceu e foi entregue, deve chegar concluída"
+        );
 
-        let item_1628465 = items.iter().find(|i| i.id == "aprender-cm-1628465" || i.external_url.as_deref().unwrap_or("").contains("id=1628465"));
-        assert!(item_1628465.is_some(), "Atividade 1628465 deve estar presente nos itens");
+        let item_1628465 = items.iter().find(|i| {
+            i.id == "aprender-cm-1628465"
+                || i.external_url
+                    .as_deref()
+                    .unwrap_or("")
+                    .contains("id=1628465")
+        });
+        assert!(
+            item_1628465.is_some(),
+            "Atividade 1628465 deve estar presente nos itens"
+        );
 
-        let item_1655629 = items.iter().find(|i| i.id == "aprender-cm-1655629" || i.external_url.as_deref().unwrap_or("").contains("id=1655629"));
-        assert!(item_1655629.is_some(), "Quiz 1655629 deve estar presente nos itens");
+        let item_1655629 = items.iter().find(|i| {
+            i.id == "aprender-cm-1655629"
+                || i.external_url
+                    .as_deref()
+                    .unwrap_or("")
+                    .contains("id=1655629")
+        });
+        assert!(
+            item_1655629.is_some(),
+            "Quiz 1655629 deve estar presente nos itens"
+        );
         let it_1655629 = item_1655629.unwrap();
-        assert_eq!(it_1655629.is_completed, Some(true), "1655629 já encerrou, deve chegar concluído");
+        assert_eq!(
+            it_1655629.is_completed,
+            Some(true),
+            "1655629 já encerrou, deve chegar concluído"
+        );
     }
 }

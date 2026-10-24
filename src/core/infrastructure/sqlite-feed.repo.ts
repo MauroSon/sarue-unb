@@ -33,6 +33,7 @@ interface SqliteCourseRow {
   professor: string | null;
   classroom: string | null;
   schedule: string | null;
+  turma: string | null;
   unread_count: number;
   pending_assignments_count: number;
   url: string | null;
@@ -75,6 +76,7 @@ export async function getDatabase(): Promise<Database | null> {
             professor TEXT,
             classroom TEXT,
             schedule TEXT,
+            turma TEXT,
             unread_count INTEGER NOT NULL DEFAULT 0,
             pending_assignments_count INTEGER NOT NULL DEFAULT 0,
             url TEXT
@@ -84,6 +86,13 @@ export async function getDatabase(): Promise<Database | null> {
         // Migração suave para bases pré-existentes sem a coluna url
         try {
           await db.execute('ALTER TABLE courses ADD COLUMN url TEXT;');
+        } catch {
+          // Ignora se a coluna já existir
+        }
+
+        // Migração suave para bases pré-existentes sem a coluna turma
+        try {
+          await db.execute('ALTER TABLE courses ADD COLUMN turma TEXT;');
         } catch {
           // Ignora se a coluna já existir
         }
@@ -385,6 +394,7 @@ export class SqliteFeedRepository implements IFeedRepository {
           professor: row.professor ?? undefined,
           classroom: row.classroom ?? undefined,
           schedule: row.schedule ?? undefined,
+          turma: row.turma ?? undefined,
           unreadCount: Number(row.unread_count || 0),
           pendingAssignmentsCount: Number(row.pending_assignments_count || 0),
           url: row.url ?? undefined,
@@ -414,8 +424,8 @@ export class SqliteFeedRepository implements IFeedRepository {
         for (const course of newCourses) {
           await db.execute(
             `INSERT OR REPLACE INTO courses (
-              id, code, name, semester, platform, professor, classroom, schedule, unread_count, pending_assignments_count, url
-            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
+              id, code, name, semester, platform, professor, classroom, schedule, turma, unread_count, pending_assignments_count, url
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`,
             [
               course.id,
               course.code,
@@ -425,6 +435,7 @@ export class SqliteFeedRepository implements IFeedRepository {
               course.professor ?? null,
               course.classroom ?? null,
               course.schedule ?? null,
+              course.turma ?? null,
               course.unreadCount ?? 0,
               course.pendingAssignmentsCount ?? 0,
               course.url ?? null,

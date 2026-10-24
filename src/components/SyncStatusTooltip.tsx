@@ -68,7 +68,7 @@ function formatRelativeTime(isoString: string | null): string {
 
 export const SyncStatusTooltip: React.FC<SyncStatusTooltipProps> = ({
   steps,
-  isSyncing,
+  isSyncing: _isSyncing,
   lastSyncedAt,
 }) => {
   const stepList = [

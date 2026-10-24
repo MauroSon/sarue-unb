@@ -72,6 +72,7 @@ typography:
     fontWeight: 700
     lineHeight: 1.4
 rounded:
+  xs: "6px"
   sm: "8px"
   md: "12px"
   lg: "16px"
@@ -129,22 +130,49 @@ components:
     rounded: "{rounded.lg}"
     height: "40px"
     padding: "0 20px"
-  card-default:
+  button-sm:
+    backgroundColor: "{colors.pen-blue}"
+    textColor: "#ffffff"
+    typography: "{typography.label}"
+    rounded: "{rounded.md}"
+    height: "32px"
+    padding: "0 14px"
+  select-trigger:
     backgroundColor: "#ffffff"
     textColor: "#000000"
-    rounded: "{rounded.sm}"
-    padding: "24px"
-  card-pastel-blue:
-    backgroundColor: "{colors.pastel-blue}"
-    textColor: "#000000"
-    rounded: "{rounded.sm}"
-    padding: "24px"
+    typography: "{typography.label}"
+    rounded: "{rounded.md}"
+    height: "40px"
+    padding: "0 12px"
+  select-trigger-active:
+    backgroundColor: "{colors.pen-blue}"
+    textColor: "#ffffff"
+    rounded: "{rounded.md}"
+    height: "34px"
+    padding: "0 12px"
   input-default:
     backgroundColor: "#ffffff"
     textColor: "#000000"
     typography: "{typography.body}"
     rounded: "{rounded.md}"
     padding: "10px 16px"
+  input-search:
+    backgroundColor: "#ffffff"
+    textColor: "#000000"
+    typography: "{typography.body}"
+    rounded: "{rounded.md}"
+    padding: "10px 16px"
+  input-search-engaged:
+    backgroundColor: "{colors.pastel-blue}"
+  checkbox:
+    backgroundColor: "#ffffff"
+    textColor: "{colors.ink-soft}"
+    rounded: "{rounded.xs}"
+    width: "20px"
+    height: "20px"
+  checkbox-selected:
+    backgroundColor: "{colors.pen-blue}"
+    textColor: "#ffffff"
   badge-sticker:
     backgroundColor: "#ffffff"
     textColor: "#000000"
@@ -175,6 +203,7 @@ O mundo é opaco e de alto contraste. Sombras suaves difusas, vidro fosco, gradi
 - Física de pressionar: hover afunda com snap inteiro, active afunda tudo até a superfície tocar o papel
 - Clique mecânico opcional: som tátil de switch no clique (opt-in em Settings; a navegação é muda)
 - Cores candy de material escolar sobre papel quadriculado (#E8EFF8, grid de 32px)
+- Uma cor por significado: azul = ação e seleção, verde giz = conclusão — nunca cruzam
 - Hierarquia por peso de fonte, não por cinza
 - Raio como affordance (A Regra dos Dois Adesivos): ação 12–16px, conteúdo 8px — clique se distingue de leitura à primeira vista
 - Tudo em 150ms ease-out
@@ -184,21 +213,21 @@ O mundo é opaco e de alto contraste. Sombras suaves difusas, vidro fosco, gradi
 Paleta de material escolar: uma cor de ação por intenção, versões pastel das mesmas cores para superfícies de apoio, tudo costurado por preto de tinta.
 
 ### Primary
-- **Azul Caneta Ação** (#2563EB): a cor de ação do produto. Todo fundo interativo sob texto branco e todo texto/ícone informativo sobre branco: botões primários, tabs ativas, item de navegação ativo, foco de inputs (ring), links de marca ("Aggregator" no logo), ícones de cabeçalho de página. Branco sobre ela = 5.17:1 (AA). Hover escurece para **Azul Caneta Pressionado** (#1D4ED8, 6.70:1 com branco).
+- **Azul Caneta Ação** (#2563EB): a cor de ação do produto. Todo fundo interativo sob texto branco e todo texto/ícone informativo sobre branco: botões primários, tabs ativas, item de navegação ativo, checkbox de seleção, filtro Select engajado, foco de inputs (ring), links de marca ("Aggregator" no logo), ícones de cabeçalho de página. Branco sobre ela = 5.17:1 (AA). Hover escurece para **Azul Caneta Pressionado** (#1D4ED8, 6.70:1 com branco).
 
 ### Brand
 - **Azul Caneta** (#468AFB): cor de marca — logo-bloco "UnB", wordmark e blocos decorativos. Isenta de contraste WCAG como logotipo; nenhum texto pequeno branco sobre ela. Nunca como fundo interativo.
 
 ### Secondary
-- **Amarelo Marca-Texto** (#FFE600): ação de destaque e badge de tarefa/entrega — o amarelo de grifo em cima da leitura. Sempre com texto preto.
-- **Verde Giz** (#46E297): sucesso e plataforma SIGAA. Botão accent, badges de confirmado, badges de plataforma. Texto preto.
+- **Amarelo Marca-Texto** (#FFE600): ação de destaque e badge de tarefa/entrega/prazo próximo — o amarelo de grifo em cima da leitura. Sempre com texto preto.
+- **Verde Giz** (#46E297): sucesso e plataforma SIGAA. Botão accent, badges de confirmado, badges de plataforma, checkbox de conclusão. Texto preto.
 - **Vermelho Correção** (#FF6B6B): tinta de borda/acento destrutiva — contornos, ícones e acentos sempre com TEXTO PRETO (7.57:1). Nunca fundo sob texto branco.
 - **Vermelho Correção Forte** (#DC2626): destrutivo e urgente com texto branco. Botão destructive, badge urgent (4.83:1), prazos vencidos ou < 24h. Hover escurece para **Vermelho Erro** (#B91C1C, 6.47:1).
 
 ### Tertiary
 - **Lápis Laranja** (#FB923C): identidade da plataforma Aprender 3, texto preto.
 - **Lilás Caderno** (#C084FC): variante purple de card, texto preto.
-- **Azul Céu** (#60A5FA): identidade da plataforma Teams (reservado — plataforma em revisão no produto).
+- **Azul Céu** (#60A5FA): identidade da plataforma Microsoft Teams.
 - **Verde Institucional** (#006633): verde oficial UnB, definido no tema; uso pontual institucional.
 
 ### Neutral
@@ -206,8 +235,9 @@ Paleta de material escolar: uma cor de ação por intenção, versões pastel da
 - **Creme Papel** (#FAF7EE): superfície alternativa quente, uso pontual.
 - **Branco** (#FFFFFF): superfície padrão de cards, inputs, sidebar e botão outline.
 - **Tinta Preta** (#000000): todas as bordas (2px), todas as sombras, texto primário, ícones.
-- **Tinta Suave** (#525252, escala neutral-400–800 do Tailwind): texto secundário e descrições — sempre font-medium no mínimo, nunca cinza de baixo contraste em peso leve.
+- **Tinta Suave** (#525252, escala neutral-400–800 do Tailwind): texto secundário e descrições — sempre font-medium no mínimo, nunca cinza de baixo contraste em peso leve. neutral-800 (#262626) também serve de fundo do alternador Arquivados ativo.
 - **Cinza Papel** (#F5F5F5, neutral-100): preenchimentos de hover, itens desabilitados, card de item concluído.
+- **Cinza Nota** (slate-200): badge de aviso (post), texto preto.
 
 ### Tintas de apoio
 - **Verde OK** (#15803D): texto de confirmação dentro de superfícies pastel (checkmarks, selo "Zero Telemetria"). 5.02:1 sobre branco.
@@ -220,12 +250,14 @@ Inks escuras da mesma família das cores de ação, usadas como TEXTO e borda in
 - **Thumb de Scroll** (#A3A3A3, hover #737373): scrollbar com borda preta de 2px, mantendo o estilo adesivo.
 
 ### Pastéis (superfícies, nunca texto)
-Versões lavadas das cores de ação, usadas como fundo de cards variante, alerts, blocos de ícone e filtros — sempre com texto preto e borda preta: **Azul Pastel** (#EBF3FF), **Verde Pastel** (#E6F8EE), **Amarelo Pastel** (#FFF9D2), **Lilás Pastel** (#F3E8FF), **Vermelho Pastel** (#FFEBEB), **Laranja Pastel** (#FFEDD5), **Céu Pastel** (#E0F2FE).
+Versões lavadas das cores de ação, usadas como fundo de cards variante, alerts, blocos de ícone, filtros e estado de seleção — sempre com texto preto e borda preta: **Azul Pastel** (#EBF3FF), **Verde Pastel** (#E6F8EE), **Amarelo Pastel** (#FFF9D2), **Lilás Pastel** (#F3E8FF), **Vermelho Pastel** (#FFEBEB), **Laranja Pastel** (#FFEDD5), **Céu Pastel** (#E0F2FE).
 
 ### Named Rules
 **A Regra do Risco Preto.** Nenhuma superfície ou elemento interativo existe sem borda preta de 2px. A borda é o contorno do adesivo; sem ela o elemento cai fora do mundo.
 
-**A Regra do Pastel como Papel.** Cores de ação (caneta, giz, correção) marcam interação e identidade; as versões pastel servem de papel de fundo. Uma nunca faz o trabalho da outra: pastel nunca é botão, cor cheia nunca é fundo de seção inteira.
+**A Regra do Pastel como Papel.** Cores de ação (caneta, giz, correção) marcam interação e identidade; as versões pastel servem de papel de fundo. Uma nunca faz o trabalho da outra: pastel nunca é botão, cor cheia nunca é fundo de seção inteira. Exceção confirmada: filtro engajado e segmento ativo vestem a cor cheia da família — engajamento veste tinta de ação.
+
+**A Regra da Cor por Significado.** Azul é de seleção e ação; Verde Giz é só de conclusão. O checkbox de selecionar é azul, o de concluir é verde, e nenhum contexto troca esse papel — quem procura o que já fez e o que marcou não pode trocar as duas tintas.
 
 ## Typography
 
@@ -236,11 +268,11 @@ Versões lavadas das cores de ação, usadas como fundo de cards variante, alert
 
 ### Hierarchy
 - **Display** (800, clamp(2.25rem, 5vw, 3rem), 1.1, tracking -0.02em): título de boas-vindas no onboarding ("Saruê UnB"). Único momento de hero.
-- **Title** (800, 1.5rem, 1.25, tracking -0.01em): cabeçalho de página (PageHeader), com ícone azul de 24px ao lado.
+- **Title** (800, 1.5rem, 1.25, tracking -0.01em): cabeçalho de página (PageHeader), com ícone azul de 16px (stroke 2.5) ao lado. Aceita sufixo de contagem em 0.875rem/700 Tinta Suave — "(42 resultados)".
 - **Heading** (700, 1.125rem, 1.4, tracking -0.01em): título de card (CardTitle).
 - **Body** (500, 0.875rem, 1.5): conteúdo de cards, descrições, itens de lista. Texto secundário em neutral-600/700 mesma faixa de tamanho.
-- **Label** (700, 0.75rem, 1.4): labels de input, badges, botões, tabs. Versão uppercase com tracking 0.05em para rótulos de grupo (SelectLabel, cabeçalhos da grade).
-- **Micro** (700, 0.6875rem/11px, 1.4): rótulos mínimos — contadores, badges sm, micro-etiquetas. 10px está banido do sistema.
+- **Label** (700, 0.75rem, 1.4): labels de input, badges, botões, tabs, rótulos de filtro. Versão uppercase com tracking 0.05em para rótulos de grupo (SelectLabel, cabeçalhos da grade).
+- **Micro** (700, 0.6875rem/11px, 1.4): rótulos mínimos — contadores, badges sm, meta do feed, links de serviço. 10px está banido do sistema.
 
 ### Named Rules
 **A Regra do Marcador Grosso.** Hierarquia vem de peso (800 → 700 → 600 → 500), não de esmaecer cinza. Nunca enfraqueça texto baixando o peso para abaixo de 500 — baixe o tom (neutral-600) mantendo o peso.
@@ -251,7 +283,9 @@ Versões lavadas das cores de ação, usadas como fundo de cards variante, alert
 
 App desktop (janela Tauri), desktop-first. Estrutura permanente: sidebar branca à esquerda com borda direita preta de 2px, expandida em 264px (w-64) ou recolhida em 80px (w-20), contendo logo-bloco, navegação ledger e ações de sync na base. O conteúdo vive sobre o **Papel Quadriculado** (#E8EFF8 com grid de 32px em rgba(0,0,0,0.05)) e é centrado em container de no máximo 1152px (max-w-6xl) com ritmo vertical de 24px entre blocos (space-y-6) e respiro inferior de 48px.
 
-Densidade: cards com padding interno de 24px, gaps de 8–16px entre controles, listas com cards empilhados. Grids internos usam gap de 6px (grade horária) a 10px (tabs). Breakpoints Tailwind padrão existem para janelas estreitas (sm 640px, md 768px, lg 1024px), mas o alvo é janela de desktop; nada de layout de mobile.
+Densidade: cards com padding interno de 24px (ferramentas de trabalho usam 16px), gaps de 8–16px entre controles, listas com cards empilhados. Grids internos usam gap de 6px (grade horária) a 10px (tabs). Breakpoints Tailwind padrão existem para janelas estreitas (sm 640px, md 768px, lg 1024px), mas o alvo é janela de desktop; nada de layout de mobile. Painéis que se adaptam ao próprio espaço (Cofre em Settings) usam container query (`@container`): inputs de credencial ficam em duas colunas a partir de 580px de painel e empilham abaixo disso — o container manda, não a janela.
+
+A contagem de resultados vive em dois lugares, nunca numa linha solta acima do card: a contagem **absoluta** vai no título da página como sufixo do PageHeader ("Início (42 resultados)"); a contagem **filtrada** ("N de M resultados") abre o card do feed numa barra interna (Papel Quadriculado, borda inferior preta a 10%, Micro bold, py-2) e só aparece quando há filtro ativo.
 
 ## Elevation & Depth
 
@@ -259,8 +293,8 @@ Profundidade é **física e estrutural**: sombras são deslocamentos sólidos de
 
 ### Shadow Vocabulary
 - **Sticker micro / Adesivo de ação** (`2px 2px 0 0 #000`, token `neo-sm`): todo botão, tab/chip e micro-ação permanente em repouso; logo-bloco, ícones de collapse.
-- **Micro-adesivo** (`1px 1px 0 0 #000`, token `neo-xs`): o que pesa menos que um adesivo de ação em repouso — blocos de ícone pastel, pills de resultado inline, barra de progresso, micro-ações flutuantes de ferramenta; também é a sombra do estágio hover da escala 2px.
-- **Adesivo de card** (`4px 4px 0 0 #000`, token `neo`): cards, alerts, painéis e popups de conteúdo.
+- **Micro-adesivo** (`1px 1px 0 0 #000`, token `neo-xs`): o que pesa menos que um adesivo de ação em repouso — checkbox, blocos de ícone pastel, pills de resultado inline, barra de progresso, micro-ações flutuantes de ferramenta; também é a sombra do estágio hover da escala 2px.
+- **Adesivo de card** (`4px 4px 0 0 #000`, token `neo`): cards, alerts, painéis, toolbars e popups de conteúdo.
 - **Ênfase máxima** (`6px 6px 0 0 #000`, token `neo-lg`): diálogo modal — a única superfície acima de todo o app.
 - **Sombra tingida de perigo** (`4px 4px 0 0 #DC2626`): exclusiva do Card da Zona de Perigo em Settings — a única sombra colorida do sistema.
 - **Quase-afundado** (`1px 1px 0 0 #000`): estado hover — o elemento translada em snap inteiro o quanto a sombra encolheu (ação 2px: +1px e sombra 1px; card clicável 4px: +2px e sombra 2px).
@@ -272,7 +306,7 @@ Profundidade é **física e estrutural**: sombras são deslocamentos sólidos de
 
 **A Regra do Afundar.** Todo elemento interativo em repouso com sombra dura afunda em dois tempos: no hover, com snap inteiro (ação de sombra 2px: translate +1px na direção da sombra, sombra reduzida a 1px — fica a 1px do papel; card clicável de sombra 4px: +2px e sombra 2px); no active, tudo (translate +offset completo, shadow-none — a superfície toca o papel). Ghost sem sombra mantém micro-afundar de 1px no active. Elemento que levanta no hover (translate negativo ou sombra crescendo) é bug físico.
 
-**A Regra do Snap Inteiro.** Todo translate de press é número inteiro de pixels — nunca meia-pixel (1.5px), que antialiasa a borda preta em telas de escala não-inteira e borra o adesivo. Se a metade do offset não é inteira, afunde para o inteiro imediato (metade de 3px vira 2px) e dê o resto à sombra; meia-pixel é bug de render, não refinamento.
+**A Regra do Snap Inteiro.** Todo translate de press em elemento de sombra 2px ou mais é número inteiro de pixels — nunca meia-pixel (1.5px), que antialiasa a borda preta em telas de escala não-inteira e borra o adesivo. Se a metade do offset não é inteira, afunde para o inteiro imediato (metade de 3px vira 2px) e dê o resto à sombra. Única exceção confirmada: o checkbox de 20px (sombra micro 1px) afunda 0.5px no hover e 1px no active — metade de 1px não tem inteiro entre hover e active, e pular direto ao afundar total no hover apagaria o estágio de repouso do adesivo.
 
 ## Shapes
 
@@ -280,28 +314,48 @@ Profundidade é **física e estrutural**: sombras são deslocamentos sólidos de
 
 - **Adesivo de conteúdo** (cards, alerts, diálogos, painéis, popups, blocos decorativos): raio pequeno **8px (rounded-lg)** + sombra funda de card **4px 4px**. Canto mais reto, peso maior — papel de leitura.
 - **Adesivo de ação** (botões, tabs/chips, micro-ações): raio generoso **16px (rounded-2xl)** em md/lg, **12px (rounded-xl)** em sm e ícones, **8px** em micro-ação (h-7 ou menor) + sombra leve de ação **2px 2px**. Redondo e leve — convite ao clique.
-- **Campos** (inputs, selects, textareas): raio médio **12px (rounded-xl)**, sem sombra em repouso — cavidade no papel, nem conteúdo nem ação.
+- **Campos** (inputs, selects, textareas, busca): raio médio **12px (rounded-xl)**, sem sombra em repouso — cavidade no papel, nem conteúdo nem ação.
+- **Checkbox** (seleção e conclusão): 20px, raio **6px (rounded-md)**, borda preta 2px, sombra micro **1px** — mini-adesivo de marcação; check em Lucide stroke 3.
 - **Diálogo modal**: raio de conteúdo **8px** com **Ênfase máxima 6px** — a única superfície que usa neo-lg.
 - **Badges**: círculo completo (9999px), sem sombra — etiqueta de tinta, não adesivo; pills de resultado inline (fora do componente Badge) levam Micro-adesivo 1px.
 - **Micro-ações flutuantes de ferramenta** (aparecem no hover do grupo, ex. "Enviar para o Monte sua Grade"): raio 6px (rounded-md), borda de 1px, Micro-adesivo 1px — adesivo menor e mais leve; o que vive permanentemente na tela usa o adesivo de ação padrão (borda 2px, sombra 2px).
+- **Estado vazio** (EmptyState): painel contentor amplo, raio **12px (rounded-xl)**, p-8 — pausa de página, não bloco de leitura densa.
 
 A distinção se lê de longe: o que tem sombra 2px e raio 16px afunda quando clica; o que tem sombra 4px e raio 8px fica. Elementos pequenos de conteúdo (células da grade, cabeçalhos de dia, blocos de ícone) seguem o raio de conteúdo 8px. A borda-preta-2px continua universal (A Regra do Risco Preto).
 
-Ícones são Lucide com stroke 2.5 (mais grossos que o padrão) — combinando com a espessura das bordas. O logo é um bloco quadrado de 36px, **Azul Caneta**, texto "UnB" branco font-black, borda e sombra de sticker.
+Ícones são Lucide com stroke 2.5 (mais grossos que o padrão) — combinando com a espessura das bordas; check de checkbox usa stroke 3. O logo é um bloco quadrado de 36px, **Azul Caneta**, texto "UnB" branco font-black, borda e sombra de sticker.
 
 ## Components
 
 ### Buttons
-- **Shape:** raio 16px (md e lg), 12px (sm e icon), 8px (micro-ação h-7); borda preta 2px; altura 40px (md).
-- **Primary:** fundo **Azul Caneta Ação**, texto branco, fonte 700; hover **Azul Caneta Pressionado**. Variantes: accent (**Verde Giz**, texto preto; hover **Verde Giz Pressionado** #39D68A), yellow (**Amarelo Marca-Texto**, texto preto; hover #F2DA00), destructive (**Vermelho Correção Forte**, texto branco; hover **Vermelho Erro**), outline (branco, texto preto), ghost (transparente, sem borda visível, sem sombra, hover black/5).
+- **Shape:** borda preta 2px. Tamanhos: md 40px raio 16px (padding 0 20px), lg 48px raio 16px, sm 32px raio 12px (padding 0 14px), icon 40px raio 12px; toolbar do feed usa sm na altura 34px.
+- **Primary:** fundo **Azul Caneta Ação**, texto branco, fonte 700; hover **Azul Caneta Pressionado**. Variantes: accent (**Verde Giz**, texto preto; hover **Verde Giz Pressionado** #39D68A), yellow (**Amarelo Marca-Texto**, texto preto; hover #F2DA00), destructive (**Vermelho Correção Forte**, texto branco; hover **Vermelho Erro**), outline (branco, texto preto; hover Cinza Papel), ghost (transparente, sem borda visível, sem sombra, hover black/5).
 - **Hover / Focus:** hover afunda com snap inteiro (translate +1px,+1px, sombra 2px→1px — fica a 1px do papel); active afunda tudo (translate +2px,+2px, sombra none — a superfície toca o papel). Ghost, sem sombra, micro-afunda 1px só no active. Transição 150ms ease-out. **Focus via teclado:** ring 2px **Azul Caneta Ação** com offset branco 2px, sem glow — mesmo token do Input. Disabled: opacity 50%, congela a física.
 - **Loading:** spinner circular de borda 2px corrente no lugar do conteúdo.
 - **Som:** clique mecânico opcional no clique de botão, link e checkbox — A Regra do Clique Mecânico (abaixo).
 
 **A Regra do Clique Mecânico.** O som é feedback de objeto, não enfeite: opt-in, desligado por padrão (Switch "Efeito sonoro de botão" em Settings), sample de switch mecânico via Web Audio com pitch jitter de ±3% e ganho a 25% para nunca soar robótico, disparado por um listener global. A encadernação é muda: navegação da sidebar e logo-bloco levam `data-no-sound="true"`. Elemento desabilitado não faz barulho.
 
+### Toolbar do Feed
+Barra de busca e filtros do feed (Início e drill-down da disciplina), sempre em card próprio — nunca solta no papel.
+
+- **Container:** card branco (borda 2px, raio 8px, sombra 4px), padding 16px (p-4).
+- **Busca textual:** cavidade (raio 12px, borda 2px, sem sombra) com ícone Search à esquerda; quando engajada (há texto), acende **Azul Pastel** — a cavidade guarda tinta.
+- **Filtro Select (Plataformas / Categoria):** rótulo em cima (`text-xs font-bold` neutral-700) e trigger na altura dos botões sm do feed (34px), branco; filtro engajado (≠ "Todas"/"Tudo") vira **Azul Caneta Ação** cheio com texto branco e hover **Azul Caneta Pressionado** — mesmo padrão dos filtros de estado de Disciplinas: engajamento veste a cor cheia da família.
+- **Link de serviço:** ações terciárias de barra ("Limpar filtros", "Selecionar tudo") são texto sublinhado (Micro, bold, neutral-500 → preto no hover, ring padrão), nunca adesivo.
+- **Modo Selecionar:** o card expande para baixo (`grid-template-rows` 0fr→1fr, 150ms ease-out; `aria-hidden` + `inert` quando recolhido) e revela a barra de lote sob divisor black/10: contagem à esquerda (número em **Azul Caneta Ação**) + link "Selecionar tudo"; ações à direita, todas sm (accent **Concluir**, outline **Arquivar**/**Desarquivar** conforme a vista, ghost **Cancelar**). O botão **Selecionar** (outline sm, `aria-pressed`) entra e sai do modo; Esc sai.
+- **Arquivados:** alternador-pill com `aria-pressed`: inativo outline branco; ativo fundo **Cinza Tinta** (neutral-800), texto branco, hover preto.
+
+**A Regra do Link de Serviço.** Dentro de uma barra, ação que corrige ou auxilia (limpar, selecionar tudo) é texto sublinhado, não adesivo — o adesivo (borda + sombra) é a ação principal da linha; se tudo é botão, nada é.
+
+### Checkbox
+- **Estilo:** 20px, raio 6px, borda preta 2px, sombra micro 1px; vazio branco (hover Cinza Papel), check Lucide stroke 3.
+- **Cor por significado:** seleção veste **Azul Caneta Ação** com texto branco; conclusão veste **Verde Giz** com texto preto (A Regra da Cor por Significado).
+- **Física micro:** hover afunda 0.5px e a sombra some; active afunda 1px sem sombra — a exceção confirmada ao Snap Inteiro (sombra de 1px não tem meio inteiro).
+- **A11y:** `role="checkbox"` + `aria-checked`; ring de foco padrão via teclado.
+
 ### Chips (tabs e filtros)
-- **Style:** pill retangular raio 12px, borda preta 2px, branco com texto preto; ativa vira **Azul Caneta Ação** com texto branco; contador em sub-pill (Micro, 11px, bold) com cores invertidas.
+- **Style:** pill retangular raio 12px, borda preta 2px, branco com texto preto; ativa vira **Azul Caneta Ação** com texto branco; contador em sub-pill (Micro, 11px, bold) com cores invertidas. Tabs-chip vivem hoje na Grade (lista de turmas selecionadas); o feed filtra por Filtro Select (Toolbar do Feed).
 - **State:** mesma física de botão na escala 2px, já em snap inteiro (hover +1px,+1px com sombra 2px→1px; active +2px,+2px com sombra none); mesmo ring de foco via teclado.
 - **Filtros de estado (Disciplinas):** Buttons outline `sm` tintados com o pastel da própria família em repouso (Cursando **Azul Pastel**, Disponíveis **Amarelo Pastel**, hover lavado a 40%) e cor cheia da família quando ativos (primary, accent, yellow); rótulo carrega o contador entre parênteses e `title` explica o filtro. Marcador de obrigatória nas listas: asterisco font-black **Vermelho Correção Forte** ao lado do nome.
 
@@ -320,20 +374,22 @@ A distinção se lê de longe: o que tem sombra 2px e raio 16px afunda quando cl
 - **Shadow Strategy:** Adesivo de card (4px 4px #000).
 - **Card clicável** (ex.: disciplina na lista de Disciplinas): corpo de conteúdo (raio 8px, sombra 4px) com comportamento de ação — cursor, foco visível, física de afundar na escala 4px (hover +2px/sombra 2px, active +4px/shadow-none) e semântica de botão (`role="button"`, `tabIndex`, Enter/Espaço).
 - **Border:** preta, 2px.
-- **Internal Padding:** 24px (p-6) no card padrão; cards de trabalho da Grade (filtros, Minha Grade, Catálogo) usam 16px (p-4) — densidade de ferramenta, decisão válida onde a tela é o buffer de trabalho; footer de card com borda superior black/10.
+- **Internal Padding:** 24px (p-6) no card padrão; cards de trabalho da Grade e da Toolbar do feed usam 16px (p-4) — densidade de ferramenta, decisão válida onde a tela é o buffer de trabalho; footer de card com borda superior black/10; card de lista (p-0) abre com a barra de contagem quando filtrado.
 
 ### Inputs / Fields
 - **Style:** fundo branco, borda preta 2px, raio 12px, padding 10px 16px, texto 0.875rem/500; label acima em 0.75rem/700.
 - **Focus:** ring de 2px **Azul Caneta Ação**, sem glow.
 - **Error:** borda e ring **Vermelho Correção Forte** (#DC2626, não-texto), mensagem abaixo em 0.75rem/700 **Vermelho Erro** (#B91C1C).
 - **Disabled:** opacity 50%, fundo Cinza Papel.
+- **Cofre (accordion de plataformas):** no painel de Settings (variante panel), matrícula/senha ficam lado a lado em duas colunas quando o painel tem ≥580px (container query), empilhados em janelas estreitas; no onboarding (variante stickers) ficam sempre em coluna.
 
 ### Navigation (Sidebar Ledger)
 - **Style:** coluna full-bleed: cada item é uma faixa inteira separada por borda preta 2px (estilo fichário). Item ativo: fundo **Azul Caneta Ação** cheio, texto branco, font-black. Inativo: branco, font-bold, hover Cinza Papel.
 - **States:** sem sombra e sem física de pressionar — a navegação é a encadernação, não um adesivo. Colapsável (264px ↔ 80px); recolhida mostra só ícones centralizados; botões de expandir/recolher aparecem no hover do grupo.
 
-### Badge (etiqueta de plataforma/tipo)
-- **Style:** pill (9999px), borda preta 2px, **sem sombra** — etiqueta de tinta colada no papel, não adesivo; padding 2px 12px (md) / 2px 8px (sm), texto 0.75rem/700. Cor por identidade: Sigaa **Verde Giz**, Aprender 3 **Lápis Laranja**, Teams **Azul Céu**, tarefa **Amarelo Marca-Texto**, urgente **Vermelho Correção Forte** (texto branco), primária **Azul Caneta Ação** (texto branco), aviso Cinza Nota (slate-200), neutra/outline branca.
+### Badge (etiqueta de plataforma/tipo/prazo)
+- **Style:** pill (9999px), borda preta 2px, **sem sombra** — etiqueta de tinta colada no papel, não adesivo; padding 2px 12px (md) / 2px 8px (sm), texto 0.75rem/700 (sm em 11px/700). Cor por identidade: Sigaa **Verde Giz**, Aprender 3 **Lápis Laranja**, Teams **Azul Céu**, tarefa **Amarelo Marca-Texto**, prazo urgente **Vermelho Correção Forte** (texto branco), prazo próximo **Amarelo Marca-Texto**, primária **Azul Caneta Ação** (texto branco), aviso **Cinza Nota** (slate-200), neutra/outline branca.
+- **Truncamento:** badge de disciplina com texto longo usa `max-w` + truncate no conteúdo interno — a pílula segura a largura, o texto corta (sino de prazos: max-w-[118px]).
 - **Icon:** Lucide 14–16px, stroke 2.5, opcional à esquerda.
 
 ### Alert
@@ -342,23 +398,29 @@ A distinção se lê de longe: o que tem sombra 2px e raio 16px afunda quando cl
 ### Feed List (edição, não planilha)
 - **Formato:** lista de linhas gordas de duas alturas, **sem cabeçalho de coluna** — título bold em cima, meta inline embaixo (badge de plataforma, chip da disciplina, "Enviado em…", "Entrega…"). A clareza vem dos rótulos inline, não de colunas.
 - **Corpo de conteúdo:** vive dentro de um Card `p-0` (borda, raio 8px, sombra 4px); divisor preto de 2px em black/10 entre linhas; ícone do tipo à esquerda (ClipboardList trabalho, FileText aviso) como o ícone de PR do GitHub.
-- **Densidade:** padding vertical 16px; título em 1 linha truncada com tooltip nativo do browser (`title`) ancorado nele. Ações (abrir na plataforma, concluir, arquivar/desarquivar) moram no menu de reticências que fecha a linha.
-- **Direita:** pill curto de prazo (Encerrado / <24h / 2 dias) com a data completa embaixo, alinhado à direita.
-- **Estado na linha:** concluído lê mais forte que arquivado — concluído em Cinza Papel presente (neutral-100) com título riscado em neutral-600; arquivado no neutral-50 com título esmaecido. No hover a linha afunda um tom a partir do próprio repouso (normal → neutral-50, arquivada → neutral-100/70, concluída → neutral-200/70) em 150ms — localizador de mouse, não adesivo.
+- **Densidade:** padding vertical 16px; título em 1 linha truncada com tooltip nativo do browser (`title`) ancorado nele. Ações (abrir na plataforma, concluir, arquivar/desarquivar) moram no menu de reticências que fecha a linha — e não propagam clique.
+- **Direita:** Badge sm de prazo (urgente **Vermelho Correção Forte**, próximo **Amarelo Marca-Texto**), uma só, alinhada à direita (some em janela estreita); a data completa vive na meta ("Entrega…").
+- **Estado na linha:** concluído lê mais forte que arquivado — concluído em Cinza Papel presente (neutral-100) com título riscado e **badges da linha esmaecidas a 50%** (a linha inteira lê "done"); arquivado no neutral-50 com título esmaecido. No hover a linha afunda um tom a partir do próprio repouso (normal → neutral-50, arquivada → neutral-100/70, concluída → neutral-200/70) em 150ms — localizador de mouse, não adesivo.
+- **Modo Selecionar:** o checkbox de seleção ocupa o slot esquerdo (o de conclusão/tipo some); a linha inteira alterna a seleção (`cursor-pointer`, clique com Shift em cascata) e a linha selecionada acende **Azul Pastel**; controles internos não propagam o clique. Seleção vive por página/filtro: trocar filtro, página ou sair da vista derruba o modo.
 - **Chip da disciplina:** mostra o **nome oficial da disciplina no SIGAA**, resolvido pela associação de turmas — nunca o nome da turma do Aprender 3 nem o código de turma; no feed de uma disciplina específica (drill-down) o chip não existe — repetiria o contexto da tela.
+- **Detalhes da disciplina (drill-down):** card de contexto em p-4: badges sm das plataformas presentes + meta SIGAA (turma, Prof., Sala, horário, semestre) numa linha só, separada por " · " e por divisor vertical de 1px black/15 — item sem dado não entra na linha. Botões "Acessar na plataforma" não existem mais nesta tela; o acesso mora nas ações da linha.
 
 ### Dropdown Menu
 - **Trigger:** micro-ação ghost de reticências (MoreHorizontal), raio 8px, física 2px.
 - **Popup:** fundo **Papel Quadriculado** (`bg-canvas`) — o mesmo papel dos tooltips e do popup do Select na Grade. Raio 8px, borda preta 2px, padding 4px, **sem sombra**: o contorno preto faz o destaque, não a elevação.
 - **Item:** raio 8px, texto preto; hover e teclado acendem **Azul Caneta Ação** com texto branco — mesmo tratamento do SelectItem, um azul só de seleção no app.
 
+### Empty State (EmptyState)
+- **Character:** pausa com rosto — o mascote **Saruê em dúvida** (`sarue-doubt.png`, 144–176px) é a ilustração; não leva ícone de Lucide (props de ícone foram aposentadas).
+- **Style:** card branco raio 12px (rounded-xl), borda 2px, sombra 4px, p-8 centrado; título 1rem/800, descrição Micro bold neutral-600 em máx. 28rem, ação abaixo com respiro de 20px.
+
 ### Pagination
 - **Números:** micro-ação 32px, raio 8px, física 2px; página atual vira **Azul Caneta Ação** travada (`aria-current="page"`). Setas são Button outline icon 32px. Janela compacta: primeira, última, vizinhas da atual, reticências no meio.
 
 ### Skeleton (conteúdo sem tinta)
-- **Style:** bloco neutro (#E5E5E5, neutral-200), raio pequeno de conteúdo (4px), pulso lento (`animate-pulse`); desligado com `prefers-reduced-motion`.
+- **Style:** bloco neutro (#E5E5E5, neutral-200), raio pequeno de conteúdo (4px), pulso lento (`animate-pulse`); desligado com `prefers-reduced-motion` e com o toggle "Reduzir animações" de Settings.
 - **Border:** nenhuma — ver A Regra do Bloco Sem Borda.
-- **FeedListSkeleton:** espelha a geometria exata das linhas do feed (ícone à esquerda, duas alturas, meta em pills de 24px, prazo à direita em sm+) dentro do mesmo Card `p-0`, com larguras variadas por linha — a troca skeleton → conteúdo acontece sem salto de layout.
+- **FeedListSkeleton:** espelha a geometria exata das linhas do feed (ícone à esquerda, duas alturas, meta em pills de 24px, um pill de prazo à direita em sm+) dentro do mesmo Card `p-0`, com larguras variadas por linha — a troca skeleton → conteúdo acontece sem salto de layout.
 - **Quando existe:** só na primeira carga do feed (`isLoading` sem carga concluída). Refetch local (SQLite) troca o conteúdo no lugar, sem skeleton, dim ou spinner intermediário — piscar é shift, não feedback.
 
 **A Regra do Bloco Sem Borda.** Skeleton é conteúdo à espera de tinta: bloco neutro pulsante, nunca adesivo — borda e sombra pertencem ao Card que o contém. Bloco de loading com risco preto finge ser conteúdo.
@@ -371,20 +433,27 @@ O componente mais identitário: tabela de 7 colunas (Seg–Sáb) × 15 linhas de
 ### Do:
 - **Do** dar borda preta de 2px a toda superfície e elemento interativo (A Regra do Risco Preto).
 - **Do** usar sombra dura deslocada preta (`Xpx Xpx 0 0 #000`) e física completa: hover afunda com snap inteiro, active afunda tudo, disabled congela.
+- **Do** usar azul para seleção e **Verde Giz** só para conclusão — checkbox azul de selecionar, verde de concluir (A Regra da Cor por Significado).
+- **Do** pôr a contagem absoluta no título da página e a contagem filtrada na barra interna do card, sempre com o filtro visível.
+- **Do** usar link sublinhado para ação terciária de barra ("Limpar filtros", "Selecionar tudo") (A Regra do Link de Serviço).
+- **Do** vestir filtro engajado com a cor cheia da família (Filtro Select azul, filtros de Disciplinas com sua cor) e a cavidade de busca engajada com o pastel.
 - **Do** construir hierarquia com peso de fonte (800/700/600/500) e usar pastéis como fundo, nunca como cor de ação.
-- **Do** usar Plus Jakarta Sans e ícones Lucide com stroke 2.5; rótulos estruturais em uppercase bold 11–12px (Micro, 11px, para rótulos mínimos).
-- **Do** usar as cores de plataforma como identidade fixa (Sigaa verde, Aprender 3 laranja) em badges e filtros.
+- **Do** usar Plus Jakarta Sans e ícones Lucide com stroke 2.5 (check de checkbox stroke 3); rótulos estruturais em uppercase bold 11–12px.
+- **Do** usar as cores de plataforma como identidade fixa (Sigaa verde, Aprender 3 laranja, Teams azul) em badges e filtros.
 - **Do** usar raio e sombra como affordance (A Regra dos Dois Adesivos): ação 12–16px + sombra 2px; conteúdo 8px + sombra 4px; campo 12px sem sombra.
-- **Do** usar Micro-adesivo 1px (`neo-xs`) em blocos de ícone, pills inline e micro-ações flutuantes; badge fica sem sombra.
+- **Do** usar Micro-adesivo 1px (`neo-xs`) em checkbox, blocos de ícone, pills inline e micro-ações flutuantes; badge fica sem sombra.
 - **Do** dar som mecânico só com opt-in, nunca na navegação nem em elemento desabilitado (A Regra do Clique Mecânico).
 - **Do** usar #2563EB/#DC2626 como fundo sob texto branco; #468AFB/#FF6B6B ficam para marca/bordas.
 
 ### Don't:
 - **Don't** usar sombra com blur, box-shadow difusa, rgba ambiente ou elevação estilo Material — sombra dura ou nenhuma.
 - **Don't** usar glassmorphism, backdrop-blur, gradientes ou superfícies translúcidas — o mundo é opaco.
+- **Don't** usar verde para seleção ou azul para conclusão — as tintas não trocam de significado (A Regra da Cor por Significado).
+- **Don't** soltar linha de legenda de contagem acima do card — contagem vive no título (absoluta) ou na barra interna (filtrada).
+- **Don't** dar adesivo (borda + sombra) a ação terciária de barra — é link de serviço.
 - **Don't** criar elemento interativo com sombra que não afunde no active (A Regra do Afundar).
 - **Don't** fazer hover levantar o adesivo (translate negativo ou sombra crescendo) — o adesivo só afunda, com snap inteiro, e fica a 1px do papel em sombra de 3px (A Regra do Afundar).
-- **Don't** transladar press em meia-pixel (1.5px) — antialiasa a borda e borra o adesivo; snap para inteiro (A Regra do Snap Inteiro).
+- **Don't** transladar press em meia-pixel em sombra de 2px+ — antialiasa a borda e borra o adesivo; a única exceção confirmada é o checkbox de 20px (0.5px/1px) (A Regra do Snap Inteiro).
 - **Don't** enfraquecer texto reduzindo peso abaixo de font-medium; baixe o tom, mantenha o peso (A Regra do Marcador Grosso).
 - **Don't** usar cor de ação cheia como fundo de seção, ou pastel como cor de botão (A Regra do Pastel como Papel).
 - **Don't** tingir sombra de cor fora da Zona de Perigo — a sombra #DC2626 é exclusiva dela (A Regra da Sombra Dura).

@@ -2,8 +2,10 @@ import * as React from "react";
 import type { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-export interface PageHeaderProps extends React.HTMLAttributes<HTMLDivElement> {
-  title: string;
+export interface PageHeaderProps
+  extends Omit<React.HTMLAttributes<HTMLDivElement>, "title"> {
+  /** Título da página; aceita nó para trechos estilizados (ex.: contagem em fonte menor). */
+  title: React.ReactNode;
   icon?: LucideIcon;
   actions?: React.ReactNode;
 }

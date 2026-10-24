@@ -49,6 +49,7 @@ export type Course = {
 	professor: string | null,
 	classroom: string | null,
 	schedule: string | null,
+	turma?: string | null,
 	unreadCount: number | null,
 	pendingAssignmentsCount: number | null,
 	url: string | null,

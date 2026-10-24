@@ -149,7 +149,7 @@ impl ScheduleSolver {
         }
 
         // Ordena por maior pontuação (melhor adequação de horários e preferências)
-        valid_options.sort_by(|a, b| b.score.cmp(&a.score));
+        valid_options.sort_by_key(|b| std::cmp::Reverse(b.score));
 
         valid_options
     }

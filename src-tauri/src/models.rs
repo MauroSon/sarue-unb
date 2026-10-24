@@ -44,6 +44,8 @@ pub struct Course {
     pub professor: Option<String>,
     pub classroom: Option<String>,
     pub schedule: Option<String>,
+    #[serde(default)]
+    pub turma: Option<String>,
     pub unread_count: Option<u32>,
     pub pending_assignments_count: Option<u32>,
     pub url: Option<String>,

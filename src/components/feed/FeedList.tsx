@@ -29,6 +29,10 @@ export interface FeedListProps {
   onToggleComplete?: (id: string, currentStatus?: boolean) => void;
   onArchive?: (id: string) => void;
   onRestore?: (id: string) => void;
+  /** Modo Selecionar: checkbox azul por linha; a linha inteira alterna a seleção. */
+  selectionMode?: boolean;
+  selectedIds?: ReadonlySet<string>;
+  onToggleSelect?: (id: string, shiftKey: boolean) => void;
 }
 
 const PLATFORM_LABELS: Record<string, string> = {
@@ -65,6 +69,9 @@ const getDueStatus = (dueDateStr?: string) => {
  * Lista do feed no formato edição (referência GitHub): sem cabeçalho de coluna,
  * linha gorda de duas alturas — título em cima, meta inline embaixo. Clareza vem
  * dos rótulos ("Enviado em…", "Entrega…"), não de colunas. Ações no menu ⋯.
+ * No modo Selecionar: checkbox azul à esquerda (azul = selecionado, verde =
+ * concluído — uma cor por significado); a linha inteira alterna a seleção e
+ * os controles internos (check de conclusão, menu ⋯) não propagam o clique.
  */
 export const FeedList: React.FC<FeedListProps> = ({
   items,
@@ -73,6 +80,9 @@ export const FeedList: React.FC<FeedListProps> = ({
   onToggleComplete,
   onArchive,
   onRestore,
+  selectionMode = false,
+  selectedIds,
+  onToggleSelect,
 }) => {
   // Nome oficial da disciplina (SIGAA) por nome de turma associada (SIGAA ou Aprender 3)
   const disciplineNames = useMemo(() => {
@@ -96,54 +106,94 @@ export const FeedList: React.FC<FeedListProps> = ({
           : item.isArchived
             ? "text-neutral-500"
             : "text-black";
+        // Concluído esmaece as badges da linha — a linha inteira lê "done"
+        const completedFade = item.isCompleted ? " opacity-50" : "";
         const TypeIcon = isAssignment ? ClipboardList : FileText;
         const disciplineLabel =
           disciplineNames.get(item.courseName) ||
           item.courseName ||
           item.courseCode;
+        const isSelected = Boolean(selectedIds?.has(item.id));
 
         return (
           <li
             key={item.id}
+            onClick={
+              selectionMode && onToggleSelect
+                ? (e) => onToggleSelect(item.id, e.shiftKey)
+                : undefined
+            }
             className={`flex items-center gap-3 px-4 md:px-5 py-4 transition-colors duration-150 ${
-              item.isCompleted
-                ? "bg-neutral-100/80 hover:bg-neutral-200/70"
-                : item.isArchived
-                  ? "bg-neutral-50/70 hover:bg-neutral-100/70"
-                  : "hover:bg-neutral-50"
-            }`}
+              isSelected
+                ? "bg-pastel-blue"
+                : item.isCompleted
+                  ? "bg-neutral-100/80 hover:bg-neutral-200/70"
+                  : item.isArchived
+                    ? "bg-neutral-50/70 hover:bg-neutral-100/70"
+                    : "hover:bg-neutral-50"
+            } ${selectionMode ? "cursor-pointer" : ""}`}
           >
-            {/* Indicador interativo de conclusão para tarefas ou ícone de tipo para avisos */}
-            {isAssignment && onToggleComplete ? (
+            {/* Checkbox de seleção (modo Selecionar): azul quando marcado — verde segue sendo só de conclusão */}
+            {selectionMode && onToggleSelect ? (
               <button
                 type="button"
-                onClick={() => onToggleComplete(item.id, item.isCompleted)}
-                title={
-                  item.isCompleted
-                    ? "Marcar como não concluído"
-                    : "Marcar como concluído"
-                }
-                aria-label={
-                  item.isCompleted
-                    ? "Marcar como não concluído"
-                    : "Marcar como concluído"
-                }
-                className={`w-5 h-5 rounded-md border-2 border-black flex items-center justify-center shrink-0 cursor-pointer transition-[transform,box-shadow,background-color] duration-150 ease-out shadow-[1px_1px_0px_0px_#000] hover:translate-x-[0.5px] hover:translate-y-[0.5px] hover:shadow-none active:translate-x-[1px] active:translate-y-[1px] ${
-                  item.isCompleted
-                    ? "bg-neo-green text-black"
+                role="checkbox"
+                aria-checked={isSelected}
+                aria-label={`Selecionar item: ${item.title}`}
+                title={`Selecionar item: ${item.title}`}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onToggleSelect(item.id, e.shiftKey);
+                }}
+                className={`w-5 h-5 rounded-md border-2 border-black flex items-center justify-center shrink-0 cursor-pointer transition-[transform,box-shadow,background-color] duration-150 ease-out shadow-[1px_1px_0px_0px_#000] hover:translate-x-[0.5px] hover:translate-y-[0.5px] hover:shadow-none active:translate-x-[1px] active:translate-y-[1px] focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-neo-blue focus-visible:ring-offset-2 ${
+                  isSelected
+                    ? "bg-neo-blue text-white"
                     : "bg-white hover:bg-neutral-100 text-neutral-400"
                 }`}
               >
-                {item.isCompleted ? (
+                {isSelected ? (
                   <Check className="w-3.5 h-3.5 stroke-[3]" />
                 ) : null}
               </button>
-            ) : (
-              <TypeIcon
-                className="w-4 h-4 stroke-[2.5] shrink-0 text-neutral-700"
-                aria-hidden
-              />
-            )}
+            ) : null}
+
+            {/* Conclusão (tarefas) ou ícone de tipo (avisos). Em modo Selecionar
+                o slot some: só o checkbox de seleção ocupa a linha. */}
+            {!selectionMode ? (
+              isAssignment && onToggleComplete ? (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onToggleComplete(item.id, item.isCompleted);
+                  }}
+                  title={
+                    item.isCompleted
+                      ? "Marcar como não concluído"
+                      : "Marcar como concluído"
+                  }
+                  aria-label={
+                    item.isCompleted
+                      ? "Marcar como não concluído"
+                      : "Marcar como concluído"
+                  }
+                  className={`w-5 h-5 rounded-md border-2 border-black flex items-center justify-center shrink-0 cursor-pointer transition-[transform,box-shadow,background-color] duration-150 ease-out shadow-[1px_1px_0px_0px_#000] hover:translate-x-[0.5px] hover:translate-y-[0.5px] hover:shadow-none active:translate-x-[1px] active:translate-y-[1px] ${
+                    item.isCompleted
+                      ? "bg-neo-green text-black"
+                      : "bg-white hover:bg-neutral-100 text-neutral-400"
+                  }`}
+                >
+                  {item.isCompleted ? (
+                    <Check className="w-3.5 h-3.5 stroke-[3]" />
+                  ) : null}
+                </button>
+              ) : (
+                <TypeIcon
+                  className="w-4 h-4 stroke-[2.5] shrink-0 text-neutral-700"
+                  aria-hidden
+                />
+              )
+            ) : null}
 
             {/* Título + meta */}
             <div className="min-w-0 flex-1">
@@ -155,11 +205,11 @@ export const FeedList: React.FC<FeedListProps> = ({
               </span>
 
               <div className="mt-1 flex items-center gap-2 min-w-0 text-[11px] font-semibold text-neutral-500">
-                <Badge variant={item.platform} size="sm" className="shrink-0">
+                <Badge variant={item.platform} size="sm" className={`shrink-0${completedFade}`}>
                   {platformLabel}
                 </Badge>
                 {showDiscipline && disciplineLabel ? (
-                  <Badge variant="neutral" size="sm" title={item.courseName}>
+                  <Badge variant="neutral" size="sm" title={item.courseName} className={`shrink-0${completedFade}`}>
                     {disciplineLabel}
                   </Badge>
                 ) : null}
@@ -174,23 +224,16 @@ export const FeedList: React.FC<FeedListProps> = ({
               </div>
             </div>
 
-            {/* Prazo: pill curto + data completa, alinhado à direita */}
-            {dueStatus ? (
-              <div className="shrink-0 hidden sm:flex flex-col items-end gap-1">
-                {dueStatus.label ? (
-                  <span
-                    className={`inline-flex items-center px-2 py-0.5 text-[11px] font-bold rounded-full border-2 border-black shadow-[2px_2px_0px_0px_#000] ${
-                      dueStatus.isUrgent
-                        ? "bg-neo-danger text-white"
-                        : "bg-neo-yellow text-black"
-                    }`}
-                  >
-                    {dueStatus.label}
-                  </span>
-                ) : null}
-                <span className="text-[11px] font-semibold text-neutral-600 whitespace-nowrap">
-                  {item.dueDate ? formatDate(item.dueDate) : ""}
-                </span>
+            {/* Prazo: badge na coluna direita; a data completa vive na meta linha ("Entrega…") */}
+            {dueStatus?.label ? (
+              <div className="hidden shrink-0 sm:flex">
+                <Badge
+                  variant={dueStatus.isUrgent ? "urgent" : "yellow"}
+                  size="sm"
+                  className={`shrink-0${completedFade}`}
+                >
+                  {dueStatus.label}
+                </Badge>
               </div>
             ) : null}
 
@@ -203,6 +246,7 @@ export const FeedList: React.FC<FeedListProps> = ({
                     variant="ghost"
                     size="icon"
                     aria-label={`Ações para: ${item.title}`}
+                    onClick={(e) => e.stopPropagation()}
                     className="h-8 w-8 rounded-lg text-neutral-600 hover:text-black shrink-0"
                   />
                 }

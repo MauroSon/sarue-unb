@@ -2,9 +2,7 @@ import * as React from "react";
 import { Switch as SwitchPrimitive } from "@base-ui/react/switch";
 import { cn } from "@/lib/utils";
 
-export interface SwitchProps extends React.ComponentProps<
-  typeof SwitchPrimitive.Root
-> {}
+export type SwitchProps = React.ComponentProps<typeof SwitchPrimitive.Root>;
 
 export function Switch({ className, ...props }: SwitchProps) {
   return (

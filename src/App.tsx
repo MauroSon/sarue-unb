@@ -77,7 +77,7 @@ const AppShell: React.FC = () => {
     return () => {
       cancelled = true;
     };
-  }, [repos]);
+  }, [repos, useCases.getAcademicCalendar]);
 
   // Usuário recorrente pula o onboarding na abertura do app: credenciais salvas
   // (entra sincronizando) ou, como fallback, dados locais de uso anterior (modo

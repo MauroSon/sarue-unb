@@ -1,4 +1,4 @@
-import type { IraScenario, IraScenarioDiscipline } from '../domain/entities/ira-scenario';
+import type { IraScenario } from '../domain/entities/ira-scenario';
 import { IRA_MENTION_VALUES } from '../domain/entities/ira-scenario';
 
 export interface IraCalculation {

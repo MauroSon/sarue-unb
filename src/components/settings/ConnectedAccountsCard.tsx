@@ -5,7 +5,8 @@ import { SettingsSection } from "@/components/settings/SettingsSection";
 /**
  * Seção "Contas conectadas" de Configurações: o accordion de gavetas do
  * cofre dentro do card padrão da página (variante "panel" — linhas
- * segmentadas, sem sombra própria, para o card não aninhar adesivos).
+ * segmentadas, sem sombra própria, para o card não aninhar adesivos,
+ * com inputs em linha no desktop e coluna em telas menores).
  * Toda a lógica de conexão, estados, bloqueios e efeitos vive no
  * PlatformAccountsAccordion compartilhado com o onboarding.
  */

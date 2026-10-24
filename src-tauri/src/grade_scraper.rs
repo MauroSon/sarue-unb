@@ -2,7 +2,8 @@ use serde::{Deserialize, Serialize};
 use std::sync::OnceLock;
 use tokio::sync::RwLock;
 
-const CDN_BASE_URL: &str = "https://raw.githubusercontent.com/kalebhenrique/sarue-unb/gh-pages/data";
+const CDN_BASE_URL: &str =
+    "https://raw.githubusercontent.com/kalebhenrique/sarue-unb/gh-pages/data";
 const GITHUB_PAGES_BASE_URL: &str = "https://kalebhenrique.github.io/sarue-unb/data";
 const USER_AGENT: &str = "Sarue-UnB/0.1.0 (Desktop App; Tauri)";
 
@@ -28,9 +29,10 @@ fn get_curricula_lock() -> &'static RwLock<Option<Vec<CurriculumStructure>>> {
     CURRICULA_CACHE.get_or_init(|| RwLock::new(None))
 }
 
-static COURSE_CURRICULA_CACHE: OnceLock<RwLock<Option<(String, Vec<CurriculumStructure>)>>> = OnceLock::new();
+type CourseCurriculaEntry = Option<(String, Vec<CurriculumStructure>)>;
+static COURSE_CURRICULA_CACHE: OnceLock<RwLock<CourseCurriculaEntry>> = OnceLock::new();
 
-fn get_course_curricula_lock() -> &'static RwLock<Option<(String, Vec<CurriculumStructure>)>> {
+fn get_course_curricula_lock() -> &'static RwLock<CourseCurriculaEntry> {
     COURSE_CURRICULA_CACHE.get_or_init(|| RwLock::new(None))
 }
 
@@ -193,12 +195,15 @@ impl SigaaGradeScraper {
         // 3. Tenta raw.githubusercontent.com
         let url_raw = format!("{}/{}", CDN_BASE_URL, file_name);
         match client.get(&url_raw).send().await {
-            Ok(res) if res.status().is_success() => {
-                res.json::<T>()
-                    .await
-                    .map_err(|e| format!("Falha ao deserializar JSON de {}: {}", url_raw, e))
-            }
-            Ok(res) => Err(format!("CDN retornou status HTTP {} para {}", res.status(), url_raw)),
+            Ok(res) if res.status().is_success() => res
+                .json::<T>()
+                .await
+                .map_err(|e| format!("Falha ao deserializar JSON de {}: {}", url_raw, e)),
+            Ok(res) => Err(format!(
+                "CDN retornou status HTTP {} para {}",
+                res.status(),
+                url_raw
+            )),
             Err(e) => Err(format!("Falha ao conectar ao CDN para {}: {}", url_raw, e)),
         }
     }
@@ -316,10 +321,11 @@ impl SigaaGradeScraper {
     }
 
     /// Obtém as estruturas curriculares de um curso
-    pub async fn fetch_course_curriculum(course_id: &str) -> Result<Vec<CurriculumStructure>, String> {
+    pub async fn fetch_course_curriculum(
+        course_id: &str,
+    ) -> Result<Vec<CurriculumStructure>, String> {
         // course_id do catálogo é numérico; a checagem barra path traversal no nome de arquivo
-        let safe_id =
-            !course_id.is_empty() && course_id.chars().all(|c| c.is_ascii_alphanumeric());
+        let safe_id = !course_id.is_empty() && course_id.chars().all(|c| c.is_ascii_alphanumeric());
 
         // 1. Arquivo por curso no CDN (~centenas de KB) — evita baixar curricula.json
         //    inteiro (~40 MB) quando só as matrizes de um curso importam.
@@ -414,22 +420,70 @@ impl SigaaGradeScraper {
     /// Lista padrão de departamentos UnB para contingência offline
     pub fn fallback_departments() -> Vec<Department> {
         vec![
-            Department { id: "508".into(), name: "DEPTO CIÊNCIAS DA COMPUTAÇÃO - CIC".into() },
-            Department { id: "518".into(), name: "DEPARTAMENTO DE MATEMÁTICA - MAT".into() },
-            Department { id: "514".into(), name: "DEPTO ESTATÍSTICA - EST".into() },
-            Department { id: "443".into(), name: "DEPTO ENGENHARIA ELÉTRICA - ENE".into() },
-            Department { id: "449".into(), name: "DEPARTAMENTO DE ENGENHARIA MECÂNICA - ENM".into() },
-            Department { id: "440".into(), name: "DEPARTAMENTO DE ENGENHARIA CIVIL E AMBIENTAL - ENC".into() },
-            Department { id: "524".into(), name: "INSTITUTO DE FÍSICA - IF".into() },
-            Department { id: "610".into(), name: "INSTITUTO DE QUÍMICA - IQ".into() },
-            Department { id: "327".into(), name: "DEPTO ADMINISTRAÇÃO - ADM".into() },
-            Department { id: "333".into(), name: "DEPTO CIÊNCIAS CONTÁBEIS ATUARIAIS - CCA".into() },
-            Department { id: "335".into(), name: "DEPTO ECONOMIA - ECO".into() },
-            Department { id: "673".into(), name: "CAMPUS UNB GAMA - FGA".into() },
-            Department { id: "672".into(), name: "CAMPUS UNB CEILÂNDIA - FCE".into() },
-            Department { id: "675".into(), name: "CAMPUS UNB PLANALTINA - FUP".into() },
-            Department { id: "401".into(), name: "FACULDADE DE DIREITO - FD".into() },
-            Department { id: "379".into(), name: "FACULDADE DE MEDICINA - FM".into() },
+            Department {
+                id: "508".into(),
+                name: "DEPTO CIÊNCIAS DA COMPUTAÇÃO - CIC".into(),
+            },
+            Department {
+                id: "518".into(),
+                name: "DEPARTAMENTO DE MATEMÁTICA - MAT".into(),
+            },
+            Department {
+                id: "514".into(),
+                name: "DEPTO ESTATÍSTICA - EST".into(),
+            },
+            Department {
+                id: "443".into(),
+                name: "DEPTO ENGENHARIA ELÉTRICA - ENE".into(),
+            },
+            Department {
+                id: "449".into(),
+                name: "DEPARTAMENTO DE ENGENHARIA MECÂNICA - ENM".into(),
+            },
+            Department {
+                id: "440".into(),
+                name: "DEPARTAMENTO DE ENGENHARIA CIVIL E AMBIENTAL - ENC".into(),
+            },
+            Department {
+                id: "524".into(),
+                name: "INSTITUTO DE FÍSICA - IF".into(),
+            },
+            Department {
+                id: "610".into(),
+                name: "INSTITUTO DE QUÍMICA - IQ".into(),
+            },
+            Department {
+                id: "327".into(),
+                name: "DEPTO ADMINISTRAÇÃO - ADM".into(),
+            },
+            Department {
+                id: "333".into(),
+                name: "DEPTO CIÊNCIAS CONTÁBEIS ATUARIAIS - CCA".into(),
+            },
+            Department {
+                id: "335".into(),
+                name: "DEPTO ECONOMIA - ECO".into(),
+            },
+            Department {
+                id: "673".into(),
+                name: "CAMPUS UNB GAMA - FGA".into(),
+            },
+            Department {
+                id: "672".into(),
+                name: "CAMPUS UNB CEILÂNDIA - FCE".into(),
+            },
+            Department {
+                id: "675".into(),
+                name: "CAMPUS UNB PLANALTINA - FUP".into(),
+            },
+            Department {
+                id: "401".into(),
+                name: "FACULDADE DE DIREITO - FD".into(),
+            },
+            Department {
+                id: "379".into(),
+                name: "FACULDADE DE MEDICINA - FM".into(),
+            },
         ]
     }
 
@@ -443,27 +497,53 @@ impl SigaaGradeScraper {
                     department_id: "508".into(),
                     acronym: Some("APC".into()),
                     acronyms: vec!["APC".into()],
-                    classes: vec![
-                        ScrapedClass {
-                            id: "CIC0004-01".into(),
-                            discipline_code: "CIC0004".into(),
-                            discipline_name: "ALGORITMOS E PROGRAMAÇÃO DE COMPUTADORES".into(),
-                            class_code: "01".into(),
-                            teachers: vec!["Prof. Carla Rocha".into()],
-                            classroom: "PJC BT 110".into(),
-                            schedule_code: "24M34".into(),
-                            schedule_description: Some("Segunda e Quarta 10:00 às 11:50".into()),
-                            date_range: None,
-                            schedule_slots: vec![
-                                ScheduleSlot { day: 2, day_name: "Seg".into(), shift: 'M', period: 3, time_range: "10:00 - 10:55".into(), global_slot_index: 2 },
-                                ScheduleSlot { day: 2, day_name: "Seg".into(), shift: 'M', period: 4, time_range: "10:55 - 11:50".into(), global_slot_index: 3 },
-                                ScheduleSlot { day: 4, day_name: "Qua".into(), shift: 'M', period: 3, time_range: "10:00 - 10:55".into(), global_slot_index: 2 },
-                                ScheduleSlot { day: 4, day_name: "Qua".into(), shift: 'M', period: 4, time_range: "10:55 - 11:50".into(), global_slot_index: 3 },
-                            ],
-                            vacancies: Some(40),
-                            occupied: Some(38),
-                        },
-                    ],
+                    classes: vec![ScrapedClass {
+                        id: "CIC0004-01".into(),
+                        discipline_code: "CIC0004".into(),
+                        discipline_name: "ALGORITMOS E PROGRAMAÇÃO DE COMPUTADORES".into(),
+                        class_code: "01".into(),
+                        teachers: vec!["Prof. Carla Rocha".into()],
+                        classroom: "PJC BT 110".into(),
+                        schedule_code: "24M34".into(),
+                        schedule_description: Some("Segunda e Quarta 10:00 às 11:50".into()),
+                        date_range: None,
+                        schedule_slots: vec![
+                            ScheduleSlot {
+                                day: 2,
+                                day_name: "Seg".into(),
+                                shift: 'M',
+                                period: 3,
+                                time_range: "10:00 - 10:55".into(),
+                                global_slot_index: 2,
+                            },
+                            ScheduleSlot {
+                                day: 2,
+                                day_name: "Seg".into(),
+                                shift: 'M',
+                                period: 4,
+                                time_range: "10:55 - 11:50".into(),
+                                global_slot_index: 3,
+                            },
+                            ScheduleSlot {
+                                day: 4,
+                                day_name: "Qua".into(),
+                                shift: 'M',
+                                period: 3,
+                                time_range: "10:00 - 10:55".into(),
+                                global_slot_index: 2,
+                            },
+                            ScheduleSlot {
+                                day: 4,
+                                day_name: "Qua".into(),
+                                shift: 'M',
+                                period: 4,
+                                time_range: "10:55 - 11:50".into(),
+                                global_slot_index: 3,
+                            },
+                        ],
+                        vacancies: Some(40),
+                        occupied: Some(38),
+                    }],
                 },
                 ScrapedDiscipline {
                     code: "CIC0090".into(),
@@ -471,91 +551,179 @@ impl SigaaGradeScraper {
                     department_id: "508".into(),
                     acronym: Some("ED".into()),
                     acronyms: vec!["ED".into()],
-                    classes: vec![
-                        ScrapedClass {
-                            id: "CIC0090-01".into(),
-                            discipline_code: "CIC0090".into(),
-                            discipline_name: "ESTRUTURAS DE DADOS".into(),
-                            class_code: "01".into(),
-                            teachers: vec!["Prof. Carlos Eduardo".into()],
-                            classroom: "PJC BT 112".into(),
-                            schedule_code: "24T23".into(),
-                            schedule_description: Some("Segunda e Quarta 14:00 às 15:50".into()),
-                            date_range: None,
-                            schedule_slots: vec![
-                                ScheduleSlot { day: 2, day_name: "Seg".into(), shift: 'T', period: 2, time_range: "14:00 - 14:55".into(), global_slot_index: 6 },
-                                ScheduleSlot { day: 2, day_name: "Seg".into(), shift: 'T', period: 3, time_range: "14:55 - 15:50".into(), global_slot_index: 7 },
-                                ScheduleSlot { day: 4, day_name: "Qua".into(), shift: 'T', period: 2, time_range: "14:00 - 14:55".into(), global_slot_index: 6 },
-                                ScheduleSlot { day: 4, day_name: "Qua".into(), shift: 'T', period: 3, time_range: "14:55 - 15:50".into(), global_slot_index: 7 },
-                            ],
-                            vacancies: Some(40),
-                            occupied: Some(39),
-                        },
-                    ],
+                    classes: vec![ScrapedClass {
+                        id: "CIC0090-01".into(),
+                        discipline_code: "CIC0090".into(),
+                        discipline_name: "ESTRUTURAS DE DADOS".into(),
+                        class_code: "01".into(),
+                        teachers: vec!["Prof. Carlos Eduardo".into()],
+                        classroom: "PJC BT 112".into(),
+                        schedule_code: "24T23".into(),
+                        schedule_description: Some("Segunda e Quarta 14:00 às 15:50".into()),
+                        date_range: None,
+                        schedule_slots: vec![
+                            ScheduleSlot {
+                                day: 2,
+                                day_name: "Seg".into(),
+                                shift: 'T',
+                                period: 2,
+                                time_range: "14:00 - 14:55".into(),
+                                global_slot_index: 6,
+                            },
+                            ScheduleSlot {
+                                day: 2,
+                                day_name: "Seg".into(),
+                                shift: 'T',
+                                period: 3,
+                                time_range: "14:55 - 15:50".into(),
+                                global_slot_index: 7,
+                            },
+                            ScheduleSlot {
+                                day: 4,
+                                day_name: "Qua".into(),
+                                shift: 'T',
+                                period: 2,
+                                time_range: "14:00 - 14:55".into(),
+                                global_slot_index: 6,
+                            },
+                            ScheduleSlot {
+                                day: 4,
+                                day_name: "Qua".into(),
+                                shift: 'T',
+                                period: 3,
+                                time_range: "14:55 - 15:50".into(),
+                                global_slot_index: 7,
+                            },
+                        ],
+                        vacancies: Some(40),
+                        occupied: Some(39),
+                    }],
                 },
             ],
-            "518" => vec![
-                ScrapedDiscipline {
-                    code: "MAT0025".into(),
-                    name: "CÁLCULO 1".into(),
-                    department_id: "518".into(),
-                    acronym: Some("C1".into()),
-                    acronyms: vec!["C1".into(), "CI".into()],
-                    classes: vec![
-                        ScrapedClass {
-                            id: "MAT0025-01".into(),
-                            discipline_code: "MAT0025".into(),
-                            discipline_name: "CÁLCULO 1".into(),
-                            class_code: "01".into(),
-                            teachers: vec!["Prof. Luciana Maria".into()],
-                            classroom: "ICC CENTRO AT 10".into(),
-                            schedule_code: "246M12".into(),
-                            schedule_description: Some("Segunda, Quarta e Sexta 08:00 às 09:50".into()),
-                            date_range: None,
-                            schedule_slots: vec![
-                                ScheduleSlot { day: 2, day_name: "Seg".into(), shift: 'M', period: 1, time_range: "08:00 - 08:55".into(), global_slot_index: 0 },
-                                ScheduleSlot { day: 2, day_name: "Seg".into(), shift: 'M', period: 2, time_range: "08:55 - 09:50".into(), global_slot_index: 1 },
-                                ScheduleSlot { day: 4, day_name: "Qua".into(), shift: 'M', period: 1, time_range: "08:00 - 08:55".into(), global_slot_index: 0 },
-                                ScheduleSlot { day: 4, day_name: "Qua".into(), shift: 'M', period: 2, time_range: "08:55 - 09:50".into(), global_slot_index: 1 },
-                                ScheduleSlot { day: 6, day_name: "Sex".into(), shift: 'M', period: 1, time_range: "08:00 - 08:55".into(), global_slot_index: 0 },
-                                ScheduleSlot { day: 6, day_name: "Sex".into(), shift: 'M', period: 2, time_range: "08:55 - 09:50".into(), global_slot_index: 1 },
-                            ],
-                            vacancies: Some(60),
-                            occupied: Some(58),
+            "518" => vec![ScrapedDiscipline {
+                code: "MAT0025".into(),
+                name: "CÁLCULO 1".into(),
+                department_id: "518".into(),
+                acronym: Some("C1".into()),
+                acronyms: vec!["C1".into(), "CI".into()],
+                classes: vec![ScrapedClass {
+                    id: "MAT0025-01".into(),
+                    discipline_code: "MAT0025".into(),
+                    discipline_name: "CÁLCULO 1".into(),
+                    class_code: "01".into(),
+                    teachers: vec!["Prof. Luciana Maria".into()],
+                    classroom: "ICC CENTRO AT 10".into(),
+                    schedule_code: "246M12".into(),
+                    schedule_description: Some("Segunda, Quarta e Sexta 08:00 às 09:50".into()),
+                    date_range: None,
+                    schedule_slots: vec![
+                        ScheduleSlot {
+                            day: 2,
+                            day_name: "Seg".into(),
+                            shift: 'M',
+                            period: 1,
+                            time_range: "08:00 - 08:55".into(),
+                            global_slot_index: 0,
+                        },
+                        ScheduleSlot {
+                            day: 2,
+                            day_name: "Seg".into(),
+                            shift: 'M',
+                            period: 2,
+                            time_range: "08:55 - 09:50".into(),
+                            global_slot_index: 1,
+                        },
+                        ScheduleSlot {
+                            day: 4,
+                            day_name: "Qua".into(),
+                            shift: 'M',
+                            period: 1,
+                            time_range: "08:00 - 08:55".into(),
+                            global_slot_index: 0,
+                        },
+                        ScheduleSlot {
+                            day: 4,
+                            day_name: "Qua".into(),
+                            shift: 'M',
+                            period: 2,
+                            time_range: "08:55 - 09:50".into(),
+                            global_slot_index: 1,
+                        },
+                        ScheduleSlot {
+                            day: 6,
+                            day_name: "Sex".into(),
+                            shift: 'M',
+                            period: 1,
+                            time_range: "08:00 - 08:55".into(),
+                            global_slot_index: 0,
+                        },
+                        ScheduleSlot {
+                            day: 6,
+                            day_name: "Sex".into(),
+                            shift: 'M',
+                            period: 2,
+                            time_range: "08:55 - 09:50".into(),
+                            global_slot_index: 1,
                         },
                     ],
-                },
-            ],
-            _ => vec![
-                ScrapedDiscipline {
-                    code: "EST0023".into(),
-                    name: "PROBABILIDADE E ESTATÍSTICA".into(),
-                    department_id: dept_id.to_string(),
-                    acronym: Some("PE".into()),
-                    acronyms: vec!["PE".into()],
-                    classes: vec![
-                        ScrapedClass {
-                            id: "EST0023-01".into(),
-                            discipline_code: "EST0023".into(),
-                            discipline_name: "PROBABILIDADE E ESTATÍSTICA".into(),
-                            class_code: "01".into(),
-                            teachers: vec!["Prof. Maria Antonia".into()],
-                            classroom: "ICC ALA SUL AT 30".into(),
-                            schedule_code: "24T45".into(),
-                            schedule_description: Some("Segunda e Quarta 16:00 às 17:50".into()),
-                            date_range: None,
-                            schedule_slots: vec![
-                                ScheduleSlot { day: 2, day_name: "Seg".into(), shift: 'T', period: 4, time_range: "16:00 - 16:55".into(), global_slot_index: 8 },
-                                ScheduleSlot { day: 2, day_name: "Seg".into(), shift: 'T', period: 5, time_range: "16:55 - 17:50".into(), global_slot_index: 9 },
-                                ScheduleSlot { day: 4, day_name: "Qua".into(), shift: 'T', period: 4, time_range: "16:00 - 16:55".into(), global_slot_index: 8 },
-                                ScheduleSlot { day: 4, day_name: "Qua".into(), shift: 'T', period: 5, time_range: "16:55 - 17:50".into(), global_slot_index: 9 },
-                            ],
-                            vacancies: Some(45),
-                            occupied: Some(40),
+                    vacancies: Some(60),
+                    occupied: Some(58),
+                }],
+            }],
+            _ => vec![ScrapedDiscipline {
+                code: "EST0023".into(),
+                name: "PROBABILIDADE E ESTATÍSTICA".into(),
+                department_id: dept_id.to_string(),
+                acronym: Some("PE".into()),
+                acronyms: vec!["PE".into()],
+                classes: vec![ScrapedClass {
+                    id: "EST0023-01".into(),
+                    discipline_code: "EST0023".into(),
+                    discipline_name: "PROBABILIDADE E ESTATÍSTICA".into(),
+                    class_code: "01".into(),
+                    teachers: vec!["Prof. Maria Antonia".into()],
+                    classroom: "ICC ALA SUL AT 30".into(),
+                    schedule_code: "24T45".into(),
+                    schedule_description: Some("Segunda e Quarta 16:00 às 17:50".into()),
+                    date_range: None,
+                    schedule_slots: vec![
+                        ScheduleSlot {
+                            day: 2,
+                            day_name: "Seg".into(),
+                            shift: 'T',
+                            period: 4,
+                            time_range: "16:00 - 16:55".into(),
+                            global_slot_index: 8,
+                        },
+                        ScheduleSlot {
+                            day: 2,
+                            day_name: "Seg".into(),
+                            shift: 'T',
+                            period: 5,
+                            time_range: "16:55 - 17:50".into(),
+                            global_slot_index: 9,
+                        },
+                        ScheduleSlot {
+                            day: 4,
+                            day_name: "Qua".into(),
+                            shift: 'T',
+                            period: 4,
+                            time_range: "16:00 - 16:55".into(),
+                            global_slot_index: 8,
+                        },
+                        ScheduleSlot {
+                            day: 4,
+                            day_name: "Qua".into(),
+                            shift: 'T',
+                            period: 5,
+                            time_range: "16:55 - 17:50".into(),
+                            global_slot_index: 9,
                         },
                     ],
-                },
-            ],
+                    vacancies: Some(45),
+                    occupied: Some(40),
+                }],
+            }],
         }
     }
 
@@ -597,44 +765,42 @@ impl SigaaGradeScraper {
 
     /// Estruturas curriculares de fallback
     pub fn fallback_curricula_for_course(course_id: &str) -> Vec<CurriculumStructure> {
-        vec![
-            CurriculumStructure {
-                id: format!("{}-default", course_id),
-                course_id: course_id.to_string(),
-                course_name: "Curso UnB".to_string(),
-                code: "1/2026".to_string(),
-                created_year: Some("2026".to_string()),
-                status: "Ativa".to_string(),
-                shift: Some("Diurno".to_string()),
-                total_hours: Some(3000),
-                mandatory_disciplines: vec![
-                    CurriculumDiscipline {
-                        code: "CIC0004".to_string(),
-                        name: "ALGORITMOS E PROGRAMAÇÃO DE COMPUTADORES".to_string(),
-                        workload_hours: 60,
-                        level: Some(1),
-                        nature: "Obrigatória".to_string(),
-                        prerequisites_raw: None,
-                        prerequisites: vec![],
-                        equivalences_raw: None,
-                        equivalences: vec![],
-                    },
-                    CurriculumDiscipline {
-                        code: "MAT0025".to_string(),
-                        name: "CÁLCULO 1".to_string(),
-                        workload_hours: 90,
-                        level: Some(1),
-                        nature: "Obrigatória".to_string(),
-                        prerequisites_raw: None,
-                        prerequisites: vec![],
-                        equivalences_raw: None,
-                        equivalences: vec![],
-                    },
-                ],
-                elective_disciplines: vec![],
-                complementary_disciplines: vec![],
-            }
-        ]
+        vec![CurriculumStructure {
+            id: format!("{}-default", course_id),
+            course_id: course_id.to_string(),
+            course_name: "Curso UnB".to_string(),
+            code: "1/2026".to_string(),
+            created_year: Some("2026".to_string()),
+            status: "Ativa".to_string(),
+            shift: Some("Diurno".to_string()),
+            total_hours: Some(3000),
+            mandatory_disciplines: vec![
+                CurriculumDiscipline {
+                    code: "CIC0004".to_string(),
+                    name: "ALGORITMOS E PROGRAMAÇÃO DE COMPUTADORES".to_string(),
+                    workload_hours: 60,
+                    level: Some(1),
+                    nature: "Obrigatória".to_string(),
+                    prerequisites_raw: None,
+                    prerequisites: vec![],
+                    equivalences_raw: None,
+                    equivalences: vec![],
+                },
+                CurriculumDiscipline {
+                    code: "MAT0025".to_string(),
+                    name: "CÁLCULO 1".to_string(),
+                    workload_hours: 90,
+                    level: Some(1),
+                    nature: "Obrigatória".to_string(),
+                    prerequisites_raw: None,
+                    prerequisites: vec![],
+                    equivalences_raw: None,
+                    equivalences: vec![],
+                },
+            ],
+            elective_disciplines: vec![],
+            complementary_disciplines: vec![],
+        }]
     }
 }
 
@@ -667,7 +833,9 @@ mod tests {
 
     #[tokio::test]
     async fn test_scrape_department_classes_fallback() {
-        let disc = SigaaGradeScraper::scrape_department_classes("508", "2026", "2").await.unwrap();
+        let disc = SigaaGradeScraper::scrape_department_classes("508", "2026", "2")
+            .await
+            .unwrap();
         assert!(!disc.is_empty());
         println!("Loaded CIC disciplines count: {}", disc.len());
         // Com o arquivo classes.json presente no disco, CIC possui 57 disciplinas
@@ -676,7 +844,9 @@ mod tests {
 
     #[tokio::test]
     async fn test_scrape_department_classes_all() {
-        let disc = SigaaGradeScraper::scrape_department_classes("ALL", "2026", "2").await.unwrap();
+        let disc = SigaaGradeScraper::scrape_department_classes("ALL", "2026", "2")
+            .await
+            .unwrap();
         assert!(!disc.is_empty());
         println!("Loaded ALL disciplines count: {}", disc.len());
         assert!(disc.len() >= 4400);

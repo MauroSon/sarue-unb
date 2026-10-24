@@ -81,7 +81,7 @@ export class StrongholdCredentialsRepository implements ICredentialsRepository {
         if (!stronghold) {
           try {
             stronghold = await Stronghold.load(vaultPath, securePassword);
-          } catch (loadErr) {
+          } catch {
             console.info('[Stronghold] Não foi possível abrir o cofre com a chave principal. Tentando chave legada ou recuperação...');
 
             // Se falhou com a chave segura, verifica se é um cofre legado criado anteriormente com a chave fixa.

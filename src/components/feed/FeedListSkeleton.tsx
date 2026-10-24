@@ -42,9 +42,8 @@ export const FeedListSkeleton: React.FC<FeedListSkeletonProps> = ({ rows = 8 }) 
 
           {/* Prazo, alinhado à direita (some em telas estreitas, como na lista real) */}
           {row.hasDue ? (
-            <div className="hidden shrink-0 flex-col items-end gap-1 sm:flex">
+            <div className="hidden shrink-0 sm:flex">
               <Skeleton className="h-6 w-14 rounded-full" />
-              <Skeleton className="h-2 w-20 rounded-full" />
             </div>
           ) : null}
         </li>
