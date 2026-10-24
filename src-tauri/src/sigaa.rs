@@ -223,7 +223,13 @@ impl SigaaClient {
         let mut s = name.trim();
         let lower = s.to_lowercase();
         for prefix in [
-            "prof.ª", "profª", "profa.", "prof.", "prof ", "professora ", "professor ",
+            "prof.ª",
+            "profª",
+            "profa.",
+            "prof.",
+            "prof ",
+            "professora ",
+            "professor ",
         ] {
             if lower.starts_with(prefix) {
                 s = s[prefix.len()..].trim_start();
@@ -312,20 +318,19 @@ impl SigaaClient {
     /// Busca a oferta de turmas (dataset estático) e linka com as matriculadas.
     /// Falha silenciosamente para nunca derrubar o sync.
     async fn enrich_courses_with_offer(mut courses: Vec<Course>) -> Vec<Course> {
-        let offer = match crate::grade_scraper::SigaaGradeScraper::scrape_department_classes(
-            "ALL", "", "",
-        )
-        .await
-        {
-            Ok(list) => list,
-            Err(e) => {
-                log::warn!(
-                    "[SigaaClient] Oferta de turmas indisponível para linkar docente/turma: {}",
-                    e
-                );
-                return courses;
-            }
-        };
+        let offer =
+            match crate::grade_scraper::SigaaGradeScraper::scrape_department_classes("ALL", "", "")
+                .await
+            {
+                Ok(list) => list,
+                Err(e) => {
+                    log::warn!(
+                        "[SigaaClient] Oferta de turmas indisponível para linkar docente/turma: {}",
+                        e
+                    );
+                    return courses;
+                }
+            };
         Self::apply_offer_link(&mut courses, &offer);
         courses
     }
@@ -710,6 +715,8 @@ impl SigaaClient {
             r#"(?s)<form id="form_acessarTurmaVirtual[^"]*"[^>]*>.*?<a [^>]*onclick="[^"]*frontEndIdTurma[^"]*">([^<]+)</a>.*?<td class="info"[^>]*style="text-align:left">([^<]+)</td>\s*<td class="info"><center>([^<]+).*?<td colspan="5" id="linha_(\d+)""#,
         )
         .unwrap();
+        let turma_explicit_re = Regex::new(r"(?i)TURMA\s*[-–]?\s*([0-9]{1,3})").unwrap();
+        let turma_short_re = Regex::new(r"(?i)\bT[-\s]?([0-9]{1,2})\s*$").unwrap();
 
         for cap in course_row_re.captures_iter(html) {
             let raw_name = cap.get(1).map(|m| m.as_str()).unwrap_or("").trim();
@@ -722,16 +729,12 @@ impl SigaaClient {
             let schedule = decode_html_entities(raw_horario);
 
             // Número da turma SIGAA (ex.: "CÁLCULO 2 - TURMA 3" ou sufixo "T3")
-            let turma_label = {
-                let explicit = Regex::new(r"(?i)TURMA\s*[-–]?\s*([0-9]{1,3})").unwrap();
-                if let Some(c) = explicit.captures(raw_name) {
-                    Some(format!("Turma {}", c.get(1).unwrap().as_str()))
-                } else {
-                    let short = Regex::new(r"(?i)\bT[-\s]?([0-9]{1,2})\s*$").unwrap();
-                    short
-                        .captures(raw_name)
-                        .map(|c| format!("Turma {}", c.get(1).unwrap().as_str()))
-                }
+            let turma_label = if let Some(c) = turma_explicit_re.captures(raw_name) {
+                Some(format!("Turma {}", c.get(1).unwrap().as_str()))
+            } else {
+                turma_short_re
+                    .captures(raw_name)
+                    .map(|c| format!("Turma {}", c.get(1).unwrap().as_str()))
             };
 
             let course_code = course_name.clone();

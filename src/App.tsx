@@ -6,6 +6,7 @@ import { GradeBuilderScreen } from './screens/GradeBuilderScreen';
 import { MyCourseScreen } from './screens/MyCourseScreen';
 import { SettingsScreen } from './screens/SettingsScreen';
 import { Sidebar, type NavTab } from './components/Sidebar';
+import { AppBootSkeleton } from './components/boot/AppBootSkeleton';
 import { TooltipProvider, Toaster, ErrorBoundary } from '@/components/ui';
 import { useCredentials } from './hooks/useCredentials';
 import { useUpdateAvailable } from './hooks/useAppUpdater';
@@ -114,19 +115,7 @@ const AppShell: React.FC = () => {
   // isLoading nesta instância também — renderizar o loading aqui desmontaria
   // o wizard e resetaria o onboarding para o passo 1.
   if ((isCheckingAuth || hasLocalData === null) && !bootstrapped.current) {
-    return (
-      <div className="min-h-full bg-canvas bg-grid flex flex-col items-center justify-center space-y-4">
-        <img
-          src="/sarue-logo.png"
-          alt="Saruê UnB"
-          className="w-12 h-12 object-cover border-2 border-black rounded-xl shadow-[4px_4px_0px_0px_#000]"
-        />
-        <div className="inline-block animate-spin border-2 border-black border-t-transparent rounded-full h-6 w-6" />
-        <p className="text-xs font-bold text-neutral-700">
-          Verificando Cofre Seguro...
-        </p>
-      </div>
-    );
+    return <AppBootSkeleton />;
   }
 
   // Fluxo 1: Onboarding animado em 4 passos (bem-vindo, funcionalidades, segurança, login)
