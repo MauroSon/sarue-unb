@@ -5,7 +5,6 @@ import type {
   ProfessorSummary,
   DisciplineSummary,
   CampusName,
-  RecommendationType,
   DifficultyLevel,
   AttendanceStrictness,
   ProfessorEvaluationSortBy,
