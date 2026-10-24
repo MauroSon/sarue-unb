@@ -90,14 +90,18 @@ const DeadlineRow: React.FC<{
             {PLATFORM_LABELS[item.platform] ?? item.platform}
           </Badge>
           {disciplineLabel ? (
-            <span
-              className="shrink-0 inline-block max-w-[118px] truncate text-[11px] font-bold text-neutral-700 bg-white px-2 py-0.5 border-2 border-black rounded-full shadow-[2px_2px_0px_0px_#000]"
+            <Badge
+              variant="neutral"
+              size="sm"
+              className="shrink-0 max-w-[118px]"
               title={item.courseName}
             >
-              {disciplineLabel}
-              {item.courseCode ? ` · ${item.courseCode}` : ''}
-            </span>
-            ) : null}
+              <span className="min-w-0 truncate">
+                {disciplineLabel}
+                {item.courseCode ? ` · ${item.courseCode}` : ''}
+              </span>
+            </Badge>
+          ) : null}
           <span
             className={cn(
               'shrink-0 whitespace-nowrap',

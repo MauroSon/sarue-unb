@@ -20,6 +20,8 @@ export function subscribeToFeedUpdates(listener: () => void): () => void {
 export function useFeed() {
   const { useCases } = useContainer();
   const [items, setItems] = useState<FeedItem[]>([]);
+  // Contagem absoluta do feed ativo (sem filtros): alimenta o título da página
+  const [totalItems, setTotalItems] = useState<number>(0);
   const [courses, setCourses] = useState<Course[]>([]);
   const [disciplines, setDisciplines] = useState<Discipline[]>([]);
   const [unmatchedCourses, setUnmatchedCourses] = useState<Course[]>([]);
@@ -47,6 +49,11 @@ export function useFeed() {
       });
       setItems(feedItems);
       setHasLoadedOnce(true);
+
+      const absoluteItems = await useCases.getFeed.execute({
+        onlyArchived: false,
+      });
+      setTotalItems(absoluteItems.length);
 
       const courseList = await useCases.getCourses.execute();
       setCourses(courseList);
@@ -82,6 +89,7 @@ export function useFeed() {
       const result = await useCases.syncPlatforms.execute(platforms);
       setItems(result.items);
       setHasLoadedOnce(true);
+      setTotalItems(result.items.length);
       setCourses(result.courses);
       setLastSyncedAt(result.syncedAt);
 
@@ -108,6 +116,7 @@ export function useFeed() {
     try {
       await useCases.getFeed.clear();
       setItems([]);
+      setTotalItems(0);
       setCourses([]);
       setDisciplines([]);
       setUnmatchedCourses([]);
@@ -144,6 +153,39 @@ export function useFeed() {
     }
   };
 
+  // Ações em lote do modo Selecionar: SQLite local, laço sequencial basta.
+  // Estado e notificação global atualizam uma vez só, no fim.
+  const completeTasksBatch = async (ids: string[]) => {
+    if (ids.length === 0) return;
+    for (const id of ids) {
+      await useCases.getFeed.markAsCompleted(id, true);
+    }
+    setItems((prev) =>
+      prev.map((item) =>
+        ids.includes(item.id) ? { ...item, isCompleted: true } : item
+      )
+    );
+    // Conclusão muda prazos pendentes: o sino e o painel acompanham.
+    notifyFeedListeners();
+  };
+
+  const archiveItemsBatch = async (ids: string[], isArchived: boolean) => {
+    if (ids.length === 0) return;
+    for (const id of ids) {
+      await useCases.getFeed.archiveItem(id, isArchived);
+    }
+    // Mesma regra do single: quando o modo atual esconde os itens movidos, saem da lista
+    if (showArchived !== isArchived) {
+      setItems((prev) => prev.filter((item) => !ids.includes(item.id)));
+    } else {
+      setItems((prev) =>
+        prev.map((item) =>
+          ids.includes(item.id) ? { ...item, isArchived } : item
+        )
+      );
+    }
+  };
+
   const associateCourse = async (aprenderCourseId: string, sigaaCourseId: string | null, isIgnored: boolean = false) => {
     await useCases.getCourses.associateCourse(aprenderCourseId, sigaaCourseId, isIgnored);
     const disciplinesResult = await useCases.getCourses.getDisciplines();
@@ -155,6 +197,7 @@ export function useFeed() {
 
   return {
     items,
+    totalItems,
     courses,
     disciplines,
     unmatchedCourses,
@@ -177,6 +220,8 @@ export function useFeed() {
     refresh: loadFeed,
     toggleTaskCompleted,
     archiveFeedItem,
+    completeTasksBatch,
+    archiveItemsBatch,
     associateCourse,
   };
 }

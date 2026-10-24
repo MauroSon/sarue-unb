@@ -25,11 +25,11 @@ export interface EmptyStateProps {
  * preta, sombra dura, mascote Saruê em dúvida e ícone contextual.
  */
 export const EmptyState: React.FC<EmptyStateProps> = ({
-  icon: Icon,
+  icon: _Icon,
   title,
   description,
   action,
-  iconClassName = "bg-pastel-yellow text-black",
+  iconClassName: _iconClassName = "bg-pastel-yellow text-black",
   className = "",
   showMascot = true,
   mascotSrc = "/sarue-doubt.png",

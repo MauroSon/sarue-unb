@@ -10,7 +10,13 @@ impl HiddenWebviewScraper {
         matricula: &str,
         _senha: &str,
     ) -> Result<(Vec<FeedItem>, Vec<Course>), String> {
-        let window_label = format!("scraper-sigaa-{}", std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_millis());
+        let window_label = format!(
+            "scraper-sigaa-{}",
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap()
+                .as_millis()
+        );
         let target_url = "https://sigaa.unb.br/sigaa/verTelaLogin.do";
 
         log::info!("Iniciando hidden webview para Sigaa: {}", window_label);
@@ -47,7 +53,11 @@ impl HiddenWebviewScraper {
         let maybe_window = WebviewWindowBuilder::new(
             app,
             &window_label,
-            WebviewUrl::External(target_url.parse().map_err(|e| format!("URL inválida: {}", e))?),
+            WebviewUrl::External(
+                target_url
+                    .parse()
+                    .map_err(|e| format!("URL inválida: {}", e))?,
+            ),
         )
         .visible(false)
         .build();
@@ -81,26 +91,43 @@ impl HiddenWebviewScraper {
             }
         }
 
-        let window_label = format!("scraper-teams-{}", std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_millis());
+        let window_label = format!(
+            "scraper-teams-{}",
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap()
+                .as_millis()
+        );
         let target_url = "https://teams.microsoft.com";
 
-        log::info!("Iniciando webview 100% invisível em segundo plano para sincronizar Teams: {}", window_label);
+        log::info!(
+            "Iniciando webview 100% invisível em segundo plano para sincronizar Teams: {}",
+            window_label
+        );
 
-        let (tx, rx) = tokio::sync::oneshot::channel::<Result<(Vec<FeedItem>, Vec<Course>), String>>();
+        let (tx, rx) =
+            tokio::sync::oneshot::channel::<Result<(Vec<FeedItem>, Vec<Course>), String>>();
         let tx_cell = Arc::new(Mutex::new(Some(tx)));
         let tx_clone_nav = tx_cell.clone();
 
-        let chunks_map = Arc::new(Mutex::new(std::collections::BTreeMap::<usize, String>::new()));
+        let chunks_map = Arc::new(Mutex::new(
+            std::collections::BTreeMap::<usize, String>::new(),
+        ));
         let chunks_clone = chunks_map.clone();
 
         let modern_ua = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36";
 
-        let auto_crawl_script = format!("window.__unb_auto_crawl = true;\n{}", TEAMS_CRAWLER_SCRIPT);
+        let auto_crawl_script =
+            format!("window.__unb_auto_crawl = true;\n{}", TEAMS_CRAWLER_SCRIPT);
 
         let maybe_window = WebviewWindowBuilder::new(
             app,
             &window_label,
-            WebviewUrl::External(target_url.parse().map_err(|e| format!("URL inválida: {}", e))?),
+            WebviewUrl::External(
+                target_url
+                    .parse()
+                    .map_err(|e| format!("URL inválida: {}", e))?,
+            ),
         )
         .inner_size(1024.0, 740.0)
         .visible(false)
@@ -193,19 +220,25 @@ impl HiddenWebviewScraper {
             Ok(w) => w,
             Err(e) => {
                 log::error!("Falha ao instanciar WebviewWindow para Teams: {}", e);
-                return Err(format!("Falha ao inicializar sincronizador do Teams: {}", e));
+                return Err(format!(
+                    "Falha ao inicializar sincronizador do Teams: {}",
+                    e
+                ));
             }
         };
 
         // Timeout de até 35 segundos para rastreamento de equipes e canais em segundo plano
-        let sync_result: Result<(Vec<FeedItem>, Vec<Course>), String> = match tokio::time::timeout(tokio::time::Duration::from_secs(35), rx).await {
-            Ok(Ok(inner_res)) => inner_res,
-            Ok(Err(_)) => Err("Comunicação com a janela do Teams em segundo plano interrompida.".into()),
-            Err(_) => {
-                log::warn!("[Teams Sync] Timeout no rastreamento do Teams.");
-                Ok((Vec::new(), Vec::new()))
-            }
-        };
+        let sync_result: Result<(Vec<FeedItem>, Vec<Course>), String> =
+            match tokio::time::timeout(tokio::time::Duration::from_secs(35), rx).await {
+                Ok(Ok(inner_res)) => inner_res,
+                Ok(Err(_)) => {
+                    Err("Comunicação com a janela do Teams em segundo plano interrompida.".into())
+                }
+                Err(_) => {
+                    log::warn!("[Teams Sync] Timeout no rastreamento do Teams.");
+                    Ok((Vec::new(), Vec::new()))
+                }
+            };
 
         let _ = window.destroy();
         log::info!("Webview em segundo plano do Teams finalizada e destruída com sucesso.");
@@ -1045,6 +1078,7 @@ pub fn parse_teams_bridge_payload(payload_str: &str) -> (Vec<FeedItem>, Vec<Cour
                 professor: None,
                 classroom: Some("Teams Online".into()),
                 schedule: None,
+                turma: None,
                 unread_count: Some(0),
                 pending_assignments_count: Some(0),
                 url: c.url.or_else(|| Some("https://teams.microsoft.com".into())),
@@ -1072,10 +1106,14 @@ pub fn parse_teams_bridge_payload(payload_str: &str) -> (Vec<FeedItem>, Vec<Cour
                 course_code: it.course_code,
                 author: it.author,
                 item_type,
-                created_at: it.created_at.unwrap_or_else(|| chrono::Utc::now().to_rfc3339()),
+                created_at: it
+                    .created_at
+                    .unwrap_or_else(|| chrono::Utc::now().to_rfc3339()),
                 due_date: it.due_date,
                 is_completed: Some(false),
-                external_url: it.external_url.or_else(|| Some("https://teams.microsoft.com".into())),
+                external_url: it
+                    .external_url
+                    .or_else(|| Some("https://teams.microsoft.com".into())),
             });
         }
     }
@@ -1155,7 +1193,10 @@ mod tests {
 
         // Junk "Equipes Microsoft Teams" deve ter sido descartado
         assert_eq!(courses.len(), 2);
-        assert_eq!(courses[0].name, "SSTC - Sinais e Sistemas em Tempo Contínuo");
+        assert_eq!(
+            courses[0].name,
+            "SSTC - Sinais e Sistemas em Tempo Contínuo"
+        );
         assert_eq!(courses[1].name, "OAC Prof Ricardo Jacobi");
 
         // Banner de notificações do Teams deve ter sido descartado, mantendo apenas os 3 posts reais
@@ -1174,4 +1215,3 @@ mod tests {
         assert!(items[2].content.contains("assembly do RiscV"));
     }
 }
-

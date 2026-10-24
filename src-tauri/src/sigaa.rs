@@ -14,6 +14,12 @@ pub struct SigaaClient {
     client: reqwest::Client,
 }
 
+impl Default for SigaaClient {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl SigaaClient {
     pub fn new() -> Self {
         let mut default_headers = HeaderMap::new();
@@ -74,7 +80,10 @@ impl SigaaClient {
 
         // 3. Submeter credenciais ao CAS SSO
         let clean_action_log = action_url.split('?').next().unwrap_or(&action_url);
-        log::info!("[SigaaClient] Submetendo credenciais para {}", clean_action_log);
+        log::info!(
+            "[SigaaClient] Submetendo credenciais para {}",
+            clean_action_log
+        );
         let mut form_data = HashMap::new();
         form_data.insert("username", clean_matricula);
         form_data.insert("password", clean_senha);
@@ -116,8 +125,12 @@ impl SigaaClient {
             log::info!("[SigaaClient] Detectada tela intermediária de avisos institucionais (telaAvisoLogon.jsf).");
             aviso_item = Self::extract_aviso_logon(&page_html);
 
-            if let Ok((action, params)) = Self::extract_aviso_form_submit(&page_html, &landing_url) {
-                log::info!("[SigaaClient] Submetendo confirmação do aviso para {}", action);
+            if let Ok((action, params)) = Self::extract_aviso_form_submit(&page_html, &landing_url)
+            {
+                log::info!(
+                    "[SigaaClient] Submetendo confirmação do aviso para {}",
+                    action
+                );
                 let res_aviso = self
                     .client
                     .post(&action)
@@ -138,7 +151,10 @@ impl SigaaClient {
 
         // 5. Garantir que estamos no portal discente
         if !landing_url.contains("discente.jsf") {
-            log::info!("[SigaaClient] Navegando explicitamente para o portal discente: {}", DISCENTE_URL);
+            log::info!(
+                "[SigaaClient] Navegando explicitamente para o portal discente: {}",
+                DISCENTE_URL
+            );
             let res_portal = self
                 .client
                 .get(DISCENTE_URL)
@@ -152,7 +168,9 @@ impl SigaaClient {
                 .map_err(|e| format!("Erro ao ler conteúdo do portal discente: {}", e))?;
         }
 
-        if !page_html.contains("form_acessarTurmaVirtual") && !page_html.contains("Turmas do Semestre") {
+        if !page_html.contains("form_acessarTurmaVirtual")
+            && !page_html.contains("Turmas do Semestre")
+        {
             return Err("Login SIGAA não concluído — portal discente não foi carregado.".into());
         }
 
@@ -160,6 +178,163 @@ impl SigaaClient {
     }
 
     /// Sincroniza o SIGAA realizando o login CAS SSO, avançando por avisos e extraindo turmas e avisos
+    /// Normaliza nome de disciplina para casar com a oferta (maiúsculas, sem acento)
+    fn normalize_discipline_name(s: &str) -> String {
+        let mut out = String::with_capacity(s.len());
+        for ch in s.chars() {
+            let mapped = match ch {
+                'á' | 'à' | 'â' | 'ã' | 'ä' | 'Á' | 'À' | 'Â' | 'Ã' | 'Ä' => 'A',
+                'é' | 'è' | 'ê' | 'ë' | 'É' | 'È' | 'Ê' | 'Ë' => 'E',
+                'í' | 'ì' | 'î' | 'ï' | 'Í' | 'Ì' | 'Î' | 'Ï' => 'I',
+                'ó' | 'ò' | 'ô' | 'õ' | 'ö' | 'Ó' | 'Ò' | 'Ô' | 'Õ' | 'Ö' => 'O',
+                'ú' | 'ù' | 'û' | 'ü' | 'Ú' | 'Ù' | 'Û' | 'Ü' => 'U',
+                'ç' | 'Ç' => 'C',
+                c => c,
+            };
+            if mapped.is_ascii_alphanumeric() {
+                for upper in mapped.to_uppercase() {
+                    out.push(upper);
+                }
+            } else if mapped == ' ' && !out.ends_with(' ') {
+                out.push(' ');
+            }
+        }
+        out.trim().to_string()
+    }
+
+    /// Extrai o token de horário (ex.: "35T45") do campo de horário do portal
+    fn extract_schedule_token(schedule: &str) -> Option<String> {
+        let re = Regex::new(r"(\d{1,2}[MTN]\d{2,4})").unwrap();
+        re.captures(schedule)
+            .map(|c| c.get(1).unwrap().as_str().to_string())
+    }
+
+    /// "02" -> "Turma 2"; códigos não numéricos passam como estão
+    fn turma_label_from_class_code(class_code: &str) -> String {
+        let digits: String = class_code.chars().filter(|c| c.is_ascii_digit()).collect();
+        match digits.parse::<u32>() {
+            Ok(n) => format!("Turma {}", n),
+            Err(_) => format!("Turma {}", class_code.trim()),
+        }
+    }
+
+    /// "Prof. Carla Rocha" -> "Carla Rocha" (o card da disciplina já prefixa)
+    fn clean_teacher_name(name: &str) -> String {
+        let mut s = name.trim();
+        let lower = s.to_lowercase();
+        for prefix in [
+            "prof.ª",
+            "profª",
+            "profa.",
+            "prof.",
+            "prof ",
+            "professora ",
+            "professor ",
+        ] {
+            if lower.starts_with(prefix) {
+                s = s[prefix.len()..].trim_start();
+                break;
+            }
+        }
+        s.to_string()
+    }
+
+    /// Preenche código, turma e docente das turmas matriculadas casando com a
+    /// oferta de turmas do SIGAA (dataset estático usado pela Monte sua Grade):
+    /// nome normalizado + horário igual, desambiguado por sala. Evita abrir a
+    /// aba Participantes de cada disciplina. Não encontrou, fica como está.
+    fn apply_offer_link(courses: &mut [Course], offer: &[crate::grade_scraper::ScrapedDiscipline]) {
+        for course in courses.iter_mut() {
+            // Já linkado em sync anterior: nada a fazer
+            if course.professor.is_some() && course.turma.is_some() {
+                continue;
+            }
+
+            // Sem horário legível não há como casar com a oferta com segurança
+            let Some(token) = course
+                .schedule
+                .as_deref()
+                .and_then(Self::extract_schedule_token)
+            else {
+                continue;
+            };
+            let norm_course = Self::normalize_discipline_name(&course.name);
+
+            let mut candidates: Vec<&crate::grade_scraper::ScrapedClass> = Vec::new();
+            let mut linked_code: Option<&str> = None;
+            for discipline in offer.iter() {
+                if Self::normalize_discipline_name(&discipline.name) != norm_course {
+                    continue;
+                }
+                for class in discipline.classes.iter() {
+                    if class.schedule_code == token {
+                        candidates.push(class);
+                        linked_code = Some(discipline.code.as_str());
+                    }
+                }
+            }
+
+            let linked = if candidates.len() == 1 {
+                candidates.first().copied()
+            } else if candidates.len() > 1 {
+                let local_norm = course
+                    .classroom
+                    .as_deref()
+                    .map(Self::normalize_discipline_name);
+                candidates
+                    .iter()
+                    .find(|c| {
+                        local_norm
+                            .as_deref()
+                            .map(|l| Self::normalize_discipline_name(&c.classroom) == l)
+                            .unwrap_or(false)
+                    })
+                    .copied()
+            } else {
+                None
+            };
+
+            let (Some(class), Some(code)) = (linked, linked_code) else {
+                continue;
+            };
+
+            course.code = code.to_string();
+            if course.turma.is_none() {
+                course.turma = Some(Self::turma_label_from_class_code(&class.class_code));
+            }
+            if course.professor.is_none() && !class.teachers.is_empty() {
+                course.professor = Some(
+                    class
+                        .teachers
+                        .iter()
+                        .map(|t| Self::clean_teacher_name(t))
+                        .collect::<Vec<_>>()
+                        .join(", "),
+                );
+            }
+        }
+    }
+
+    /// Busca a oferta de turmas (dataset estático) e linka com as matriculadas.
+    /// Falha silenciosamente para nunca derrubar o sync.
+    async fn enrich_courses_with_offer(mut courses: Vec<Course>) -> Vec<Course> {
+        let offer =
+            match crate::grade_scraper::SigaaGradeScraper::scrape_department_classes("ALL", "", "")
+                .await
+            {
+                Ok(list) => list,
+                Err(e) => {
+                    log::warn!(
+                        "[SigaaClient] Oferta de turmas indisponível para linkar docente/turma: {}",
+                        e
+                    );
+                    return courses;
+                }
+            };
+        Self::apply_offer_link(&mut courses, &offer);
+        courses
+    }
+
     pub async fn sync_sigaa(
         &self,
         matricula: &str,
@@ -168,6 +343,9 @@ impl SigaaClient {
         let (page_html, _aviso_item) = self.login_to_portal(matricula, senha).await?;
         // O aviso institucional de logon ("Aviso Geral UnB") é intencionalmente ignorado no feed
         let (feed_items, courses) = Self::parse_discente_html(&page_html)?;
+        // Linka código/turma/docente com a oferta de turmas (dataset estático),
+        // sem precisar abrir a aba Participantes de cada disciplina
+        let courses = Self::enrich_courses_with_offer(courses).await;
 
         log::info!(
             "[SigaaClient] Sincronização concluída com sucesso: {} turmas e {} itens de feed.",
@@ -195,7 +373,9 @@ impl SigaaClient {
             .map(|c| c.get(1).unwrap().as_str().trim().to_string())
             .unwrap_or_else(|| default_matricula.to_string());
 
-        let curso_re = Regex::new(r#"(?s)<td[^>]*valign="top"[^>]*>\s*Curso:\s*</td>\s*<td>\s*([^\n\r<]+)"#).unwrap();
+        let curso_re =
+            Regex::new(r#"(?s)<td[^>]*valign="top"[^>]*>\s*Curso:\s*</td>\s*<td>\s*([^\n\r<]+)"#)
+                .unwrap();
         let curso_alt_re = Regex::new(r#"Curso:\s*</td>\s*<td>\s*([^<]+)</td>"#).unwrap();
         let raw_curso = curso_re
             .captures(&clean_html)
@@ -223,7 +403,8 @@ impl SigaaClient {
             .map(|c| c.get(1).unwrap().as_str().trim().to_string())
             .unwrap_or_else(|| "ATIVO".to_string());
 
-        let entrada_re = Regex::new(r#"Entrada:\s*</td>\s*<td>\s*(\d{4}(?:\.[12])?)\s*</td>"#).unwrap();
+        let entrada_re =
+            Regex::new(r#"Entrada:\s*</td>\s*<td>\s*(\d{4}(?:\.[12])?)\s*</td>"#).unwrap();
         let entrada = entrada_re
             .captures(&clean_html)
             .map(|c| c.get(1).unwrap().as_str().trim().to_string())
@@ -234,49 +415,48 @@ impl SigaaClient {
             .captures(&clean_html)
             .map(|c| c.get(1).unwrap().as_str().trim().to_string());
 
-        let ira_re = Regex::new(r#"IRA:\s*</acronym></td>\s*<td[^>]*><div[^>]*>([\d.,]+)"#).unwrap();
-        let ira = ira_re
-            .captures(&clean_html)
-            .and_then(|c| {
-                let s = c.get(1).unwrap().as_str().replace(',', ".");
-                s.parse::<f64>().ok()
-            });
+        let ira_re =
+            Regex::new(r#"IRA:\s*</acronym></td>\s*<td[^>]*><div[^>]*>([\d.,]+)"#).unwrap();
+        let ira = ira_re.captures(&clean_html).and_then(|c| {
+            let s = c.get(1).unwrap().as_str().replace(',', ".");
+            s.parse::<f64>().ok()
+        });
 
         let mp_re = Regex::new(r#"MP:\s*</acronym></td>\s*<td[^>]*><div[^>]*>([\d.,]+)"#).unwrap();
-        let mp = mp_re
-            .captures(&clean_html)
-            .and_then(|c| {
-                let s = c.get(1).unwrap().as_str().replace(',', ".");
-                s.parse::<f64>().ok()
-            });
+        let mp = mp_re.captures(&clean_html).and_then(|c| {
+            let s = c.get(1).unwrap().as_str().replace(',', ".");
+            s.parse::<f64>().ok()
+        });
 
-        let ch_obrig_re = Regex::new(r#"CH\.\s*Obrigat[óo]ria\s*Pendente\s*</td>\s*<td[^>]*>\s*(\d+)"#).unwrap();
+        let ch_obrig_re =
+            Regex::new(r#"CH\.\s*Obrigat[óo]ria\s*Pendente\s*</td>\s*<td[^>]*>\s*(\d+)"#).unwrap();
         let ch_obrigatoria_pendente = ch_obrig_re
             .captures(&clean_html)
             .and_then(|c| c.get(1).unwrap().as_str().parse::<u32>().ok());
 
-        let ch_opt_re = Regex::new(r#"CH\.\s*Optativa\s*Pendente\s*</td>\s*<td[^>]*>\s*(\d+)"#).unwrap();
+        let ch_opt_re =
+            Regex::new(r#"CH\.\s*Optativa\s*Pendente\s*</td>\s*<td[^>]*>\s*(\d+)"#).unwrap();
         let ch_optativa_pendente = ch_opt_re
             .captures(&clean_html)
             .and_then(|c| c.get(1).unwrap().as_str().parse::<u32>().ok());
 
-        let ch_tot_re = Regex::new(r#"CH\.\s*Total\s*Curr[íi]culo\s*</td>\s*<td[^>]*>\s*(\d+)"#).unwrap();
+        let ch_tot_re =
+            Regex::new(r#"CH\.\s*Total\s*Curr[íi]culo\s*</td>\s*<td[^>]*>\s*(\d+)"#).unwrap();
         let ch_total_curriculo = ch_tot_re
             .captures(&clean_html)
             .and_then(|c| c.get(1).unwrap().as_str().parse::<u32>().ok());
 
-        let ch_comp_re = Regex::new(r#"CH\.\s*Complementar\s*Pendente\s*</td>\s*<td[^>]*>\s*(\d+)"#).unwrap();
+        let ch_comp_re =
+            Regex::new(r#"CH\.\s*Complementar\s*Pendente\s*</td>\s*<td[^>]*>\s*(\d+)"#).unwrap();
         let ch_complementar_pendente = ch_comp_re
             .captures(&clean_html)
             .and_then(|c| c.get(1).unwrap().as_str().parse::<u32>().ok());
 
         let perc_re = Regex::new(r#"([\d.,]+)%\s*Integralizado"#).unwrap();
-        let percentual_integralizado = perc_re
-            .captures(&clean_html)
-            .and_then(|c| {
-                let s = c.get(1).unwrap().as_str().replace(',', ".");
-                s.parse::<f64>().ok()
-            });
+        let percentual_integralizado = perc_re.captures(&clean_html).and_then(|c| {
+            let s = c.get(1).unwrap().as_str().replace(',', ".");
+            s.parse::<f64>().ok()
+        });
 
         DiscenteProfile {
             matricula,
@@ -329,7 +509,9 @@ impl SigaaClient {
         );
         form_data.insert("javax.faces.ViewState", &vs);
 
-        log::info!("[SigaaClient] Submetendo requisição de emissão do Histórico Escolar oficial...");
+        log::info!(
+            "[SigaaClient] Submetendo requisição de emissão do Histórico Escolar oficial..."
+        );
         let res_hist = self
             .client
             .post(DISCENTE_URL)
@@ -383,8 +565,10 @@ impl SigaaClient {
     /// Extrai parâmetros do formulário de autenticação CAS SSO
     pub fn extract_cas_form_params(html: &str) -> Result<(String, String, String, String), String> {
         let lt_re = Regex::new(r#"name="lt"\s+value="([^"]+)""#).map_err(|e| e.to_string())?;
-        let exec_re = Regex::new(r#"name="execution"\s+value="([^"]+)""#).map_err(|e| e.to_string())?;
-        let event_re = Regex::new(r#"name="_eventId"\s+value="([^"]+)""#).map_err(|e| e.to_string())?;
+        let exec_re =
+            Regex::new(r#"name="execution"\s+value="([^"]+)""#).map_err(|e| e.to_string())?;
+        let event_re =
+            Regex::new(r#"name="_eventId"\s+value="([^"]+)""#).map_err(|e| e.to_string())?;
         let action_re = Regex::new(r#"<form[^>]*action="([^"]+)""#).map_err(|e| e.to_string())?;
 
         let lt = lt_re
@@ -431,7 +615,9 @@ impl SigaaClient {
         let raw_title = decode_html_entities(title_match.as_str().trim());
 
         let raw_body = if let Some(cap) = body_re.captures(html).and_then(|c| c.get(1)) {
-            let stripped = Regex::new(r"<[^>]+>").unwrap().replace_all(cap.as_str(), " ");
+            let stripped = Regex::new(r"<[^>]+>")
+                .unwrap()
+                .replace_all(cap.as_str(), " ");
             let clean = Regex::new(r"\s+").unwrap().replace_all(&stripped, " ");
             decode_html_entities(clean.trim())
         } else {
@@ -461,16 +647,27 @@ impl SigaaClient {
         html: &str,
         base_url: &str,
     ) -> Result<(String, HashMap<String, String>), String> {
-        let form_re = Regex::new(r#"<form[^>]*id="([^"]+)"[^>]*action="([^"]+)""#).map_err(|e| e.to_string())?;
-        let viewstate_re = Regex::new(r#"id="javax\.faces\.ViewState"[^>]*value="([^"]+)""#).map_err(|e| e.to_string())?;
-        let btn_re = Regex::new(r#"type="submit"[^>]*name="([^"]+)"[^>]*value="([^"]+)""#).map_err(|e| e.to_string())?;
+        let form_re = Regex::new(r#"<form[^>]*id="([^"]+)"[^>]*action="([^"]+)""#)
+            .map_err(|e| e.to_string())?;
+        let viewstate_re = Regex::new(r#"id="javax\.faces\.ViewState"[^>]*value="([^"]+)""#)
+            .map_err(|e| e.to_string())?;
+        let btn_re = Regex::new(r#"type="submit"[^>]*name="([^"]+)"[^>]*value="([^"]+)""#)
+            .map_err(|e| e.to_string())?;
 
         let form_cap = form_re
             .captures(html)
             .ok_or_else(|| "Formulário não encontrado em telaAvisoLogon.jsf".to_string())?;
 
-        let form_id = form_cap.get(1).map(|m| m.as_str()).unwrap_or("").to_string();
-        let raw_action = form_cap.get(2).map(|m| m.as_str()).unwrap_or("").to_string();
+        let form_id = form_cap
+            .get(1)
+            .map(|m| m.as_str())
+            .unwrap_or("")
+            .to_string();
+        let raw_action = form_cap
+            .get(2)
+            .map(|m| m.as_str())
+            .unwrap_or("")
+            .to_string();
 
         let viewstate = viewstate_re
             .captures(html)
@@ -480,11 +677,20 @@ impl SigaaClient {
 
         let (btn_name, btn_val) = if let Some(btn_cap) = btn_re.captures(html) {
             (
-                btn_cap.get(1).map(|m| m.as_str().to_string()).unwrap_or_default(),
-                btn_cap.get(2).map(|m| m.as_str().to_string()).unwrap_or_else(|| "Continuar >>".to_string()),
+                btn_cap
+                    .get(1)
+                    .map(|m| m.as_str().to_string())
+                    .unwrap_or_default(),
+                btn_cap
+                    .get(2)
+                    .map(|m| m.as_str().to_string())
+                    .unwrap_or_else(|| "Continuar >>".to_string()),
             )
         } else {
-            (format!("{}:j_id_jsp_continuar", form_id), "Continuar >>".to_string())
+            (
+                format!("{}:j_id_jsp_continuar", form_id),
+                "Continuar >>".to_string(),
+            )
         };
 
         let action_url = if raw_action.starts_with("http") {
@@ -509,8 +715,10 @@ impl SigaaClient {
         let mut items = Vec::new();
 
         // 1. Extração do semestre atual (ex.: "2026.2") com fallback dinâmico
-        let semester_re = Regex::new(r#"<td colspan="5"[^>]*style="[^"]*background:[^>]*>\s*(\d{4}\.[12])\s*</td>"#)
-            .unwrap();
+        let semester_re = Regex::new(
+            r#"<td colspan="5"[^>]*style="[^"]*background:[^>]*>\s*(\d{4}\.[12])\s*</td>"#,
+        )
+        .unwrap();
         let current_semester = semester_re
             .captures(html)
             .and_then(|c| c.get(1))
@@ -526,6 +734,8 @@ impl SigaaClient {
             r#"(?s)<form id="form_acessarTurmaVirtual[^"]*"[^>]*>.*?<a [^>]*onclick="[^"]*frontEndIdTurma[^"]*">([^<]+)</a>.*?<td class="info"[^>]*style="text-align:left">([^<]+)</td>\s*<td class="info"><center>([^<]+).*?<td colspan="5" id="linha_(\d+)""#,
         )
         .unwrap();
+        let turma_explicit_re = Regex::new(r"(?i)TURMA\s*[-–]?\s*([0-9]{1,3})").unwrap();
+        let turma_short_re = Regex::new(r"(?i)\bT[-\s]?([0-9]{1,2})\s*$").unwrap();
 
         for cap in course_row_re.captures_iter(html) {
             let raw_name = cap.get(1).map(|m| m.as_str()).unwrap_or("").trim();
@@ -536,6 +746,15 @@ impl SigaaClient {
             let course_name = decode_html_entities(raw_name);
             let classroom = decode_html_entities(raw_local);
             let schedule = decode_html_entities(raw_horario);
+
+            // Número da turma SIGAA (ex.: "CÁLCULO 2 - TURMA 3" ou sufixo "T3")
+            let turma_label = if let Some(c) = turma_explicit_re.captures(raw_name) {
+                Some(format!("Turma {}", c.get(1).unwrap().as_str()))
+            } else {
+                turma_short_re
+                    .captures(raw_name)
+                    .map(|c| format!("Turma {}", c.get(1).unwrap().as_str()))
+            };
 
             let course_code = course_name.clone();
 
@@ -548,6 +767,7 @@ impl SigaaClient {
                 professor: None,
                 classroom: Some(classroom),
                 schedule: Some(schedule),
+                turma: turma_label,
                 unread_count: Some(0),
                 pending_assignments_count: Some(0),
                 url: Some(DISCENTE_URL.into()),
@@ -577,7 +797,10 @@ impl SigaaClient {
             let created_at_iso = parse_br_date_to_iso(raw_date, false);
 
             items.push(FeedItem {
-                id: format!("sigaa-ativ-{}", fnv1a_hash(&format!("{}-{}-{}", course_name, title, raw_date))),
+                id: format!(
+                    "sigaa-ativ-{}",
+                    fnv1a_hash(&format!("{}-{}-{}", course_name, title, raw_date))
+                ),
                 platform: PlatformType::Sigaa,
                 title,
                 content,
@@ -623,14 +846,21 @@ impl SigaaClient {
                 || content.to_lowercase().contains("tarefa");
 
             items.push(FeedItem {
-                id: format!("sigaa-update-{}", fnv1a_hash(&format!("{}-{}-{}", course_name, content, raw_date))),
+                id: format!(
+                    "sigaa-update-{}",
+                    fnv1a_hash(&format!("{}-{}-{}", course_name, content, raw_date))
+                ),
                 platform: PlatformType::Sigaa,
                 title,
                 content,
                 course_name: course_name.clone(),
                 course_code: Some(course_name),
                 author: None,
-                item_type: if is_assignment { FeedItemType::Assignment } else { FeedItemType::Post },
+                item_type: if is_assignment {
+                    FeedItemType::Assignment
+                } else {
+                    FeedItemType::Post
+                },
                 created_at: created_at_iso,
                 due_date: None,
                 is_completed: Some(false),
@@ -737,7 +967,7 @@ fn decode_html_entities(input: &str) -> String {
 /// Codifica bytes em base64 padrão (RFC 4648)
 pub fn base64_encode(data: &[u8]) -> String {
     const CHARSET: &[u8; 64] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-    let mut out = String::with_capacity((data.len() + 2) / 3 * 4);
+    let mut out = String::with_capacity(data.len().div_ceil(3) * 4);
     for chunk in data.chunks(3) {
         let b0 = chunk[0];
         let b1 = if chunk.len() > 1 { chunk[1] } else { 0 };
@@ -774,7 +1004,10 @@ mod tests {
         "##;
 
         let (action, lt, execution, event_id) = SigaaClient::extract_cas_form_params(html).unwrap();
-        assert_eq!(action, "https://autenticacao.unb.br/sso-server/login;jsessionid=123?service=sigaa");
+        assert_eq!(
+            action,
+            "https://autenticacao.unb.br/sso-server/login;jsessionid=123?service=sigaa"
+        );
         assert_eq!(lt, "LT-999-abc");
         assert_eq!(execution, "e1s1");
         assert_eq!(event_id, "submit");
@@ -790,7 +1023,11 @@ mod tests {
             </form>
         "##;
 
-        let (action, params) = SigaaClient::extract_aviso_form_submit(html, "https://sigaa.unb.br/sigaa/telaAvisoLogon.jsf").unwrap();
+        let (action, params) = SigaaClient::extract_aviso_form_submit(
+            html,
+            "https://sigaa.unb.br/sigaa/telaAvisoLogon.jsf",
+        )
+        .unwrap();
         assert_eq!(action, "https://sigaa.unb.br/sigaa/telaAvisoLogon.jsf");
         assert_eq!(params.get("j_id_aviso").unwrap(), "j_id_aviso");
         assert_eq!(params.get("javax.faces.ViewState").unwrap(), "j_id1");
@@ -851,10 +1088,16 @@ mod tests {
         assert_eq!(courses[0].name, "FISICA 2");
         assert_eq!(courses[0].semester, "2026.2");
         assert_eq!(courses[0].classroom.as_deref(), Some("BSA S B1 34/10"));
-        assert_eq!(courses[0].schedule.as_deref(), Some("35T45 (10/08/2026 - 14/12/2026)"));
+        assert_eq!(
+            courses[0].schedule.as_deref(),
+            Some("35T45 (10/08/2026 - 14/12/2026)")
+        );
 
         assert_eq!(items.len(), 2);
-        let ativ = items.iter().find(|i| matches!(i.item_type, FeedItemType::Assignment)).unwrap();
+        let ativ = items
+            .iter()
+            .find(|i| matches!(i.item_type, FeedItemType::Assignment))
+            .unwrap();
         assert_eq!(ativ.course_name, "FISICA 2");
         assert_eq!(ativ.title, "Avaliação: 1ª Avaliação");
         assert_eq!(ativ.due_date.as_deref(), Some("2026-09-22T23:59:59Z"));
@@ -877,6 +1120,91 @@ mod tests {
     }
 
     #[test]
+    fn test_apply_offer_link_preenche_codigo_turma_docente() {
+        use crate::grade_scraper::{ScrapedClass, ScrapedDiscipline};
+
+        let offer = vec![ScrapedDiscipline {
+            code: "IFD0175".into(),
+            name: "FÍSICA 2".into(),
+            department_id: "123".into(),
+            acronym: None,
+            acronyms: vec![],
+            classes: vec![
+                ScrapedClass {
+                    id: "IFD0175-01".into(),
+                    discipline_code: "IFD0175".into(),
+                    discipline_name: "FÍSICA 2".into(),
+                    class_code: "01".into(),
+                    teachers: vec!["Prof. Maria Ida".into()],
+                    classroom: "BSA S B1 34/09".into(),
+                    schedule_code: "24T34".into(),
+                    schedule_description: None,
+                    date_range: None,
+                    schedule_slots: vec![],
+                    vacancies: None,
+                    occupied: None,
+                },
+                ScrapedClass {
+                    id: "IFD0175-02".into(),
+                    discipline_code: "IFD0175".into(),
+                    discipline_name: "FÍSICA 2".into(),
+                    class_code: "02".into(),
+                    teachers: vec!["Prof. Ricardo Jacobi".into()],
+                    classroom: "BSA S B1 34/10".into(),
+                    schedule_code: "35T45".into(),
+                    schedule_description: None,
+                    date_range: None,
+                    schedule_slots: vec![],
+                    vacancies: None,
+                    occupied: None,
+                },
+            ],
+        }];
+
+        let mut courses = vec![Course {
+            id: "sigaa-1614531".into(),
+            code: "FISICA 2".into(),
+            name: "FISICA 2".into(),
+            semester: "2026.2".into(),
+            platform: crate::models::PlatformType::Sigaa,
+            professor: None,
+            classroom: Some("BSA S B1 34/10".into()),
+            schedule: Some("35T45 (10/08/2026 - 14/12/2026)".into()),
+            turma: None,
+            unread_count: Some(0),
+            pending_assignments_count: Some(0),
+            url: None,
+        }];
+
+        SigaaClient::apply_offer_link(&mut courses, &offer);
+
+        // Nome sem acento casa com "FÍSICA 2"; mesma sala desambigua a turma
+        assert_eq!(courses[0].code, "IFD0175");
+        assert_eq!(courses[0].turma.as_deref(), Some("Turma 2"));
+        assert_eq!(courses[0].professor.as_deref(), Some("Ricardo Jacobi"));
+
+        // Sem candidato na oferta: nada muda
+        let mut other = vec![Course {
+            id: "sigaa-9".into(),
+            code: "X".into(),
+            name: "DISCIPLINA INEXISTENTE".into(),
+            semester: "2026.2".into(),
+            platform: crate::models::PlatformType::Sigaa,
+            professor: None,
+            classroom: None,
+            schedule: Some("35T45".into()),
+            turma: None,
+            unread_count: Some(0),
+            pending_assignments_count: Some(0),
+            url: None,
+        }];
+        SigaaClient::apply_offer_link(&mut other, &offer);
+        assert!(other[0].professor.is_none());
+        assert!(other[0].turma.is_none());
+        assert_eq!(other[0].code, "X");
+    }
+
+    #[test]
     fn test_decode_html_entities_order() {
         assert_eq!(decode_html_entities("&amp;lt;"), "&lt;");
         assert_eq!(decode_html_entities("&lt;b&gt;UnB&lt;/b&gt;"), "<b>UnB</b>");
@@ -885,8 +1213,14 @@ mod tests {
 
     #[test]
     fn test_parse_br_date_to_iso() {
-        assert_eq!(parse_br_date_to_iso("22/09/2026", true), "2026-09-22T23:59:59Z");
-        assert_eq!(parse_br_date_to_iso("22/09/2026", false), "2026-09-22T12:00:00Z");
+        assert_eq!(
+            parse_br_date_to_iso("22/09/2026", true),
+            "2026-09-22T23:59:59Z"
+        );
+        assert_eq!(
+            parse_br_date_to_iso("22/09/2026", false),
+            "2026-09-22T12:00:00Z"
+        );
         // Data inválida cai no fallback sem pânico
         let invalid = parse_br_date_to_iso("32/13/2026", true);
         assert!(!invalid.is_empty());
@@ -895,12 +1229,18 @@ mod tests {
     #[tokio::test]
     #[ignore]
     async fn test_live_sync_sigaa() {
-        if let (Ok(mat), Ok(pwd)) = (std::env::var("SIGAA_MATRICULA"), std::env::var("SIGAA_SENHA")) {
+        if let (Ok(mat), Ok(pwd)) = (
+            std::env::var("SIGAA_MATRICULA"),
+            std::env::var("SIGAA_SENHA"),
+        ) {
             let client = SigaaClient::new();
             let (page_html, _) = client.login_to_portal(&mat, &pwd).await.unwrap();
             std::fs::write("/tmp/discente_portal.html", &page_html).ok();
 
-            let payload = client.fetch_discente_profile_and_historico(&mat, &pwd).await.unwrap();
+            let payload = client
+                .fetch_discente_profile_and_historico(&mat, &pwd)
+                .await
+                .unwrap();
             println!("Profile: {:?}", payload.profile);
             println!("Has PDF: {}", payload.pdf_base64.is_some());
         }
@@ -984,4 +1324,3 @@ mod tests {
         assert_eq!(profile.percentual_integralizado, Some(65.0));
     }
 }
-

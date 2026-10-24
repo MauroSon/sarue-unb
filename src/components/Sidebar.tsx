@@ -128,6 +128,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
     { id: "settings" as NavTab, label: "Configurações", icon: Settings },
   ];
 
+  const isHomeActive = currentTab === "home";
+
   const formatLastSync = (isoString?: string | null) => {
     if (!isoString) return "Não sincronizado";
     try {
@@ -179,20 +181,23 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   return (
     <aside
-      className={`group h-screen bg-white border-r-2 border-black flex flex-col justify-between transition-[width] duration-300 ease-[cubic-bezier(0.2,0,0,1)] select-none z-20 shrink-0 overflow-x-hidden ${
+      className={`group h-full bg-white border-r-2 border-black flex flex-col transition-[width] duration-300 ease-[cubic-bezier(0.2,0,0,1)] select-none z-20 shrink-0 overflow-x-hidden ${
         isCollapsed ? "w-20" : "w-64"
       }`}
     >
-      {/* Topo da Sidebar */}
-      <div>
+      {/* Topo da Sidebar: header e navegação — a navegação rola quando o
+          espaço vertical acaba (zoom alto, janela curta); header e rodapé
+          ficam sempre fixos (sanduíche) */}
+      <div className="min-h-0 flex-1 flex flex-col">
         {/* Header da Sidebar */}
-        <div className="p-4 border-b-2 border-black flex items-center justify-between min-h-[69px] overflow-hidden">
+        <div className="shrink-0 p-4 border-b-2 border-black flex items-center justify-between min-h-[69px] overflow-hidden">
           <div className="flex items-center min-w-0 flex-1">
             {/* Logo e Botão de Expandir no hover quando colapsado */}
             <div className="relative shrink-0 flex items-center justify-center">
               <button
                 type="button"
-                data-no-sound="true"
+                data-sound={isHomeActive ? undefined : "sidebar"}
+                data-no-sound={isHomeActive ? "true" : undefined}
                 onClick={() => onSelectTab("home")}
                 title="Ir para a Home"
                 aria-label="Ir para a Home"
@@ -233,7 +238,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
             >
               <button
                 type="button"
-                data-no-sound="true"
+                data-sound={isHomeActive ? undefined : "sidebar"}
+                data-no-sound={isHomeActive ? "true" : undefined}
                 onClick={() => onSelectTab("home")}
                 title="Ir para a Home"
                 className="cursor-pointer text-left block focus-visible:outline-hidden"
@@ -264,8 +270,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </div>
         </div>
 
-        {/* Lista de Navegação - Estilo Opção 1 (Ledger/Binder full-bleed neobrutalism.dev) */}
-        <nav data-no-sound="true" className="border-b-2 border-black">
+        {/* Lista de Navegação com som fofo/macio tátil (apenas ao alternar para aba inativa) */}
+        <nav className="min-h-0 overflow-y-auto border-b-2 border-black">
           <ul className="flex flex-col">
             {navItems.map((item) => {
               const Icon = item.icon;
@@ -279,6 +285,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 >
                   <button
                     type="button"
+                    data-sound={isActive ? undefined : "sidebar"}
+                    data-no-sound={isActive ? "true" : undefined}
                     onClick={() => onSelectTab(item.id)}
                     title={item.label}
                     aria-current={isActive ? "page" : undefined}
@@ -329,7 +337,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       </div>
 
       {/* Canto Inferior da Sidebar: Botão de Sincronizar com Efeito Macio */}
-      <div className="p-4 border-t-2 border-black overflow-hidden">
+      <div className="shrink-0 p-4 border-t-2 border-black overflow-hidden">
         <div
           className={`relative transition-[height] duration-300 ease-[cubic-bezier(0.2,0,0,1)] ${
             isCollapsed ? "h-[88px]" : "h-10"

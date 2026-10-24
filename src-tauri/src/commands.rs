@@ -10,10 +10,7 @@ use tauri::{command, AppHandle, Manager};
 fn is_valid_vault_filename(filename: &str) -> bool {
     matches!(
         filename,
-        "unb_vault.hold"
-            | "unb_vault_dev.hold"
-            | "unb_vault.hold.bak"
-            | "unb_vault_dev.hold.bak"
+        "unb_vault.hold" | "unb_vault_dev.hold" | "unb_vault.hold.bak" | "unb_vault_dev.hold.bak"
     )
 }
 
@@ -42,7 +39,11 @@ pub fn get_or_create_vault_key(app: AppHandle) -> Result<String, String> {
                 // Tenta sincronizar com o chaveiro do SO caso este esteja vazio
                 #[cfg(not(any(target_os = "android", target_os = "ios")))]
                 if let Ok(entry) = keyring::Entry::new(SERVICE, USER) {
-                    if entry.get_password().map(|p| !is_valid_hex_key(&p)).unwrap_or(true) {
+                    if entry
+                        .get_password()
+                        .map(|p| !is_valid_hex_key(&p))
+                        .unwrap_or(true)
+                    {
                         let _ = entry.set_password(&trimmed);
                     }
                 }
@@ -63,7 +64,10 @@ pub fn get_or_create_vault_key(app: AppHandle) -> Result<String, String> {
                     #[cfg(unix)]
                     {
                         use std::os::unix::fs::PermissionsExt;
-                        let _ = std::fs::set_permissions(&key_file, std::fs::Permissions::from_mode(0o600));
+                        let _ = std::fs::set_permissions(
+                            &key_file,
+                            std::fs::Permissions::from_mode(0o600),
+                        );
                     }
                     return Ok(trimmed);
                 }
@@ -164,10 +168,7 @@ pub async fn sync_platforms(
     teams: Option<TeamsCreds>,
 ) -> Result<SyncResult, String> {
     let t0 = std::time::Instant::now();
-    eprintln!(
-        "[sync] início platforms={:?}",
-        platforms
-    );
+    eprintln!("[sync] início platforms={:?}", platforms);
     let mut all_items: Vec<FeedItem> = Vec::new();
     let mut all_courses: Vec<Course> = Vec::new();
     let mut errors: HashMap<PlatformType, String> = HashMap::new();
@@ -176,7 +177,11 @@ pub async fn sync_platforms(
 
     for platform in platforms {
         let p_name = format!("{:?}", platform);
-        eprintln!("[sync] plataforma {} início (t={:.1}s)", p_name, t0.elapsed().as_secs_f32());
+        eprintln!(
+            "[sync] plataforma {} início (t={:.1}s)",
+            p_name,
+            t0.elapsed().as_secs_f32()
+        );
         match platform {
             PlatformType::Aprender3 => {
                 let (cpf, senha) = match &aprender3 {
@@ -214,12 +219,36 @@ pub async fn sync_platforms(
                 }
             }
             PlatformType::Teams => {
-                // A sync via webview oculto (até 35s carregando o app inteiro
-                // do Teams) derrubava o WebProcess no Linux: a página principal
-                // recarregava sozinha e, às vezes, o app inteiro morria.
-                // Desligado até existir um caminho mais leve; a autenticação
-                // interativa (janela teams-auth) continua funcionando.
-                let _ = (&app, &teams);
+                #[cfg(target_os = "linux")]
+                {
+                    // A sync via webview oculto (até 35s carregando o app inteiro
+                    // do Teams) derrubava o WebProcess no Linux: a página principal
+                    // recarregava sozinha e, às vezes, o app inteiro morria.
+                    // Desligado no Linux até existir um caminho mais leve; a autenticação
+                    // interativa (janela teams-auth) continua funcionando.
+                    let _ = (&app, &teams);
+                }
+                #[cfg(not(target_os = "linux"))]
+                {
+                    let is_connected = teams.as_ref().and_then(|t| t.is_connected).unwrap_or(false);
+                    let email = teams
+                        .as_ref()
+                        .and_then(|t| t.email.as_deref())
+                        .unwrap_or("");
+                    if is_connected {
+                        match crate::scraper::HiddenWebviewScraper::sync_teams(&app, email, "")
+                            .await
+                        {
+                            Ok((items, courses)) => {
+                                all_items.extend(items);
+                                all_courses.extend(courses);
+                            }
+                            Err(e) => {
+                                errors.insert(PlatformType::Teams, e);
+                            }
+                        }
+                    }
+                }
             }
         }
         eprintln!(
@@ -244,7 +273,11 @@ pub async fn sync_platforms(
         items: all_items,
         courses: all_courses,
         synced_at: chrono_like_timestamp(),
-        errors: if errors.is_empty() { None } else { Some(errors) },
+        errors: if errors.is_empty() {
+            None
+        } else {
+            Some(errors)
+        },
     })
 }
 
@@ -286,7 +319,12 @@ pub async fn scrape_sigaa_classes(
 ) -> Result<Vec<crate::grade_scraper::ScrapedDiscipline>, String> {
     let t0 = std::time::Instant::now();
     eprintln!("[scrape] dept={} início", department_id);
-    let result = crate::grade_scraper::SigaaGradeScraper::scrape_department_classes(&department_id, &year, &period).await;
+    let result = crate::grade_scraper::SigaaGradeScraper::scrape_department_classes(
+        &department_id,
+        &year,
+        &period,
+    )
+    .await;
     eprintln!(
         "[scrape] dept={} fim em {:.1}s ({} disciplinas, err={:?})",
         department_id,
@@ -346,7 +384,10 @@ pub fn solve_schedules(
     candidate_classes: Vec<crate::grade_scraper::ScrapedClass>,
     preference_shift: Option<char>,
 ) -> Result<Vec<crate::schedule_solver::ScheduleOption>, String> {
-    Ok(crate::schedule_solver::ScheduleSolver::solve(candidate_classes, preference_shift))
+    Ok(crate::schedule_solver::ScheduleSolver::solve(
+        candidate_classes,
+        preference_shift,
+    ))
 }
 
 #[command]
@@ -354,7 +395,9 @@ pub fn solve_schedules(
 pub fn check_schedule_conflicts(
     classes: Vec<crate::grade_scraper::ScrapedClass>,
 ) -> Result<Vec<String>, String> {
-    Ok(crate::schedule_solver::ScheduleSolver::find_conflicts(&classes))
+    Ok(crate::schedule_solver::ScheduleSolver::find_conflicts(
+        &classes,
+    ))
 }
 
 #[command]
@@ -406,22 +449,25 @@ pub async fn validate_sigaa_credentials(
     let (html, _) = client.login_to_portal(clean_matricula, &senha).await?;
     let profile = SigaaClient::parse_discente_profile(&html, clean_matricula);
     let discente_name = profile.nome.unwrap_or_else(|| "Discente".into());
-    Ok(format!("Conectado como {} ({})", discente_name, profile.curso))
+    Ok(format!(
+        "Conectado como {} ({})",
+        discente_name, profile.curso
+    ))
 }
 
 #[command]
 #[specta::specta]
-pub async fn validate_aprender3_credentials(
-    cpf: String,
-    senha: String,
-) -> Result<String, String> {
+pub async fn validate_aprender3_credentials(cpf: String, senha: String) -> Result<String, String> {
     let clean_cpf = crate::moodle::clean_cpf(&cpf);
     if clean_cpf.is_empty() || senha.is_empty() {
         return Err("Informe o CPF e senha do Aprender 3.".into());
     }
     let client = MoodleClient::new();
     let (_items, courses) = client.sync_aprender3(&clean_cpf, &senha).await?;
-    Ok(format!("Conectado ao Aprender 3 ({} turmas encontradas)", courses.len()))
+    Ok(format!(
+        "Conectado ao Aprender 3 ({} turmas encontradas)",
+        courses.len()
+    ))
 }
 
 #[command]
@@ -440,19 +486,25 @@ pub async fn connect_teams(
     }
 
     let raw_email = email.unwrap_or_default().trim().to_string();
-    let mut target_url = tauri::Url::parse("https://teams.microsoft.com").map_err(|e| e.to_string())?;
+    let mut target_url =
+        tauri::Url::parse("https://teams.microsoft.com").map_err(|e| e.to_string())?;
     if !raw_email.is_empty() {
-        target_url.query_pairs_mut().append_pair("login_hint", &raw_email);
+        target_url
+            .query_pairs_mut()
+            .append_pair("login_hint", &raw_email);
     }
 
-    let (tx, rx) = tokio::sync::oneshot::channel::<Result<(String, Vec<FeedItem>, Vec<Course>), String>>();
+    let (tx, rx) =
+        tokio::sync::oneshot::channel::<Result<(String, Vec<FeedItem>, Vec<Course>), String>>();
     let tx_cell = Arc::new(Mutex::new(Some(tx)));
 
     let tx_clone_nav = tx_cell.clone();
     let tx_clone_win = tx_cell.clone();
     let _app_nav = app.clone();
 
-    let chunks_map = Arc::new(Mutex::new(std::collections::BTreeMap::<usize, String>::new()));
+    let chunks_map = Arc::new(Mutex::new(
+        std::collections::BTreeMap::<usize, String>::new(),
+    ));
     let chunks_clone = chunks_map.clone();
     let detected_email_cell = Arc::new(Mutex::new(String::new()));
     let detected_email_clone = detected_email_cell.clone();
@@ -556,7 +608,11 @@ pub async fn connect_teams(
     })();
     "##;
 
-    let combined_script = format!("{}\n\n{}", banner_script, crate::scraper::TEAMS_CRAWLER_SCRIPT);
+    let combined_script = format!(
+        "{}\n\n{}",
+        banner_script,
+        crate::scraper::TEAMS_CRAWLER_SCRIPT
+    );
 
     let window_builder = WebviewWindowBuilder::new(
         &app,
@@ -669,13 +725,17 @@ pub async fn connect_teams(
         true
     });
 
-    let window = window_builder.build().map_err(|e| format!("Falha ao abrir janela de login do Teams: {}", e))?;
+    let window = window_builder
+        .build()
+        .map_err(|e| format!("Falha ao abrir janela de login do Teams: {}", e))?;
 
     window.on_window_event(move |event| {
         if let tauri::WindowEvent::Destroyed = event {
             if let Ok(mut lock) = tx_clone_win.lock() {
                 if let Some(sender) = lock.take() {
-                    let _ = sender.send(Err("Janela de autenticação fechada antes da confirmação.".into()));
+                    let _ = sender.send(Err(
+                        "Janela de autenticação fechada antes da confirmação.".into(),
+                    ));
                 }
             }
         }
@@ -704,7 +764,12 @@ pub async fn connect_teams(
             } else {
                 "aluno@aluno.unb.br".to_string()
             };
-            log::info!("Teams conectado com sucesso para: {} ({} equipes, {} avisos extraídos)", final_email, courses.len(), items.len());
+            log::info!(
+                "Teams conectado com sucesso para: {} ({} equipes, {} avisos extraídos)",
+                final_email,
+                courses.len(),
+                items.len()
+            );
             Ok(crate::models::TeamsConnectResult {
                 is_connected: Some(true),
                 email: Some(final_email),
@@ -729,7 +794,6 @@ pub async fn disconnect_teams(app: AppHandle) -> Result<(), String> {
     log::info!("Microsoft Teams desconectado e janelas auxiliares encerradas.");
     Ok(())
 }
-
 const PROFESSOR_EVALUATIONS_CSV_URL: &str = "https://docs.google.com/spreadsheets/d/1RK3N-2DtuKShO_2fpd5Cag_GsHYNIARD8WHLpCLTdCk/export?format=csv&gid=1411813915";
 static EVALUATIONS_CSV_CACHE: std::sync::OnceLock<tokio::sync::RwLock<Option<String>>> =
     std::sync::OnceLock::new();
@@ -782,7 +846,3 @@ pub async fn fetch_professor_evaluations_csv(force_refresh: bool) -> Result<Stri
 
     Ok(text)
 }
-
-
-
-

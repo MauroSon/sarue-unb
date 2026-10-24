@@ -1,6 +1,7 @@
 import React from "react";
 import { Download, RefreshCw, RotateCcw, Sparkles } from "lucide-react";
-import { Button, Card } from "@/components/ui";
+import { Button } from "@/components/ui";
+import { SettingsSection } from "@/components/settings/SettingsSection";
 import { useAppUpdater } from "@/hooks/useAppUpdater";
 
 type UpdaterState = ReturnType<typeof useAppUpdater>;
@@ -34,19 +35,13 @@ export const AppUpdaterCard: React.FC = () => {
   const isChecking = updater.status === "checking";
 
   return (
-    <Card className="p-5">
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div>
-          <div className="flex flex-wrap items-center gap-2 mb-1">
-            <Sparkles className="w-5 h-5 stroke-[2.5] text-neo-blue" />
-            <h4 className="text-sm font-black uppercase tracking-tight text-black">
-              Atualizações do Aplicativo
-            </h4>
-          </div>
-          <p className="text-xs font-semibold text-neutral-600">
-            {statusMessage(updater)}
-          </p>
-        </div>
+    // Mesma seção padrão das demais (ícone w-4 + rótulo gritado): a tela
+    // inteira compartilha uma anatomia só de cabeçalho.
+    <SettingsSection icon={Sparkles} label="Atualizações do aplicativo">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+        <p className="text-xs font-semibold text-neutral-600">
+          {statusMessage(updater)}
+        </p>
 
         <div className="flex items-center gap-2 shrink-0">
           {updater.status === "ready-to-restart" ? (
@@ -105,6 +100,6 @@ export const AppUpdaterCard: React.FC = () => {
           </div>
         </div>
       )}
-    </Card>
+    </SettingsSection>
   );
 };

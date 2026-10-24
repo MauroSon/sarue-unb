@@ -541,7 +541,7 @@ function AutoFit({
       setOutOfView(!visible);
     }, 1200);
     return () => clearInterval(id);
-  }, [store, fitView, containerRef]);
+  }, [store, fitView, containerRef, getNodesBounds]);
 
   if (!outOfView) return null;
 

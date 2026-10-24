@@ -9,6 +9,7 @@ export interface Course {
   professor?: string;
   classroom?: string;
   schedule?: string;
+  turma?: string;
   unreadCount?: number;
   pendingAssignmentsCount?: number;
   url?: string;
@@ -29,6 +30,7 @@ export interface Discipline {
   professor?: string;
   classroom?: string;
   schedule?: string;
+  turma?: string;
   sigaaCourse?: Course;
   aprenderCourses: Course[];
   teamsCourses: Course[];

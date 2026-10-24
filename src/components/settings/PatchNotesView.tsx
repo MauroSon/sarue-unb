@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { ArrowLeft, ScrollText } from "lucide-react";
+import { ArrowLeft, RotateCwClock } from "lucide-react";
 import {
   Badge,
   Button,
@@ -74,7 +74,7 @@ export const PatchNotesView: React.FC<PatchNotesViewProps> = ({
   return (
     <PageContainer>
       <PageHeader
-        icon={ScrollText}
+        icon={RotateCwClock}
         title="Novidades e Patch Notes"
         actions={
           <Button type="button" variant="outline" size="sm" onClick={onBack}>

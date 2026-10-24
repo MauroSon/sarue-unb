@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useFeed } from "../hooks/useFeed";
 import {
   Card,
@@ -6,7 +6,6 @@ import {
   PageContainer,
   PageHeader,
   Button,
-  Tabs,
   Pagination,
   toast,
   EmptyState,
@@ -19,20 +18,24 @@ import {
   Clock,
   CheckSquare,
   MessageSquare,
-  ExternalLink,
   ArrowLeft,
   Inbox,
   AlertCircle,
   Link2,
-  Search,
   BookOpen,
   Folder,
 } from "lucide-react";
-import { openExternalUrl } from "../lib/utils";
 import { UnmatchedCourseDialog } from "../components/UnmatchedCourseDialog";
 import { FeedList } from "../components/feed/FeedList";
-import { ArchivedToggleButton } from "../components/feed/ArchivedToggleButton";
-import type { Course, Discipline, FeedItemType } from "@/core";
+import { FeedToolbar } from "../components/feed/FeedToolbar";
+import { useFeedSelection } from "../hooks/useFeedSelection";
+import type { Course, Discipline, FeedItemType, PlatformType } from "@/core";
+
+const PLATFORM_LABELS: Record<PlatformType, string> = {
+  sigaa: "Sigaa",
+  aprender3: "Aprender 3",
+  teams: "Teams",
+};
 
 export const CoursesScreen: React.FC = () => {
   const {
@@ -47,6 +50,8 @@ export const CoursesScreen: React.FC = () => {
     showArchived,
     setShowArchived,
     associateCourse,
+    completeTasksBatch,
+    archiveItemsBatch,
   } = useFeed();
 
   const [selectedDiscipline, setSelectedDiscipline] =
@@ -56,13 +61,191 @@ export const CoursesScreen: React.FC = () => {
   const [drillCategory, setDrillCategory] = useState<FeedItemType | "all">(
     "all",
   );
+  const [drillPlatform, setDrillPlatform] = useState<PlatformType | "all">(
+    "all",
+  );
 
   // Paginação client-side do feed da disciplina: 25 por página, reset ao trocar de vista/filtro
   const DRILL_PAGE_SIZE = 25;
+
   const [drillPage, setDrillPage] = useState(1);
   useEffect(() => {
     setDrillPage(1);
-  }, [selectedDiscipline, drillSearchQuery, drillCategory, showArchived]);
+  }, [
+    selectedDiscipline,
+    drillSearchQuery,
+    drillCategory,
+    drillPlatform,
+    showArchived,
+  ]);
+
+  // Trocou de disciplina: filtro de plataforma volta para "Todas"
+  useEffect(() => {
+    setDrillPlatform("all");
+  }, [selectedDiscipline]);
+
+  // Plataformas que a disciplina efetivamente tem (SIGAA / Aprender 3 / Teams)
+  const drillPlatforms = useMemo(() => {
+    if (!selectedDiscipline) return [];
+    const platforms: PlatformType[] = [];
+    if (selectedDiscipline.sigaaCourse) platforms.push("sigaa");
+    if (selectedDiscipline.aprenderCourses.length > 0)
+      platforms.push("aprender3");
+    if (
+      selectedDiscipline.teamsCourses &&
+      selectedDiscipline.teamsCourses.length > 0
+    )
+      platforms.push("teams");
+    return platforms;
+  }, [selectedDiscipline]);
+
+  const drillPlatformOptions = useMemo(
+    () => [
+      { value: "all" as PlatformType | "all", label: "Todas" },
+      ...drillPlatforms.map((platform) => ({
+        value: platform,
+        label: PLATFORM_LABELS[platform],
+      })),
+    ],
+    [drillPlatforms],
+  );
+
+  // Feed da disciplina (drill-down): filtragem e paginação calculadas no topo,
+  // antes dos retornos antecipados, para os hooks do modo Selecionar manterem
+  // a ordem fixa exigida pelo React.
+  // Itens da disciplina sem os filtros do drill-down: contagem absoluta do título
+  const disciplineAllItems = useMemo(() => {
+    if (!selectedDiscipline) return [];
+    return items.filter((item) => {
+      const belongsToDiscipline =
+        item.courseName === selectedDiscipline.name ||
+        (selectedDiscipline.code &&
+          item.courseCode === selectedDiscipline.code) ||
+        selectedDiscipline.aprenderCourses.some(
+          (ac) =>
+            ac.name === item.courseName ||
+            (ac.code && item.courseCode === ac.code),
+        ) ||
+        (selectedDiscipline.teamsCourses &&
+          selectedDiscipline.teamsCourses.some(
+            (tc) =>
+              tc.name === item.courseName ||
+              (tc.code && item.courseCode === tc.code),
+          ));
+      return belongsToDiscipline;
+    });
+  }, [items, selectedDiscipline]);
+
+  const disciplineFeedItems = useMemo(() => {
+    return disciplineAllItems.filter((item) => {
+      // Filtro por Plataforma
+      if (drillPlatform !== "all" && item.platform !== drillPlatform) {
+        return false;
+      }
+
+      // Filtro por Categoria
+      if (drillCategory !== "all" && item.itemType !== drillCategory) {
+        return false;
+      }
+
+      // Filtro por Busca Textual
+      if (drillSearchQuery.trim().length > 0) {
+        const q = drillSearchQuery.trim().toLowerCase();
+        const matchTitle = item.title.toLowerCase().includes(q);
+        const matchContent = item.content.toLowerCase().includes(q);
+        const matchAuthor = item.author?.toLowerCase().includes(q) ?? false;
+        if (!matchTitle && !matchContent && !matchAuthor) {
+          return false;
+        }
+      }
+
+      return true;
+    });
+  }, [disciplineAllItems, drillPlatform, drillCategory, drillSearchQuery]);
+
+  const drillPageCount = Math.max(
+    1,
+    Math.ceil(disciplineFeedItems.length / DRILL_PAGE_SIZE),
+  );
+  const safeDrillPage = Math.min(drillPage, drillPageCount);
+  const drillPageItems = disciplineFeedItems.slice(
+    (safeDrillPage - 1) * DRILL_PAGE_SIZE,
+    safeDrillPage * DRILL_PAGE_SIZE,
+  );
+
+  // Modo Selecionar (lote) do feed da disciplina: mesmas regras do Feed (Início)
+  const drillPageIds = useMemo(
+    () => drillPageItems.map((i) => i.id),
+    [drillPageItems],
+  );
+  const selection = useFeedSelection(
+    drillPageIds,
+    `${selectedDiscipline?.id ?? "none"}|${drillSearchQuery}|${drillCategory}|${drillPlatform}|${showArchived}|${safeDrillPage}`,
+  );
+  const { isSelecting, selectedIds } = selection;
+  const selectedItems = useMemo(
+    () => drillPageItems.filter((i) => selectedIds.has(i.id)),
+    [drillPageItems, selectedIds],
+  );
+  const selectedCount = selectedItems.length;
+  const selectedTaskCount = selectedItems.filter(
+    (i) => i.itemType === "assignment",
+  ).length;
+  const allSelected =
+    drillPageItems.length > 0 &&
+    drillPageItems.every((i) => selectedIds.has(i.id));
+
+  const handleBatchComplete = async () => {
+    const ids = selectedItems
+      .filter((i) => i.itemType === "assignment")
+      .map((i) => i.id);
+    if (ids.length === 0) return;
+    await completeTasksBatch(ids);
+    const n = ids.length;
+    toast.add({
+      title: n === 1 ? "Tarefa concluída" : `${n} tarefas concluídas`,
+      description:
+        n === 1
+          ? "A tarefa foi marcada como concluída."
+          : "As tarefas foram marcadas como concluídas.",
+      type: "success",
+      timeout: 4000,
+    });
+  };
+
+  const handleBatchArchive = async () => {
+    const ids = selectedItems.map((i) => i.id);
+    if (ids.length === 0) return;
+    await archiveItemsBatch(ids, true);
+    const n = ids.length;
+    toast.add({
+      title: n === 1 ? "Item arquivado" : `${n} itens arquivados`,
+      description:
+        n === 1
+          ? "O item foi movido para os Arquivados."
+          : "Os itens foram movidos para os Arquivados.",
+      type: "info",
+      timeout: 5000,
+    });
+    selection.clear();
+  };
+
+  const handleBatchRestore = async () => {
+    const ids = selectedItems.map((i) => i.id);
+    if (ids.length === 0) return;
+    await archiveItemsBatch(ids, false);
+    const n = ids.length;
+    toast.add({
+      title: n === 1 ? "Item desarquivado" : `${n} itens desarquivados`,
+      description:
+        n === 1
+          ? "O item retornou ao feed ativo da disciplina."
+          : "Os itens retornaram ao feed ativo da disciplina.",
+      type: "success",
+      timeout: 4000,
+    });
+    selection.clear();
+  };
 
   const handleArchive = async (id: string) => {
     await archiveFeedItem(id, true);
@@ -83,12 +266,6 @@ export const CoursesScreen: React.FC = () => {
       timeout: 4000,
     });
   };
-
-  const typeTabs = [
-    { id: "all", label: "Tudo" },
-    { id: "assignment", label: "Tarefas" },
-    { id: "post", label: "Avisos" },
-  ];
 
   // Exibe a modal automaticamente se houver turma não associada do Aprender 3
   useEffect(() => {
@@ -136,60 +313,34 @@ export const CoursesScreen: React.FC = () => {
 
   // Se o usuário selecionou uma disciplina para ver o feed exclusivo (Drill-Down)
   if (selectedDiscipline) {
-    // Filtra os itens do feed pertencentes a esta disciplina (SIGAA + Aprender 3 associados) com busca e categoria
-    const disciplineFeedItems = items.filter((item) => {
-      const belongsToDiscipline =
-        item.courseName === selectedDiscipline.name ||
-        (selectedDiscipline.code &&
-          item.courseCode === selectedDiscipline.code) ||
-        selectedDiscipline.aprenderCourses.some(
-          (ac) =>
-            ac.name === item.courseName ||
-            (ac.code && item.courseCode === ac.code),
-        ) ||
-        (selectedDiscipline.teamsCourses &&
-          selectedDiscipline.teamsCourses.some(
-            (tc) =>
-              tc.name === item.courseName ||
-              (tc.code && item.courseCode === tc.code),
-          ));
-
-      if (!belongsToDiscipline) return false;
-
-      // Filtro por Categoria
-      if (drillCategory !== "all" && item.itemType !== drillCategory) {
-        return false;
-      }
-
-      // Filtro por Busca Textual
-      if (drillSearchQuery.trim().length > 0) {
-        const q = drillSearchQuery.trim().toLowerCase();
-        const matchTitle = item.title.toLowerCase().includes(q);
-        const matchContent = item.content.toLowerCase().includes(q);
-        const matchAuthor = item.author?.toLowerCase().includes(q) ?? false;
-        if (!matchTitle && !matchContent && !matchAuthor) {
-          return false;
-        }
-      }
-
-      return true;
-    });
-    const drillPageCount = Math.max(
-      1,
-      Math.ceil(disciplineFeedItems.length / DRILL_PAGE_SIZE),
-    );
-    const safeDrillPage = Math.min(drillPage, drillPageCount);
-    const drillPageItems = disciplineFeedItems.slice(
-      (safeDrillPage - 1) * DRILL_PAGE_SIZE,
-      safeDrillPage * DRILL_PAGE_SIZE,
-    );
+    // Meta SIGAA da disciplina: turma, professor, sala, horário e semestre —
+    // itens sem dado não entram na linha
+    const metaItems = [
+      selectedDiscipline.turma || null,
+      selectedDiscipline.professor
+        ? `Prof. ${selectedDiscipline.professor}`
+        : null,
+      selectedDiscipline.classroom
+        ? `Sala ${selectedDiscipline.classroom}`
+        : null,
+      selectedDiscipline.schedule || null,
+      selectedDiscipline.semester || null,
+    ].filter((part): part is string => Boolean(part));
 
     return (
       <PageContainer>
         {/* Título Padronizado da Página com Nome da Disciplina e Ação de Voltar */}
         <PageHeader
           icon={GraduationCap}
-          title={selectedDiscipline.name}
+          title={
+            <>
+              {selectedDiscipline.name}{" "}
+              <span className="text-sm font-bold text-neutral-500">
+                ({disciplineAllItems.length}{" "}
+                {disciplineAllItems.length === 1 ? "resultado" : "resultados"})
+              </span>
+            </>
+          }
           actions={
             <Button
               type="button"
@@ -199,6 +350,7 @@ export const CoursesScreen: React.FC = () => {
                 setSelectedDiscipline(null);
                 setDrillSearchQuery("");
                 setDrillCategory("all");
+                setDrillPlatform("all");
                 setShowArchived(false);
               }}
               className="cursor-pointer flex items-center gap-1.5 font-bold"
@@ -209,197 +361,131 @@ export const CoursesScreen: React.FC = () => {
           }
         />
 
-        {/* Detalhes e Acessos da Disciplina */}
-        <div className="bg-white border-2 border-black rounded-lg p-6 shadow-[4px_4px_0px_0px_#000] space-y-4">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div className="flex flex-wrap items-center gap-2">
+        {/* Card de detalhes da disciplina: badges de plataforma + meta SIGAA */}
+        <Card className="p-4">
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-1.5">
+            <div className="flex flex-wrap items-center gap-1.5">
               {selectedDiscipline.sigaaCourse ? (
-                <Badge variant="sigaa">SIGAA</Badge>
+                <Badge variant="sigaa" size="sm">
+                  SIGAA
+                </Badge>
               ) : null}
-              {selectedDiscipline.aprenderCourses.map((ac) => (
-                <Badge key={ac.id} variant="aprender3">
+              {selectedDiscipline.aprenderCourses.length > 0 ? (
+                <Badge variant="aprender3" size="sm">
                   Aprender 3
                 </Badge>
-              ))}
-              {selectedDiscipline.teamsCourses?.map((tc) => (
-                <Badge key={tc.id} variant="teams">
-                  Teams: {tc.name}
-                </Badge>
-              ))}
-            </div>
-
-            <span className="text-xs font-bold text-neutral-500">
-              Semestre {selectedDiscipline.semester}
-            </span>
-          </div>
-
-          <div className="flex flex-wrap gap-4 text-xs font-semibold text-neutral-700 pt-1 border-t-2 border-black/10">
-            {selectedDiscipline.professor ? (
-              <div className="flex items-center gap-1.5">
-                <User className="w-3.5 h-3.5 stroke-[2.5] text-neutral-500" />
-                <span>{selectedDiscipline.professor}</span>
-              </div>
-            ) : null}
-
-            {selectedDiscipline.classroom ? (
-              <div className="flex items-center gap-1.5">
-                <MapPin className="w-3.5 h-3.5 stroke-[2.5] text-neutral-500" />
-                <span>{selectedDiscipline.classroom}</span>
-              </div>
-            ) : null}
-
-            {selectedDiscipline.schedule ? (
-              <div className="flex items-center gap-1.5">
-                <Clock className="w-3.5 h-3.5 stroke-[2.5] text-neutral-500" />
-                <span>{selectedDiscipline.schedule}</span>
-              </div>
-            ) : null}
-          </div>
-
-          {/* Links diretos das plataformas vinculadas */}
-          <div className="flex flex-wrap gap-2 pt-2">
-            {selectedDiscipline.url ? (
-              <Button
-                type="button"
-                size="sm"
-                onClick={() => openExternalUrl(selectedDiscipline.url!)}
-                className="bg-platform-sigaa hover:bg-neo-greenHover text-black"
-              >
-                <span>Acessar no SIGAA</span>
-                <ExternalLink className="w-3.5 h-3.5 stroke-[2.5]" />
-              </Button>
-            ) : null}
-
-            {selectedDiscipline.aprenderCourses.map((ac) =>
-              ac.url ? (
-                <Button
-                  key={ac.id}
-                  type="button"
-                  size="sm"
-                  onClick={() => openExternalUrl(ac.url!)}
-                  className="bg-platform-aprender3 hover:bg-orange-400 text-black"
-                >
-                  <span>Acessar Turma no Aprender 3</span>
-                  <ExternalLink className="w-3.5 h-3.5 stroke-[2.5]" />
-                </Button>
-              ) : null,
-            )}
-
-            {selectedDiscipline.teamsCourses?.map((tc) =>
-              tc.url ? (
-                <Button
-                  key={tc.id}
-                  type="button"
-                  size="sm"
-                  onClick={() => openExternalUrl(tc.url!)}
-                  className="bg-platform-teams hover:bg-violet-400 text-white"
-                >
-                  <span>Acessar Equipe no Teams</span>
-                  <ExternalLink className="w-3.5 h-3.5 stroke-[2.5]" />
-                </Button>
-              ) : null,
-            )}
-          </div>
-        </div>
-
-        {/* Barra de Filtros e Busca da Disciplina */}
-        <div className="bg-white border-2 border-black rounded-lg p-5 shadow-[4px_4px_0px_0px_#000] space-y-4">
-          {/* Campo de Busca Textual */}
-          <div className="relative">
-            <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-neutral-500 stroke-[2.5]" />
-            <input
-              type="text"
-              value={drillSearchQuery}
-              onChange={(e) => setDrillSearchQuery(e.target.value)}
-              placeholder="Buscar por título da tarefa, aviso ou conteúdo..."
-              aria-label="Buscar no feed da disciplina"
-              className="w-full bg-white pl-10 pr-4 py-2.5 text-sm font-medium text-black border-2 border-black rounded-xl focus:outline-hidden focus:ring-2 focus:ring-neo-blue transition-[transform,box-shadow,background-color,border-color] placeholder:text-neutral-400 shadow-none"
-            />
-          </div>
-
-          {/* Linha de Filtro por Categoria */}
-          <div className="flex flex-wrap items-center justify-between gap-4 pt-1">
-            <div className="space-y-1.5">
-              <span className="text-xs font-bold text-neutral-700 block">
-                Categoria:
-              </span>
-              <Tabs
-                items={typeTabs}
-                activeId={drillCategory}
-                onChange={(id) => setDrillCategory(id as FeedItemType | "all")}
-              />
-            </div>
-
-            <div className="flex flex-wrap items-end gap-3">
-              {drillSearchQuery || drillCategory !== "all" ? (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setDrillSearchQuery("");
-                    setDrillCategory("all");
-                  }}
-                  className="cursor-pointer rounded-xs text-xs font-bold text-neutral-500 hover:text-black underline focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-neo-blue focus-visible:ring-offset-2"
-                >
-                  Limpar filtros
-                </button>
               ) : null}
-
-              <ArchivedToggleButton
-                showArchived={showArchived}
-                onToggle={() => setShowArchived(!showArchived)}
-              />
+              {selectedDiscipline.teamsCourses &&
+              selectedDiscipline.teamsCourses.length > 0 ? (
+                <Badge variant="teams" size="sm">
+                  Teams
+                </Badge>
+              ) : null}
             </div>
+
+            {metaItems.length > 0 ? (
+              <>
+                <span
+                  className="hidden h-4 w-px bg-black/15 sm:block"
+                  aria-hidden
+                />
+                <span className="text-xs font-semibold text-neutral-600">
+                  {metaItems.join(" · ")}
+                </span>
+              </>
+            ) : null}
           </div>
-        </div>
+        </Card>
+
+        {/* Barra de Filtros e Busca da Disciplina (expande para baixo no modo Selecionar) */}
+        <FeedToolbar
+          searchQuery={drillSearchQuery}
+          onSearchChange={setDrillSearchQuery}
+          searchPlaceholder="Buscar por título da tarefa, aviso ou conteúdo..."
+          searchAriaLabel="Buscar no feed da disciplina"
+          showPlatformFilter={drillPlatforms.length > 1}
+          platformValue={drillPlatform}
+          onPlatformChange={setDrillPlatform}
+          platformOptions={drillPlatformOptions}
+          categoryValue={drillCategory}
+          onCategoryChange={setDrillCategory}
+          hasActiveFilters={
+            Boolean(drillSearchQuery) ||
+            drillCategory !== "all" ||
+            drillPlatform !== "all"
+          }
+          onClearFilters={() => {
+            setDrillSearchQuery("");
+            setDrillCategory("all");
+            setDrillPlatform("all");
+          }}
+          showArchived={showArchived}
+          onToggleArchived={() => setShowArchived(!showArchived)}
+          selectionMode={isSelecting}
+          selectedCount={selectedCount}
+          selectedTaskCount={selectedTaskCount}
+          allSelected={allSelected}
+          canSelect={disciplineFeedItems.length > 0}
+          onEnterSelection={selection.enter}
+          onExitSelection={selection.exit}
+          onToggleAllSelection={selection.toggleAll}
+          onBatchComplete={handleBatchComplete}
+          onBatchArchive={handleBatchArchive}
+          onBatchRestore={handleBatchRestore}
+        />
 
         {/* Feed Filtrado desta Disciplina */}
-        <div className="space-y-3">
-          <div className="flex items-center justify-between text-xs font-bold text-neutral-600 px-1">
-            <span>
-              {showArchived ? "Arquivados da Matéria" : "Feed da Matéria"} (
-              {disciplineFeedItems.length}{" "}
-              {disciplineFeedItems.length === 1 ? "publicação" : "publicações"})
-            </span>
-            <span>Avisos e Tarefas</span>
-          </div>
-
-          {disciplineFeedItems.length === 0 ? (
-            <EmptyState
-              icon={Inbox}
-              iconClassName="bg-canvas text-neo-blue"
-              title={
-                showArchived
-                  ? "Nenhum item arquivado nesta matéria"
-                  : "Nenhuma publicação encontrada"
-              }
-              description={
-                showArchived && !drillSearchQuery && drillCategory === "all"
-                  ? "Você ainda não arquivou nenhum aviso ou tarefa desta disciplina."
-                  : drillSearchQuery || drillCategory !== "all"
-                    ? "Nenhum aviso ou tarefa encontrado para os filtros selecionados nesta matéria."
-                    : "Não há avisos ou tarefas registradas para esta disciplina até o momento."
-              }
-            />
-          ) : (
-            <>
-              <Card className="p-0 overflow-hidden">
-                <FeedList
-                  items={drillPageItems}
-                  disciplines={disciplines}
-                  showDiscipline={false}
-                  onToggleComplete={toggleTaskCompleted}
-                  onArchive={handleArchive}
-                  onRestore={handleRestore}
-                />
-              </Card>
-              <Pagination
-                page={safeDrillPage}
-                pageCount={drillPageCount}
-                onPageChange={setDrillPage}
+        {disciplineFeedItems.length === 0 ? (
+          <EmptyState
+            icon={Inbox}
+            iconClassName="bg-canvas text-neo-blue"
+            title={
+              showArchived
+                ? "Nenhum item arquivado nesta matéria"
+                : "Nenhuma publicação encontrada"
+            }
+            description={
+              showArchived && !drillSearchQuery && drillCategory === "all"
+                ? "Você ainda não arquivou nenhum aviso ou tarefa desta disciplina."
+                : drillSearchQuery || drillCategory !== "all"
+                  ? "Nenhum aviso ou tarefa encontrado para os filtros selecionados nesta matéria."
+                  : "Não há avisos ou tarefas registradas para esta disciplina até o momento."
+            }
+          />
+        ) : (
+          <div className="space-y-4">
+            <Card className="p-0 overflow-hidden">
+              {/* Contador do filtro: some quando não há filtro ativo */}
+              {drillSearchQuery ||
+              drillCategory !== "all" ||
+              drillPlatform !== "all" ? (
+                <div className="border-b-2 border-black/10 bg-canvas px-4 py-2 text-xs font-bold text-neutral-600 md:px-5">
+                  {disciplineFeedItems.length} de {disciplineAllItems.length}{" "}
+                  {disciplineFeedItems.length === 1
+                    ? "resultado"
+                    : "resultados"}
+                </div>
+              ) : null}
+              <FeedList
+                items={drillPageItems}
+                disciplines={disciplines}
+                showDiscipline={false}
+                onToggleComplete={toggleTaskCompleted}
+                onArchive={handleArchive}
+                onRestore={handleRestore}
+                selectionMode={isSelecting}
+                selectedIds={selectedIds}
+                onToggleSelect={selection.handleToggleSelect}
               />
-            </>
-          )}
-        </div>
+            </Card>
+
+            <Pagination
+              page={safeDrillPage}
+              pageCount={drillPageCount}
+              onPageChange={setDrillPage}
+            />
+          </div>
+        )}
       </PageContainer>
     );
   }

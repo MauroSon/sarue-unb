@@ -10,13 +10,7 @@ import {
   TooltipTrigger,
   TooltipContent,
 } from "@/components/ui";
-import {
-  CalendarDays,
-  CalendarClock,
-  RotateCcw,
-  PlusCircle,
-  Info,
-} from "lucide-react";
+import { CalendarDays, RotateCcw, PlusCircle, Info } from "lucide-react";
 import { toPng } from "html-to-image";
 import type { ScrapedClass } from "@/core";
 import { GradeFilters } from "../components/grade/GradeFilters";
@@ -206,7 +200,6 @@ export const GradeBuilderScreen: React.FC = () => {
       {hasSemesterAlert && (
         <Alert
           variant="yellow"
-          icon={CalendarClock}
           title={`Semestre ${year}.${period} em andamento`}
           description={
             <div className="space-y-2.5 mt-1">

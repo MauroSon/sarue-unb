@@ -42,6 +42,13 @@ export interface PlatformAccountsAccordionProps {
   allowAllClosed?: boolean;
   /** Exibir a plataforma Microsoft Teams (padrão true; false no onboarding) */
   showTeams?: boolean;
+  /**
+   * Anatomia das gavetas: "stickers" (padrão, onboarding — adesivos com
+   * sombra dura própria) ou "panel" (Settings — linhas segmentadas dentro
+   * do card da seção, sem sombra própria, para não aninhar adesivos, e
+   * inputs alinhados em linha com fallback para coluna em janelas pequenas).
+   */
+  variant?: "stickers" | "panel";
 }
 
 /**
@@ -60,6 +67,7 @@ export const PlatformAccountsAccordion: React.FC<
   initialOpenPlatform = "sigaa",
   allowAllClosed = false,
   showTeams = true,
+  variant = "stickers",
 }) => {
   const {
     saveSigaa,
@@ -460,7 +468,13 @@ export const PlatformAccountsAccordion: React.FC<
                       delay: 0.12 + i * 0.08,
                     }
               }
-              className={`border-2 border-black rounded-lg shadow-[4px_4px_0px_0px_#000] overflow-hidden ${p.isSaved ? "bg-pastel-green" : "bg-white"} ${isLocked ? "opacity-60" : ""}`}
+              className={`border-2 border-black rounded-lg overflow-hidden ${
+                variant === "panel"
+                  ? // Painel da Settings: linha segmentada do card — sem sombra própria.
+                    ""
+                  : // Adesivo do onboarding: sombra dura própria.
+                    "shadow-[4px_4px_0px_0px_#000]"
+              } ${p.isSaved ? "bg-pastel-green" : "bg-white"} ${isLocked ? "opacity-60" : ""}`}
             >
               {/* Cabeçalho do adesivo */}
               <button
@@ -539,31 +553,39 @@ export const PlatformAccountsAccordion: React.FC<
                               void handleConnectSigaa();
                             }
                           }}
-                          className="space-y-3"
+                          className="@container space-y-3"
                         >
-                          <Input
-                            label="Matrícula SIGAA"
-                            placeholder="Ex: 202012345"
-                            value={sigaaMatricula}
-                            onChange={(e) => {
-                              setSigaaMatricula(e.target.value);
-                              setSigaaSaved(false);
-                              setSigaaSuccessMsg(null);
-                            }}
-                            disabled={isLoading || isVerifying}
-                          />
-                          <Input
-                            type="password"
-                            label="Senha SIGAA"
-                            placeholder="Senha do SIGAA"
-                            value={sigaaSenha}
-                            onChange={(e) => {
-                              setSigaaSenha(e.target.value);
-                              setSigaaSaved(false);
-                              setSigaaSuccessMsg(null);
-                            }}
-                            disabled={isLoading || isVerifying}
-                          />
+                          <div
+                            className={
+                              variant === "panel"
+                                ? "grid grid-cols-1 @min-[580px]:grid-cols-2 gap-3"
+                                : "space-y-3"
+                            }
+                          >
+                            <Input
+                              label="Matrícula SIGAA"
+                              placeholder="Ex: 202012345"
+                              value={sigaaMatricula}
+                              onChange={(e) => {
+                                setSigaaMatricula(e.target.value);
+                                setSigaaSaved(false);
+                                setSigaaSuccessMsg(null);
+                              }}
+                              disabled={isLoading || isVerifying}
+                            />
+                            <Input
+                              type="password"
+                              label="Senha SIGAA"
+                              placeholder="Senha do SIGAA"
+                              value={sigaaSenha}
+                              onChange={(e) => {
+                                setSigaaSenha(e.target.value);
+                                setSigaaSaved(false);
+                                setSigaaSuccessMsg(null);
+                              }}
+                              disabled={isLoading || isVerifying}
+                            />
+                          </div>
                           {sigaaSaved && sigaaSuccessMsg ? (
                             <div className="p-3 bg-pastel-green text-black border-2 border-black rounded-lg text-xs font-bold flex items-center gap-2">
                               <CheckCircle2 className="w-4 h-4 text-ink-success stroke-[2.5] shrink-0" />
@@ -606,31 +628,39 @@ export const PlatformAccountsAccordion: React.FC<
                               void handleConnectAprender3();
                             }
                           }}
-                          className="space-y-3"
+                          className="@container space-y-3"
                         >
-                          <Input
-                            label="CPF (somente números ou formatado)"
-                            placeholder="Ex: 000.000.000-00"
-                            value={aprenderCpf}
-                            onChange={(e) => {
-                              setAprenderCpf(e.target.value);
-                              setAprenderSaved(false);
-                              setAprenderSuccessMsg(null);
-                            }}
-                            disabled={isLoading || isVerifying}
-                          />
-                          <Input
-                            type="password"
-                            label="Senha do Aprender 3"
-                            placeholder="Senha do Aprender 3"
-                            value={aprenderSenha}
-                            onChange={(e) => {
-                              setAprenderSenha(e.target.value);
-                              setAprenderSaved(false);
-                              setAprenderSuccessMsg(null);
-                            }}
-                            disabled={isLoading || isVerifying}
-                          />
+                          <div
+                            className={
+                              variant === "panel"
+                                ? "grid grid-cols-1 @min-[580px]:grid-cols-2 gap-3"
+                                : "space-y-3"
+                            }
+                          >
+                            <Input
+                              label="CPF (somente números ou formatado)"
+                              placeholder="Ex: 000.000.000-00"
+                              value={aprenderCpf}
+                              onChange={(e) => {
+                                setAprenderCpf(e.target.value);
+                                setAprenderSaved(false);
+                                setAprenderSuccessMsg(null);
+                              }}
+                              disabled={isLoading || isVerifying}
+                            />
+                            <Input
+                              type="password"
+                              label="Senha do Aprender 3"
+                              placeholder="Senha do Aprender 3"
+                              value={aprenderSenha}
+                              onChange={(e) => {
+                                setAprenderSenha(e.target.value);
+                                setAprenderSaved(false);
+                                setAprenderSuccessMsg(null);
+                              }}
+                              disabled={isLoading || isVerifying}
+                            />
+                          </div>
                           {aprenderSaved && aprenderSuccessMsg ? (
                             <div className="p-3 bg-pastel-green text-black border-2 border-black rounded-lg text-xs font-bold flex items-center gap-2">
                               <CheckCircle2 className="w-4 h-4 text-ink-success stroke-[2.5] shrink-0" />

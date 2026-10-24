@@ -7,6 +7,7 @@ import { MyCourseScreen } from './screens/MyCourseScreen';
 import { ProfessorEvaluationsScreen } from './screens/ProfessorEvaluationsScreen';
 import { SettingsScreen } from './screens/SettingsScreen';
 import { Sidebar, type NavTab } from './components/Sidebar';
+import { AppBootSkeleton } from './components/boot/AppBootSkeleton';
 import { TooltipProvider, Toaster, ErrorBoundary } from '@/components/ui';
 import { useCredentials } from './hooks/useCredentials';
 import { useUpdateAvailable } from './hooks/useAppUpdater';
@@ -18,6 +19,7 @@ import { useContainer } from './context/ContainerContext';
 import type { AcademicCalendar } from './core';
 import { NAVIGATE_EVENT } from './lib/utils';
 import { initSoundEffectsListener } from './lib/sound-effects';
+import { AccessibilityProvider } from './context/AccessibilityContext';
 
 type AppStep = 'onboarding' | 'main';
 
@@ -77,7 +79,7 @@ const AppShell: React.FC = () => {
     return () => {
       cancelled = true;
     };
-  }, [repos]);
+  }, [repos, useCases.getAcademicCalendar]);
 
   // Usuário recorrente pula o onboarding na abertura do app: credenciais salvas
   // (entra sincronizando) ou, como fallback, dados locais de uso anterior (modo
@@ -114,19 +116,7 @@ const AppShell: React.FC = () => {
   // isLoading nesta instância também — renderizar o loading aqui desmontaria
   // o wizard e resetaria o onboarding para o passo 1.
   if ((isCheckingAuth || hasLocalData === null) && !bootstrapped.current) {
-    return (
-      <div className="min-h-screen bg-canvas bg-grid flex flex-col items-center justify-center space-y-4">
-        <img
-          src="/sarue-logo.png"
-          alt="Saruê UnB"
-          className="w-12 h-12 object-cover border-2 border-black rounded-xl shadow-[4px_4px_0px_0px_#000]"
-        />
-        <div className="inline-block animate-spin border-2 border-black border-t-transparent rounded-full h-6 w-6" />
-        <p className="text-xs font-bold text-neutral-700">
-          Verificando Cofre Seguro...
-        </p>
-      </div>
-    );
+    return <AppBootSkeleton />;
   }
 
   // Fluxo 1: Onboarding animado em 4 passos (bem-vindo, funcionalidades, segurança, login)
@@ -149,7 +139,7 @@ const AppShell: React.FC = () => {
   // Fluxo 3: Aplicação Principal (Dashboard com Sidebar Colapsável)
   return (
     <DeadlineProvider>
-    <div className="flex h-screen bg-canvas bg-grid overflow-hidden">
+    <div className="flex h-full bg-canvas bg-grid overflow-hidden">
       {/* Sidebar Colapsável com Botão de Sincronização no Canto Inferior */}
       <Sidebar
         currentTab={currentTab}
@@ -167,7 +157,7 @@ const AppShell: React.FC = () => {
       />
 
       {/* Área Central de Conteúdo (Sem Header global, títulos direto no corpo) */}
-      <div className="flex-1 flex flex-col h-screen overflow-hidden">
+      <div className="flex-1 flex flex-col h-full overflow-hidden">
         <main className="flex-1 overflow-y-auto px-4 py-6 md:px-8 md:py-8">
           <ErrorBoundary key={currentTab} onReset={() => setCurrentTab('home')}>
             {currentTab === 'home' && <DashboardScreen />}
@@ -201,12 +191,14 @@ const AppShell: React.FC = () => {
 };
 
 const App: React.FC = () => (
-  <SyncProvider>
-    <TooltipProvider delay={150}>
-      <Toaster />
-      <AppShell />
-    </TooltipProvider>
-  </SyncProvider>
+  <AccessibilityProvider>
+    <SyncProvider>
+      <TooltipProvider delay={150}>
+        <Toaster />
+        <AppShell />
+      </TooltipProvider>
+    </SyncProvider>
+  </AccessibilityProvider>
 );
 
 export { App };

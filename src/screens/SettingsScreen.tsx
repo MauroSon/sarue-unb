@@ -11,8 +11,10 @@ import {
   DialogTitle,
   DialogDescription,
   DialogFooter,
+  Slider,
 } from "@/components/ui";
-import { PlatformAccountsAccordion } from "@/components/onboarding/PlatformAccountsAccordion";
+import { ConnectedAccountsCard } from "@/components/settings/ConnectedAccountsCard";
+import { SettingsSection } from "@/components/settings/SettingsSection";
 import { useCredentials } from "../hooks/useCredentials";
 import { useFeed } from "../hooks/useFeed";
 import { resetMyCourseCache } from "../hooks/useMyCourse";
@@ -21,12 +23,12 @@ import { useOptionalSync } from "../context/SyncContext";
 import {
   Settings,
   AlertCircle,
-  Scale,
-  GitBranch,
   Trash2,
   RotateCcw,
-  ScrollText,
+  RotateCwClock,
   SlidersHorizontal,
+  PersonStanding,
+  Triangle,
 } from "lucide-react";
 import { useAppUpdater } from "../hooks/useAppUpdater";
 import { useAutostart } from "../hooks/useAutostart";
@@ -38,6 +40,13 @@ import {
   setSoundEffectsEnabled,
   playButtonClickSound,
 } from "@/lib/sound-effects";
+import { useAccessibility } from "../context/AccessibilityContext";
+import {
+  UI_ZOOM_MAX_PERCENT,
+  UI_ZOOM_MIN_PERCENT,
+  UI_ZOOM_STEP_PERCENT,
+  type UiZoom,
+} from "../lib/accessibility";
 
 export interface SettingsScreenProps {
   onResetCredentials: () => void;
@@ -58,6 +67,8 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
     toggle: toggleAutostart,
     isLoading: isAutostartLoading,
   } = useAutostart();
+  const { reduceAnimations, setReduceAnimations, uiZoom, setUiZoom } =
+    useAccessibility();
 
   // Modo explorar: nenhuma conta conectada — o botão da zona de perigo vira
   // "Voltar para o Onboarding", mas a ação continua apagando tudo (grades,
@@ -73,6 +84,11 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
   const [isViewingPatchNotes, setIsViewingPatchNotes] = useState(false);
   const [isSoundActive, setIsSoundActive] = useState(() =>
     isSoundEffectsEnabled(),
+  );
+  // Zoom visual do slider: arrastar só move o thumb; o zoom real do WebView
+  // aplica (e persiste) quando o usuário solta, via onValueCommitted.
+  const [zoomPercent, setZoomPercent] = useState<number>(() =>
+    Math.round(uiZoom * 100),
   );
 
   const handleToggleSound = (checked: boolean) => {
@@ -128,219 +144,249 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
 
   return (
     <PageContainer>
-      {/* Título Padronizado da Página com Ícone da Sidebar */}
-      <PageHeader
-        icon={Settings}
-        title="Configuração de Acesso das Plataformas"
-      />
+      {/* Mesma largura das demais telas: o PageContainer governa */}
+      <div className="space-y-6">
+        <PageHeader icon={Settings} title="Configurações" />
 
-      {/* Mesma UX do onboarding: adesivos expansíveis por plataforma */}
-      <div className="max-w-2xl">
-        <PlatformAccountsAccordion
-          animated={false}
-          initialOpenPlatform={null}
-          allowAllClosed
-        />
-      </div>
+        {/* Contas conectadas: accordion do cofre dentro do card padrão */}
+        <ConnectedAccountsCard />
 
-      {/* Preferências do Aplicativo */}
-      <Card className="p-5">
-        <div className="flex items-center gap-2 mb-3 pb-2.5 border-b-2 border-black/10">
-          <SlidersHorizontal className="w-4 h-4 stroke-[2.5] text-neo-blue" />
-          <h4 className="text-sm font-black uppercase tracking-tight text-black">
-            Preferências do Aplicativo
-          </h4>
-        </div>
-
-        <div className="space-y-4">
-          {/* Inicialização com o Sistema */}
-          <div className="flex items-center justify-between gap-4 py-1">
-            <div className="max-w-md">
-              <span className="text-xs font-black text-black block">
-                Inicialização com o sistema operacional
-              </span>
-              <p className="text-[11px] font-semibold text-neutral-600 leading-tight mt-0.5">
-                Iniciar o Saruê UnB automaticamente em segundo plano ao ligar o
-                computador para acompanhar prazos e avisos.
-              </p>
-            </div>
-
-            <div className="flex items-center gap-2.5 shrink-0">
-              <span className="text-xs font-bold text-neutral-700">
-                {isAutostartEnabled ? "Ativado" : "Desativado"}
-              </span>
+        {/* Preferências do aplicativo */}
+        <SettingsSection icon={SlidersHorizontal} label="Preferências">
+          <div className="space-y-4">
+            {/* Inicialização com o Sistema */}
+            <div className="flex items-center justify-between gap-4 py-1">
+              <div className="max-w-md">
+                <span className="text-xs font-black text-black block">
+                  Iniciar com o sistema
+                </span>
+                <p className="text-xs font-semibold text-neutral-600 leading-snug mt-0.5">
+                  O Saruê abre em segundo plano quando você liga o computador,
+                  para você não perder prazos.
+                </p>
+              </div>
               <Switch
                 checked={isAutostartEnabled}
                 disabled={isAutostartLoading}
                 onCheckedChange={toggleAutostart}
                 aria-label="Iniciar automaticamente com o sistema"
+                className="shrink-0"
               />
             </div>
-          </div>
 
-          {/* Feedback Sonoro / Switch Mecânico */}
-          <div className="flex items-center justify-between gap-4 py-1">
-            <div className="max-w-md">
-              <span className="text-xs font-black text-black block">
-                Efeito sonoro de botão
-              </span>
-              <p className="text-[11px] font-semibold text-neutral-600 leading-tight mt-0.5">
-                Som suave de clique macio tátil ao clicar em botões.
-              </p>
+            {/* Feedback Sonoro / Switch Mecânico */}
+            <div className="flex items-center justify-between gap-4 py-1">
+              <div className="max-w-md">
+                <span className="text-xs font-black text-black block">
+                  Som de clique
+                </span>
+                <p className="text-xs font-semibold text-neutral-600 leading-snug mt-0.5">
+                  Clique macio de switch mecânico ao apertar botões.
+                </p>
+              </div>
+              {/* Wrapper mutado: o listener global de som escala o DOM a
+                  partir do alvo do clique, e o input oculto do Switch da
+                  Base UI é irmão do span visível — o data-no-sound só no
+                  span não o alcança. Desligar fica mudo; ligar toca via
+                  handleToggleSound. */}
+              <div data-no-sound="true" className="shrink-0">
+                <Switch
+                  checked={isSoundActive}
+                  onCheckedChange={handleToggleSound}
+                  aria-label="Ativar efeito sonoro de botão"
+                  data-no-sound="true"
+                />
+              </div>
             </div>
+          </div>
+        </SettingsSection>
 
-            <div className="flex items-center gap-2.5 shrink-0">
-              <span className="text-xs font-bold text-neutral-700">
-                {isSoundActive ? "Ativado" : "Desativado"}
-              </span>
+        {/* Acessibilidade: reduzir animações + zoom da interface */}
+        <SettingsSection icon={PersonStanding} label="Acessibilidade">
+          <div className="space-y-4">
+            <div className="flex items-center justify-between gap-4 py-1">
+              <div className="max-w-md">
+                <span className="text-xs font-black text-black block">
+                  Reduzir animações
+                </span>
+                <p className="text-xs font-semibold text-neutral-600 leading-snug mt-0.5">
+                  Desliga os movimentos do app. Desligado, segue a configuração
+                  do seu sistema.
+                </p>
+              </div>
               <Switch
-                checked={isSoundActive}
-                onCheckedChange={handleToggleSound}
-                aria-label="Ativar efeito sonoro de botão"
+                checked={reduceAnimations}
+                onCheckedChange={(checked) => setReduceAnimations(checked)}
+                aria-label="Reduzir animações da interface"
+                className="shrink-0"
               />
             </div>
-          </div>
-        </div>
-      </Card>
 
-      {/* Atualizações do Aplicativo */}
-      <AppUpdaterCard />
-
-      {/* Zona de Perigo / Limpeza */}
-      <Card className="border-2 border-neo-danger bg-red-50 rounded-lg p-5 shadow-[4px_4px_0px_0px_#dc2626]">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-2 text-ink-error mb-1">
-              <AlertCircle className="w-5 h-5 stroke-[2.5]" />
-              <h4 className="text-sm font-black uppercase tracking-tight">
-                Redefinir Acessos e Dados
-              </h4>
+            <div className="flex items-center justify-between gap-4 py-1">
+              <div className="max-w-md">
+                <span className="text-xs font-black text-black block">
+                  Zoom da interface
+                </span>
+                <p className="text-xs font-semibold text-neutral-600 leading-snug mt-0.5">
+                  Aumenta ou diminui o tamanho de toda a interface, de 90% a
+                  120%.
+                </p>
+              </div>
+              <div className="flex items-center gap-3 w-56 shrink-0">
+                <div className="relative flex-1 pt-5">
+                  <Slider
+                    aria-label="Zoom da interface"
+                    min={UI_ZOOM_MIN_PERCENT}
+                    max={UI_ZOOM_MAX_PERCENT}
+                    step={UI_ZOOM_STEP_PERCENT}
+                    value={[zoomPercent]}
+                    onValueChange={(value) => {
+                      // Durante o arraste, só o visual do slider acompanha.
+                      setZoomPercent(Array.isArray(value) ? value[0] : value);
+                    }}
+                    onValueCommitted={(value) => {
+                      const percent = Array.isArray(value) ? value[0] : value;
+                      const next = typeof percent === "number" ? percent / 100 : NaN;
+                      if (Number.isFinite(next) && next !== uiZoom) {
+                        setUiZoom(next as UiZoom);
+                      }
+                    }}
+                    className="w-full"
+                  />
+                  {/* Marcador do 100%: 1/3 do curso (90–120%), apontando pro trilho */}
+                  <Triangle
+                    aria-hidden="true"
+                    className="pointer-events-none absolute top-0 left-[calc(33.333%-3px)] w-3 h-3 rotate-180 fill-current text-neutral-400"
+                  />
+                </div>
+                <span className="text-xs font-black text-black w-10 text-right tabular-nums">
+                  {zoomPercent}%
+                </span>
+              </div>
             </div>
-            <p className="text-xs font-semibold text-neutral-700">
-              Apaga permanentemente todas as credenciais salvas, avisos do feed,
-              disciplinas e dados locais, retornando o aplicativo ao estado
-              inicial.
-            </p>
           </div>
+        </SettingsSection>
 
-          <Button
-            type="button"
-            variant="destructive"
-            size="md"
-            onClick={() => {
-              // Interrompe imediatamente qualquer sincronização que esteja rodando
-              syncContext?.cancelSync();
-              if (hasAnyAccount) setIsConfirmDialogOpen(true);
-              else void handleConfirmWipe();
-            }}
-            className="shrink-0"
-          >
-            {hasAnyAccount ? (
-              <Trash2 className="w-4 h-4 stroke-[2.5]" />
-            ) : (
-              <RotateCcw className="w-4 h-4 stroke-[2.5]" />
-            )}
-            <span>
-              {hasAnyAccount
-                ? "Apagar Dados e Credenciais"
-                : "Voltar para o Onboarding"}
+        {/* Atualizações do Aplicativo */}
+        <AppUpdaterCard />
+
+        {/* Zona de Perigo — logo após Atualizações, com respiro maior antes */}
+        <div className="pt-6">
+          <Card className="border-2 border-neo-danger bg-pastel-red rounded-lg p-5 shadow-[4px_4px_0px_0px_#dc2626]">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div>
+                <div className="flex items-center gap-2 text-ink-error mb-1">
+                  <AlertCircle className="w-5 h-5 stroke-[2.5]" />
+                  <h3 className="text-sm font-black uppercase tracking-tight">
+                    Apagar Dados e Credenciais
+                  </h3>
+                </div>
+                <p className="text-xs font-semibold text-neutral-700 leading-snug">
+                  Tudo que o Saruê guardou neste dispositivo some: contas,
+                  avisos do feed, disciplinas e grades salvas. Não existe
+                  desfazer.
+                </p>
+              </div>
+
+              <Button
+                type="button"
+                variant="destructive"
+                size="md"
+                onClick={() => {
+                  // Interrompe imediatamente qualquer sincronização que esteja rodando
+                  syncContext?.cancelSync();
+                  if (hasAnyAccount) setIsConfirmDialogOpen(true);
+                  else void handleConfirmWipe();
+                }}
+                className="shrink-0"
+              >
+                {hasAnyAccount ? (
+                  <Trash2 className="w-4 h-4 stroke-[2.5]" />
+                ) : (
+                  <RotateCcw className="w-4 h-4 stroke-[2.5]" />
+                )}
+                <span>
+                  {hasAnyAccount
+                    ? "Apagar Dados e Credenciais"
+                    : "Voltar para o Onboarding"}
+                </span>
+              </Button>
+            </div>
+          </Card>
+        </div>
+
+        {/* Sobre: versão, patch notes, licença e redes, sem rótulo de seção */}
+        <section>
+          <div className="flex flex-col items-center text-center pt-2">
+            <img
+              src="/sarue-sleep.png"
+              alt="Mascote Saruê dormindo"
+              className="w-48 md:w-60 h-auto object-contain select-none pointer-events-none mb-4"
+            />
+
+            <span className="text-[11px] font-extrabold text-neutral-500">
+              v{appVersion}
             </span>
-          </Button>
-        </div>
-      </Card>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsViewingPatchNotes(true)}
+              title="Ver as novidades e patch notes desta versão"
+            >
+              <RotateCwClock className="w-3.5 h-3.5 stroke-[2.5]" />
+              <span>Registros de Alterações</span>
+            </Button>
 
-      {/* Licença e Código Aberto */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t-2 border-black/10">
-        <Card className="bg-white rounded-lg p-4">
-          <div className="flex items-center gap-2 mb-1.5">
-            <Scale className="w-4 h-4 stroke-[2.5] text-neo-blue" />
-            <h4 className="text-xs font-bold text-black">Licença Apache 2.0</h4>
+            <p className="text-xs text-neutral-600 font-medium leading-relaxed max-w-md mt-4">
+              Software livre sob a licença Apache 2.0, feito para e pela
+              comunidade acadêmica da UnB. Código auditável publicamente no
+              GitHub.
+            </p>
+
+            <div className="flex items-center gap-2 mt-3">
+              <span className="text-xs font-bold text-neutral-600">
+                © {new Date().getFullYear()} Kaleb Henrique
+              </span>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                title="https://github.com/kalebhenrique"
+                aria-label="GitHub de Kaleb Henrique"
+                onClick={() =>
+                  void openExternalUrl("https://github.com/kalebhenrique")
+                }
+                className="w-8 p-0"
+              >
+                <img
+                  src="/github-142-svgrepo-com.svg"
+                  alt=""
+                  className="w-4 h-4 select-none"
+                />
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                title="https://www.linkedin.com/in/kalebhenrique"
+                aria-label="LinkedIn de Kaleb Henrique"
+                onClick={() =>
+                  void openExternalUrl(
+                    "https://www.linkedin.com/in/kalebhenrique",
+                  )
+                }
+                className="w-8 p-0"
+              >
+                <img
+                  src="/linkedin-svgrepo-com.svg"
+                  alt=""
+                  className="w-4 h-4 select-none"
+                />
+              </Button>
+            </div>
           </div>
-          <p className="text-xs text-neutral-600 font-medium leading-relaxed">
-            Software livre e transparente para a comunidade acadêmica da
-            Universidade de Brasília.
-          </p>
-        </Card>
-
-        <Card className="bg-white rounded-lg p-4">
-          <div className="flex items-center gap-2 mb-1.5">
-            <GitBranch className="w-4 h-4 stroke-[2.5] text-neo-blue" />
-            <h4 className="text-xs font-bold text-black">
-              Auditoria Pública no GitHub
-            </h4>
-          </div>
-          <p className="text-xs text-neutral-600 font-medium leading-relaxed">
-            Código-fonte disponível publicamente para colaboração e inspeção de
-            segurança.
-          </p>
-        </Card>
-      </div>
-
-      {/* Versão, Créditos e Mascote Saruê no final da página */}
-      <div className="pt-8 pb-4 flex flex-col items-center text-center">
-        <img
-          src="/sarue-sleep.png"
-          alt="Mascote Saruê dormindo"
-          className="w-48 md:w-60 h-auto object-contain select-none pointer-events-none mb-4"
-        />
-
-        {/* Grupo da release: versão + registros de alterações */}
-        <div className="flex flex-col items-center gap-1.5">
-          <span className="text-[11px] font-extrabold text-neutral-500">
-            v{appVersion}
-          </span>
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={() => setIsViewingPatchNotes(true)}
-            title="Ver as novidades e patch notes desta versão"
-          >
-            <ScrollText className="w-3.5 h-3.5 stroke-[2.5]" />
-            <span>Registros de Alterações</span>
-          </Button>
-        </div>
-
-        {/* Grupo da identidade: autor + redes sociais */}
-        <div className="flex items-center gap-2 mt-4">
-          <span className="text-xs font-bold text-neutral-600">
-            © {new Date().getFullYear()} Kaleb Henrique
-          </span>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            title="https://github.com/kalebhenrique"
-            aria-label="GitHub de Kaleb Henrique"
-            onClick={() =>
-              void openExternalUrl("https://github.com/kalebhenrique")
-            }
-            className="w-8 p-0"
-          >
-            <img
-              src="/github-142-svgrepo-com.svg"
-              alt=""
-              className="w-4 h-4 select-none"
-            />
-          </Button>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            title="https://www.linkedin.com/in/kalebhenrique"
-            aria-label="LinkedIn de Kaleb Henrique"
-            onClick={() =>
-              void openExternalUrl("https://www.linkedin.com/in/kalebhenrique")
-            }
-            className="w-8 p-0"
-          >
-            <img
-              src="/linkedin-svgrepo-com.svg"
-              alt=""
-              className="w-4 h-4 select-none"
-            />
-          </Button>
-        </div>
+        </section>
       </div>
 
       {/* Diálogo de Confirmação */}

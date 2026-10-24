@@ -1,19 +1,18 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { FeedList } from "../components/feed/FeedList";
 import { FeedListSkeleton } from "../components/feed/FeedListSkeleton";
-import { ArchivedToggleButton } from "../components/feed/ArchivedToggleButton";
+import { FeedToolbar } from "../components/feed/FeedToolbar";
 import { useFeed } from "../hooks/useFeed";
+import { useFeedSelection } from "../hooks/useFeedSelection";
 import {
   Card,
   Pagination,
-  Tabs,
   PageContainer,
   PageHeader,
   toast,
   EmptyState,
 } from "@/components/ui";
-import { Search, Inbox, Home } from "lucide-react";
-import type { PlatformType, FeedItemType } from "@/core";
+import { Inbox, Home } from "lucide-react";
 
 export const DashboardScreen: React.FC = () => {
   const {
@@ -21,6 +20,7 @@ export const DashboardScreen: React.FC = () => {
     disciplines,
     isLoading,
     hasLoadedOnce,
+    totalItems,
     selectedPlatform,
     setSelectedPlatform,
     selectedType,
@@ -31,6 +31,8 @@ export const DashboardScreen: React.FC = () => {
     setShowArchived,
     toggleTaskCompleted,
     archiveFeedItem,
+    completeTasksBatch,
+    archiveItemsBatch,
   } = useFeed();
 
   const PAGE_SIZE = 25;
@@ -50,18 +52,72 @@ export const DashboardScreen: React.FC = () => {
 
   const isInitialLoad = isLoading && !hasLoadedOnce;
 
-  const platformTabs = [
-    { id: "all", label: "Todas" },
-    { id: "sigaa", label: "Sigaa" },
-    { id: "aprender3", label: "Aprender 3" },
-    { id: "teams", label: "Teams" },
-  ];
+  // Modo Selecionar (lote): vive por página — trocar filtro/página derruba o modo (resetKey)
+  const pageIds = useMemo(() => pageItems.map((i) => i.id), [pageItems]);
+  const selection = useFeedSelection(pageIds, `${filterKey}|${safePage}`);
+  const { isSelecting, selectedIds } = selection;
+  const selectedItems = useMemo(
+    () => pageItems.filter((i) => selectedIds.has(i.id)),
+    [pageItems, selectedIds],
+  );
+  const selectedCount = selectedItems.length;
+  const selectedTaskCount = selectedItems.filter(
+    (i) => i.itemType === "assignment",
+  ).length;
+  const allSelected =
+    pageItems.length > 0 && pageItems.every((i) => selectedIds.has(i.id));
 
-  const typeTabs = [
-    { id: "all", label: "Tudo" },
-    { id: "assignment", label: "Tarefas" },
-    { id: "post", label: "Avisos" },
-  ];
+  const handleBatchComplete = async () => {
+    const ids = selectedItems
+      .filter((i) => i.itemType === "assignment")
+      .map((i) => i.id);
+    if (ids.length === 0) return;
+    await completeTasksBatch(ids);
+    const n = ids.length;
+    toast.add({
+      title: n === 1 ? "Tarefa concluída" : `${n} tarefas concluídas`,
+      description:
+        n === 1
+          ? "A tarefa foi marcada como concluída."
+          : "As tarefas foram marcadas como concluídas.",
+      type: "success",
+      timeout: 4000,
+    });
+  };
+
+  const handleBatchArchive = async () => {
+    const ids = selectedItems.map((i) => i.id);
+    if (ids.length === 0) return;
+    await archiveItemsBatch(ids, true);
+    const n = ids.length;
+    toast.add({
+      title: n === 1 ? "Item arquivado" : `${n} itens arquivados`,
+      description:
+        n === 1
+          ? "O item foi movido para os Arquivados."
+          : "Os itens foram movidos para os Arquivados.",
+      type: "info",
+      timeout: 5000,
+    });
+    selection.clear();
+  };
+
+  const handleBatchRestore = async () => {
+    const ids = selectedItems.map((i) => i.id);
+    if (ids.length === 0) return;
+    await archiveItemsBatch(ids, false);
+    const n = ids.length;
+    toast.add({
+      title: n === 1 ? "Item desarquivado" : `${n} itens desarquivados`,
+      description:
+        n === 1
+          ? "O item retornou ao seu feed ativo."
+          : "Os itens retornaram ao feed ativo.",
+      type: "success",
+      timeout: 4000,
+    });
+    selection.clear();
+  };
 
   const handleArchive = async (id: string) => {
     await archiveFeedItem(id, true);
@@ -83,60 +139,54 @@ export const DashboardScreen: React.FC = () => {
     });
   };
 
+  const resultLabel = `${totalItems} ${totalItems === 1 ? "resultado" : "resultados"}`;
+  const hasActiveFilters =
+    selectedPlatform !== "all" ||
+    selectedType !== "all" ||
+    searchQuery.trim().length > 0;
+
   return (
     <PageContainer>
-      {/* Título Padronizado da Página com Ícone da Sidebar */}
-      <PageHeader icon={Home} title="Início" />
-
-      {/* Barra de Filtros e Busca */}
-      <div className="bg-white border-2 border-black rounded-lg p-5 shadow-[4px_4px_0px_0px_#000] space-y-4">
-        {/* Campo de Busca Textual */}
-        <div className="relative">
-          <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-neutral-500 stroke-[2.5]" />
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Buscar por disciplina, título da tarefa, aviso ou professor..."
-            aria-label="Buscar no feed"
-            className="w-full bg-white pl-10 pr-4 py-2.5 text-sm font-medium text-black border-2 border-black rounded-xl focus:outline-hidden focus:ring-2 focus:ring-neo-blue transition-[transform,box-shadow,background-color,border-color] placeholder:text-neutral-400 shadow-none"
-          />
-        </div>
-
-        {/* Linha de Filtros por Plataforma, Tipo e Arquivados */}
-        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 pt-1">
-          {/* Filtro por Plataforma */}
-          <div className="space-y-1.5">
-            <span className="text-xs font-bold text-neutral-700 block">
-              Plataformas:
-            </span>
-            <Tabs
-              items={platformTabs}
-              activeId={selectedPlatform}
-              onChange={(id) => setSelectedPlatform(id as PlatformType | "all")}
-            />
-          </div>
-
-          {/* Filtro por Tipo e Botão de Arquivados */}
-          <div className="flex flex-wrap items-end gap-3">
-            <div className="space-y-1.5">
-              <span className="text-xs font-bold text-neutral-700 block">
-                Categoria:
+      {/* Título Padronizado da Página com contagem de resultados em destaque menor */}
+      <PageHeader
+        icon={Home}
+        title={
+          <>
+            Início{" "}
+            {hasLoadedOnce ? (
+              <span className="text-sm font-bold text-neutral-500">
+                ({resultLabel})
               </span>
-              <Tabs
-                items={typeTabs}
-                activeId={selectedType}
-                onChange={(id) => setSelectedType(id as FeedItemType | "all")}
-              />
-            </div>
+            ) : null}
+          </>
+        }
+      />
 
-            <ArchivedToggleButton
-              showArchived={showArchived}
-              onToggle={() => setShowArchived(!showArchived)}
-            />
-          </div>
-        </div>
-      </div>
+      {/* Barra de Filtros e Busca (card próprio; expande para baixo no modo Selecionar) */}
+      <FeedToolbar
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+        searchPlaceholder="Buscar por disciplina, título da tarefa, aviso ou professor..."
+        searchAriaLabel="Buscar no feed"
+        showPlatformFilter
+        platformValue={selectedPlatform}
+        onPlatformChange={setSelectedPlatform}
+        categoryValue={selectedType}
+        onCategoryChange={setSelectedType}
+        showArchived={showArchived}
+        onToggleArchived={() => setShowArchived(!showArchived)}
+        selectionMode={isSelecting}
+        selectedCount={selectedCount}
+        selectedTaskCount={selectedTaskCount}
+        allSelected={allSelected}
+        canSelect={items.length > 0}
+        onEnterSelection={selection.enter}
+        onExitSelection={selection.exit}
+        onToggleAllSelection={selection.toggleAll}
+        onBatchComplete={handleBatchComplete}
+        onBatchArchive={handleBatchArchive}
+        onBatchRestore={handleBatchRestore}
+      />
 
       {/* Lista do Feed Cronológico */}
       {isInitialLoad ? (
@@ -166,21 +216,23 @@ export const DashboardScreen: React.FC = () => {
         />
       ) : (
         <div className="space-y-4">
-          <div className="flex items-center justify-between text-xs font-bold text-neutral-600 px-1">
-            <span>
-              {showArchived ? "Arquivados" : "Feed Unificado"} ({items.length}{" "}
-              {items.length === 1 ? "item" : "itens"})
-            </span>
-            <span>Ordenado cronologicamente</span>
-          </div>
-
           <Card className="p-0 overflow-hidden">
+            {/* Contador do filtro: some quando não há filtro ativo */}
+            {hasActiveFilters ? (
+              <div className="border-b-2 border-black/10 bg-canvas px-4 py-2 text-xs font-bold text-neutral-600 md:px-5">
+                {items.length} de {totalItems}{" "}
+                {items.length === 1 ? "resultado" : "resultados"}
+              </div>
+            ) : null}
             <FeedList
               items={pageItems}
               disciplines={disciplines}
               onToggleComplete={toggleTaskCompleted}
               onArchive={handleArchive}
               onRestore={handleRestore}
+              selectionMode={isSelecting}
+              selectedIds={selectedIds}
+              onToggleSelect={selection.handleToggleSelect}
             />
           </Card>
 

@@ -78,20 +78,17 @@ pub fn run() {
             app.handle()
                 .plugin(tauri_plugin_sql::Builder::default().build())?;
 
-            app.handle()
-                .plugin(tauri_plugin_notification::init())?;
+            app.handle().plugin(tauri_plugin_notification::init())?;
 
             #[cfg(desktop)]
             {
                 app.handle()
                     .plugin(tauri_plugin_updater::Builder::new().build())?;
-                app.handle()
-                    .plugin(tauri_plugin_process::init())?;
-                app.handle()
-                    .plugin(tauri_plugin_autostart::init(
-                        tauri_plugin_autostart::MacosLauncher::LaunchAgent,
-                        None,
-                    ))?;
+                app.handle().plugin(tauri_plugin_process::init())?;
+                app.handle().plugin(tauri_plugin_autostart::init(
+                    tauri_plugin_autostart::MacosLauncher::LaunchAgent,
+                    None,
+                ))?;
             }
 
             log::info!("Plugins Tauri Stronghold e SQL (SQLite) inicializados com sucesso.");
@@ -120,7 +117,10 @@ mod tests {
     fn test_vault_keyring_generation() {
         let mut key_bytes = [0u8; 32];
         rand::RngCore::fill_bytes(&mut rand::thread_rng(), &mut key_bytes);
-        let generated_key = key_bytes.iter().map(|b| format!("{:02x}", b)).collect::<String>();
+        let generated_key = key_bytes
+            .iter()
+            .map(|b| format!("{:02x}", b))
+            .collect::<String>();
         assert_eq!(generated_key.len(), 64);
 
         #[cfg(not(any(target_os = "android", target_os = "ios")))]

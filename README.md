@@ -157,18 +157,37 @@ pnpm run scrape:calendar  # Calendário acadêmico
 
 ### 🧪 Verificação & Testes
 
-```bash
-# Checagem estática de tipos com TypeScript
-pnpm typecheck
+Execute localmente os testes e linters (TypeScript e Rust) que também são validados automaticamente via GitHub Actions ao abrir Pull Requests:
 
-# Linting e validação das regras de fronteira arquitetural
-pnpm lint
+```bash
+# Executa todos os testes (TypeScript via Vitest + Rust via Cargo)
+pnpm test:all
+
+# Executa todos os linters (TypeScript typecheck + ESLint + Rust fmt & Clippy)
+pnpm lint:all
+
+# Executa TUDO de uma vez (todos os linters + todos os testes) — recomendado antes de abrir PRs
+pnpm check:all # ou apenas: pnpm check
+
+# --- Comandos específicos / individuais ---
 
 # Testes unitários do frontend e use cases (Vitest)
 pnpm test
 
-# Testes do backend em Rust e exportação de bindings IPC
-cargo test --manifest-path src-tauri/Cargo.toml
+# Testes unitários do backend em Rust
+pnpm test:rust
+
+# Checagem estática de tipos (TypeScript)
+pnpm typecheck
+
+# Linting do frontend e regras de fronteira arquitetural (ESLint)
+pnpm lint
+
+# Linter e verificação de formatação em Rust (Clippy com -D warnings + rustfmt check)
+pnpm lint:rust
+
+# Formata o código Rust automaticamente
+pnpm format:rust
 ```
 
 ---
