@@ -12,9 +12,16 @@ import { notifyMyCourseListeners, resolveCourseIdForProfile } from "../hooks/use
 import { notifyFeedListeners } from "../hooks/useFeed";
 import { toast } from "@/components/ui";
 import type { CurriculumStructure } from "@/core";
+import { logDebug } from '@/lib/debug-log';
 import { checkForUpdates } from "../hooks/useAppUpdater";
 
-export type SyncStepId = "sigaa" | "aprender3" | "teams" | "myCourse" | "ghPages";
+export type SyncStepId =
+  | "sigaa"
+  | "aprender3"
+  | "teams"
+  | "myCourse"
+  | "ghPages"
+  | "planilha";
 
 export type SyncStepStatus =
   "idle" | "syncing" | "success" | "error" | "skipped";
@@ -70,6 +77,13 @@ const INITIAL_STEPS: Record<SyncStepId, SyncStepInfo> = {
     id: "ghPages",
     label: "Catálogo UnB",
     sublabel: "Matrizes curriculares e turmas ofertadas",
+    status: "idle",
+    message: "Pronto para sincronizar",
+  },
+  planilha: {
+    id: "planilha",
+    label: "Planilha de Avaliações",
+    sublabel: "Relatos da comunidade",
     status: "idle",
     message: "Pronto para sincronizar",
   },
@@ -144,6 +158,7 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({
 
     syncInFlightRef.current = true;
     setIsSyncing(true);
+    logDebug('syncAll início');
 
     try {
       // Dispara verificação silenciosa de atualizações do app em segundo plano
@@ -357,6 +372,7 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({
           status: "syncing",
           message: "Baixando histórico escolar oficial e calculando fluxo...",
         });
+        logDebug('step myCourse: iniciando scraping do histórico');
 
         try {
           const result = await useCases.manageAcademicProfile.syncWithSigaa(
@@ -364,6 +380,7 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({
           );
           if (isCancelled()) return;
           notifyMyCourseListeners();
+          logDebug('step myCourse: concluído');
 
           const student = result.profile;
           const iraStr = student.ira
@@ -392,9 +409,39 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({
 
       // Catálogo UnB por curso: roda depois do histórico porque é ele que cria
       // o perfil (com o curso do discente) na primeira sincronização.
+      logDebug('step ghPages: iniciando');
       await runGhPagesStep();
       if (isCancelled()) return;
 
+      // 6. Planilha de avaliações de professores (relatos da comunidade):
+      // aquece o cache usado pela tela Avaliar Professor.
+      updateStep("planilha", {
+        status: "syncing",
+        message: "Buscando relatos da comunidade...",
+      });
+      try {
+        const evaluations = await useCases.getProfessorEvaluations.execute(
+          undefined,
+          false
+        );
+        if (isCancelled()) return;
+        updateStep("planilha", {
+          status: "success",
+          message: `${evaluations.length} relatos de professores disponíveis`,
+          lastUpdated: new Date().toISOString(),
+        });
+      } catch (err) {
+        if (isCancelled()) return;
+        updateStep("planilha", {
+          status: "error",
+          message:
+            err instanceof Error
+              ? err.message
+              : "Falha ao sincronizar a planilha",
+        });
+      }
+
+      logDebug('syncAll fim');
       const now = new Date().toISOString();
       setLastSyncedAt(now);
       setIsSyncing(false);
