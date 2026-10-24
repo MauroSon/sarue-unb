@@ -8,7 +8,6 @@ import { useProfessorEvaluations } from '../hooks/useProfessorEvaluations';
 import { useContainer } from '../context/ContainerContext';
 import { subscribeToSyncComplete } from '../context/SyncContext';
 import { resolveCourseIdForProfile } from '../hooks/useMyCourse';
-import { logDebug } from '../lib/debug-log';
 import {
   Card,
   Badge,
@@ -830,7 +829,6 @@ export const ProfessorEvaluationsScreen: React.FC = () => {
       if (!profile) {
         setHasCourseProfile(false);
         setCourseCodes(new Set());
-        logDebug('curso: sem perfil — toggle oculto');
         return;
       }
       setHasCourseProfile(true);
@@ -841,14 +839,12 @@ export const ProfessorEvaluationsScreen: React.FC = () => {
       );
       if (!courseId) {
         setCourseCodes(new Set());
-        logDebug('curso: courseId não resolvido — filtro inerte');
         return;
       }
       const curricula =
         await useCases.manageAcademicProfile.getCurriculaForCourse(courseId);
       if (!curricula.length) {
         setCourseCodes(new Set());
-        logDebug('curso: nenhuma matriz para o curso — filtro inerte');
         return;
       }
 
@@ -889,15 +885,11 @@ export const ProfessorEvaluationsScreen: React.FC = () => {
         }
       }
       setCourseCodes(codes);
-      logDebug(
-        `curso: ${curricula.length} matrizes, ${picked.size} selecionadas, ${codes.size} códigos`
-      );
     } catch (e) {
       console.warn(
         '[Avaliações] Não foi possível carregar as matrizes do curso:',
         e
       );
-      logDebug('curso: erro ao carregar matrizes (ver console)');
     }
   }, [useCases, repos]);
 

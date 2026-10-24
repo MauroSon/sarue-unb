@@ -12,7 +12,6 @@ import { notifyMyCourseListeners, resolveCourseIdForProfile } from "../hooks/use
 import { notifyFeedListeners } from "../hooks/useFeed";
 import { toast } from "@/components/ui";
 import type { CurriculumStructure } from "@/core";
-import { logDebug } from '@/lib/debug-log';
 import { checkForUpdates } from "../hooks/useAppUpdater";
 
 export type SyncStepId =
@@ -158,7 +157,6 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({
 
     syncInFlightRef.current = true;
     setIsSyncing(true);
-    logDebug('syncAll início');
 
     try {
       // Dispara verificação silenciosa de atualizações do app em segundo plano
@@ -372,7 +370,6 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({
           status: "syncing",
           message: "Baixando histórico escolar oficial e calculando fluxo...",
         });
-        logDebug('step myCourse: iniciando scraping do histórico');
 
         try {
           const result = await useCases.manageAcademicProfile.syncWithSigaa(
@@ -380,7 +377,6 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({
           );
           if (isCancelled()) return;
           notifyMyCourseListeners();
-          logDebug('step myCourse: concluído');
 
           const student = result.profile;
           const iraStr = student.ira
@@ -409,7 +405,6 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({
 
       // Catálogo UnB por curso: roda depois do histórico porque é ele que cria
       // o perfil (com o curso do discente) na primeira sincronização.
-      logDebug('step ghPages: iniciando');
       await runGhPagesStep();
       if (isCancelled()) return;
 
@@ -441,7 +436,6 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({
         });
       }
 
-      logDebug('syncAll fim');
       const now = new Date().toISOString();
       setLastSyncedAt(now);
       setIsSyncing(false);

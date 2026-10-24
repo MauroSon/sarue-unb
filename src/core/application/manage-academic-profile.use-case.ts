@@ -5,7 +5,6 @@ import type { IAcademicProfileRepository } from '../domain/interfaces/academic-p
 import type { IGradeRepository } from '../domain/interfaces/grade-repo.interface';
 import { normalizeCourseText } from './get-courses.use-case';
 import { ParseHistoricoUseCase } from './parse-historico.use-case';
-import { logDebug } from '@/lib/debug-log';
 
 export class ManageAcademicProfileUseCase {
   private parseHistoricoUseCase = new ParseHistoricoUseCase();
@@ -203,9 +202,6 @@ export class ManageAcademicProfileUseCase {
     if (curriculaCatalog.length === 0) {
       curriculaCatalog = await this.repo.getAllCurricula();
     }
-    logDebug(
-      `syncWithSigaa: catálogo ok (${curriculaCatalog.length} matrizes)`
-    );
 
     const parseResult = await this.parseHistoricoUseCase.execute({
       rawText: rawRes.pdfText,
@@ -227,7 +223,6 @@ export class ManageAcademicProfileUseCase {
       curriculaCatalog,
     });
 
-    logDebug('syncWithSigaa: parse ok');
     const currentProfile = await this.repo.getProfile();
     // Preserva eventuais marcações manuais e matriz customizada anteriores
     if (currentProfile) {
@@ -249,7 +244,6 @@ export class ManageAcademicProfileUseCase {
     }
 
     await this.repo.saveProfile(parseResult.profile);
-    logDebug('syncWithSigaa: perfil salvo');
     return parseResult;
   }
 

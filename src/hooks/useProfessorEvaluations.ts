@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useContainer } from '../context/ContainerContext';
-import { logDebug } from '../lib/debug-log';
 import type {
   ProfessorEvaluation,
   ProfessorSummary,
@@ -50,7 +49,6 @@ export function useProfessorEvaluations() {
       }
 
       try {
-        logDebug('avaliações: loadData início');
         const filters = {
           query: searchQuery,
           campus: selectedCampus,
@@ -80,7 +78,6 @@ export function useProfessorEvaluations() {
         setDisciplineSummaries(disciplineSummaryList);
         setHasLoadedOnce(true);
         setError(false);
-        logDebug('avaliações: loadData ok');
         return true;
       } catch (err) {
         console.error('Erro ao carregar avaliações de professores:', err);
