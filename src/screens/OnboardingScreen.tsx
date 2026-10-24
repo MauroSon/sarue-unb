@@ -89,7 +89,7 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
   const isLast = step === TOTAL_STEPS;
 
   return (
-    <div className="min-h-screen bg-canvas bg-grid flex flex-col">
+    <div className="min-h-full bg-canvas bg-grid flex flex-col">
       {/* Chrome do wizard: logo, progresso, pular */}
       <div className="w-full max-w-2xl mx-auto px-6 pt-6 flex items-center justify-between gap-4 shrink-0">
         <div className="flex-1 flex">

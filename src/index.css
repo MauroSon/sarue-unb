@@ -1,5 +1,23 @@
 @import 'tailwindcss';
 
+/* Altura percentual + zoom no body. Percentagens pintam 1:1 nos engines
+   (não são multiplicadas pelo zoom), então body em 100% ocupa a viewport
+   EXATA em qualquer parada — sidebar e conteúdo preenchem a janela de
+   verdade. O zoom (via --app-zoom, lib/accessibility.ts) escala o conteúdo
+   de dentro; o excedente é absorvido pelo scroll interno (main) e pelo
+   sanduíche da sidebar (nav com overflow-y-auto). */
+html {
+  height: 100%;
+  background-color: #e8eff8;
+}
+body {
+  height: 100%;
+  zoom: var(--app-zoom, 1);
+}
+#root {
+  height: 100%;
+}
+
 @theme {
   --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
 
@@ -84,6 +102,15 @@
   .animate-pulse {
     animation: none !important;
   }
+}
+
+/* Override do usuário (toggle "Reduzir animações" em Configurações):
+   mesmas regras da media query, independente do sistema operacional. */
+html.reduce-motion *, html.reduce-motion *::before, html.reduce-motion *::after {
+  transition-duration: 1ms !important;
+}
+html.reduce-motion .animate-pulse {
+  animation: none !important;
 }
 
 /* Atribuição do React Flow: canto esquerdo, longe do minimapa do fluxograma */

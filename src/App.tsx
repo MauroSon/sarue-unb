@@ -17,6 +17,7 @@ import { useContainer } from './context/ContainerContext';
 import type { AcademicCalendar } from './core';
 import { NAVIGATE_EVENT } from './lib/utils';
 import { initSoundEffectsListener } from './lib/sound-effects';
+import { AccessibilityProvider } from './context/AccessibilityContext';
 
 type AppStep = 'onboarding' | 'main';
 
@@ -114,7 +115,7 @@ const AppShell: React.FC = () => {
   // o wizard e resetaria o onboarding para o passo 1.
   if ((isCheckingAuth || hasLocalData === null) && !bootstrapped.current) {
     return (
-      <div className="min-h-screen bg-canvas bg-grid flex flex-col items-center justify-center space-y-4">
+      <div className="min-h-full bg-canvas bg-grid flex flex-col items-center justify-center space-y-4">
         <img
           src="/sarue-logo.png"
           alt="Saruê UnB"
@@ -148,7 +149,7 @@ const AppShell: React.FC = () => {
   // Fluxo 3: Aplicação Principal (Dashboard com Sidebar Colapsável)
   return (
     <DeadlineProvider>
-    <div className="flex h-screen bg-canvas bg-grid overflow-hidden">
+    <div className="flex h-full bg-canvas bg-grid overflow-hidden">
       {/* Sidebar Colapsável com Botão de Sincronização no Canto Inferior */}
       <Sidebar
         currentTab={currentTab}
@@ -166,7 +167,7 @@ const AppShell: React.FC = () => {
       />
 
       {/* Área Central de Conteúdo (Sem Header global, títulos direto no corpo) */}
-      <div className="flex-1 flex flex-col h-screen overflow-hidden">
+      <div className="flex-1 flex flex-col h-full overflow-hidden">
         <main className="flex-1 overflow-y-auto px-4 py-6 md:px-8 md:py-8">
           <ErrorBoundary key={currentTab} onReset={() => setCurrentTab('home')}>
             {currentTab === 'home' && <DashboardScreen />}
@@ -199,12 +200,14 @@ const AppShell: React.FC = () => {
 };
 
 const App: React.FC = () => (
-  <SyncProvider>
-    <TooltipProvider delay={150}>
-      <Toaster />
-      <AppShell />
-    </TooltipProvider>
-  </SyncProvider>
+  <AccessibilityProvider>
+    <SyncProvider>
+      <TooltipProvider delay={150}>
+        <Toaster />
+        <AppShell />
+      </TooltipProvider>
+    </SyncProvider>
+  </AccessibilityProvider>
 );
 
 export { App };
