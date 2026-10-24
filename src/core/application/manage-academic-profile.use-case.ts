@@ -2,12 +2,18 @@ import type { StudentAcademicProfile } from '../domain/entities/academic-profile
 import type { CurriculumStructure } from '../domain/entities/course';
 import type { SigaaCredentials } from '../domain/entities/credential';
 import type { IAcademicProfileRepository } from '../domain/interfaces/academic-profile-repo.interface';
+import type { IGradeRepository } from '../domain/interfaces/grade-repo.interface';
+import { normalizeCourseText } from './get-courses.use-case';
 import { ParseHistoricoUseCase } from './parse-historico.use-case';
+import { logDebug } from '@/lib/debug-log';
 
 export class ManageAcademicProfileUseCase {
   private parseHistoricoUseCase = new ParseHistoricoUseCase();
 
-  constructor(private readonly repo: IAcademicProfileRepository) {}
+  constructor(
+    private readonly repo: IAcademicProfileRepository,
+    private readonly gradeRepo?: IGradeRepository
+  ) {}
 
   async getProfile(): Promise<StudentAcademicProfile | null> {
     return this.repo.getProfile();
@@ -178,9 +184,31 @@ export class ManageAcademicProfileUseCase {
     matchedCurriculum?: CurriculumStructure;
   }> {
     const rawRes = await this.repo.fetchSigaaHistory(creds);
-    const curriculaCatalog = await this.repo.getAllCurricula();
+
+    // O catálogo completo (curricula.json) tem ~43MB: resolve o curso no
+    // catálogo pequeno (courses.json, ~48KB) e baixa só as matrizes dele.
+    // O catálogo completo é último recurso.
+    let curriculaCatalog: CurriculumStructure[] = [];
+    try {
+      const courseId = await this.resolveCourseId(rawRes.curso);
+      if (courseId) {
+        curriculaCatalog = await this.repo.getCurriculaForCourse(courseId);
+      }
+    } catch (e) {
+      console.warn(
+        '[ManageAcademicProfile] Catálogo por curso falhou, usando catálogo completo:',
+        e
+      );
+    }
+    if (curriculaCatalog.length === 0) {
+      curriculaCatalog = await this.repo.getAllCurricula();
+    }
+    logDebug(
+      `syncWithSigaa: catálogo ok (${curriculaCatalog.length} matrizes)`
+    );
 
     const parseResult = await this.parseHistoricoUseCase.execute({
+      rawText: rawRes.pdfText,
       pdfBase64: rawRes.pdfBase64,
       defaultProfile: {
         matricula: rawRes.matricula,
@@ -199,6 +227,7 @@ export class ManageAcademicProfileUseCase {
       curriculaCatalog,
     });
 
+    logDebug('syncWithSigaa: parse ok');
     const currentProfile = await this.repo.getProfile();
     // Preserva eventuais marcações manuais e matriz customizada anteriores
     if (currentProfile) {
@@ -220,6 +249,26 @@ export class ManageAcademicProfileUseCase {
     }
 
     await this.repo.saveProfile(parseResult.profile);
+    logDebug('syncWithSigaa: perfil salvo');
     return parseResult;
+  }
+
+  /** Resolve o course_id no catálogo pequeno de cursos (~48KB, via Rust). */
+  private async resolveCourseId(courseName: string): Promise<string | null> {
+    if (!courseName || !this.gradeRepo?.getCoursesCatalog) return null;
+    try {
+      const catalog = (await this.gradeRepo.getCoursesCatalog()) || [];
+      if (catalog.length === 0) return null;
+      const target = normalizeCourseText(courseName);
+      const hit =
+        catalog.find((c) => normalizeCourseText(c.name) === target) ||
+        catalog.find((c) => {
+          const n = normalizeCourseText(c.name);
+          return n.length >= 4 && (n.includes(target) || target.includes(n));
+        });
+      return hit ? hit.id : null;
+    } catch {
+      return null;
+    }
   }
 }
