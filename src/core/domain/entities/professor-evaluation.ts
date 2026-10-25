@@ -3,6 +3,12 @@ import type {
   ScrapedDiscipline,
   ScrapedProfessor,
 } from './grade';
+import {
+  censorProfanities,
+  sanitizeEvaluationProfanities,
+} from '../utils/profanity-filter';
+
+export { censorProfanities, sanitizeEvaluationProfanities };
 
 export const PROFESSOR_EVALUATIONS_SHEET_ID =
   '1RK3N-2DtuKShO_2fpd5Cag_GsHYNIARD8WHLpCLTdCk';
@@ -1104,14 +1110,14 @@ export function crossReferenceEvaluationsWithSigaa(
     }
 
     if (_isMultiProf || cleanEv.isSigaaVerified) {
-      return cleanEv;
+      return sanitizeEvaluationProfanities(cleanEv);
     }
 
     const normP = normalizeText(
       cleanEv.professor.replace(/^Prof(?:essor|essora)?\.?\s+/i, '')
     );
     const tokens = normP.split(' ').filter((t) => t && !STOPWORDS.has(t));
-    if (tokens.length === 0) return cleanEv;
+    if (tokens.length === 0) return sanitizeEvaluationProfanities(cleanEv);
 
     // Procura um candidato mais completo na própria planilha (ex: "André Lemes Lopes" -> "ANDRE PEREIRA LEME LOPES")
     const matches = allFullCandidates.filter((cand) => {
@@ -1129,16 +1135,16 @@ export function crossReferenceEvaluationsWithSigaa(
 
     if (matches.length === 1) {
       const best = matches[0];
-      return {
+      return sanitizeEvaluationProfanities({
         ...cleanEv,
         professor: best.displayName,
         siape: best.siape ?? cleanEv.siape,
         photoUrl: best.photoUrl ?? cleanEv.photoUrl,
         publicUrl: best.publicUrl ?? cleanEv.publicUrl,
         isSigaaVerified: best.isSigaaVerified ?? cleanEv.isSigaaVerified,
-      };
+      });
     }
 
-    return cleanEv;
+    return sanitizeEvaluationProfanities(cleanEv);
   });
 }
