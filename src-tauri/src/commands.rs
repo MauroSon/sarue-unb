@@ -281,13 +281,6 @@ pub async fn sync_platforms(
     })
 }
 
-/// Log de depuração vindo do frontend — aparece no terminal como `[web]`.
-#[command]
-#[specta::specta]
-pub fn debug_log(message: String) {
-    eprintln!("[web] {}", message);
-}
-
 #[command]
 #[specta::specta]
 pub fn check_vault_status() -> crate::models::VaultStatus {
@@ -361,21 +354,10 @@ pub async fn fetch_sigaa_academic_history(
     matricula: String,
     senha: String,
 ) -> Result<crate::models::DiscenteAcademicHistoryPayload, String> {
-    let t0 = std::time::Instant::now();
-    eprintln!("[historico] download do histórico iniciado");
     let client = crate::sigaa::SigaaClient::new();
-    let result = client
+    client
         .fetch_discente_profile_and_historico(&matricula, &senha)
-        .await;
-    match &result {
-        Ok(_) => eprintln!("[historico] ok em {:.1}s", t0.elapsed().as_secs_f32()),
-        Err(e) => eprintln!(
-            "[historico] ERRO em {:.1}s: {}",
-            t0.elapsed().as_secs_f32(),
-            e
-        ),
-    }
-    result
+        .await
 }
 
 #[command]
@@ -794,6 +776,9 @@ pub async fn disconnect_teams(app: AppHandle) -> Result<(), String> {
     log::info!("Microsoft Teams desconectado e janelas auxiliares encerradas.");
     Ok(())
 }
+// Mantenha em sincronia com PROFESSOR_EVALUATIONS_CSV_URL em
+// src/core/domain/entities/professor-evaluation.ts — URL duplicada na
+// fronteira Tauri (o Rust não importa as constantes do domínio TS).
 const PROFESSOR_EVALUATIONS_CSV_URL: &str = "https://docs.google.com/spreadsheets/d/1RK3N-2DtuKShO_2fpd5Cag_GsHYNIARD8WHLpCLTdCk/export?format=csv&gid=1411813915";
 static EVALUATIONS_CSV_CACHE: std::sync::OnceLock<tokio::sync::RwLock<Option<String>>> =
     std::sync::OnceLock::new();

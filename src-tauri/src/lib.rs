@@ -34,7 +34,6 @@ pub fn builder() -> Builder<tauri::Wry> {
         commands::backup_vault_file,
         commands::restore_vault_file,
         commands::fetch_professor_evaluations_csv,
-        commands::debug_log,
     ])
 }
 

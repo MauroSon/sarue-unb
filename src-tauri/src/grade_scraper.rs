@@ -440,7 +440,11 @@ impl SigaaGradeScraper {
         }
     }
 
-    /// Obtém o catálogo de docentes do SIGAA (a partir de professors.json ou sintetizado de classes.json)
+    /// Obtém o catálogo de docentes publicado em professors.json.
+    /// Não raspa o SIGAA como fallback: se o catálogo estiver indisponível,
+    /// degrada para uma lista vazia (avaliações sem docentes verificados).
+    /// O catálogo é gerado pelo scraper próprio (professors-scraper.ts) e
+    /// publicado pelo workflow trimestral scrape-professors.yml.
     pub async fn fetch_professors() -> Result<Vec<ScrapedProfessor>, String> {
         {
             let lock = get_professors_lock().read().await;
@@ -459,58 +463,10 @@ impl SigaaGradeScraper {
             }
         }
 
-        // Fallback: sintetiza a lista oficial de docentes a partir das turmas de classes.json
-        let all_disciplines = Self::scrape_department_classes("ALL", "2026", "2")
-            .await
-            .unwrap_or_default();
-        let all_depts = Self::fetch_departments().await.unwrap_or_default();
-        let dept_map: std::collections::HashMap<String, String> =
-            all_depts.into_iter().map(|d| (d.id, d.name)).collect();
-
-        let mut by_name: std::collections::BTreeMap<String, ScrapedProfessor> =
-            std::collections::BTreeMap::new();
-
-        for disc in all_disciplines {
-            let dept_name = dept_map
-                .get(&disc.department_id)
-                .cloned()
-                .unwrap_or_else(|| "UnB".to_string());
-            for cls in disc.classes {
-                for t in cls.teachers {
-                    let clean = t.trim().to_string();
-                    if clean.is_empty() || clean.eq_ignore_ascii_case("A definir") {
-                        continue;
-                    }
-                    let key = clean.to_uppercase();
-                    let entry = by_name
-                        .entry(key.clone())
-                        .or_insert_with(|| ScrapedProfessor {
-                            id: format!("prof-{}-{}", disc.department_id, key.replace(' ', "-")),
-                            siape: None,
-                            name: clean.clone(),
-                            department_id: disc.department_id.clone(),
-                            department_name: dept_name.clone(),
-                            department_ids: vec![disc.department_id.clone()],
-                            discipline_codes: vec![],
-                            photo_url: None,
-                            public_url: None,
-                        });
-                    if !entry.discipline_codes.contains(&disc.code) {
-                        entry.discipline_codes.push(disc.code.clone());
-                    }
-                    if !entry.department_ids.contains(&disc.department_id) {
-                        entry.department_ids.push(disc.department_id.clone());
-                    }
-                }
-            }
-        }
-
-        let synthesized: Vec<ScrapedProfessor> = by_name.into_values().collect();
-        if !synthesized.is_empty() {
-            let mut lock = get_professors_lock().write().await;
-            *lock = Some(synthesized.clone());
-        }
-        Ok(synthesized)
+        // Degrada sem docentes verificados em vez de raspar o SIGAA inteiro
+        // dentro do app; a síntese "catálogo a partir das turmas" vive apenas
+        // no scraper (GradeScraper.buildProfessorsCatalog).
+        Ok(Vec::new())
     }
 
     /// Lista padrão de departamentos UnB para contingência offline
