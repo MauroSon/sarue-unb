@@ -173,6 +173,16 @@ export const DashboardScreen: React.FC = () => {
         onPlatformChange={setSelectedPlatform}
         categoryValue={selectedType}
         onCategoryChange={setSelectedType}
+        hasActiveFilters={
+          Boolean(searchQuery) ||
+          selectedType !== "all" ||
+          selectedPlatform !== "all"
+        }
+        onClearFilters={() => {
+          setSearchQuery("");
+          setSelectedType("all");
+          setSelectedPlatform("all");
+        }}
         showArchived={showArchived}
         onToggleArchived={() => setShowArchived(!showArchived)}
         selectionMode={isSelecting}

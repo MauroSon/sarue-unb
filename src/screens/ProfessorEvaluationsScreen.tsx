@@ -1264,7 +1264,7 @@ export const ProfessorEvaluationsScreen: React.FC = () => {
       <Alert
         variant="yellow"
         title="Sobre os relatos"
-        description="Estes relatos vêm de uma fonte externa: uma planilha pública mantida pela própria comunidade de estudantes, sem moderação prévia. Cada opinião reflete a visão de quem escreveu — pode vir enviesada, desatualizada ou até conter ofensas — e a plataforma não se responsabiliza pelo conteúdo publicado. Use as avaliações como apoio na sua decisão, e não como verdade absoluta."
+        description="Estes relatos vêm de uma fonte externa: uma planilha pública mantida pela própria comunidade de estudantes, sem moderação prévia. Cada opinião reflete a visão de quem escreveu — pode vir enviesada, desatualizada ou até conter ofensas. Use as avaliações como apoio na sua decisão, e não como verdade absoluta."
         aside={
           <Button
             type="button"
@@ -1400,7 +1400,7 @@ export const ProfessorEvaluationsScreen: React.FC = () => {
 
         {/* Contagem filtrada: barra interna do card — nunca linha solta acima */}
         {hasActiveFilters && (
-          <div className="border-t border-black/10 pt-2 text-[11px] font-bold text-neutral-600">
+          <div className="border-t-2 border-black/10 pt-2 text-xs font-bold text-neutral-600">
             {viewMode === "professors"
               ? `${visibleSummaries.length} de ${unfilteredSummaries.length} ${
                   unfilteredSummaries.length === 1 ? "docente" : "docentes"
