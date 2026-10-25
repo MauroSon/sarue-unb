@@ -1,0 +1,61 @@
+name: Scrape SIGAA Professors (Catálogo de Docentes)
+
+on:
+  schedule:
+    # Trimestral: 1º de janeiro, abril, julho e outubro às 05:00 UTC (02:00 BRT).
+    # O catálogo de docentes muda raramente; para atualização fora de época
+    # (ex.: docente novo reportado), rode manualmente via workflow_dispatch.
+    - cron: '0 5 1 1,4,7,10 *'
+  workflow_dispatch:
+
+concurrency:
+  group: scrape-sigaa-data
+  cancel-in-progress: false
+
+jobs:
+  scrape-and-publish:
+    name: Scrape Docentes e Publicar em gh-pages
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout do repositório
+        uses: actions/checkout@v4
+
+      - name: Instalar pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.14.0
+
+      - name: Configurar Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'pnpm'
+
+      - name: Instalar dependências
+        run: pnpm install --frozen-lockfile
+
+      - name: Baixar turmas e departamentos já publicados (para o cruzamento)
+        run: |
+          mkdir -p ./dist-data
+          for f in classes.json departments.json grade-meta.json; do
+            curl -fsSL "https://kalebhenrique.github.io/sarue-unb/data/$f" -o "./dist-data/$f" \
+              || echo "Aviso: $f indisponível no gh-pages; o scraper coletará ao vivo."
+          done
+
+      - name: Executar scraping do catálogo de docentes
+        run: pnpm run scrape:professors --out-dir ./dist-data
+
+      - name: Publicar dados estáticos na branch órfã gh-pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_branch: gh-pages
+          publish_dir: ./dist-data
+          destination_dir: data
+          keep_files: true
+          user_name: 'github-actions[bot]'
+          user_email: 'github-actions[bot]@users.noreply.github.com'
+          commit_message: 'chore(data): atualizar catálogo de docentes SIGAA [skip ci]'

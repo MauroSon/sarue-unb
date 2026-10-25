@@ -774,66 +774,10 @@ async function main() {
   await fs.writeFile(classesPath, JSON.stringify(allDisciplines, null, 2), 'utf-8');
   console.log(`[GradeScraper] Salvo: ${classesPath} (${allDisciplines.length} disciplinas coletadas)`);
 
-  // Coleta catálogo de docentes do diretório público do SIGAA e unifica com os docentes das turmas
-  const directoryProfessors: ScrapedProfessor[] = [];
-  try {
-    const docentesInitHtml = await scraper.initDocentesSession();
-    let docenteDepts = scraper.parseDocenteDepartments(docentesInitHtml);
-    if (targetDept) {
-      docenteDepts = docenteDepts.filter((d) => d.id === targetDept);
-    }
-    if (limit && limit > 0) {
-      docenteDepts = docenteDepts.slice(0, limit);
-    }
-
-    console.log(
-      `[GradeScraper] Coletando diretório público de docentes para ${docenteDepts.length} unidades...`
-    );
-
-    let profDeptProcessed = 0;
-    for (const dept of docenteDepts) {
-      try {
-        const profs = await scraper.scrapeDocentesDepartment(
-          dept.id,
-          dept.name,
-          docentesInitHtml
-        );
-        directoryProfessors.push(...profs);
-        profDeptProcessed++;
-        if (profs.length > 0) {
-          console.log(
-            `[GradeScraper] [Docentes ${profDeptProcessed}/${docenteDepts.length}] ${dept.name} (${dept.id}): ${profs.length} docentes.`
-          );
-        }
-      } catch (e) {
-        console.warn(
-          `[GradeScraper] Erro ao raspar docentes do depto ${dept.id} (${dept.name}):`,
-          e
-        );
-      }
-      await new Promise((r) => setTimeout(r, 150));
-    }
-  } catch (e) {
-    console.warn(
-      `[GradeScraper] Falha ao consultar busca_docentes.jsf (${e}). Construindo catálogo a partir das turmas.`
-    );
-  }
-
-  const allProfessors = GradeScraper.buildProfessorsCatalog(
-    directoryProfessors,
-    allDisciplines,
-    departments
-  );
-  const professorsPath = path.join(outDir, 'professors.json');
-  await fs.writeFile(
-    professorsPath,
-    JSON.stringify(allProfessors, null, 2),
-    'utf-8'
-  );
-  console.log(
-    `[GradeScraper] Salvo: ${professorsPath} (${allProfessors.length} professores catalogados)`
-  );
-
+  // O catálogo de docentes é coletado pelo scraper próprio
+  // (professors-scraper.ts, `pnpm run scrape:professors`), publicado por
+  // .github/workflows/scrape-professors.yml — trimestral, não faz parte da
+  // coleta diária da grade.
   const metaPath = path.join(outDir, 'grade-meta.json');
   const meta = {
     scraped_at: new Date().toISOString(),
@@ -843,7 +787,6 @@ async function main() {
     total_departments: departments.length,
     total_disciplines: allDisciplines.length,
     total_classes: allDisciplines.reduce((acc, d) => acc + d.classes.length, 0),
-    total_professors: allProfessors.length,
   };
   await fs.writeFile(metaPath, JSON.stringify(meta, null, 2), 'utf-8');
   console.log(`[GradeScraper] Concluído com sucesso! Metadados em ${metaPath}`);
@@ -856,7 +799,6 @@ async function main() {
       await fs.copyFile(classesPath, path.join(publicDataDir, 'classes.json'));
       await fs.copyFile(deptPath, path.join(publicDataDir, 'departments.json'));
       await fs.copyFile(semPath, path.join(publicDataDir, 'semesters.json'));
-      await fs.copyFile(professorsPath, path.join(publicDataDir, 'professors.json'));
       await fs.copyFile(metaPath, path.join(publicDataDir, 'grade-meta.json'));
       console.log(`[GradeScraper] Sincronizado para ${publicDataDir}`);
     } catch {}
