@@ -606,43 +606,10 @@ export class InMemoryGradeRepository implements IGradeRepository {
       }
     }
 
-    // Sintetiza a partir de scrapeDepartmentClasses('ALL')
-    const allDisciplines = await this.scrapeDepartmentClasses('ALL', '2026', '2');
-    const allDepts = await this.getDepartments();
-    const deptNameMap = new Map(allDepts.map((d) => [d.id, d.name]));
-    const byName = new Map<string, ScrapedProfessor>();
-
-    for (const disc of allDisciplines) {
-      const deptName = deptNameMap.get(disc.departmentId) || 'UnB';
-      for (const cls of disc.classes || []) {
-        for (const t of cls.teachers || []) {
-          const clean = t.replace(/^Prof\.?\s+/i, '').trim();
-          if (!clean || clean.toUpperCase() === 'A DEFINIR') continue;
-          const key = clean.toUpperCase();
-          const existing = byName.get(key);
-          if (existing) {
-            if (!existing.disciplineCodes.includes(disc.code)) {
-              existing.disciplineCodes.push(disc.code);
-            }
-            if (!existing.departmentIds.includes(disc.departmentId)) {
-              existing.departmentIds.push(disc.departmentId);
-            }
-          } else {
-            byName.set(key, {
-              id: `prof-${disc.departmentId}-${key.replace(/\s+/g, '-')}`,
-              name: clean.toUpperCase(),
-              departmentId: disc.departmentId,
-              departmentName: deptName,
-              departmentIds: [disc.departmentId],
-              disciplineCodes: [disc.code],
-            });
-          }
-        }
-      }
-    }
-
-    this.professorsCache = Array.from(byName.values());
-    return this.professorsCache;
+    // Degrada sem docentes verificados: a síntese "catálogo a partir das
+    // turmas" vive apenas no scraper (GradeScraper.buildProfessorsCatalog),
+    // que publica professors.json via workflow trimestral.
+    return this.professorsCache ?? [];
   }
 
   async checkConflicts(classes: ScrapedClass[]): Promise<string[]> {

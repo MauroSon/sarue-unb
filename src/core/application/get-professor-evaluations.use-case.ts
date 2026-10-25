@@ -11,9 +11,11 @@ import {
   canonicalizeDepartments,
   crossReferenceEvaluationsWithSigaa,
   hasConsistentDifficultyConsensus,
+  professorKeyOf,
 } from '../domain/entities/professor-evaluation';
 import type { IProfessorEvaluationRepository } from '../domain/interfaces/professor-evaluation-repo.interface';
 import type { IGradeRepository } from '../domain/interfaces/grade-repo.interface';
+import { SIGAA_CURRENT_SEMESTER } from '../domain/entities/grade';
 
 export class GetProfessorEvaluationsUseCase {
   private enrichedCache: ProfessorEvaluation[] | null = null;
@@ -115,7 +117,11 @@ export class GetProfessorEvaluationsUseCase {
     const [disciplines, professors, departments] = await Promise.all([
       withDeadline(
         this.gradeRepo
-          .scrapeDepartmentClasses('ALL', '2026', '2')
+          .scrapeDepartmentClasses(
+            'ALL',
+            SIGAA_CURRENT_SEMESTER.year,
+            SIGAA_CURRENT_SEMESTER.period
+          )
           .catch(() => []),
         []
       ),
@@ -170,53 +176,35 @@ export class GetProfessorEvaluationsUseCase {
     // ele ofereceu: há poucos relatos por matéria, e o agregado por professor
     // é o sinal confiável para a escolha.
     const matchingKeys = new Set(
-      this.applyFilters(all, filters).map((ev) => this.professorKeyOf(ev))
+      this.applyFilters(all, filters).map((ev) => professorKeyOf(ev.professor))
     );
     if (matchingKeys.size === 0) return [];
     const scoped = all.filter((ev) =>
-      matchingKeys.has(this.professorKeyOf(ev))
+      matchingKeys.has(professorKeyOf(ev.professor))
     );
 
-    const groups = new Map<
-      string,
-      {
-        displayName: string;
-        siape?: string;
-        photoUrl?: string;
-        publicUrl?: string;
-        isSigaaVerified?: boolean;
-        evaluations: ProfessorEvaluation[];
-      }
-    >();
-
-    for (const ev of scoped) {
-      const key = normalizeText(ev.professor)
-        .replace(/^PROF(?:ESSOR|ESSORA)?\.?\s+/i, '')
-        .trim();
-      if (!key) continue;
-
-      const existing = groups.get(key);
-      if (existing) {
-        existing.evaluations.push(ev);
-        if (ev.professor.trim().length > existing.displayName.length) {
-          existing.displayName = ev.professor.trim();
+    const groups = this.collectGroups(
+      scoped,
+      (ev) => professorKeyOf(ev.professor),
+      (ev) => ({
+        displayName: ev.professor.trim(),
+        siape: ev.siape,
+        photoUrl: ev.photoUrl,
+        publicUrl: ev.publicUrl,
+        isSigaaVerified: ev.isSigaaVerified,
+        evaluations: [ev],
+      }),
+      (group, ev) => {
+        group.evaluations.push(ev);
+        if (ev.professor.trim().length > group.displayName.length) {
+          group.displayName = ev.professor.trim();
         }
-        if (!existing.siape && ev.siape) existing.siape = ev.siape;
-        if (!existing.photoUrl && ev.photoUrl) existing.photoUrl = ev.photoUrl;
-        if (!existing.publicUrl && ev.publicUrl)
-          existing.publicUrl = ev.publicUrl;
-        if (ev.isSigaaVerified) existing.isSigaaVerified = true;
-      } else {
-        groups.set(key, {
-          displayName: ev.professor.trim(),
-          siape: ev.siape,
-          photoUrl: ev.photoUrl,
-          publicUrl: ev.publicUrl,
-          isSigaaVerified: ev.isSigaaVerified,
-          evaluations: [ev],
-        });
+        if (!group.siape && ev.siape) group.siape = ev.siape;
+        if (!group.photoUrl && ev.photoUrl) group.photoUrl = ev.photoUrl;
+        if (!group.publicUrl && ev.publicUrl) group.publicUrl = ev.publicUrl;
+        if (ev.isSigaaVerified) group.isSigaaVerified = true;
       }
-    }
+    );
 
     const summaries: ProfessorSummary[] = [];
 
@@ -247,7 +235,7 @@ export class GetProfessorEvaluationsUseCase {
       for (const e of evals) {
         if (e.recommendation === 'sim') recommendYesCount++;
         else if (e.recommendation === 'depende') recommendDependeCount++;
-        else recommendNoCount++;
+        else if (e.recommendation === 'nao') recommendNoCount++;
 
         if (e.campus) campusesSet.add(e.campus);
 
@@ -256,10 +244,7 @@ export class GetProfessorEvaluationsUseCase {
           departmentsMap.set(deptNorm, e.department.trim());
         }
 
-        const discKey =
-          e.disciplineCode ||
-          normalizeDisciplineTokens(e.discipline).join(' ') ||
-          normalizeText(e.discipline);
+        const discKey = this.disciplineKeyOf(e);
         if (discKey) {
           const prev = disciplinesMap.get(discKey);
           if (!prev || e.discipline.trim().length > prev.length) {
@@ -341,47 +326,31 @@ export class GetProfessorEvaluationsUseCase {
       matchingKeys.has(this.disciplineKeyOf(ev))
     );
 
-    const groups = new Map<
-      string,
-      {
-        displayName: string;
-        disciplineCode?: string;
-        isSigaaVerified?: boolean;
-        evaluations: ProfessorEvaluation[];
-      }
-    >();
-
-    for (const ev of scoped) {
-      const key =
-        ev.disciplineCode ||
-        normalizeDisciplineTokens(ev.discipline).join(' ') ||
-        normalizeText(ev.discipline);
-      if (!key) continue;
-
-      const existing = groups.get(key);
-      if (existing) {
-        existing.evaluations.push(ev);
+    const groups = this.collectGroups(
+      scoped,
+      (ev) => this.disciplineKeyOf(ev),
+      (ev) => ({
+        displayName: ev.discipline.trim(),
+        disciplineCode: ev.disciplineCode,
+        isSigaaVerified: Boolean(ev.disciplineCode),
+        evaluations: [ev],
+      }),
+      (group, ev) => {
+        group.evaluations.push(ev);
         if (
-          (ev.disciplineCode && !existing.disciplineCode) ||
-          ev.discipline.trim().length > existing.displayName.length
+          (ev.disciplineCode && !group.disciplineCode) ||
+          ev.discipline.trim().length > group.displayName.length
         ) {
-          existing.displayName = ev.discipline.trim();
+          group.displayName = ev.discipline.trim();
         }
-        if (!existing.disciplineCode && ev.disciplineCode) {
-          existing.disciplineCode = ev.disciplineCode;
+        if (!group.disciplineCode && ev.disciplineCode) {
+          group.disciplineCode = ev.disciplineCode;
         }
         if (ev.disciplineCode) {
-          existing.isSigaaVerified = true;
+          group.isSigaaVerified = true;
         }
-      } else {
-        groups.set(key, {
-          displayName: ev.discipline.trim(),
-          disciplineCode: ev.disciplineCode,
-          isSigaaVerified: Boolean(ev.disciplineCode),
-          evaluations: [ev],
-        });
       }
-    }
+    );
 
     const summaries: DisciplineSummary[] = [];
 
@@ -412,7 +381,7 @@ export class GetProfessorEvaluationsUseCase {
       for (const e of evals) {
         if (e.recommendation === 'sim') recommendYesCount++;
         else if (e.recommendation === 'depende') recommendDependeCount++;
-        else recommendNoCount++;
+        else if (e.recommendation === 'nao') recommendNoCount++;
 
         if (e.campus) campusesSet.add(e.campus);
 
@@ -421,9 +390,7 @@ export class GetProfessorEvaluationsUseCase {
           departmentsMap.set(deptNorm, e.department.trim());
         }
 
-        const profKey = normalizeText(e.professor)
-          .replace(/^PROF(?:ESSOR|ESSORA)?\.?\s+/i, '')
-          .trim();
+        const profKey = professorKeyOf(e.professor);
         if (profKey) {
           const prev = professorsMap.get(profKey);
           if (!prev || e.professor.trim().length > prev.length) {
@@ -486,10 +453,27 @@ export class GetProfessorEvaluationsUseCase {
     return summaries;
   }
 
-  private professorKeyOf(ev: ProfessorEvaluation): string {
-    return normalizeText(ev.professor)
-      .replace(/^PROF(?:ESSOR|ESSORA)?\.?\s+/i, '')
-      .trim();
+  /** Agrupa itens por chave canônica: a primeira ocorrência cria o grupo,
+   * demais passam pelo merge; chave vazia ignora o item. Agregador comum
+   * às sumárias de professores e de disciplinas. */
+  private collectGroups<E, G>(
+    items: E[],
+    keyOf: (item: E) => string,
+    create: (item: E) => G,
+    merge: (group: G, item: E) => void
+  ): Map<string, G> {
+    const groups = new Map<string, G>();
+    for (const item of items) {
+      const key = keyOf(item);
+      if (!key) continue;
+      const existing = groups.get(key);
+      if (existing) {
+        merge(existing, item);
+      } else {
+        groups.set(key, create(item));
+      }
+    }
+    return groups;
   }
 
   private disciplineKeyOf(ev: ProfessorEvaluation): string {
