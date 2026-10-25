@@ -10,6 +10,9 @@ export const PROFESSOR_EVALUATIONS_SHEET_GID = '1411813915';
 
 export const PROFESSOR_EVALUATIONS_SHEET_URL = `https://docs.google.com/spreadsheets/d/${PROFESSOR_EVALUATIONS_SHEET_ID}/edit?gid=${PROFESSOR_EVALUATIONS_SHEET_GID}#gid=${PROFESSOR_EVALUATIONS_SHEET_GID}`;
 
+// Mantenha em sincronia com PROFESSOR_EVALUATIONS_CSV_URL em
+// src-tauri/src/commands.rs — URL duplicada na fronteira Tauri (o Rust não
+// importa as constantes do domínio TS).
 export const PROFESSOR_EVALUATIONS_CSV_URL = `https://docs.google.com/spreadsheets/d/${PROFESSOR_EVALUATIONS_SHEET_ID}/export?format=csv&gid=${PROFESSOR_EVALUATIONS_SHEET_GID}`;
 
 export type CampusName =
@@ -34,7 +37,9 @@ export type WorkloadLevel =
   | 'intensa'
   | 'exagerada';
 
-export type RecommendationType = 'sim' | 'depende' | 'nao';
+/** 'nao_informado': o relato não respondeu se recomendaria — nunca conta
+ * como 'sim' nem como 'nao' nas agregações. */
+export type RecommendationType = 'sim' | 'depende' | 'nao' | 'nao_informado';
 
 export type AttendanceStrictness = 'tranquilo' | 'rigoroso' | 'nao_informado';
 
@@ -378,9 +383,18 @@ export function normalizeWorkload(raw: string): {
 
 export function normalizeRecommendation(raw: string): RecommendationType {
   const norm = normalizeText(raw);
+  if (!norm) return 'nao_informado';
   if (norm.includes('DEPENDE')) return 'depende';
   if (norm.includes('NAO')) return 'nao';
   return 'sim';
+}
+
+/** Chave canônica de docente: nome sem o título "Prof." e normalizado —
+ * unifica variantes ("Carla", "Carla Rocha", "PROF. CARLA") na mesma pessoa. */
+export function professorKeyOf(raw: string): string {
+  return normalizeText(raw)
+    .replace(/^PROF(?:ESSOR|ESSORA)?\.?\s+/i, '')
+    .trim();
 }
 
 export function normalizeAttendance(raw: string): {
