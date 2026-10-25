@@ -1,26 +1,28 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useContainer } from '../context/ContainerContext';
 import type {
-  ProfessorEvaluation,
   ProfessorSummary,
   DisciplineSummary,
   CampusName,
   DifficultyLevel,
-  AttendanceStrictness,
   ProfessorEvaluationSortBy,
 } from '@/core';
 
 export function useProfessorEvaluations() {
   const { useCases } = useContainer();
 
-  const [evaluations, setEvaluations] = useState<ProfessorEvaluation[]>([]);
   const [summaries, setSummaries] = useState<ProfessorSummary[]>([]);
   const [disciplineSummaries, setDisciplineSummaries] = useState<
     DisciplineSummary[]
   >([]);
-  const [allCount, setAllCount] = useState<number>(0);
+  // Agregados SEM filtro: base fixa para contagem absoluta (título, barra
+  // "N de M") e drill-downs, imune a busca/filtros.
+  const [unfilteredSummaries, setUnfilteredSummaries] = useState<
+    ProfessorSummary[]
+  >([]);
+  const [unfilteredDisciplineSummaries, setUnfilteredDisciplineSummaries] =
+    useState<DisciplineSummary[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
   const [hasLoadedOnce, setHasLoadedOnce] = useState<boolean>(false);
   const [error, setError] = useState<boolean>(false);
 
@@ -32,18 +34,13 @@ export function useProfessorEvaluations() {
   const [selectedDifficulty, setSelectedDifficulty] = useState<
     DifficultyLevel | 'all'
   >('all');
-  const [selectedAttendance, setSelectedAttendance] = useState<
-    AttendanceStrictness | 'all'
-  >('all');
   const [sortBy, setSortBy] = useState<ProfessorEvaluationSortBy>(
     'recommendation_desc'
   );
 
   const loadData = useCallback(
     async (forceRefresh = false) => {
-      if (forceRefresh) {
-        setIsRefreshing(true);
-      } else {
+      if (!forceRefresh) {
         setIsLoading(true);
       }
 
@@ -52,15 +49,18 @@ export function useProfessorEvaluations() {
           query: searchQuery,
           campus: selectedCampus,
           difficulty: selectedDifficulty,
-          attendance: selectedAttendance,
           sortBy,
         };
 
+        // As duas chamadas execute aquecem/renovam o cache do use-case; os
+        // resultados brutos não são consumidos pelo hook.
         const [
-          unfilteredList,
-          filteredList,
+          ,
+          ,
           summaryList,
           disciplineSummaryList,
+          unfilteredSummaryList,
+          unfilteredDisciplineSummaryList,
         ] = await Promise.all([
           useCases.getProfessorEvaluations.execute(undefined, forceRefresh),
           useCases.getProfessorEvaluations.execute(filters, false),
@@ -69,12 +69,17 @@ export function useProfessorEvaluations() {
             filters,
             false
           ),
+          useCases.getProfessorEvaluations.getSummaries(undefined, false),
+          useCases.getProfessorEvaluations.getDisciplineSummaries(
+            undefined,
+            false
+          ),
         ]);
 
-        setAllCount(unfilteredList.length);
-        setEvaluations(filteredList);
         setSummaries(summaryList);
         setDisciplineSummaries(disciplineSummaryList);
+        setUnfilteredSummaries(unfilteredSummaryList);
+        setUnfilteredDisciplineSummaries(unfilteredDisciplineSummaryList);
         setHasLoadedOnce(true);
         setError(false);
         return true;
@@ -84,7 +89,6 @@ export function useProfessorEvaluations() {
         return false;
       } finally {
         setIsLoading(false);
-        setIsRefreshing(false);
       }
     },
     [
@@ -92,7 +96,6 @@ export function useProfessorEvaluations() {
       searchQuery,
       selectedCampus,
       selectedDifficulty,
-      selectedAttendance,
       sortBy,
     ]
   );
@@ -101,59 +104,24 @@ export function useProfessorEvaluations() {
     void loadData(false);
   }, [loadData]);
 
-  const stats = useMemo(() => {
-    const totalReviews = evaluations.length;
-    const totalProfessors = summaries.length;
-    const totalDisciplines = disciplineSummaries.length;
-
-    const scores = evaluations
-      .map((e) => e.didaticaScore)
-      .filter((s): s is number => s !== null && !Number.isNaN(s));
-
-    const averageDidatica =
-      scores.length > 0
-        ? Math.round(
-            (scores.reduce((acc, s) => acc + s, 0) / scores.length) * 10
-          ) / 10
-        : 0;
-
-    const recommendYes = evaluations.filter(
-      (e) => e.recommendation === 'sim'
-    ).length;
-    const recommendationRate =
-      totalReviews > 0 ? Math.round((recommendYes / totalReviews) * 100) : 0;
-
-    return {
-      totalReviews,
-      totalProfessors,
-      totalDisciplines,
-      averageDidatica,
-      recommendationRate,
-    };
-  }, [evaluations, summaries, disciplineSummaries]);
-
   const clearFilters = useCallback(() => {
     setSearchQuery('');
     setSelectedCampus('all');
     setSelectedDifficulty('all');
-    setSelectedAttendance('all');
     setSortBy('recommendation_desc');
   }, []);
 
   const hasActiveFilters =
     searchQuery.trim() !== '' ||
     selectedCampus !== 'all' ||
-    selectedDifficulty !== 'all' ||
-    selectedAttendance !== 'all';
+    selectedDifficulty !== 'all';
 
   return {
-    evaluations,
     summaries,
     disciplineSummaries,
-    allCount,
-    stats,
+    unfilteredSummaries,
+    unfilteredDisciplineSummaries,
     isLoading,
-    isRefreshing,
     hasLoadedOnce,
     searchQuery,
     setSearchQuery,
@@ -161,8 +129,6 @@ export function useProfessorEvaluations() {
     setSelectedCampus,
     selectedDifficulty,
     setSelectedDifficulty,
-    selectedAttendance,
-    setSelectedAttendance,
     sortBy,
     setSortBy,
     hasActiveFilters,
