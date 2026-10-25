@@ -1,13 +1,8 @@
-import React, {
-  useState,
-  useEffect,
-  useCallback,
-  useMemo,
-} from 'react';
-import { useProfessorEvaluations } from '../hooks/useProfessorEvaluations';
-import { useContainer } from '../context/ContainerContext';
-import { subscribeToSyncComplete } from '../context/SyncContext';
-import { resolveCourseIdForProfile } from '../hooks/useMyCourse';
+import React, { useState, useEffect, useCallback, useMemo } from "react";
+import { useProfessorEvaluations } from "../hooks/useProfessorEvaluations";
+import { useContainer } from "../context/ContainerContext";
+import { subscribeToSyncComplete } from "../context/SyncContext";
+import { resolveCourseIdForProfile } from "../hooks/useMyCourse";
 import {
   Card,
   Badge,
@@ -24,7 +19,7 @@ import {
   Tooltip,
   TooltipTrigger,
   TooltipContent,
-} from '@/components/ui';
+} from "@/components/ui";
 import {
   Star,
   Search,
@@ -46,8 +41,8 @@ import {
   ChevronDown,
   X,
   type LucideIcon,
-} from 'lucide-react';
-import { cn, openExternalUrl } from '../lib/utils';
+} from "lucide-react";
+import { cn, openExternalUrl } from "../lib/utils";
 import {
   CONSENSUS_SEAL_MIN_EVALUATIONS,
   normalizeDepartmentDisplay,
@@ -62,57 +57,60 @@ import {
   type ProfessorSummary,
   type DisciplineSummary,
   type CurriculumStructure,
-} from '@/core';
+} from "@/core";
 
-type EvaluationViewMode = 'professors' | 'disciplines';
+type EvaluationViewMode = "professors" | "disciplines";
 
-let cachedEvaluationViewMode: EvaluationViewMode = 'professors';
+let cachedEvaluationViewMode: EvaluationViewMode = "professors";
+
+// Preferência do usuário: filtrar (ou não) as avaliações pelo próprio curso.
+const FILTER_BY_COURSE_STORAGE_KEY = "unb_evaluations_filter_by_course";
 
 const PAGE_SIZE = 20;
 
 function getDidaticaBadgeStyle(score: number | null): string {
   if (score === null) {
-    return 'bg-neutral-100 text-neutral-700 border-black';
+    return "bg-neutral-100 text-neutral-700 border-black";
   }
   if (score >= 8) {
-    return 'bg-neo-green text-black border-black';
+    return "bg-neo-green text-black border-black";
   }
   if (score >= 6) {
-    return 'bg-neo-yellow text-black border-black';
+    return "bg-neo-yellow text-black border-black";
   }
-  return 'bg-neo-danger text-white border-black';
+  return "bg-neo-danger text-white border-black";
 }
 
 /** Cor do card de didática inteiro, por faixa de nota. */
 function getDidaticaCardStyle(score: number | null): string {
   if (score === null) {
-    return 'bg-neutral-100 text-neutral-700';
+    return "bg-neutral-100 text-neutral-700";
   }
   if (score >= 8) {
-    return 'bg-neo-green text-black';
+    return "bg-neo-green text-black";
   }
   if (score >= 6) {
-    return 'bg-neo-yellow text-black';
+    return "bg-neo-yellow text-black";
   }
-  return 'bg-neo-danger text-white';
+  return "bg-neo-danger text-white";
 }
 
 function getRecommendationBadge(rec: RecommendationType) {
-  if (rec === 'sim') {
+  if (rec === "sim") {
     return (
       <Badge variant="success" size="sm">
         Recomenda
       </Badge>
     );
   }
-  if (rec === 'depende') {
+  if (rec === "depende") {
     return (
       <Badge variant="yellow" size="sm" title="Recomendaria, mas com ressalvas">
         Depende
       </Badge>
     );
   }
-  if (rec === 'nao') {
+  if (rec === "nao") {
     return (
       <Badge variant="urgent" size="sm">
         Não recomenda
@@ -133,28 +131,28 @@ function getRecommendationBadge(rec: RecommendationType) {
 // Opções dos Filtro Selects: o rótulo exibido do valor selecionado vem de
 // `options` (resolvido pelo próprio FilterSelect).
 const DIFFICULTY_FILTER_OPTIONS: { value: string; label: string }[] = [
-  { value: 'all', label: 'Todas as dificuldades' },
-  { value: 'muito_facil', label: 'Muito fácil' },
-  { value: 'facil', label: 'Fácil' },
-  { value: 'medio', label: 'Médio' },
-  { value: 'dificil', label: 'Difícil' },
-  { value: 'muito_dificil', label: 'Muito difícil' },
-  { value: 'nivel_god', label: 'Nível God' },
+  { value: "all", label: "Todas as dificuldades" },
+  { value: "muito_facil", label: "Muito fácil" },
+  { value: "facil", label: "Fácil" },
+  { value: "medio", label: "Médio" },
+  { value: "dificil", label: "Difícil" },
+  { value: "muito_dificil", label: "Muito difícil" },
+  { value: "nivel_god", label: "Nível God" },
 ];
 
 const SORT_OPTIONS: { value: string; label: string }[] = [
-  { value: 'recommendation_desc', label: 'Mais recomendados' },
-  { value: 'rating_desc', label: 'Maior didática (10 → 0)' },
-  { value: 'rating_asc', label: 'Menor didática (0 → 10)' },
-  { value: 'reviews_desc', label: 'Mais avaliados' },
+  { value: "recommendation_desc", label: "Mais recomendados" },
+  { value: "rating_desc", label: "Maior didática (10 → 0)" },
+  { value: "rating_asc", label: "Menor didática (0 → 10)" },
+  { value: "reviews_desc", label: "Mais avaliados" },
 ];
 
 const CAMPUS_FILTER_OPTIONS: { value: string; label: string }[] = [
-  { value: 'all', label: 'Todos os campi' },
-  { value: 'Darcy Ribeiro', label: 'Darcy Ribeiro' },
-  { value: 'Ceilândia', label: 'Ceilândia' },
-  { value: 'Gama', label: 'Gama' },
-  { value: 'Planaltina', label: 'Planaltina' },
+  { value: "all", label: "Todos os campi" },
+  { value: "Darcy Ribeiro", label: "Darcy Ribeiro" },
+  { value: "Ceilândia", label: "Ceilândia" },
+  { value: "Gama", label: "Gama" },
+  { value: "Planaltina", label: "Planaltina" },
 ];
 
 /** Selo exige muitas avaliações E consenso confirmado entre os relatos. */
@@ -202,31 +200,31 @@ const ReviewCard: React.FC<{
 
   const scoreDisplay =
     evaluation.didaticaScore !== null
-      ? evaluation.didaticaScore.toLocaleString('pt-BR', {
+      ? evaluation.didaticaScore.toLocaleString("pt-BR", {
           maximumFractionDigits: 1,
         })
-      : 'N/A';
+      : "N/A";
 
   const detailFields = [
-    { label: 'Monitoria', value: evaluation.hasMonitor },
-    { label: 'Importa-se', value: evaluation.caresAboutStudents },
-    { label: 'Aprendizado', value: evaluation.learnedContent },
-    { label: 'Resultado', value: evaluation.outcome },
+    { label: "Monitoria", value: evaluation.hasMonitor },
+    { label: "Importa-se", value: evaluation.caresAboutStudents },
+    { label: "Aprendizado", value: evaluation.learnedContent },
+    { label: "Resultado", value: evaluation.outcome },
   ].filter((d) => d.value);
 
   const showModality =
-    evaluation.modality && normalizeText(evaluation.modality) !== 'PRESENCIAL';
+    evaluation.modality && normalizeText(evaluation.modality) !== "PRESENCIAL";
 
   // Parâmetros em linha, com rótulos onde o valor não é autoexplicativo.
   const parameters = [
     evaluation.difficulty
-      ? { label: 'Dificuldade:', value: evaluation.difficulty }
+      ? { label: "Dificuldade:", value: evaluation.difficulty }
       : null,
-    evaluation.workload ? { label: 'Carga:', value: evaluation.workload } : null,
-    evaluation.material ? { label: '', value: evaluation.material } : null,
-    evaluation.attendance
-      ? { label: '', value: evaluation.attendance }
+    evaluation.workload
+      ? { label: "Carga:", value: evaluation.workload }
       : null,
+    evaluation.material ? { label: "", value: evaluation.material } : null,
+    evaluation.attendance ? { label: "", value: evaluation.attendance } : null,
   ].filter((p): p is { label: string; value: string } => p !== null);
 
   return (
@@ -251,11 +249,13 @@ const ReviewCard: React.FC<{
                 <span className="text-neutral-500">·</span>
                 <span className="inline-flex items-center gap-1.5">
                   <Building2 className="w-3.5 h-3.5 stroke-[2.5] text-neutral-500 shrink-0" />
-                  <span>{normalizeDepartmentDisplay(evaluation.department)}</span>
+                  <span>
+                    {normalizeDepartmentDisplay(evaluation.department)}
+                  </span>
                 </span>
               </>
             )}
-            {evaluation.semester && evaluation.semester !== '-' && (
+            {evaluation.semester && evaluation.semester !== "-" && (
               <>
                 <span className="text-neutral-500">·</span>
                 <span>{evaluation.semester}</span>
@@ -273,7 +273,7 @@ const ReviewCard: React.FC<{
         {/* Bloco Adesivo de Nota da Didática: cor única por faixa */}
         <div
           className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border-2 border-black shadow-neo-xs shrink-0 ${getDidaticaCardStyle(
-            evaluation.didaticaScore
+            evaluation.didaticaScore,
           )}`}
         >
           <span className="text-[11px] font-black uppercase tracking-wider opacity-80">
@@ -325,13 +325,13 @@ const ReviewCard: React.FC<{
           {evaluation.evaluationMethods && (
             <span className="inline-flex items-center gap-1">
               <ClipboardCheck className="w-3.5 h-3.5 stroke-[2.5] text-neutral-500" />
-              <strong className="font-bold text-black">Avaliação:</strong>{' '}
+              <strong className="font-bold text-black">Avaliação:</strong>{" "}
               {evaluation.evaluationMethods}
             </span>
           )}
           {evaluation.timestamp && (
             <span className="text-[11px] font-bold text-neutral-600">
-              {evaluation.timestamp.split(' ')[0]}
+              {evaluation.timestamp.split(" ")[0]}
             </span>
           )}
           {detailed && detailFields.length > 0 && (
@@ -341,10 +341,10 @@ const ReviewCard: React.FC<{
               aria-expanded={showDetails}
               className="ml-auto cursor-pointer inline-flex items-center gap-1 text-xs font-bold text-neutral-600 hover:text-black focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-neo-blue rounded-xs"
             >
-              {showDetails ? 'Menos detalhes' : 'Mais detalhes'}
+              {showDetails ? "Menos detalhes" : "Mais detalhes"}
               <ChevronDown
                 className={`w-3.5 h-3.5 stroke-[2.5] transition-transform duration-150 ease-out ${
-                  showDetails ? 'rotate-180' : ''
+                  showDetails ? "rotate-180" : ""
                 }`}
               />
             </button>
@@ -392,29 +392,22 @@ const EvaluationDrillDown: React.FC<{
   relatedItems: string[];
   summary: DrillDownSummary;
   onBack: () => void;
-}> = ({
-  icon,
-  title,
-  relatedLabel,
-  relatedItems,
-  summary,
-  onBack,
-}) => {
+}> = ({ icon, title, relatedLabel, relatedItems, summary, onBack }) => {
   const reviews = summary.evaluations;
   const pageCount = Math.max(1, Math.ceil(reviews.length / PAGE_SIZE));
   const [page, setPage] = useState(1);
   const safePage = Math.min(page, pageCount);
   const pageItems = reviews.slice(
     (safePage - 1) * PAGE_SIZE,
-    safePage * PAGE_SIZE
+    safePage * PAGE_SIZE,
   );
 
   const avgDisplay =
     summary.averageDidatica !== null
-      ? summary.averageDidatica.toLocaleString('pt-BR', {
+      ? summary.averageDidatica.toLocaleString("pt-BR", {
           maximumFractionDigits: 1,
         })
-      : 'N/A';
+      : "N/A";
 
   return (
     <PageContainer>
@@ -535,20 +528,22 @@ const EvaluationDrillDown: React.FC<{
         <div className="flex flex-wrap items-center gap-4 pt-3 border-t-2 border-black/10 text-xs font-bold">
           <span className="inline-flex items-center gap-1.5 text-ink-success">
             <CheckCircle2 className="w-4 h-4 stroke-[2.5]" />
-            {summary.recommendYesCount}{' '}
-            {summary.recommendYesCount === 1 ? 'recomenda' : 'recomendam'}
+            {summary.recommendYesCount}{" "}
+            {summary.recommendYesCount === 1 ? "recomenda" : "recomendam"}
           </span>
           <span className="inline-flex items-center gap-1.5 text-neutral-700">
             <HelpCircle className="w-4 h-4 stroke-[2.5]" />
-            {summary.recommendDependeCount}{' '}
+            {summary.recommendDependeCount}{" "}
             {summary.recommendDependeCount === 1
               ? 'responde "depende"'
               : 'respondem "depende"'}
           </span>
           <span className="inline-flex items-center gap-1.5 text-ink-error">
             <XCircle className="w-4 h-4 stroke-[2.5]" />
-            {summary.recommendNoCount}{' '}
-            {summary.recommendNoCount === 1 ? 'não recomenda' : 'não recomendam'}
+            {summary.recommendNoCount}{" "}
+            {summary.recommendNoCount === 1
+              ? "não recomenda"
+              : "não recomendam"}
           </span>
         </div>
       </Card>
@@ -557,8 +552,8 @@ const EvaluationDrillDown: React.FC<{
       <div className="space-y-4">
         <div className="flex items-center justify-between text-xs font-bold text-neutral-600 px-1">
           <span>
-            Avaliações registradas ({reviews.length}{' '}
-            {reviews.length === 1 ? 'relato' : 'relatos'})
+            Avaliações registradas ({reviews.length}{" "}
+            {reviews.length === 1 ? "relato" : "relatos"})
           </span>
           <span>Ordenado das mais recentes</span>
         </div>
@@ -581,28 +576,165 @@ const EvaluationDrillDown: React.FC<{
  * shadow-neo, física de afundar na escala 4px e semântica de botão. */
 const ClickableCard: React.FC<{
   onClick: () => void;
-  'aria-label': string;
+  "aria-label": string;
   className?: string;
   children: React.ReactNode;
-}> = ({ onClick, 'aria-label': ariaLabel, className, children }) => (
+}> = ({ onClick, "aria-label": ariaLabel, className, children }) => (
   <Card
     onClick={onClick}
     role="button"
     tabIndex={0}
     aria-label={ariaLabel}
     onKeyDown={(e) => {
-      if (e.key === 'Enter' || e.key === ' ') {
+      if (e.key === "Enter" || e.key === " ") {
         e.preventDefault();
         onClick();
       }
     }}
     className={cn(
-      'cursor-pointer bg-white rounded-lg shadow-neo hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-neo-sm active:translate-x-[4px] active:translate-y-[4px] active:shadow-none focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-neo-blue focus-visible:ring-offset-2 transition-[transform,box-shadow,background-color,border-color] duration-150 ease-out group',
-      className
+      "cursor-pointer bg-white rounded-lg shadow-neo hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-neo-sm active:translate-x-[4px] active:translate-y-[4px] active:shadow-none focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-neo-blue focus-visible:ring-offset-2 transition-[transform,box-shadow,background-color,border-color] duration-150 ease-out group",
+      className,
     )}
   >
     {children}
   </Card>
+);
+
+interface CatalogSummaryCardProps {
+  title: string;
+  campuses: CampusName[];
+  hasConsensus: boolean;
+  averageDidatica: number | null;
+  evaluationsCount: number;
+  recommendationRate: number;
+  departments: string[];
+  secondaryIcon: LucideIcon;
+  secondaryItems: string[];
+  onClick: () => void;
+}
+
+/** Card base reutilizável para exibição de resumos no catálogo (docentes ou disciplinas). */
+const CatalogSummaryCard: React.FC<CatalogSummaryCardProps> = ({
+  title,
+  campuses,
+  hasConsensus,
+  averageDidatica,
+  evaluationsCount,
+  recommendationRate,
+  departments,
+  secondaryIcon: SecondaryIcon,
+  secondaryItems,
+  onClick,
+}) => {
+  const avgStr =
+    averageDidatica !== null
+      ? averageDidatica.toLocaleString("pt-BR", {
+          maximumFractionDigits: 1,
+        })
+      : "N/A";
+
+  return (
+    <ClickableCard
+      onClick={onClick}
+      aria-label={`Ver ${evaluationsCount} avaliações de ${title}`}
+      className="p-6 flex flex-col justify-between"
+    >
+      <div>
+        <div className="flex items-start justify-between gap-3 mb-2.5">
+          <div className="flex flex-wrap items-center gap-1.5">
+            {campuses.map((c) => (
+              <Badge key={c} variant="outline" size="sm">
+                {c}
+              </Badge>
+            ))}
+            {hasConsensus && <ConsensusSeal count={evaluationsCount} />}
+          </div>
+
+          <span
+            className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md border-2 text-xs font-black shrink-0 ${getDidaticaBadgeStyle(
+              averageDidatica,
+            )}`}
+          >
+            <Star className="w-3.5 h-3.5 stroke-[2.5] fill-current shrink-0" />
+            {avgStr}
+          </span>
+        </div>
+
+        <h3 className="text-sm md:text-base font-black text-black leading-snug mb-2 group-hover:text-neo-blue transition-colors">
+          {title}
+        </h3>
+
+        <div className="space-y-1.5 text-xs font-medium text-neutral-700">
+          <div className="flex items-center gap-2">
+            <SecondaryIcon className="w-3.5 h-3.5 text-neutral-500 stroke-[2.5] shrink-0" />
+            <span className="truncate">
+              {secondaryItems.slice(0, 2).join(", ")}
+              {secondaryItems.length > 2
+                ? ` (+${secondaryItems.length - 2})`
+                : ""}
+            </span>
+          </div>
+
+          {departments.length > 0 && (
+            <div className="flex items-center gap-2">
+              <Building2 className="w-3.5 h-3.5 text-neutral-500 stroke-[2.5] shrink-0" />
+              <span className="truncate">
+                {departments.slice(0, 2).join(" • ")}
+              </span>
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div className="flex items-center justify-between gap-2 pt-4 border-t-2 border-black/10 mt-4 text-xs font-bold">
+        <span className="inline-flex items-center gap-1.5 text-neutral-700">
+          <ThumbsUp className="w-3.5 h-3.5 stroke-[2.5] text-ink-success" />
+          {recommendationRate}% recomendam
+          <span className="text-neutral-500">·</span>
+          {evaluationsCount} {evaluationsCount === 1 ? "relato" : "relatos"}
+        </span>
+        <span className="text-neutral-800 text-[11px] underline decoration-2 group-hover:text-neo-blue font-extrabold">
+          Ver relatos →
+        </span>
+      </div>
+    </ClickableCard>
+  );
+};
+
+const ProfessorCatalogCard: React.FC<{
+  prof: ProfessorSummary;
+  onClick: () => void;
+}> = ({ prof, onClick }) => (
+  <CatalogSummaryCard
+    title={prof.professorName}
+    campuses={prof.campuses}
+    hasConsensus={hasConsensusSeal(prof)}
+    averageDidatica={prof.averageDidatica}
+    evaluationsCount={prof.evaluationsCount}
+    recommendationRate={prof.recommendationRate}
+    departments={prof.departments}
+    secondaryIcon={BookOpen}
+    secondaryItems={prof.disciplines}
+    onClick={onClick}
+  />
+);
+
+const DisciplineCatalogCard: React.FC<{
+  disc: DisciplineSummary;
+  onClick: () => void;
+}> = ({ disc, onClick }) => (
+  <CatalogSummaryCard
+    title={disc.disciplineName}
+    campuses={disc.campuses}
+    hasConsensus={hasConsensusSeal(disc)}
+    averageDidatica={disc.averageDidatica}
+    evaluationsCount={disc.evaluationsCount}
+    recommendationRate={disc.recommendationRate}
+    departments={disc.departments}
+    secondaryIcon={Users}
+    secondaryItems={disc.professors}
+    onClick={onClick}
+  />
 );
 
 /** Card compacto de professor dentro do drill-down de disciplina. */
@@ -612,10 +744,10 @@ const DisciplineProfessorCard: React.FC<{
 }> = ({ prof, onOpen }) => {
   const avgStr =
     prof.averageDidatica !== null
-      ? prof.averageDidatica.toLocaleString('pt-BR', {
+      ? prof.averageDidatica.toLocaleString("pt-BR", {
           maximumFractionDigits: 1,
         })
-      : 'N/A';
+      : "N/A";
 
   return (
     <ClickableCard
@@ -636,13 +768,13 @@ const DisciplineProfessorCard: React.FC<{
           <ThumbsUp className="w-3.5 h-3.5 stroke-[2.5] text-ink-success" />
           {prof.recommendationRate}% recomendam
           <span className="text-neutral-500">·</span>
-          {prof.evaluationsCount}{' '}
-          {prof.evaluationsCount === 1 ? 'relato' : 'relatos'}
+          {prof.evaluationsCount}{" "}
+          {prof.evaluationsCount === 1 ? "relato" : "relatos"}
         </span>
       </div>
       <span
         className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md border-2 text-xs font-black shrink-0 ${getDidaticaBadgeStyle(
-          prof.averageDidatica
+          prof.averageDidatica,
         )}`}
       >
         <Star className="w-3.5 h-3.5 stroke-[2.5] fill-current shrink-0" />
@@ -669,21 +801,21 @@ const DisciplineDrillDown: React.FC<{
   const mediaDidatica: number | null =
     didaticas.length > 0
       ? Math.round(
-          (didaticas.reduce((a, v) => a + v, 0) / didaticas.length) * 10
+          (didaticas.reduce((a, v) => a + v, 0) / didaticas.length) * 10,
         ) / 10
       : summary.averageDidatica;
   const mediaRecomendacao =
     professorSummaries.length > 0
       ? Math.round(
           professorSummaries.reduce((a, p) => a + p.recommendationRate, 0) /
-            professorSummaries.length
+            professorSummaries.length,
         )
       : summary.recommendationRate;
 
   const mediaStr =
     mediaDidatica !== null
-      ? mediaDidatica.toLocaleString('pt-BR', { maximumFractionDigits: 1 })
-      : 'N/A';
+      ? mediaDidatica.toLocaleString("pt-BR", { maximumFractionDigits: 1 })
+      : "N/A";
 
   return (
     <PageContainer>
@@ -775,20 +907,22 @@ const DisciplineDrillDown: React.FC<{
         <div className="flex flex-wrap items-center gap-4 pt-3 border-t-2 border-black/10 text-xs font-bold">
           <span className="inline-flex items-center gap-1.5 text-ink-success">
             <CheckCircle2 className="w-4 h-4 stroke-[2.5]" />
-            {summary.recommendYesCount}{' '}
-            {summary.recommendYesCount === 1 ? 'recomenda' : 'recomendam'}
+            {summary.recommendYesCount}{" "}
+            {summary.recommendYesCount === 1 ? "recomenda" : "recomendam"}
           </span>
           <span className="inline-flex items-center gap-1.5 text-neutral-700">
             <HelpCircle className="w-4 h-4 stroke-[2.5]" />
-            {summary.recommendDependeCount}{' '}
+            {summary.recommendDependeCount}{" "}
             {summary.recommendDependeCount === 1
               ? 'responde "depende"'
               : 'respondem "depende"'}
           </span>
           <span className="inline-flex items-center gap-1.5 text-ink-error">
             <XCircle className="w-4 h-4 stroke-[2.5]" />
-            {summary.recommendNoCount}{' '}
-            {summary.recommendNoCount === 1 ? 'não recomenda' : 'não recomendam'}
+            {summary.recommendNoCount}{" "}
+            {summary.recommendNoCount === 1
+              ? "não recomenda"
+              : "não recomendam"}
           </span>
         </div>
       </Card>
@@ -841,7 +975,26 @@ export const ProfessorEvaluationsScreen: React.FC = () => {
   } = useProfessorEvaluations();
   const { useCases, repos } = useContainer();
 
-  const [filterByCourse, setFilterByCourse] = useState(true);
+  // Valor inicial vem do localStorage; o setter grava a escolha para as
+  // próximas visitas. Sem preferência salva (ou storage bloqueado), liga.
+  const [filterByCourse, setFilterByCourseState] = useState<boolean>(() => {
+    try {
+      return (
+        window.localStorage.getItem(FILTER_BY_COURSE_STORAGE_KEY) !== "false"
+      );
+    } catch {
+      return true;
+    }
+  });
+  const setFilterByCourse = useCallback((checked: boolean) => {
+    setFilterByCourseState(checked);
+    try {
+      window.localStorage.setItem(
+        FILTER_BY_COURSE_STORAGE_KEY,
+        String(checked),
+      );
+    } catch {}
+  }, []);
   const [hasCourseProfile, setHasCourseProfile] = useState(false);
   const [courseCodes, setCourseCodes] = useState<Set<string>>(new Set());
 
@@ -857,7 +1010,7 @@ export const ProfessorEvaluationsScreen: React.FC = () => {
 
       const courseId = await resolveCourseIdForProfile(
         profile,
-        repos.gradeRepo
+        repos.gradeRepo,
       );
       if (!courseId) {
         setCourseCodes(new Set());
@@ -872,12 +1025,12 @@ export const ProfessorEvaluationsScreen: React.FC = () => {
 
       // Matriz atual do usuário + a mais recente do curso.
       const sorted = [...curricula].sort((a, b) =>
-        (b.createdYear ?? '').localeCompare(a.createdYear ?? '')
+        (b.createdYear ?? "").localeCompare(a.createdYear ?? ""),
       );
       const picked = new Map<string, CurriculumStructure>();
       const userCurriculum = curricula.find(
         (c) =>
-          c.code === profile.curriculumCode || c.id === profile.curriculumId
+          c.code === profile.curriculumCode || c.id === profile.curriculumId,
       );
       if (userCurriculum) picked.set(userCurriculum.id, userCurriculum);
       if (sorted[0]) picked.set(sorted[0].id, sorted[0]);
@@ -909,8 +1062,8 @@ export const ProfessorEvaluationsScreen: React.FC = () => {
       setCourseCodes(codes);
     } catch (e) {
       console.warn(
-        '[Avaliações] Não foi possível carregar as matrizes do curso:',
-        e
+        "[Avaliações] Não foi possível carregar as matrizes do curso:",
+        e,
       );
     }
   }, [useCases, repos]);
@@ -926,7 +1079,7 @@ export const ProfessorEvaluationsScreen: React.FC = () => {
   }, [loadCourseScope]);
 
   const [viewMode, setViewMode] = useState<EvaluationViewMode>(
-    cachedEvaluationViewMode
+    cachedEvaluationViewMode,
   );
   const [selectedProfessor, setSelectedProfessor] =
     useState<ProfessorSummary | null>(null);
@@ -951,7 +1104,7 @@ export const ProfessorEvaluationsScreen: React.FC = () => {
     return [...seen.values()].sort(
       (a, b) =>
         b.recommendationRate - a.recommendationRate ||
-        b.evaluationsCount - a.evaluationsCount
+        b.evaluationsCount - a.evaluationsCount,
     );
   }, [selectedDiscipline, unfilteredSummaries]);
 
@@ -1056,7 +1209,7 @@ export const ProfessorEvaluationsScreen: React.FC = () => {
         s.disciplines.some((d) => {
           const code = disciplineCodeOf(d);
           return code ? courseCodes.has(code) : false;
-        })
+        }),
       )
     : summaries;
 
@@ -1074,7 +1227,7 @@ export const ProfessorEvaluationsScreen: React.FC = () => {
     : disciplineSummaries;
 
   const totalListCount =
-    viewMode === 'professors'
+    viewMode === "professors"
       ? visibleSummaries.length
       : visibleDisciplines.length;
   const pageCount = Math.max(1, Math.ceil(totalListCount / PAGE_SIZE));
@@ -1082,11 +1235,11 @@ export const ProfessorEvaluationsScreen: React.FC = () => {
 
   const pageSummaries = visibleSummaries.slice(
     (safePage - 1) * PAGE_SIZE,
-    safePage * PAGE_SIZE
+    safePage * PAGE_SIZE,
   );
   const pageDisciplines = visibleDisciplines.slice(
     (safePage - 1) * PAGE_SIZE,
-    safePage * PAGE_SIZE
+    safePage * PAGE_SIZE,
   );
 
   return (
@@ -1095,11 +1248,11 @@ export const ProfessorEvaluationsScreen: React.FC = () => {
         icon={Star}
         title={
           <>
-            Avaliação de Professores{' '}
+            Avaliação de Professores{" "}
             {unfilteredSummaries.length > 0 && (
               <span className="text-sm font-bold text-neutral-600">
-                ({unfilteredSummaries.length}{' '}
-                {unfilteredSummaries.length === 1 ? 'docente' : 'docentes'})
+                ({unfilteredSummaries.length}{" "}
+                {unfilteredSummaries.length === 1 ? "docente" : "docentes"})
               </span>
             )}
           </>
@@ -1110,8 +1263,8 @@ export const ProfessorEvaluationsScreen: React.FC = () => {
           logo abaixo do título, com a sombra de card padrão do Alert */}
       <Alert
         variant="yellow"
-        title="Sobre as avaliações"
-        description="Relatos de uma base colaborativa pública, mantida por estudantes e sem moderação prévia. As opiniões refletem o ponto de vista individual de seus autores — podem conter imprecisões, conteúdos desatualizados ou ofensivos — e a plataforma não se responsabiliza pelas manifestações, eventuais ofensas ou desinformações veiculadas. Use as avaliações como apoio à sua tomada de decisão, e não como verdade absoluta."
+        title="Sobre os relatos"
+        description="Estes relatos vêm de uma fonte externa: uma planilha pública mantida pela própria comunidade de estudantes, sem moderação prévia. Cada opinião reflete a visão de quem escreveu — pode vir enviesada, desatualizada ou até conter ofensas — e a plataforma não se responsabiliza pelo conteúdo publicado. Use as avaliações como apoio na sua decisão, e não como verdade absoluta."
         aside={
           <Button
             type="button"
@@ -1136,21 +1289,21 @@ export const ProfessorEvaluationsScreen: React.FC = () => {
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Buscar por professor, disciplina (ex: CIC0004, Cálculo), departamento ou feedback..."
+              placeholder="Buscar por professor, disciplina (ex: CIC0004, Cálculo), departamento..."
               aria-label="Buscar avaliações de professores"
               className={`w-full pl-10 py-2.5 text-sm font-medium text-black border-2 border-black rounded-xl focus:outline-hidden focus:ring-2 focus:ring-neo-blue transition-[transform,box-shadow,background-color,border-color] placeholder:text-neutral-400 shadow-none ${
-                searchQuery.trim() ? 'bg-pastel-blue pr-10' : 'bg-white pr-4'
+                searchQuery.trim() ? "bg-pastel-blue pr-10" : "bg-white pr-4"
               }`}
             />
-            {searchQuery.trim() !== '' && (
+            {searchQuery.trim() !== "" && (
               <Tooltip>
                 <TooltipTrigger
                   render={
                     <button
                       type="button"
-                      onClick={() => setSearchQuery('')}
+                      onClick={() => setSearchQuery("")}
                       aria-label="Limpar busca"
-                      className="absolute right-2.5 top-1/2 -translate-y-1/2 cursor-pointer rounded-xs p-0.5 text-neutral-500 hover:text-black hover:bg-neutral-100 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-neo-blue"
+                      className="cursor-pointer absolute right-2.5 top-1/2 -translate-y-1/2 p-1 rounded-md text-neutral-500 hover:text-black hover:bg-black/5 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-neo-blue transition-colors duration-150"
                     >
                       <X className="w-4 h-4 stroke-[2.5]" />
                     </button>
@@ -1170,7 +1323,7 @@ export const ProfessorEvaluationsScreen: React.FC = () => {
             onValueChange={switchViewMode}
             options={[
               {
-                value: 'professors',
+                value: "professors",
                 label: (
                   <>
                     <Users className="w-3.5 h-3.5 stroke-[2.5]" />
@@ -1179,7 +1332,7 @@ export const ProfessorEvaluationsScreen: React.FC = () => {
                 ),
               },
               {
-                value: 'disciplines',
+                value: "disciplines",
                 label: (
                   <>
                     <BookOpen className="w-3.5 h-3.5 stroke-[2.5]" />
@@ -1197,17 +1350,17 @@ export const ProfessorEvaluationsScreen: React.FC = () => {
             label="Campus:"
             value={selectedCampus}
             options={CAMPUS_FILTER_OPTIONS}
-            active={selectedCampus !== 'all'}
-            onChange={(val) => setSelectedCampus(val as CampusName | 'all')}
+            active={selectedCampus !== "all"}
+            onChange={(val) => setSelectedCampus(val as CampusName | "all")}
           />
 
           <FilterSelect
             label="Dificuldade:"
             value={selectedDifficulty}
             options={DIFFICULTY_FILTER_OPTIONS}
-            active={selectedDifficulty !== 'all'}
+            active={selectedDifficulty !== "all"}
             onChange={(val) =>
-              setSelectedDifficulty(val as DifficultyLevel | 'all')
+              setSelectedDifficulty(val as DifficultyLevel | "all")
             }
           />
 
@@ -1237,7 +1390,9 @@ export const ProfessorEvaluationsScreen: React.FC = () => {
               </span>
               <Switch
                 checked={filterByCourse}
-                onCheckedChange={(checked) => setFilterByCourse(checked === true)}
+                onCheckedChange={(checked) =>
+                  setFilterByCourse(checked === true)
+                }
               />
             </div>
           )}
@@ -1246,16 +1401,16 @@ export const ProfessorEvaluationsScreen: React.FC = () => {
         {/* Contagem filtrada: barra interna do card — nunca linha solta acima */}
         {hasActiveFilters && (
           <div className="border-t border-black/10 pt-2 text-[11px] font-bold text-neutral-600">
-            {viewMode === 'professors'
+            {viewMode === "professors"
               ? `${visibleSummaries.length} de ${unfilteredSummaries.length} ${
-                  unfilteredSummaries.length === 1 ? 'docente' : 'docentes'
+                  unfilteredSummaries.length === 1 ? "docente" : "docentes"
                 }`
               : `${visibleDisciplines.length} de ${
                   unfilteredDisciplineSummaries.length
                 } ${
                   unfilteredDisciplineSummaries.length === 1
-                    ? 'disciplina'
-                    : 'disciplinas'
+                    ? "disciplina"
+                    : "disciplinas"
                 }`}
           </div>
         )}
@@ -1267,88 +1422,16 @@ export const ProfessorEvaluationsScreen: React.FC = () => {
           title="Nenhuma avaliação encontrada"
           description="Não encontramos relatos para os filtros selecionados. Tente buscar por outro termo ou limpe os filtros."
         />
-      ) : viewMode === 'professors' ? (
+      ) : viewMode === "professors" ? (
         <div className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {pageSummaries.map((prof) => {
-              const avgStr =
-                prof.averageDidatica !== null
-                  ? prof.averageDidatica.toLocaleString('pt-BR', {
-                      maximumFractionDigits: 1,
-                    })
-                  : 'N/A';
-
-              return (
-                <ClickableCard
-                  key={prof.professorKey}
-                  onClick={() => setSelectedProfessor(prof)}
-                  aria-label={`Ver ${prof.evaluationsCount} avaliações de ${prof.professorName}`}
-                  className="p-6 flex flex-col justify-between"
-                >
-                  <div>
-                    <div className="flex items-start justify-between gap-3 mb-2.5">
-                      <div className="flex flex-wrap items-center gap-1.5">
-                        {prof.campuses.map((c) => (
-                          <Badge key={c} variant="outline" size="sm">
-                            {c}
-                          </Badge>
-                        ))}
-                        {hasConsensusSeal(prof) && (
-                          <ConsensusSeal count={prof.evaluationsCount} />
-                        )}
-                      </div>
-
-                      <span
-                        className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md border-2 text-xs font-black shrink-0 ${getDidaticaBadgeStyle(
-                          prof.averageDidatica
-                        )}`}
-                      >
-                        <Star className="w-3.5 h-3.5 stroke-[2.5] fill-current shrink-0" />
-                        {avgStr}
-                      </span>
-                    </div>
-
-                    <h3 className="text-base md:text-lg font-black text-black leading-snug mb-2 group-hover:text-neo-blue transition-colors">
-                      {prof.professorName}
-                    </h3>
-
-                    <div className="space-y-1.5 text-xs font-medium text-neutral-700">
-                      <div className="flex items-center gap-2">
-                        <BookOpen className="w-3.5 h-3.5 text-neutral-500 stroke-[2.5] shrink-0" />
-                        <span className="truncate">
-                          {prof.disciplines.slice(0, 2).join(', ')}
-                          {prof.disciplines.length > 2
-                            ? ` (+${prof.disciplines.length - 2})`
-                            : ''}
-                        </span>
-                      </div>
-
-                      {prof.departments.length > 0 && (
-                        <div className="flex items-center gap-2">
-                          <Building2 className="w-3.5 h-3.5 text-neutral-500 stroke-[2.5] shrink-0" />
-                          <span className="truncate">
-                            {prof.departments.slice(0, 2).join(' • ')}
-                          </span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="flex items-center justify-between gap-2 pt-4 border-t-2 border-black/10 mt-4 text-xs font-bold">
-                    <span className="inline-flex items-center gap-1.5 text-neutral-700">
-                      <ThumbsUp className="w-3.5 h-3.5 stroke-[2.5] text-ink-success" />
-                      {prof.recommendationRate}% recomendam
-                      <span className="text-neutral-500">·</span>
-                      {prof.evaluationsCount}{' '}
-                      {prof.evaluationsCount === 1 ? 'relato' : 'relatos'}
-                    </span>
-                    <span className="text-neutral-800 text-[11px] underline decoration-2 group-hover:text-neo-blue font-extrabold">
-                      Ver relatos →
-                    </span>
-                  </div>
-                </ClickableCard>
-              );
-            })}
+            {pageSummaries.map((prof) => (
+              <ProfessorCatalogCard
+                key={prof.professorKey}
+                prof={prof}
+                onClick={() => setSelectedProfessor(prof)}
+              />
+            ))}
           </div>
 
           <Pagination
@@ -1360,85 +1443,13 @@ export const ProfessorEvaluationsScreen: React.FC = () => {
       ) : (
         <div className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {pageDisciplines.map((disc) => {
-              const avgStr =
-                disc.averageDidatica !== null
-                  ? disc.averageDidatica.toLocaleString('pt-BR', {
-                      maximumFractionDigits: 1,
-                    })
-                  : 'N/A';
-
-              return (
-                <ClickableCard
-                  key={disc.disciplineKey}
-                  onClick={() => setSelectedDiscipline(disc)}
-                  aria-label={`Ver ${disc.evaluationsCount} avaliações de ${disc.disciplineName}`}
-                  className="p-6 flex flex-col justify-between"
-                >
-                  <div>
-                    <div className="flex items-start justify-between gap-3 mb-2.5">
-                      <div className="flex flex-wrap items-center gap-1.5">
-                        {disc.campuses.map((c) => (
-                          <Badge key={c} variant="outline" size="sm">
-                            {c}
-                          </Badge>
-                        ))}
-                        {hasConsensusSeal(disc) && (
-                          <ConsensusSeal count={disc.evaluationsCount} />
-                        )}
-                      </div>
-
-                      <span
-                        className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md border-2 text-xs font-black shrink-0 ${getDidaticaBadgeStyle(
-                          disc.averageDidatica
-                        )}`}
-                      >
-                        <Star className="w-3.5 h-3.5 stroke-[2.5] fill-current shrink-0" />
-                        {avgStr}
-                      </span>
-                    </div>
-
-                    <h3 className="text-sm md:text-base font-black text-black leading-snug mb-2 group-hover:text-neo-blue transition-colors">
-                      {disc.disciplineName}
-                    </h3>
-
-                    <div className="space-y-1.5 text-xs font-medium text-neutral-700">
-                      <div className="flex items-center gap-2">
-                        <Users className="w-3.5 h-3.5 text-neutral-500 stroke-[2.5] shrink-0" />
-                        <span className="truncate">
-                          {disc.professors.slice(0, 2).join(', ')}
-                          {disc.professors.length > 2
-                            ? ` (+${disc.professors.length - 2})`
-                            : ''}
-                        </span>
-                      </div>
-
-                      {disc.departments.length > 0 && (
-                        <div className="flex items-center gap-2">
-                          <Building2 className="w-3.5 h-3.5 text-neutral-500 stroke-[2.5] shrink-0" />
-                          <span className="truncate">
-                            {disc.departments.slice(0, 2).join(' • ')}
-                          </span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="flex items-center justify-between gap-2 pt-4 border-t-2 border-black/10 mt-4 text-xs font-bold">
-                    <span className="inline-flex items-center gap-1.5 text-neutral-700">
-                      <ThumbsUp className="w-3.5 h-3.5 stroke-[2.5] text-ink-success" />
-                      {disc.recommendationRate}% recomendam
-                      <span className="text-neutral-500">·</span>
-                      {disc.evaluationsCount}{' '}
-                      {disc.evaluationsCount === 1 ? 'relato' : 'relatos'}
-                    </span>
-                    <span className="text-neutral-800 text-[11px] underline decoration-2 group-hover:text-neo-blue font-extrabold">
-                      Ver relatos →
-                    </span>
-                  </div>
-                </ClickableCard>
-              );
-            })}
+            {pageDisciplines.map((disc) => (
+              <DisciplineCatalogCard
+                key={disc.disciplineKey}
+                disc={disc}
+                onClick={() => setSelectedDiscipline(disc)}
+              />
+            ))}
           </div>
 
           <Pagination

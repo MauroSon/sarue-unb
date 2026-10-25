@@ -123,8 +123,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
     { id: "home" as NavTab, label: "Home", icon: Home },
     { id: "courses" as NavTab, label: "Disciplinas", icon: BookOpen },
     { id: "grade" as NavTab, label: "Montar Grade", icon: CalendarDays },
-    { id: "my-course" as NavTab, label: "Meu Curso", icon: GraduationCap },
     { id: "evaluations" as NavTab, label: "Avaliar Professor", icon: Star },
+    { id: "my-course" as NavTab, label: "Meu Curso", icon: GraduationCap },
     { id: "settings" as NavTab, label: "Configurações", icon: Settings },
   ];
 

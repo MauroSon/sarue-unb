@@ -1,5 +1,5 @@
 import React from "react";
-import { Button } from "@/components/ui";
+import { Button, Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui";
 import { FilterSelect } from "@/components/ui/filter-select";
 import {
   Archive,
@@ -113,18 +113,24 @@ export const FeedToolbar: React.FC<FeedToolbarProps> = ({
 
           {/* Limpar busca: só existe com busca engajada; devolve o foco ao campo */}
           {searchQuery.trim() ? (
-            <button
-              type="button"
-              onClick={() => {
-                onSearchChange("");
-                searchInputRef.current?.focus();
-              }}
-              title="Limpar busca"
-              aria-label="Limpar busca"
-              className="cursor-pointer absolute right-2.5 top-1/2 -translate-y-1/2 p-1 rounded-md text-neutral-500 hover:text-black hover:bg-black/5 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-neo-blue transition-colors duration-150"
-            >
-              <X className="w-4 h-4 stroke-[2.5]" />
-            </button>
+            <Tooltip>
+              <TooltipTrigger
+                render={
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onSearchChange("");
+                      searchInputRef.current?.focus();
+                    }}
+                    aria-label="Limpar busca"
+                    className="cursor-pointer absolute right-2.5 top-1/2 -translate-y-1/2 p-1 rounded-md text-neutral-500 hover:text-black hover:bg-black/5 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-neo-blue transition-colors duration-150"
+                  >
+                    <X className="w-4 h-4 stroke-[2.5]" />
+                  </button>
+                }
+              />
+              <TooltipContent>Limpar busca</TooltipContent>
+            </Tooltip>
           ) : null}
         </div>
 
