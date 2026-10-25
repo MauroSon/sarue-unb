@@ -17,11 +17,8 @@ import {
   Pagination,
   EmptyState,
   Skeleton,
-  Select,
-  SelectTrigger,
-  SelectValue,
-  SelectContent,
-  SelectItem,
+  FilterSelect,
+  SegmentedControl,
   Alert,
   Switch,
   Tooltip,
@@ -47,14 +44,15 @@ import {
   GraduationCap,
   Medal,
   ChevronDown,
-  CloudOff,
   X,
   type LucideIcon,
 } from 'lucide-react';
-import { openExternalUrl } from '../lib/utils';
+import { cn, openExternalUrl } from '../lib/utils';
 import {
   CONSENSUS_SEAL_MIN_EVALUATIONS,
+  normalizeDepartmentDisplay,
   normalizeText,
+  professorKeyOf,
   PROFESSOR_EVALUATIONS_SHEET_URL,
   type CampusName,
   type RecommendationType,
@@ -114,39 +112,50 @@ function getRecommendationBadge(rec: RecommendationType) {
       </Badge>
     );
   }
+  if (rec === 'nao') {
+    return (
+      <Badge variant="urgent" size="sm">
+        Não recomenda
+      </Badge>
+    );
+  }
   return (
-    <Badge variant="urgent" size="sm">
-      Não recomenda
+    <Badge
+      variant="outline"
+      size="sm"
+      title="O relato não respondeu se recomendaria"
+    >
+      Sem resposta
     </Badge>
   );
 }
 
-// Labels resolvidos pela prop `items` do Select (Base UI) para que o valor
-// selecionado apareça em pt-BR mesmo antes do popup ser montado.
-const difficultyFilterItems: Record<string, string> = {
-  all: 'Todas as dificuldades',
-  muito_facil: 'Muito fácil',
-  facil: 'Fácil',
-  medio: 'Médio',
-  dificil: 'Difícil',
-  muito_dificil: 'Muito difícil',
-  nivel_god: 'Nível God',
-};
+// Opções dos Filtro Selects: o rótulo exibido do valor selecionado vem de
+// `options` (resolvido pelo próprio FilterSelect).
+const DIFFICULTY_FILTER_OPTIONS: { value: string; label: string }[] = [
+  { value: 'all', label: 'Todas as dificuldades' },
+  { value: 'muito_facil', label: 'Muito fácil' },
+  { value: 'facil', label: 'Fácil' },
+  { value: 'medio', label: 'Médio' },
+  { value: 'dificil', label: 'Difícil' },
+  { value: 'muito_dificil', label: 'Muito difícil' },
+  { value: 'nivel_god', label: 'Nível God' },
+];
 
-const sortItems: Record<string, string> = {
-  recommendation_desc: 'Mais recomendados',
-  rating_desc: 'Maior didática (10 → 0)',
-  rating_asc: 'Menor didática (0 → 10)',
-  reviews_desc: 'Mais avaliados',
-};
+const SORT_OPTIONS: { value: string; label: string }[] = [
+  { value: 'recommendation_desc', label: 'Mais recomendados' },
+  { value: 'rating_desc', label: 'Maior didática (10 → 0)' },
+  { value: 'rating_asc', label: 'Menor didática (0 → 10)' },
+  { value: 'reviews_desc', label: 'Mais avaliados' },
+];
 
-const campusFilterItems: Record<string, string> = {
-  all: 'Todos os campi',
-  'Darcy Ribeiro': 'Darcy Ribeiro',
-  'Ceilândia': 'Ceilândia',
-  'Gama': 'Gama',
-  'Planaltina': 'Planaltina',
-};
+const CAMPUS_FILTER_OPTIONS: { value: string; label: string }[] = [
+  { value: 'all', label: 'Todos os campi' },
+  { value: 'Darcy Ribeiro', label: 'Darcy Ribeiro' },
+  { value: 'Ceilândia', label: 'Ceilândia' },
+  { value: 'Gama', label: 'Gama' },
+  { value: 'Planaltina', label: 'Planaltina' },
+];
 
 /** Selo exige muitas avaliações E consenso confirmado entre os relatos. */
 function hasConsensusSeal(summary: {
@@ -157,17 +166,6 @@ function hasConsensusSeal(summary: {
     Boolean(summary.hasConsistentLevels) &&
     summary.evaluationsCount >= CONSENSUS_SEAL_MIN_EVALUATIONS
   );
-}
-
-/** Normaliza nomes de departamento: remove prefixos e padroniza a inicial. */
-function normalizeDepartmentName(raw: string): string {
-  const cleaned = raw
-    .replace(/\s+/g, ' ')
-    .replace(/^(departamento|depto|dep)\.?\s+(de\s+)?/i, '')
-    .replace(/\s*[-–]\s*[a-z]{2,4}\s*$/i, '')
-    .trim();
-  if (!cleaned) return raw.trim();
-  return cleaned.charAt(0).toUpperCase() + cleaned.slice(1);
 }
 
 const ConsensusSeal: React.FC<{ count: number }> = ({ count }) => {
@@ -253,7 +251,7 @@ const ReviewCard: React.FC<{
                 <span className="text-neutral-500">·</span>
                 <span className="inline-flex items-center gap-1.5">
                   <Building2 className="w-3.5 h-3.5 stroke-[2.5] text-neutral-500 shrink-0" />
-                  <span>{normalizeDepartmentName(evaluation.department)}</span>
+                  <span>{normalizeDepartmentDisplay(evaluation.department)}</span>
                 </span>
               </>
             )}
@@ -278,14 +276,14 @@ const ReviewCard: React.FC<{
             evaluation.didaticaScore
           )}`}
         >
-          <span className="text-[9px] font-black uppercase tracking-wider opacity-80">
+          <span className="text-[11px] font-black uppercase tracking-wider opacity-80">
             Didática
           </span>
           <span className="inline-flex items-center gap-1 text-base font-black">
             <Star className="w-3.5 h-3.5 stroke-[2.5] fill-current shrink-0" />
             {scoreDisplay}
             {evaluation.didaticaScore !== null && (
-              <span className="text-[10px] font-bold opacity-80">/10</span>
+              <span className="text-[11px] font-bold opacity-80">/10</span>
             )}
           </span>
         </div>
@@ -384,7 +382,7 @@ interface DrillDownSummary {
 }
 
 /**
- * Drill-down compartilhado por professor e matéria: resumo + lista paginada
+ * Drill-down compartilhado por professor e disciplina: resumo + lista paginada
  * de relatos. Assume relatos ordenados do mais recente (garantido pelo use-case).
  */
 const EvaluationDrillDown: React.FC<{
@@ -453,7 +451,7 @@ const EvaluationDrillDown: React.FC<{
               size="sm"
               className="bg-pastel-blue"
             >
-              {normalizeDepartmentName(dept)}
+              {normalizeDepartmentDisplay(dept)}
             </Badge>
           ))}
           {hasConsensusSeal(summary) && (
@@ -486,8 +484,8 @@ const EvaluationDrillDown: React.FC<{
                 <span className="text-sm font-bold text-neutral-600">/10</span>
               )}
             </span>
-            <span className="block text-[10px] font-bold text-neutral-600">
-              em todas as matérias
+            <span className="block text-[11px] font-bold text-neutral-600">
+              em todas as disciplinas
             </span>
           </div>
 
@@ -499,8 +497,8 @@ const EvaluationDrillDown: React.FC<{
               <ThumbsUp className="w-4 h-4 stroke-[2.5] text-ink-success shrink-0" />
               {summary.recommendationRate}%
             </span>
-            <span className="block text-[10px] font-bold text-neutral-600">
-              em todas as matérias
+            <span className="block text-[11px] font-bold text-neutral-600">
+              em todas as disciplinas
             </span>
           </div>
 
@@ -511,7 +509,7 @@ const EvaluationDrillDown: React.FC<{
             <span className="flex items-center justify-center text-2xl font-black text-black">
               {summary.evaluationsCount}
             </span>
-            <span className="block text-[10px] font-bold text-neutral-600">
+            <span className="block text-[11px] font-bold text-neutral-600">
               no total
             </span>
           </div>
@@ -579,8 +577,36 @@ const EvaluationDrillDown: React.FC<{
   );
 };
 
-/** Card compacto de professor dentro do drill-down de matéria. */
-const MateriaProfessorCard: React.FC<{
+/** Card clicável do catálogo (@DESIGN.md "Card clicável"): sombra token
+ * shadow-neo, física de afundar na escala 4px e semântica de botão. */
+const ClickableCard: React.FC<{
+  onClick: () => void;
+  'aria-label': string;
+  className?: string;
+  children: React.ReactNode;
+}> = ({ onClick, 'aria-label': ariaLabel, className, children }) => (
+  <Card
+    onClick={onClick}
+    role="button"
+    tabIndex={0}
+    aria-label={ariaLabel}
+    onKeyDown={(e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        onClick();
+      }
+    }}
+    className={cn(
+      'cursor-pointer bg-white rounded-lg shadow-neo hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-neo-sm active:translate-x-[4px] active:translate-y-[4px] active:shadow-none focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-neo-blue focus-visible:ring-offset-2 transition-[transform,box-shadow,background-color,border-color] duration-150 ease-out group',
+      className
+    )}
+  >
+    {children}
+  </Card>
+);
+
+/** Card compacto de professor dentro do drill-down de disciplina. */
+const DisciplineProfessorCard: React.FC<{
   prof: ProfessorSummary;
   onOpen: (prof: ProfessorSummary) => void;
 }> = ({ prof, onOpen }) => {
@@ -592,18 +618,10 @@ const MateriaProfessorCard: React.FC<{
       : 'N/A';
 
   return (
-    <Card
+    <ClickableCard
       onClick={() => onOpen(prof)}
-      role="button"
-      tabIndex={0}
       aria-label={`Ver ${prof.evaluationsCount} relatos de ${prof.professorName}`}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          onOpen(prof);
-        }
-      }}
-      className="cursor-pointer bg-white rounded-lg p-4 shadow-[4px_4px_0px_0px_#000] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_#000] active:translate-x-[4px] active:translate-y-[4px] active:shadow-none focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-neo-blue focus-visible:ring-offset-2 transition-[transform,box-shadow,background-color,border-color] duration-150 ease-out flex items-center justify-between gap-3 group"
+      className="p-4 flex items-center justify-between gap-3"
     >
       <div className="min-w-0">
         <div className="flex flex-wrap items-center gap-1.5 mb-1">
@@ -630,13 +648,13 @@ const MateriaProfessorCard: React.FC<{
         <Star className="w-3.5 h-3.5 stroke-[2.5] fill-current shrink-0" />
         {avgStr}
       </span>
-    </Card>
+    </ClickableCard>
   );
 };
 
 /**
- * Drill-down de matéria: card-resumo com médias ENTRE professores (há poucos
- * relatos por matéria — professor é o agregado confiável) e a grade de cards
+ * Drill-down de disciplina: card-resumo com médias ENTRE professores (há poucos
+ * relatos por disciplina — professor é o agregado confiável) e a grade de cards
  * de professores, que abrem os relatos de cada um.
  */
 const DisciplineDrillDown: React.FC<{
@@ -686,7 +704,7 @@ const DisciplineDrillDown: React.FC<{
         }
       />
 
-      {/* Resumo da matéria */}
+      {/* Resumo da disciplina */}
       <Card className="bg-white rounded-lg p-6 shadow-neo space-y-4">
         <div className="flex flex-wrap items-center gap-1.5">
           {summary.campuses.map((c) => (
@@ -702,7 +720,7 @@ const DisciplineDrillDown: React.FC<{
               size="sm"
               className="bg-pastel-blue"
             >
-              {normalizeDepartmentName(dept)}
+              {normalizeDepartmentDisplay(dept)}
             </Badge>
           ))}
           {hasConsensusSeal(summary) && (
@@ -723,7 +741,7 @@ const DisciplineDrillDown: React.FC<{
                 <span className="text-sm font-bold text-neutral-600">/10</span>
               )}
             </span>
-            <span className="block text-[10px] font-bold text-neutral-600">
+            <span className="block text-[11px] font-bold text-neutral-600">
               entre {professorSummaries.length} professores
             </span>
           </div>
@@ -736,7 +754,7 @@ const DisciplineDrillDown: React.FC<{
               <ThumbsUp className="w-4 h-4 stroke-[2.5] text-ink-success shrink-0" />
               {mediaRecomendacao}%
             </span>
-            <span className="block text-[10px] font-bold text-neutral-600">
+            <span className="block text-[11px] font-bold text-neutral-600">
               entre professores
             </span>
           </div>
@@ -748,7 +766,7 @@ const DisciplineDrillDown: React.FC<{
             <span className="text-2xl font-black text-black">
               {summary.evaluationsCount}
             </span>
-            <span className="block text-[10px] font-bold text-neutral-600">
+            <span className="block text-[11px] font-bold text-neutral-600">
               no total
             </span>
           </div>
@@ -775,19 +793,19 @@ const DisciplineDrillDown: React.FC<{
         </div>
       </Card>
 
-      {/* Professores da matéria */}
+      {/* Professores da disciplina */}
       <div className="space-y-3">
         <p className="text-xs font-black uppercase tracking-wider text-neutral-600 px-1">
-          Professores desta matéria ({professorSummaries.length})
+          Professores desta disciplina ({professorSummaries.length})
         </p>
         {professorSummaries.length === 0 ? (
           <p className="text-xs font-bold text-neutral-600 px-1">
-            Não foi possível relacionar professores a esta matéria.
+            Não foi possível relacionar professores a esta disciplina.
           </p>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {professorSummaries.map((prof) => (
-              <MateriaProfessorCard
+              <DisciplineProfessorCard
                 key={prof.professorKey}
                 prof={prof}
                 onOpen={onOpenProfessor}
@@ -804,6 +822,8 @@ export const ProfessorEvaluationsScreen: React.FC = () => {
   const {
     summaries,
     disciplineSummaries,
+    unfilteredSummaries,
+    unfilteredDisciplineSummaries,
     isLoading,
     hasLoadedOnce,
     searchQuery,
@@ -814,6 +834,8 @@ export const ProfessorEvaluationsScreen: React.FC = () => {
     setSelectedDifficulty,
     sortBy,
     setSortBy,
+    hasActiveFilters,
+    clearFilters,
     error,
     retry,
   } = useProfessorEvaluations();
@@ -873,7 +895,7 @@ export const ProfessorEvaluationsScreen: React.FC = () => {
           if (d.code) codes.add(d.code.toUpperCase());
         }
       }
-      // Matérias adicionadas pelo usuário no Gerenciar currículo.
+      // Disciplinas adicionadas pelo usuário no Gerenciar currículo.
       const custom = profile.customCurriculum;
       if (custom) {
         for (const d of [
@@ -911,17 +933,16 @@ export const ProfessorEvaluationsScreen: React.FC = () => {
   const [selectedDiscipline, setSelectedDiscipline] =
     useState<DisciplineSummary | null>(null);
 
-  // Professores da matéria em drill-down, com o histórico completo de cada
-  // um (as notas do card agregam todas as matérias do docente).
-  const materiaProfessors = useMemo(() => {
+  // Professores da disciplina em drill-down, com o histórico completo de cada
+  // um (as notas do card agregam todas as disciplinas do docente). Base SEM
+  // filtro: a busca da listagem não pode encolher o elenco do drill-down.
+  const disciplineProfessors = useMemo(() => {
     if (!selectedDiscipline) return [] as ProfessorSummary[];
     const byKey = new Map<string, ProfessorSummary>();
-    for (const s of summaries) byKey.set(s.professorKey, s);
+    for (const s of unfilteredSummaries) byKey.set(s.professorKey, s);
     const seen = new Map<string, ProfessorSummary>();
     for (const ev of selectedDiscipline.evaluations) {
-      const key = normalizeText(ev.professor)
-        .replace(/^PROF(?:ESSOR|ESSORA)?\.?\s+/i, '')
-        .trim();
+      const key = professorKeyOf(ev.professor);
       if (key && !seen.has(key)) {
         const prof = byKey.get(key);
         if (prof) seen.set(key, prof);
@@ -932,7 +953,7 @@ export const ProfessorEvaluationsScreen: React.FC = () => {
         b.recommendationRate - a.recommendationRate ||
         b.evaluationsCount - a.evaluationsCount
     );
-  }, [selectedDiscipline, summaries]);
+  }, [selectedDiscipline, unfilteredSummaries]);
 
   const switchViewMode = (mode: EvaluationViewMode) => {
     cachedEvaluationViewMode = mode;
@@ -982,8 +1003,6 @@ export const ProfessorEvaluationsScreen: React.FC = () => {
       <PageContainer>
         <PageHeader icon={Star} title="Avaliação de Professores" />
         <EmptyState
-          icon={CloudOff}
-          iconClassName="bg-pastel-red text-ink-error"
           title="Não conseguimos carregar os relatos"
           description="Ocorreu um problema ao buscar as avaliações da comunidade. Verifique sua conexão e tente de novo."
           action={
@@ -1011,13 +1030,13 @@ export const ProfessorEvaluationsScreen: React.FC = () => {
     );
   }
 
-  // Drill-down: matéria como hub de professores — cada card abre o histórico
+  // Drill-down: disciplina como hub de professores — cada card abre o histórico
   // completo (relatos) do docente.
   if (selectedDiscipline) {
     return (
       <DisciplineDrillDown
         summary={selectedDiscipline}
-        professorSummaries={materiaProfessors}
+        professorSummaries={disciplineProfessors}
         onBack={() => setSelectedDiscipline(null)}
         onOpenProfessor={(prof) => {
           setSelectedDiscipline(null);
@@ -1072,11 +1091,44 @@ export const ProfessorEvaluationsScreen: React.FC = () => {
 
   return (
     <PageContainer>
-      <PageHeader icon={Star} title="Avaliação de Professores" />
+      <PageHeader
+        icon={Star}
+        title={
+          <>
+            Avaliação de Professores{' '}
+            {unfilteredSummaries.length > 0 && (
+              <span className="text-sm font-bold text-neutral-600">
+                ({unfilteredSummaries.length}{' '}
+                {unfilteredSummaries.length === 1 ? 'docente' : 'docentes'})
+              </span>
+            )}
+          </>
+        }
+      />
+
+      {/* Aviso permanente: origem e responsabilidade do conteúdo — no topo,
+          logo abaixo do título, com a sombra de card padrão do Alert */}
+      <Alert
+        variant="yellow"
+        title="Sobre as avaliações"
+        description="Relatos de uma base colaborativa pública, mantida por estudantes e sem moderação prévia. As opiniões refletem o ponto de vista individual de seus autores — podem conter imprecisões, conteúdos desatualizados ou ofensivos — e a plataforma não se responsabiliza pelas manifestações, eventuais ofensas ou desinformações veiculadas. Use as avaliações como apoio à sua tomada de decisão, e não como verdade absoluta."
+        aside={
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => openExternalUrl(PROFESSOR_EVALUATIONS_SHEET_URL)}
+            title="Abrir planilha colaborativa no Google Sheets"
+          >
+            <span>Ver Planilha</span>
+            <ExternalLink className="w-3.5 h-3.5 stroke-[2.5]" />
+          </Button>
+        }
+      />
 
       {/* Barra de Busca e Filtros */}
       <div className="bg-white border-2 border-black rounded-lg p-4 shadow-neo space-y-4">
-        {/* Linha 1: Campo de Busca + Segmented Control (Relatos | Professores | Matérias) */}
+        {/* Linha 1: Campo de Busca + Segmented Control (Professores | Disciplinas) */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="relative flex-1 min-w-0">
             <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-neutral-500 stroke-[2.5]" />
@@ -1086,7 +1138,9 @@ export const ProfessorEvaluationsScreen: React.FC = () => {
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Buscar por professor, disciplina (ex: CIC0004, Cálculo), departamento ou feedback..."
               aria-label="Buscar avaliações de professores"
-              className="w-full bg-white pl-10 pr-9 py-2.5 text-sm font-medium text-black border-2 border-black rounded-xl focus:outline-hidden focus:ring-2 focus:ring-neo-blue transition-[transform,box-shadow,background-color,border-color] placeholder:text-neutral-400 shadow-none"
+              className={`w-full pl-10 py-2.5 text-sm font-medium text-black border-2 border-black rounded-xl focus:outline-hidden focus:ring-2 focus:ring-neo-blue transition-[transform,box-shadow,background-color,border-color] placeholder:text-neutral-400 shadow-none ${
+                searchQuery.trim() ? 'bg-pastel-blue pr-10' : 'bg-white pr-4'
+              }`}
             />
             {searchQuery.trim() !== '' && (
               <Tooltip>
@@ -1107,134 +1161,77 @@ export const ProfessorEvaluationsScreen: React.FC = () => {
             )}
           </div>
 
-          {/* Segmented Control (Professores | Matérias) */}
-          <div
-            role="group"
-            aria-label="Modo de visualização das avaliações"
-            className="relative grid grid-cols-2 gap-0.5 p-0.5 bg-white border-2 border-black rounded-xl shrink-0 self-end sm:self-auto"
-          >
-            <span
-              aria-hidden="true"
-              className={`pointer-events-none absolute top-0.5 bottom-0.5 left-0.5 w-[calc(50%-3px)] rounded-lg bg-neo-blue transition-transform duration-150 ease-out ${
-                viewMode === 'disciplines'
-                  ? 'translate-x-[calc(100%+2px)]'
-                  : 'translate-x-0'
-              }`}
-            />
-            <button
-              type="button"
-              onClick={() => switchViewMode('professors')}
-              aria-pressed={viewMode === 'professors'}
-              className={`relative cursor-pointer flex items-center justify-center gap-1.5 h-8 px-3 rounded-lg text-xs font-black transition-colors duration-150 active:translate-y-px focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-neo-blue focus-visible:ring-offset-2 ${
-                viewMode === 'professors'
-                  ? 'text-white'
-                  : 'text-black hover:bg-neutral-100'
-              }`}
-            >
-              <Users className="w-3.5 h-3.5 stroke-[2.5]" />
-              Professores
-            </button>
-            <button
-              type="button"
-              onClick={() => switchViewMode('disciplines')}
-              aria-pressed={viewMode === 'disciplines'}
-              className={`relative cursor-pointer flex items-center justify-center gap-1.5 h-8 px-3 rounded-lg text-xs font-black transition-colors duration-150 active:translate-y-px focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-neo-blue focus-visible:ring-offset-2 ${
-                viewMode === 'disciplines'
-                  ? 'text-white'
-                  : 'text-black hover:bg-neutral-100'
-              }`}
-            >
-              <BookOpen className="w-3.5 h-3.5 stroke-[2.5]" />
-              Matérias
-            </button>
-          </div>
+          {/* Segmented Control (Professores | Disciplinas) */}
+          <SegmentedControl
+            className="shrink-0 self-end sm:self-auto"
+            size="md"
+            ariaLabel="Modo de visualização das avaliações"
+            value={viewMode}
+            onValueChange={switchViewMode}
+            options={[
+              {
+                value: 'professors',
+                label: (
+                  <>
+                    <Users className="w-3.5 h-3.5 stroke-[2.5]" />
+                    Professores
+                  </>
+                ),
+              },
+              {
+                value: 'disciplines',
+                label: (
+                  <>
+                    <BookOpen className="w-3.5 h-3.5 stroke-[2.5]" />
+                    Disciplinas
+                  </>
+                ),
+              },
+            ]}
+          />
         </div>
 
-        {/* Linha 2: Filtros em linha, labels inline */}
-        <div className="flex flex-wrap items-center gap-x-5 gap-y-3">
-          <div className="inline-flex items-center gap-2">
-            <span className="text-xs font-bold text-neutral-600">
-              Campus:
-            </span>
-            <div className="w-36">
-              <Select
-                items={campusFilterItems}
-                value={selectedCampus}
-                onValueChange={(val) =>
-                  setSelectedCampus((val as CampusName | 'all') ?? 'all')
-                }
-              >
-                <SelectTrigger aria-label="Filtrar por campus">
-                  <SelectValue placeholder="Todos os campi" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todos os campi</SelectItem>
-                  <SelectItem value="Darcy Ribeiro">Darcy Ribeiro</SelectItem>
-                  <SelectItem value="Ceilândia">Ceilândia</SelectItem>
-                  <SelectItem value="Gama">Gama</SelectItem>
-                  <SelectItem value="Planaltina">Planaltina</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
+        {/* Linha 2: Filtros com rótulo em cima (Filtro Select) + link de serviço */}
+        <div className="flex flex-wrap items-end gap-x-5 gap-y-3">
+          <FilterSelect
+            label="Campus:"
+            value={selectedCampus}
+            options={CAMPUS_FILTER_OPTIONS}
+            active={selectedCampus !== 'all'}
+            onChange={(val) => setSelectedCampus(val as CampusName | 'all')}
+          />
 
-          <div className="inline-flex items-center gap-2">
-            <span className="text-xs font-bold text-neutral-600">
-              Dificuldade:
-            </span>
-            <div className="w-44">
-              <Select
-                items={difficultyFilterItems}
-                value={selectedDifficulty}
-                onValueChange={(val) =>
-                  setSelectedDifficulty((val as DifficultyLevel | 'all') ?? 'all')
-                }
-              >
-                <SelectTrigger aria-label="Filtrar por dificuldade">
-                  <SelectValue placeholder="Todas as dificuldades" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todas as dificuldades</SelectItem>
-                  <SelectItem value="muito_facil">Muito fácil</SelectItem>
-                  <SelectItem value="facil">Fácil</SelectItem>
-                  <SelectItem value="medio">Médio</SelectItem>
-                  <SelectItem value="dificil">Difícil</SelectItem>
-                  <SelectItem value="muito_dificil">Muito difícil</SelectItem>
-                  <SelectItem value="nivel_god">Nível God</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
+          <FilterSelect
+            label="Dificuldade:"
+            value={selectedDifficulty}
+            options={DIFFICULTY_FILTER_OPTIONS}
+            active={selectedDifficulty !== 'all'}
+            onChange={(val) =>
+              setSelectedDifficulty(val as DifficultyLevel | 'all')
+            }
+          />
 
-          <div className="inline-flex items-center gap-2">
-            <span className="text-xs font-bold text-neutral-600">
-              Ordenar por:
-            </span>
-            <div className="w-48">
-              <Select
-                items={sortItems}
-                value={sortBy}
-                onValueChange={(val) =>
-                  setSortBy((val as ProfessorEvaluationSortBy) ?? 'recommendation_desc')
-                }
-              >
-                <SelectTrigger aria-label="Ordenar avaliações">
-                  <SelectValue placeholder="Mais recentes" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="recommendation_desc">
-                    Mais recomendados
-                  </SelectItem>
-                  <SelectItem value="rating_desc">Maior didática (10 → 0)</SelectItem>
-                  <SelectItem value="rating_asc">Menor didática (0 → 10)</SelectItem>
-                  <SelectItem value="reviews_desc">Mais avaliados</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
+          {/* Ordenação não é filtro: sem estado engajado */}
+          <FilterSelect
+            label="Ordenar por:"
+            value={sortBy}
+            options={SORT_OPTIONS}
+            onChange={(val) => setSortBy(val as ProfessorEvaluationSortBy)}
+          />
+
+          {/* A Regra do Link de Serviço: ação terciária de barra é texto sublinhado */}
+          {hasActiveFilters && (
+            <button
+              type="button"
+              onClick={clearFilters}
+              className="cursor-pointer rounded-xs pb-2 text-xs font-bold text-neutral-500 hover:text-black underline focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-neo-blue focus-visible:ring-offset-2"
+            >
+              Limpar filtros
+            </button>
+          )}
 
           {hasCourseProfile && (
-            <div className="inline-flex items-center gap-2 ml-auto">
+            <div className="inline-flex items-center gap-2 ml-auto pb-1.5">
               <span className="text-xs font-bold text-neutral-600">
                 Filtrar pelo meu curso:
               </span>
@@ -1245,46 +1242,33 @@ export const ProfessorEvaluationsScreen: React.FC = () => {
             </div>
           )}
         </div>
-      </div>
 
-      {/* Aviso permanente: origem e responsabilidade do conteúdo */}
-      <Alert
-        variant="yellow"
-        title="Sobre as avaliações"
-        description="Relatos de uma base colaborativa pública, mantida por estudantes e sem moderação prévia. As opiniões refletem o ponto de vista individual de seus autores — podem conter imprecisões, conteúdos desatualizados ou ofensivos — e a plataforma não se responsabiliza pelas manifestações, eventuais ofensas ou desinformações veiculadas. Use as avaliações como apoio à sua tomada de decisão, e não como verdade absoluta."
-        className="p-3 shadow-neo-xs"
-        aside={
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => openExternalUrl(PROFESSOR_EVALUATIONS_SHEET_URL)}
-            title="Abrir planilha colaborativa no Google Sheets"
-          >
-            <span>Ver Planilha</span>
-            <ExternalLink className="w-3.5 h-3.5 stroke-[2.5]" />
-          </Button>
-        }
-      />
+        {/* Contagem filtrada: barra interna do card — nunca linha solta acima */}
+        {hasActiveFilters && (
+          <div className="border-t border-black/10 pt-2 text-[11px] font-bold text-neutral-600">
+            {viewMode === 'professors'
+              ? `${visibleSummaries.length} de ${unfilteredSummaries.length} ${
+                  unfilteredSummaries.length === 1 ? 'docente' : 'docentes'
+                }`
+              : `${visibleDisciplines.length} de ${
+                  unfilteredDisciplineSummaries.length
+                } ${
+                  unfilteredDisciplineSummaries.length === 1
+                    ? 'disciplina'
+                    : 'disciplinas'
+                }`}
+          </div>
+        )}
+      </div>
 
       {/* Conteúdo Principal */}
       {totalListCount === 0 ? (
         <EmptyState
-          icon={Star}
-          iconClassName="bg-canvas text-neo-blue"
           title="Nenhuma avaliação encontrada"
           description="Não encontramos relatos para os filtros selecionados. Tente buscar por outro termo ou limpe os filtros."
         />
       ) : viewMode === 'professors' ? (
         <div className="space-y-4">
-          <div className="flex items-center justify-between text-xs font-bold text-neutral-600 px-1">
-            <span>
-              Professores Avaliados ({visibleSummaries.length}{' '}
-              {summaries.length === 1 ? 'docente' : 'docentes'})
-            </span>
-            <span>Selecione um card para ler os relatos completos</span>
-          </div>
-
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {pageSummaries.map((prof) => {
               const avgStr =
@@ -1295,19 +1279,11 @@ export const ProfessorEvaluationsScreen: React.FC = () => {
                   : 'N/A';
 
               return (
-                <Card
+                <ClickableCard
                   key={prof.professorKey}
                   onClick={() => setSelectedProfessor(prof)}
-                  role="button"
-                  tabIndex={0}
                   aria-label={`Ver ${prof.evaluationsCount} avaliações de ${prof.professorName}`}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                      e.preventDefault();
-                      setSelectedProfessor(prof);
-                    }
-                  }}
-                  className="cursor-pointer bg-white rounded-lg p-6 shadow-[4px_4px_0px_0px_#000] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_#000] active:translate-x-[4px] active:translate-y-[4px] active:shadow-none focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-neo-blue focus-visible:ring-offset-2 transition-[transform,box-shadow,background-color,border-color] duration-150 ease-out flex flex-col justify-between group"
+                  className="p-6 flex flex-col justify-between"
                 >
                   <div>
                     <div className="flex items-start justify-between gap-3 mb-2.5">
@@ -1370,7 +1346,7 @@ export const ProfessorEvaluationsScreen: React.FC = () => {
                       Ver relatos →
                     </span>
                   </div>
-                </Card>
+                </ClickableCard>
               );
             })}
           </div>
@@ -1383,14 +1359,6 @@ export const ProfessorEvaluationsScreen: React.FC = () => {
         </div>
       ) : (
         <div className="space-y-4">
-          <div className="flex items-center justify-between text-xs font-bold text-neutral-600 px-1">
-            <span>
-              Matérias Avaliadas ({visibleDisciplines.length}{' '}
-              {disciplineSummaries.length === 1 ? 'matéria' : 'matérias'})
-            </span>
-            <span>Selecione um card para ler os relatos completos</span>
-          </div>
-
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {pageDisciplines.map((disc) => {
               const avgStr =
@@ -1401,19 +1369,11 @@ export const ProfessorEvaluationsScreen: React.FC = () => {
                   : 'N/A';
 
               return (
-                <Card
+                <ClickableCard
                   key={disc.disciplineKey}
                   onClick={() => setSelectedDiscipline(disc)}
-                  role="button"
-                  tabIndex={0}
                   aria-label={`Ver ${disc.evaluationsCount} avaliações de ${disc.disciplineName}`}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                      e.preventDefault();
-                      setSelectedDiscipline(disc);
-                    }
-                  }}
-                  className="cursor-pointer bg-white rounded-lg p-6 shadow-[4px_4px_0px_0px_#000] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_#000] active:translate-x-[4px] active:translate-y-[4px] active:shadow-none focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-neo-blue focus-visible:ring-offset-2 transition-[transform,box-shadow,background-color,border-color] duration-150 ease-out flex flex-col justify-between group"
+                  className="p-6 flex flex-col justify-between"
                 >
                   <div>
                     <div className="flex items-start justify-between gap-3 mb-2.5">
@@ -1476,7 +1436,7 @@ export const ProfessorEvaluationsScreen: React.FC = () => {
                       Ver relatos →
                     </span>
                   </div>
-                </Card>
+                </ClickableCard>
               );
             })}
           </div>

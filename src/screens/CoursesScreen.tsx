@@ -19,10 +19,8 @@ import {
   CheckSquare,
   MessageSquare,
   ArrowLeft,
-  Inbox,
   AlertCircle,
   Link2,
-  BookOpen,
   Folder,
 } from "lucide-react";
 import { UnmatchedCourseDialog } from "../components/UnmatchedCourseDialog";
@@ -437,8 +435,6 @@ export const CoursesScreen: React.FC = () => {
         {/* Feed Filtrado desta Disciplina */}
         {disciplineFeedItems.length === 0 ? (
           <EmptyState
-            icon={Inbox}
-            iconClassName="bg-canvas text-neo-blue"
             title={
               showArchived
                 ? "Nenhum item arquivado nesta matéria"
@@ -532,7 +528,6 @@ export const CoursesScreen: React.FC = () => {
 
       {disciplines.length === 0 ? (
         <EmptyState
-          icon={BookOpen}
           title="Nenhuma disciplina no semestre"
           description='Clique em "Sincronizar" na barra lateral para carregar suas disciplinas do SIGAA e do Aprender 3.'
         />

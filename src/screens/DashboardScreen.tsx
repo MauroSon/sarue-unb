@@ -12,7 +12,7 @@ import {
   toast,
   EmptyState,
 } from "@/components/ui";
-import { Inbox, Home } from "lucide-react";
+import { Home } from "lucide-react";
 
 export const DashboardScreen: React.FC = () => {
   const {
@@ -201,8 +201,6 @@ export const DashboardScreen: React.FC = () => {
         </Card>
       ) : items.length === 0 ? (
         <EmptyState
-          icon={Inbox}
-          iconClassName="bg-canvas text-neo-blue"
           title={
             showArchived
               ? "Nenhum item arquivado encontrado"

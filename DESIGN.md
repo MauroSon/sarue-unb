@@ -363,6 +363,7 @@ Barra de busca e filtros do feed (Início e drill-down da disciplina), sempre em
 - **Container:** cavidade do fichário — branco, borda preta 2px, raio 12px, **sem sombra**; padding interno 2px, duas colunas iguais.
 - **Thumb-adesivo:** o segmento ativo é o adesivo de ação — pill **Azul Caneta Ação** (raio 8px) que desliza de cavidade em cavidade em 150ms ease-out, sempre via `transform` (nunca `left`/`top`); reduced-motion já pula direto pelas transições globais de 1ms. O adesivo é `aria-hidden` e `pointer-events-none` — quem carrega o estado é o botão.
 - **Segmento:** botão interno raio 8px, altura 32px, font-black com ícone Lucide 14px, transparente sobre a cavidade (inativo ganha Cinza Papel no hover, texto vira branco sobre o thumb); micro-afundar de 1px no active; `aria-pressed` marca o estado; ring de foco padrão via teclado.
+- **Tamanho:** 32px é o padrão (Lista | Mapa); a variante `md` (segmento de 36px, cavidade de 44px) existe para emparelhar o controle com um input de 44px na mesma linha (busca da Avaliação de Professores).
 
 ### Switch
 - **Style:** pill 44×24px, borda preta 2px; trilho Cinza (neutral-200) desligado, **Azul Caneta Ação** ligado; thumb branco 18px com borda preta 2px, deslizando em 150ms ease-out.

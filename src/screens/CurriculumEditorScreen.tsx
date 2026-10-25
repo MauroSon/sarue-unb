@@ -791,7 +791,6 @@ export const CurriculumEditorScreen: React.FC<CurriculumEditorScreenProps> = ({
       {/* Matriz vazia */}
       {totalCount === 0 && (
         <EmptyState
-          icon={BookOpen}
           title="Matriz vazia"
           description="Nenhuma disciplina no rascunho deste currículo. Comece adicionando as matérias do seu curso — pode puxar do catálogo da UnB pelo código ou nome."
           action={
