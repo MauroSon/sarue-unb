@@ -1,5 +1,6 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useContainer } from '../context/ContainerContext';
+import { subscribeToSyncComplete } from '../context/SyncContext';
 import type {
   ProfessorSummary,
   DisciplineSummary,
@@ -24,6 +25,7 @@ export function useProfessorEvaluations() {
     useState<DisciplineSummary[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [hasLoadedOnce, setHasLoadedOnce] = useState<boolean>(false);
+  const hasLoadedOnceRef = useRef<boolean>(false);
   const [error, setError] = useState<boolean>(false);
 
   // Filtros e parâmetros de busca
@@ -40,7 +42,7 @@ export function useProfessorEvaluations() {
 
   const loadData = useCallback(
     async (forceRefresh = false) => {
-      if (!forceRefresh) {
+      if (forceRefresh || !hasLoadedOnceRef.current) {
         setIsLoading(true);
       }
 
@@ -80,6 +82,7 @@ export function useProfessorEvaluations() {
         setDisciplineSummaries(disciplineSummaryList);
         setUnfilteredSummaries(unfilteredSummaryList);
         setUnfilteredDisciplineSummaries(unfilteredDisciplineSummaryList);
+        hasLoadedOnceRef.current = true;
         setHasLoadedOnce(true);
         setError(false);
         return true;
@@ -102,6 +105,10 @@ export function useProfessorEvaluations() {
 
   useEffect(() => {
     void loadData(false);
+    const unsubscribe = subscribeToSyncComplete(() => {
+      void loadData(false);
+    });
+    return unsubscribe;
   }, [loadData]);
 
   const clearFilters = useCallback(() => {

@@ -196,6 +196,50 @@ describe('GetProfessorEvaluationsUseCase, Scraper de Docentes & Cruzamento SIGAA
       danielSummary?.disciplines.some((d) => d.includes('CIC0004'))
     ).toBe(true);
   });
+
+  it('deve utilizar avaliações persistidas sem refazer download nem reprocessamento quando forceRefresh=false', async () => {
+    const parsed = parseProfessorEvaluationsCsv(SAMPLE_CSV);
+    const repo = new InMemoryProfessorEvaluationRepository(parsed);
+
+    // Salva antecipadamente avaliações enriquecidas simuladas no storage persistente
+    const mockPersisted = [
+      {
+        ...parsed[0],
+        id: 'mock-persisted-1',
+        professor: 'Docente Persistido',
+      },
+    ];
+    await repo.savePersistedEnrichedEvaluations(mockPersisted);
+
+    const container = createContainer({
+      repos: { professorEvaluationRepo: repo },
+    });
+
+    // Como forceRefresh é false, deve retornar direto do cache persistido
+    const loaded = await container.useCases.getProfessorEvaluations.execute(
+      undefined,
+      false
+    );
+    expect(loaded.length).toBe(1);
+    expect(loaded[0].professor).toBe('Docente Persistido');
+
+    // Ao forçar refresh (forceRefresh = true), deve baixar novamente e atualizar o armazenamento persistente
+    const refreshed = await container.useCases.getProfessorEvaluations.execute(
+      undefined,
+      true
+    );
+    expect(refreshed.length).toBe(3);
+    expect(refreshed[0].professor).not.toBe('Docente Persistido');
+
+    // O repositório agora deve ter o dado atualizado persistido
+    const persistedAfter = await repo.getPersistedEnrichedEvaluations();
+    expect(persistedAfter?.length).toBe(3);
+
+    // Limpeza de cache
+    await container.useCases.getProfessorEvaluations.clearCache();
+    const afterClear = await repo.getPersistedEnrichedEvaluations();
+    expect(afterClear).toBeNull();
+  });
 });
 
 describe('Consenso de dificuldade entre avaliações', () => {

@@ -39,25 +39,39 @@ export class GetProfessorEvaluationsUseCase {
       return this.enrichedCache;
     }
 
-    // Dedup de chamadas concorrentes: os 4 chamados do hook (+ o double-mount
-    // do StrictMode em dev) disparavam 8 raspagens completas do SIGAA em
-    // paralelo — o pico de rede/CPU derrubava o WebKit. Agora todos esperam
-    // a mesma promise em andamento.
+    // Dedup de chamadas concorrentes: chamadas paralelas aguardam a mesma
+    // promise em andamento para evitar picos de rede e CPU.
     if (!forceRefresh && this.inflightEnriched) {
       return this.inflightEnriched;
     }
 
-    const work = this.loadAndEnrich(forceRefresh);
-    if (!forceRefresh) {
-      this.inflightEnriched = work;
-      void work
-        .catch(() => {})
-        .finally(() => {
-          if (this.inflightEnriched === work) {
-            this.inflightEnriched = null;
+    const work = (async () => {
+      // Se não for forceRefresh, tenta carregar do armazenamento persistente (SQLite)
+      // para exibir as avaliações instantaneamente sem latência de rede.
+      if (!forceRefresh && this.evaluationRepo.getPersistedEnrichedEvaluations) {
+        try {
+          const persisted =
+            await this.evaluationRepo.getPersistedEnrichedEvaluations();
+          if (persisted && persisted.length > 0) {
+            this.enrichedCache = persisted;
+            return persisted;
           }
-        });
-    }
+        } catch {
+          // Segue para download e enriquecimento caso a leitura persistente falhe
+        }
+      }
+      return this.loadAndEnrich(forceRefresh);
+    })();
+
+    this.inflightEnriched = work;
+    void work
+      .catch(() => {})
+      .finally(() => {
+        if (this.inflightEnriched === work) {
+          this.inflightEnriched = null;
+        }
+      });
+
     return work;
   }
 
@@ -149,10 +163,34 @@ export class GetProfessorEvaluationsUseCase {
       const verified = matched.length > 0 ? matched : enriched;
       const result = canonicalizeDepartments(verified);
       this.enrichedCache = result;
+      if (
+        this.evaluationRepo.savePersistedEnrichedEvaluations &&
+        result.length > 0
+      ) {
+        void this.evaluationRepo
+          .savePersistedEnrichedEvaluations(result)
+          .catch(() => {});
+      }
       return result;
     } catch {
       this.enrichedCache = rawEvaluations;
+      if (
+        this.evaluationRepo.savePersistedEnrichedEvaluations &&
+        rawEvaluations.length > 0
+      ) {
+        void this.evaluationRepo
+          .savePersistedEnrichedEvaluations(rawEvaluations)
+          .catch(() => {});
+      }
       return rawEvaluations;
+    }
+  }
+
+  async clearCache(): Promise<void> {
+    this.enrichedCache = null;
+    this.inflightEnriched = null;
+    if (this.evaluationRepo.clearPersistedEvaluations) {
+      await this.evaluationRepo.clearPersistedEvaluations();
     }
   }
 

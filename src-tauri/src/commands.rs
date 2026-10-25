@@ -167,8 +167,6 @@ pub async fn sync_platforms(
     aprender3: Option<Aprender3Creds>,
     teams: Option<TeamsCreds>,
 ) -> Result<SyncResult, String> {
-    let t0 = std::time::Instant::now();
-    eprintln!("[sync] início platforms={:?}", platforms);
     let mut all_items: Vec<FeedItem> = Vec::new();
     let mut all_courses: Vec<Course> = Vec::new();
     let mut errors: HashMap<PlatformType, String> = HashMap::new();
@@ -176,12 +174,6 @@ pub async fn sync_platforms(
     let moodle = MoodleClient::new();
 
     for platform in platforms {
-        let p_name = format!("{:?}", platform);
-        eprintln!(
-            "[sync] plataforma {} início (t={:.1}s)",
-            p_name,
-            t0.elapsed().as_secs_f32()
-        );
         match platform {
             PlatformType::Aprender3 => {
                 let (cpf, senha) = match &aprender3 {
@@ -251,24 +243,11 @@ pub async fn sync_platforms(
                 }
             }
         }
-        eprintln!(
-            "[sync] plataforma {} fim (t={:.1}s, itens acumulados={})",
-            p_name,
-            t0.elapsed().as_secs_f32(),
-            all_items.len()
-        );
     }
 
     // Ordenação estrita por data decrescente
     all_items.sort_by(|a, b| b.created_at.cmp(&a.created_at));
 
-    eprintln!(
-        "[sync] fim total em {:.1}s (itens={} cursos={} erros={})",
-        t0.elapsed().as_secs_f32(),
-        all_items.len(),
-        all_courses.len(),
-        errors.len()
-    );
     Ok(SyncResult {
         items: all_items,
         courses: all_courses,
@@ -310,22 +289,12 @@ pub async fn scrape_sigaa_classes(
     year: String,
     period: String,
 ) -> Result<Vec<crate::grade_scraper::ScrapedDiscipline>, String> {
-    let t0 = std::time::Instant::now();
-    eprintln!("[scrape] dept={} início", department_id);
-    let result = crate::grade_scraper::SigaaGradeScraper::scrape_department_classes(
+    crate::grade_scraper::SigaaGradeScraper::scrape_department_classes(
         &department_id,
         &year,
         &period,
     )
-    .await;
-    eprintln!(
-        "[scrape] dept={} fim em {:.1}s ({} disciplinas, err={:?})",
-        department_id,
-        t0.elapsed().as_secs_f32(),
-        result.as_ref().map(|v| v.len()).unwrap_or(0),
-        result.as_ref().err()
-    );
-    result
+    .await
 }
 
 #[command]
@@ -790,7 +759,6 @@ fn get_evaluations_csv_lock() -> &'static tokio::sync::RwLock<Option<String>> {
 #[command]
 #[specta::specta]
 pub async fn fetch_professor_evaluations_csv(force_refresh: bool) -> Result<String, String> {
-    eprintln!("[csv-planilha] início (force={})", force_refresh);
     if !force_refresh {
         let lock = get_evaluations_csv_lock().read().await;
         if let Some(cached) = &*lock {

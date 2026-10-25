@@ -16,10 +16,54 @@ export class InMemoryProfessorEvaluationRepository
   implements IProfessorEvaluationRepository
 {
   private cache: ProfessorEvaluation[] | null = null;
+  private persistedEnriched: ProfessorEvaluation[] | null = null;
 
   constructor(private seedEvaluations?: ProfessorEvaluation[]) {
     if (seedEvaluations) {
       this.cache = [...seedEvaluations];
+    }
+  }
+
+  async getPersistedEnrichedEvaluations(): Promise<ProfessorEvaluation[] | null> {
+    if (this.persistedEnriched && this.persistedEnriched.length > 0) {
+      return [...this.persistedEnriched];
+    }
+    if (typeof localStorage !== 'undefined') {
+      try {
+        const raw = localStorage.getItem('sarue_persisted_enriched_evaluations_v1');
+        if (raw) {
+          const parsed = JSON.parse(raw) as ProfessorEvaluation[];
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            this.persistedEnriched = parsed;
+            return parsed;
+          }
+        }
+      } catch {}
+    }
+    return null;
+  }
+
+  async savePersistedEnrichedEvaluations(
+    evaluations: ProfessorEvaluation[]
+  ): Promise<void> {
+    this.persistedEnriched = [...evaluations];
+    if (typeof localStorage !== 'undefined') {
+      try {
+        localStorage.setItem(
+          'sarue_persisted_enriched_evaluations_v1',
+          JSON.stringify(evaluations)
+        );
+      } catch {}
+    }
+  }
+
+  async clearPersistedEvaluations(): Promise<void> {
+    this.cache = null;
+    this.persistedEnriched = null;
+    if (typeof localStorage !== 'undefined') {
+      try {
+        localStorage.removeItem('sarue_persisted_enriched_evaluations_v1');
+      } catch {}
     }
   }
 

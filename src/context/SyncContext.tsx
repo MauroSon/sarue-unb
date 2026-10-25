@@ -417,7 +417,7 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({
       try {
         const evaluations = await useCases.getProfessorEvaluations.execute(
           undefined,
-          false
+          true
         );
         if (isCancelled()) return;
         updateStep("planilha", {
