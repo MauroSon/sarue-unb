@@ -2,7 +2,6 @@ use crate::models::{
     Aprender3Creds, Course, FeedItem, PlatformType, SigaaCreds, SyncResult, TeamsCreds,
 };
 use crate::moodle::MoodleClient;
-use crate::scraper::HiddenWebviewScraper;
 use crate::sigaa::SigaaClient;
 use std::collections::HashMap;
 
@@ -212,19 +211,33 @@ pub async fn sync_platforms(
                 }
             }
             PlatformType::Teams => {
-                let is_connected = teams.as_ref().and_then(|t| t.is_connected).unwrap_or(false);
-                let email = teams
-                    .as_ref()
-                    .and_then(|t| t.email.as_deref())
-                    .unwrap_or("");
-                if is_connected {
-                    match HiddenWebviewScraper::sync_teams(&app, email, "").await {
-                        Ok((items, courses)) => {
-                            all_items.extend(items);
-                            all_courses.extend(courses);
-                        }
-                        Err(e) => {
-                            errors.insert(PlatformType::Teams, e);
+                #[cfg(target_os = "linux")]
+                {
+                    // A sync via webview oculto (até 35s carregando o app inteiro
+                    // do Teams) derrubava o WebProcess no Linux: a página principal
+                    // recarregava sozinha e, às vezes, o app inteiro morria.
+                    // Desligado no Linux até existir um caminho mais leve; a autenticação
+                    // interativa (janela teams-auth) continua funcionando.
+                    let _ = (&app, &teams);
+                }
+                #[cfg(not(target_os = "linux"))]
+                {
+                    let is_connected = teams.as_ref().and_then(|t| t.is_connected).unwrap_or(false);
+                    let email = teams
+                        .as_ref()
+                        .and_then(|t| t.email.as_deref())
+                        .unwrap_or("");
+                    if is_connected {
+                        match crate::scraper::HiddenWebviewScraper::sync_teams(&app, email, "")
+                            .await
+                        {
+                            Ok((items, courses)) => {
+                                all_items.extend(items);
+                                all_courses.extend(courses);
+                            }
+                            Err(e) => {
+                                errors.insert(PlatformType::Teams, e);
+                            }
                         }
                     }
                 }
@@ -261,6 +274,12 @@ pub fn check_vault_status() -> crate::models::VaultStatus {
 #[specta::specta]
 pub async fn get_sigaa_departments() -> Result<Vec<crate::grade_scraper::Department>, String> {
     crate::grade_scraper::SigaaGradeScraper::fetch_departments().await
+}
+
+#[command]
+#[specta::specta]
+pub async fn get_sigaa_professors() -> Result<Vec<crate::grade_scraper::ScrapedProfessor>, String> {
+    crate::grade_scraper::SigaaGradeScraper::fetch_professors().await
 }
 
 #[command]
@@ -725,4 +744,58 @@ pub async fn disconnect_teams(app: AppHandle) -> Result<(), String> {
     }
     log::info!("Microsoft Teams desconectado e janelas auxiliares encerradas.");
     Ok(())
+}
+// Mantenha em sincronia com PROFESSOR_EVALUATIONS_CSV_URL em
+// src/core/domain/entities/professor-evaluation.ts — URL duplicada na
+// fronteira Tauri (o Rust não importa as constantes do domínio TS).
+const PROFESSOR_EVALUATIONS_CSV_URL: &str = "https://docs.google.com/spreadsheets/d/1RK3N-2DtuKShO_2fpd5Cag_GsHYNIARD8WHLpCLTdCk/export?format=csv&gid=1411813915";
+static EVALUATIONS_CSV_CACHE: std::sync::OnceLock<tokio::sync::RwLock<Option<String>>> =
+    std::sync::OnceLock::new();
+
+fn get_evaluations_csv_lock() -> &'static tokio::sync::RwLock<Option<String>> {
+    EVALUATIONS_CSV_CACHE.get_or_init(|| tokio::sync::RwLock::new(None))
+}
+
+#[command]
+#[specta::specta]
+pub async fn fetch_professor_evaluations_csv(force_refresh: bool) -> Result<String, String> {
+    if !force_refresh {
+        let lock = get_evaluations_csv_lock().read().await;
+        if let Some(cached) = &*lock {
+            return Ok(cached.clone());
+        }
+    }
+
+    let client = reqwest::Client::builder()
+        .timeout(std::time::Duration::from_secs(15))
+        .user_agent("Sarue-UnB/0.2.2 (Desktop App; Tauri)")
+        .build()
+        .map_err(|e| format!("Falha ao inicializar cliente HTTP: {}", e))?;
+
+    let response = client
+        .get(PROFESSOR_EVALUATIONS_CSV_URL)
+        .send()
+        .await
+        .map_err(|e| format!("Falha ao conectar à planilha de avaliações: {}", e))?;
+
+    if !response.status().is_success() {
+        return Err(format!(
+            "Planilha retornou status HTTP {}",
+            response.status()
+        ));
+    }
+
+    let text = response
+        .text()
+        .await
+        .map_err(|e| format!("Falha ao ler conteúdo CSV da planilha: {}", e))?;
+
+    if text.trim().is_empty() {
+        return Err("Planilha de avaliações retornou conteúdo vazio.".into());
+    }
+
+    let mut lock = get_evaluations_csv_lock().write().await;
+    *lock = Some(text.clone());
+
+    Ok(text)
 }

@@ -59,7 +59,7 @@ export const Alert: React.FC<AlertProps> = ({
         <h4 className="text-sm font-bold tracking-tight text-black">{title}</h4>
         {description ? (
           typeof description === 'string' ? (
-            <p className="text-xs font-semibold text-neutral-800 mt-1 leading-relaxed">{description}</p>
+            <p className="text-xs font-semibold text-neutral-800 mt-1 leading-relaxed text-balance">{description}</p>
           ) : (
             <div className="text-xs font-semibold text-neutral-800 mt-1 leading-relaxed">{description}</div>
           )

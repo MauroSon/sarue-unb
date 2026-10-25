@@ -17,6 +17,15 @@
         ],
         "createdAt": "2026-10-18T03:50:54.877Z",
         "reason": "DESIGN.md UnB Aggregator: A Regra do Risco Preto manda borda preta 2px em toda superficie e divisores internos de card; mesmo padrao do cabecalho da lista em MyCourseScreen e do Feed List do sistema"
+      },
+      {
+        "rule": "broken-image",
+        "value": "*",
+        "files": [
+          "src/scrapers/grade-scraper.ts"
+        ],
+        "createdAt": "2026-10-25T14:43:18.610Z",
+        "reason": "False positive confirmado: linha 554 é regex de parsing do HTML do SIGAA em parseDocentesTable (scraper extrai URL de foto do docente), não é <img> renderizado em UI"
       }
     ]
   }

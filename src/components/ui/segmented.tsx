@@ -14,6 +14,11 @@ export interface SegmentedControlProps<T extends string> {
   onValueChange: (value: T) => void;
   /** Nome do grupo para leitores de tela. */
   ariaLabel: string;
+  /**
+   * sm (32px, padrão "Lista | Mapa") | md (36px — cavidade de 44px, para
+   * emparelhar o controle com um input da mesma altura na mesma linha).
+   */
+  size?: 'sm' | 'md';
   className?: string;
 }
 
@@ -29,9 +34,11 @@ export function SegmentedControl<T extends string>({
   value,
   onValueChange,
   ariaLabel,
+  size = 'sm',
   className,
 }: SegmentedControlProps<T>) {
   const count = options.length;
+  const segmentHeight = size === 'md' ? 'h-9' : 'h-8';
   const activeIndex = Math.max(
     0,
     options.findIndex((option) => option.value === value),
@@ -68,7 +75,8 @@ export function SegmentedControl<T extends string>({
             aria-pressed={isActive}
             title={option.title}
             className={cn(
-              "relative cursor-pointer flex items-center justify-center gap-1.5 h-8 px-3 rounded-lg text-xs font-black transition-colors duration-150 active:translate-y-px focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-neo-blue focus-visible:ring-offset-2",
+              "relative cursor-pointer flex items-center justify-center gap-1.5 px-3 rounded-lg text-xs font-black transition-colors duration-150 active:translate-y-px focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-neo-blue focus-visible:ring-offset-2",
+              segmentHeight,
               isActive ? "text-white" : "text-black hover:bg-neutral-100",
             )}
           >

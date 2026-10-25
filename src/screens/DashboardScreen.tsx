@@ -12,7 +12,7 @@ import {
   toast,
   EmptyState,
 } from "@/components/ui";
-import { Inbox, Home } from "lucide-react";
+import { Home } from "lucide-react";
 
 export const DashboardScreen: React.FC = () => {
   const {
@@ -173,6 +173,16 @@ export const DashboardScreen: React.FC = () => {
         onPlatformChange={setSelectedPlatform}
         categoryValue={selectedType}
         onCategoryChange={setSelectedType}
+        hasActiveFilters={
+          Boolean(searchQuery) ||
+          selectedType !== "all" ||
+          selectedPlatform !== "all"
+        }
+        onClearFilters={() => {
+          setSearchQuery("");
+          setSelectedType("all");
+          setSelectedPlatform("all");
+        }}
         showArchived={showArchived}
         onToggleArchived={() => setShowArchived(!showArchived)}
         selectionMode={isSelecting}
@@ -201,8 +211,6 @@ export const DashboardScreen: React.FC = () => {
         </Card>
       ) : items.length === 0 ? (
         <EmptyState
-          icon={Inbox}
-          iconClassName="bg-canvas text-neo-blue"
           title={
             showArchived
               ? "Nenhum item arquivado encontrado"

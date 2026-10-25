@@ -214,7 +214,6 @@ export const MyCourseScreen: React.FC = () => {
 
       {!profile ? (
         <EmptyState
-          icon={GraduationCap}
           title="Nenhum Perfil Acadêmico Carregado"
           description={
             <>

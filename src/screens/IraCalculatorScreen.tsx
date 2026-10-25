@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowLeft, Calculator, GraduationCap, Plus } from 'lucide-react';
+import { ArrowLeft, Calculator, Plus } from 'lucide-react';
 import { useMyCourse } from '@/hooks/useMyCourse';
 import { useContainer } from '@/context/ContainerContext';
 import {
@@ -252,7 +252,6 @@ export const IraCalculatorScreen: React.FC<IraCalculatorScreenProps> = ({ onBack
       <PageContainer>
         <PageHeader title="Calculadora de IRA" icon={Calculator} actions={backButton} />
         <EmptyState
-          icon={GraduationCap}
           title="Nenhum Perfil Acadêmico Carregado"
           description={
             <>

@@ -1,3 +1,9 @@
+/**
+ * Semestre corrente usado nos cruzamentos com o SIGAA (ex.: enriquecimento de
+ * avaliações de docentes). Fonte única no app — atualize aqui ao virar o semestre.
+ */
+export const SIGAA_CURRENT_SEMESTER = { year: '2026', period: '2' } as const;
+
 export interface Department {
   id: string;
   name: string;
@@ -42,6 +48,18 @@ export interface ScrapedDiscipline {
   classes: ScrapedClass[];
   acronym?: string;
   acronyms?: string[];
+}
+
+export interface ScrapedProfessor {
+  id: string;
+  siape?: string;
+  name: string;
+  departmentId: string;
+  departmentName: string;
+  departmentIds: string[];
+  disciplineCodes: string[];
+  photoUrl?: string;
+  publicUrl?: string;
 }
 
 export interface ScheduleOption {

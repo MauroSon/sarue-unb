@@ -113,6 +113,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
       // 4. Apaga perfil acadêmico e histórico escolar (Meu Curso)
       await useCases.manageAcademicProfile.clearProfile();
       resetMyCourseCache();
+      await useCases.getProfessorEvaluations.clearCache();
       // 5. Limpa preferências auxiliares e perfil do localStorage
       try {
         localStorage.removeItem("unb_grade_deptId");

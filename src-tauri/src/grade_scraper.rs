@@ -12,6 +12,7 @@ static CLASSES_CACHE: OnceLock<RwLock<Option<Vec<ScrapedDiscipline>>>> = OnceLoc
 static DEPARTMENTS_CACHE: OnceLock<RwLock<Option<Vec<Department>>>> = OnceLock::new();
 static COURSES_CACHE: OnceLock<RwLock<Option<Vec<CourseCatalogItem>>>> = OnceLock::new();
 static CURRICULA_CACHE: OnceLock<RwLock<Option<Vec<CurriculumStructure>>>> = OnceLock::new();
+static PROFESSORS_CACHE: OnceLock<RwLock<Option<Vec<ScrapedProfessor>>>> = OnceLock::new();
 
 fn get_classes_lock() -> &'static RwLock<Option<Vec<ScrapedDiscipline>>> {
     CLASSES_CACHE.get_or_init(|| RwLock::new(None))
@@ -27,6 +28,10 @@ fn get_courses_lock() -> &'static RwLock<Option<Vec<CourseCatalogItem>>> {
 
 fn get_curricula_lock() -> &'static RwLock<Option<Vec<CurriculumStructure>>> {
     CURRICULA_CACHE.get_or_init(|| RwLock::new(None))
+}
+
+fn get_professors_lock() -> &'static RwLock<Option<Vec<ScrapedProfessor>>> {
+    PROFESSORS_CACHE.get_or_init(|| RwLock::new(None))
 }
 
 type CourseCurriculaEntry = Option<(String, Vec<CurriculumStructure>)>;
@@ -85,6 +90,24 @@ pub struct ScrapedDiscipline {
     pub acronym: Option<String>,
     #[serde(default)]
     pub acronyms: Vec<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, specta::Type)]
+pub struct ScrapedProfessor {
+    pub id: String,
+    #[serde(default)]
+    pub siape: Option<String>,
+    pub name: String,
+    pub department_id: String,
+    pub department_name: String,
+    #[serde(default)]
+    pub department_ids: Vec<String>,
+    #[serde(default)]
+    pub discipline_codes: Vec<String>,
+    #[serde(default)]
+    pub photo_url: Option<String>,
+    #[serde(default)]
+    pub public_url: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, specta::Type)]
@@ -415,6 +438,35 @@ impl SigaaGradeScraper {
                 Ok(vec![])
             }
         }
+    }
+
+    /// Obtém o catálogo de docentes publicado em professors.json.
+    /// Não raspa o SIGAA como fallback: se o catálogo estiver indisponível,
+    /// degrada para uma lista vazia (avaliações sem docentes verificados).
+    /// O catálogo é gerado pelo scraper próprio (professors-scraper.ts) e
+    /// publicado pelo workflow trimestral scrape-professors.yml.
+    pub async fn fetch_professors() -> Result<Vec<ScrapedProfessor>, String> {
+        {
+            let lock = get_professors_lock().read().await;
+            if let Some(cached) = &*lock {
+                return Ok(cached.clone());
+            }
+        }
+
+        if let Ok(professors) =
+            Self::fetch_static_json::<Vec<ScrapedProfessor>>("professors.json").await
+        {
+            if !professors.is_empty() {
+                let mut lock = get_professors_lock().write().await;
+                *lock = Some(professors.clone());
+                return Ok(professors);
+            }
+        }
+
+        // Degrada sem docentes verificados em vez de raspar o SIGAA inteiro
+        // dentro do app; a síntese "catálogo a partir das turmas" vive apenas
+        // no scraper (GradeScraper.buildProfessorsCatalog).
+        Ok(Vec::new())
     }
 
     /// Lista padrão de departamentos UnB para contingência offline
