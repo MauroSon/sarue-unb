@@ -40,11 +40,11 @@ function StatusIndicator({ status }: { status: SyncStepStatus }) {
         <Loader2 className="w-3.5 h-3.5 animate-spin text-neo-blue shrink-0" />
       );
     case "success":
-      return <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />;
+      return <CheckCircle2 className="w-3.5 h-3.5 text-ink-success shrink-0" />;
     case "error":
-      return <AlertCircle className="w-3.5 h-3.5 text-rose-600 shrink-0" />;
+      return <AlertCircle className="w-3.5 h-3.5 text-ink-error shrink-0" />;
     case "skipped":
-      return <MinusCircle className="w-3.5 h-3.5 text-neutral-400 shrink-0" />;
+      return <MinusCircle className="w-3.5 h-3.5 text-neutral-500 shrink-0" />;
     case "idle":
     default:
       return (
@@ -117,9 +117,9 @@ export const SyncStatusTooltip: React.FC<SyncStatusTooltipProps> = ({
                 <p
                   className={`text-[11px] leading-snug mt-0.5 line-clamp-2 ${
                     step.status === "error"
-                      ? "text-rose-600 font-semibold"
+                      ? "text-ink-error font-semibold"
                       : step.status === "success"
-                        ? "text-emerald-700 font-medium"
+                        ? "text-ink-success font-medium"
                         : step.status === "syncing"
                           ? "text-neo-blue font-semibold"
                           : "text-neutral-500"
@@ -134,7 +134,7 @@ export const SyncStatusTooltip: React.FC<SyncStatusTooltipProps> = ({
       </div>
 
       {/* Rodapé com timestamp */}
-      <div className="pt-2 border-t border-black/10 flex items-center justify-between text-[10px] text-neutral-600 font-semibold">
+      <div className="pt-2 border-t border-black/10 flex items-center justify-between text-[11px] text-neutral-600 font-semibold">
         <span className="flex items-center gap-1">
           <Clock className="w-3 h-3 text-neutral-500" />
           <span>Última sincronização:</span>

@@ -180,7 +180,7 @@ const ClassCard = React.memo<ClassCardProps>(function ClassCard({
           <span className="truncate">{cls.classroom}</span>
         </div>
         {cls.scheduleDescription ? (
-          <div className="flex items-center gap-1.5 text-neutral-700 font-normal">
+          <div className="flex items-center gap-1.5 text-neutral-700 font-medium">
             <Clock className="w-3 h-3 text-neutral-500 shrink-0" />
             <span className="truncate text-[11px]">
               {cls.scheduleDescription}

@@ -49,7 +49,7 @@ export const FlowchartStats: React.FC<FlowchartStatsProps> = ({ metrics, onOpenI
             className="w-full h-3.5 bg-neutral-100 border-2 border-black rounded-full overflow-hidden p-0.5 shadow-neo-xs"
           >
             <div
-              className="h-full bg-neo-green border border-black rounded-full transition-all duration-500"
+              className="h-full bg-neo-green border border-black rounded-full transition-[width] duration-500"
               style={{ width: `${Math.min(100, Math.max(0, percentual))}%` }}
             />
           </div>

@@ -148,7 +148,7 @@ export const FeedList: React.FC<FeedListProps> = ({
                 className={`w-5 h-5 rounded-md border-2 border-black flex items-center justify-center shrink-0 cursor-pointer transition-[transform,box-shadow,background-color] duration-150 ease-out shadow-[1px_1px_0px_0px_#000] hover:translate-x-[0.5px] hover:translate-y-[0.5px] hover:shadow-none active:translate-x-[1px] active:translate-y-[1px] focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-neo-blue focus-visible:ring-offset-2 ${
                   isSelected
                     ? "bg-neo-blue text-white"
-                    : "bg-white hover:bg-neutral-100 text-neutral-400"
+                    : "bg-white hover:bg-neutral-100"
                 }`}
               >
                 {isSelected ? (
@@ -180,7 +180,7 @@ export const FeedList: React.FC<FeedListProps> = ({
                   className={`w-5 h-5 rounded-md border-2 border-black flex items-center justify-center shrink-0 cursor-pointer transition-[transform,box-shadow,background-color] duration-150 ease-out shadow-[1px_1px_0px_0px_#000] hover:translate-x-[0.5px] hover:translate-y-[0.5px] hover:shadow-none active:translate-x-[1px] active:translate-y-[1px] ${
                     item.isCompleted
                       ? "bg-neo-green text-black"
-                      : "bg-white hover:bg-neutral-100 text-neutral-400"
+                      : "bg-white hover:bg-neutral-100"
                   }`}
                 >
                   {item.isCompleted ? (

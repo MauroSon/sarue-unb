@@ -26,12 +26,12 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
       {...props}
     >
       <div>
-        <h2 className="text-2xl font-extrabold text-black tracking-tight flex items-center gap-2.5">
+        <h1 className="text-2xl font-extrabold text-black tracking-tight flex items-center gap-2.5">
           {Icon ? (
             <Icon className="size-4 stroke-[2.5] shrink-0 text-neo-blue" />
           ) : null}
           <span>{title}</span>
-        </h2>
+        </h1>
       </div>
       {actions ? (
         <div className="flex items-center gap-2 shrink-0">{actions}</div>

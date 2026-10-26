@@ -47,10 +47,9 @@ export const AppUpdaterCard: React.FC = () => {
           {updater.status === "ready-to-restart" ? (
             <Button
               type="button"
-              variant="primary"
+              variant="accent"
               size="md"
               onClick={() => updater.relaunchApp()}
-              className="bg-emerald-500 hover:bg-emerald-600"
             >
               <RotateCcw className="w-4 h-4 stroke-[2.5]" />
               <span>Reiniciar e Aplicar</span>
@@ -88,7 +87,7 @@ export const AppUpdaterCard: React.FC = () => {
         <div className="mt-4 pt-3 border-t-2 border-black/10">
           <div className="w-full h-3 bg-neutral-200 rounded-full overflow-hidden border-2 border-black">
             <div
-              className="h-full bg-neo-blue transition-all duration-300"
+              className="h-full bg-neo-blue transition-[width] duration-300"
               style={{ width: `${downloadPct}%` }}
             />
           </div>

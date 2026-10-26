@@ -130,7 +130,7 @@ export const IraSemesterCard: React.FC<IraSemesterCardProps> = ({
                 onClick={() => onRemoveDiscipline(d.id)}
                 aria-label={`Remover disciplina ${index + 1} de ${semester.label}`}
                 title="Remover do cenário"
-                className="inline-flex items-center justify-center w-7 h-7 rounded-lg border-2 border-transparent text-neutral-600 cursor-pointer hover:bg-pastel-red hover:border-black/10 active:translate-y-px transition-all shrink-0"
+                className="inline-flex items-center justify-center w-7 h-7 rounded-lg border-2 border-transparent text-neutral-600 cursor-pointer hover:bg-pastel-red hover:border-black/10 active:translate-y-px transition-[background-color,border-color,transform] shrink-0"
               >
                 <Trash2 className="w-3 h-3 stroke-[2.5]" />
               </button>

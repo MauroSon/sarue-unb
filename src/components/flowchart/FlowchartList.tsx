@@ -58,7 +58,7 @@ const StatusIcon: React.FC<{ d: FlowchartDiscipline }> = ({ d }) => {
     return (
       <Tooltip>
         <TooltipTrigger aria-label="Bloqueada" className="shrink-0 cursor-help">
-          <Lock className="w-3.5 h-3.5 stroke-[2.5] text-neutral-400" />
+          <Lock className="w-3.5 h-3.5 stroke-[2.5] text-neutral-500" />
         </TooltipTrigger>
         <TooltipContent>
           Bloqueada — falta:{" "}
@@ -146,10 +146,10 @@ const DisciplineRow: React.FC<{
             ? "Desmarcar disciplina"
             : "Marcar como concluída manualmente"
         }
-        className={`cursor-pointer w-6 h-6 rounded-md border-2 border-black flex items-center justify-center transition-all duration-150 shadow-neo-sm focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-neo-blue focus-visible:ring-offset-2 hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-neo-xs active:translate-x-[2px] active:translate-y-[2px] active:shadow-none shrink-0 ${
+        className={`cursor-pointer w-6 h-6 rounded-md border-2 border-black flex items-center justify-center transition-[transform,box-shadow,background-color] duration-150 shadow-neo-sm focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-neo-blue focus-visible:ring-offset-2 hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-neo-xs active:translate-x-[2px] active:translate-y-[2px] active:shadow-none shrink-0 ${
           isCompleted
             ? "bg-neo-green text-black"
-            : "bg-white text-neutral-300 hover:text-black"
+            : "bg-white"
         }`}
       >
         {isCompleted ? (
@@ -177,7 +177,7 @@ const DisciplineRow: React.FC<{
         {isMandatory && (
           <span
             className={`text-sm font-black leading-none shrink-0 ${
-              isCompleted ? "text-neutral-400" : "text-neo-danger"
+              isCompleted ? "text-neutral-500" : "text-neo-danger"
             }`}
             title="Disciplina obrigatória"
             aria-label="Obrigatória"
@@ -196,7 +196,7 @@ const DisciplineRow: React.FC<{
               type="button"
               onClick={() => onSendToGrade(d.code, d.name)}
               aria-label={`Enviar ${d.name} para o Montar Grade`}
-              className="cursor-pointer p-1 rounded-md border border-black bg-white hover:bg-pastel-yellow text-neutral-700 hover:text-black transition-all shrink-0 shadow-neo-xs opacity-0 group-hover:opacity-100 focus-visible:opacity-100"
+              className="cursor-pointer p-1 rounded-md border border-black bg-white hover:bg-pastel-yellow text-neutral-700 hover:text-black transition-[opacity,background-color,color] shrink-0 shadow-neo-xs opacity-0 group-hover:opacity-100 focus-visible:opacity-100"
             >
               <CalendarPlus className="w-3.5 h-3.5 stroke-[2.5]" />
             </TooltipTrigger>

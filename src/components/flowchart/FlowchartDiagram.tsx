@@ -143,9 +143,8 @@ function DisciplineNode({ data }: NodeProps<DisciplineFlowNode>) {
             render={
               <DropdownMenuTrigger
                 render={
-                  <div
-                    role="button"
-                    tabIndex={0}
+                  <button
+                    type="button"
                     aria-label={`Opções para ${d.code} - ${d.name}`}
                     className={`group w-[212px] h-[78px] min-h-[78px] p-2 flex flex-col gap-1 text-left border-2 border-black rounded-lg shadow-[4px_4px_0_0_#000] cursor-pointer transition-[transform,box-shadow,opacity] duration-150 ease-out hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0_0_#000] active:translate-x-[4px] active:translate-y-[4px] active:shadow-none focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-neo-blue focus-visible:ring-offset-2 select-none ${stickerBg} ${
                       dim ? "opacity-30" : "opacity-100"
@@ -160,7 +159,7 @@ function DisciplineNode({ data }: NodeProps<DisciplineFlowNode>) {
                 {d.code}
               </span>
               {isOptativa && (
-                <span className="text-[9px] font-black uppercase px-1.5 py-0.5 bg-neo-purple text-black border-2 border-black rounded-full shrink-0 shadow-none">
+                <span className="text-[11px] font-black uppercase px-1.5 py-0.5 bg-neo-purple text-black border-2 border-black rounded-full shrink-0 shadow-none">
                   Optativa
                 </span>
               )}

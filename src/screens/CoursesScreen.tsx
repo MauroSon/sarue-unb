@@ -609,7 +609,7 @@ export const CoursesScreen: React.FC = () => {
               <div className="flex items-center gap-2">
                 {discipline.pendingAssignmentsCount !== undefined &&
                 discipline.pendingAssignmentsCount > 0 ? (
-                  <div className="flex items-center gap-1 text-ink-success bg-green-50 px-2 py-0.5 border border-black/20 rounded-md">
+                  <div className="flex items-center gap-1 text-ink-success bg-pastel-green px-2 py-0.5 border border-black/20 rounded-md">
                     <CheckSquare className="w-3.5 h-3.5 stroke-[2.5]" />
                     <span>{discipline.pendingAssignmentsCount} entregas</span>
                   </div>
@@ -617,7 +617,7 @@ export const CoursesScreen: React.FC = () => {
 
                 {discipline.unreadCount !== undefined &&
                 discipline.unreadCount > 0 ? (
-                  <div className="flex items-center gap-1 text-neo-blue bg-blue-50 px-2 py-0.5 border border-black/20 rounded-md">
+                  <div className="flex items-center gap-1 text-neo-blue bg-pastel-blue px-2 py-0.5 border border-black/20 rounded-md">
                     <MessageSquare className="w-3.5 h-3.5 stroke-[2.5]" />
                     <span>{discipline.unreadCount} novos</span>
                   </div>
