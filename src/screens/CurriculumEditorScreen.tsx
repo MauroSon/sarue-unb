@@ -254,7 +254,7 @@ const CatalogDisciplineSelect: React.FC<{
     >
       <Popover.Trigger
         disabled={status !== "ready"}
-        className="flex h-10 w-full items-center justify-between gap-2 px-3 py-2 text-xs font-bold text-black focus:outline-hidden focus:ring-2 focus:ring-neo-blue transition-[box-shadow,border-color] cursor-pointer select-none rounded-xl border-2 border-black bg-white disabled:cursor-not-allowed disabled:opacity-50"
+        className="flex h-10 w-full items-center justify-between gap-2 px-3 py-2 text-xs font-bold text-black focus:outline-hidden focus:ring-2 focus:ring-neo-blue transition-[box-shadow,border-color] cursor-pointer select-none rounded-xl border-2 border-ink bg-paper disabled:cursor-not-allowed disabled:opacity-50"
       >
         <span className="truncate text-left">
           {value ??
@@ -278,9 +278,9 @@ const CatalogDisciplineSelect: React.FC<{
           sideOffset={6}
           className="isolate z-50"
         >
-          <Popover.Popup className="relative z-50 w-max min-w-[320px] max-w-[480px] rounded-lg border-2 border-black bg-canvas text-black outline-hidden origin-(--transform-origin)">
+          <Popover.Popup className="relative z-50 w-max min-w-[320px] max-w-[480px] rounded-lg border-2 border-ink bg-canvas text-black outline-hidden origin-(--transform-origin)">
             {/* Busca interna */}
-            <div className="p-2 border-b-2 border-black/10">
+            <div className="p-2 border-b-2 border-ink/10">
               <div className="relative">
                 <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 z-10 pointer-events-none text-neutral-500 stroke-[2.5]" />
                 <input
@@ -314,7 +314,7 @@ const CatalogDisciplineSelect: React.FC<{
                   }
                   autoFocus
                   placeholder="Pesquisar disciplina…"
-                  className="w-full h-8 bg-white pl-9 pr-3 text-xs font-semibold text-black rounded-lg border-2 border-black focus:outline-hidden focus:ring-2 focus:ring-neo-blue placeholder:text-neutral-600"
+                  className="w-full h-8 bg-paper pl-9 pr-3 text-xs font-semibold text-black rounded-lg border-2 border-ink focus:outline-hidden focus:ring-2 focus:ring-neo-blue placeholder:text-neutral-600"
                 />
               </div>
             </div>
@@ -766,7 +766,7 @@ export const CurriculumEditorScreen: React.FC<CurriculumEditorScreenProps> = ({
       />
 
       {/* Linha de contexto: curso, situação e estado do rascunho */}
-      <div className="bg-pastel-blue border-2 border-black rounded-lg px-4 py-2.5 shadow-neo flex flex-wrap items-center gap-x-3 gap-y-1.5">
+      <div className="bg-pastel-blue border-2 border-ink rounded-lg px-4 py-2.5 shadow-neo flex flex-wrap items-center gap-x-3 gap-y-1.5">
         <span className="text-sm font-black text-black">
           {draft?.courseName}
         </span>
@@ -809,7 +809,7 @@ export const CurriculumEditorScreen: React.FC<CurriculumEditorScreenProps> = ({
             key={`semester-${level}`}
             className="p-0 overflow-hidden"
           >
-            <div className="flex items-center justify-between px-4 py-2.5 bg-neutral-100 border-b-2 border-black">
+            <div className="flex items-center justify-between px-4 py-2.5 bg-neutral-100 border-b-2 border-ink">
               <div className="flex items-center gap-2">
                 <span className="font-black text-xs uppercase tracking-wider text-black">
                   {level}º Semestre
@@ -832,7 +832,7 @@ export const CurriculumEditorScreen: React.FC<CurriculumEditorScreenProps> = ({
                 >
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className="font-mono text-xs font-black px-1.5 py-0.5 border border-black rounded bg-white text-black">
+                      <span className="font-mono text-xs font-black px-1.5 py-0.5 border border-ink rounded bg-paper text-black">
                         {disc.code}
                       </span>
                       <span className="text-xs font-black text-black">
@@ -923,7 +923,7 @@ export const CurriculumEditorScreen: React.FC<CurriculumEditorScreenProps> = ({
 
             <form onSubmit={handleSaveForm} className="space-y-3 py-2">
               {/* Preenchimento rápido: bloco separado do formulário */}
-              <div className="pb-4 mb-1 border-b-2 border-black/10">
+              <div className="pb-4 mb-1 border-b-2 border-ink/10">
                 <FieldLabel>Preenchimento rápido — Catálogo da UnB</FieldLabel>
                 <CatalogDisciplineSelect
                   items={catalog}

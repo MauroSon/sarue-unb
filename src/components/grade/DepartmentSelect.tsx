@@ -66,7 +66,7 @@ export const DepartmentSelect: React.FC<DepartmentSelectProps> = ({
         className={`flex w-full items-center justify-between gap-2 px-3 py-2 text-xs font-bold text-black focus:outline-hidden transition-[box-shadow,border-color,background-color] cursor-pointer select-none ${
           bare
             ? 'h-full rounded-r-xl focus-visible:ring-2 focus-visible:ring-inset ring-neo-blue'
-            : 'h-10 rounded-xl border-2 border-black bg-white focus:ring-2 focus:ring-neo-blue'
+            : 'h-10 rounded-xl border-2 border-ink bg-paper focus:ring-2 focus:ring-neo-blue'
         } ${triggerClassName ?? ''}`}
       >
         <span className="truncate text-left">{selectedName ?? 'Selecione o departamento'}</span>
@@ -75,9 +75,9 @@ export const DepartmentSelect: React.FC<DepartmentSelectProps> = ({
 
       <Popover.Portal>
         <Popover.Positioner side="bottom" align="end" sideOffset={6} className="isolate z-50">
-          <Popover.Popup className="relative z-50 w-max min-w-[260px] max-w-[460px] rounded-lg border-2 border-black bg-canvas text-black outline-hidden origin-(--transform-origin)">
+          <Popover.Popup className="relative z-50 w-max min-w-[260px] max-w-[460px] rounded-lg border-2 border-ink bg-canvas text-black outline-hidden origin-(--transform-origin)">
             {/* Busca interna */}
-            <div className="p-2 border-b-2 border-black/10">
+            <div className="p-2 border-b-2 border-ink/10">
               <div className="relative">
                 <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500 stroke-[2.5]" />
                 <input
@@ -107,7 +107,7 @@ export const DepartmentSelect: React.FC<DepartmentSelectProps> = ({
                   aria-activedescendant={open ? `dept-option-${filtered[activeIndex]?.id}` : undefined}
                   autoFocus
                   placeholder="Pesquisar departamento…"
-                  className="w-full h-8 bg-white pl-9 pr-3 text-xs font-semibold text-black rounded-lg border-2 border-black focus:outline-hidden focus:ring-2 focus:ring-neo-blue placeholder:text-neutral-600"
+                  className="w-full h-8 bg-paper pl-9 pr-3 text-xs font-semibold text-black rounded-lg border-2 border-ink focus:outline-hidden focus:ring-2 focus:ring-neo-blue placeholder:text-neutral-600"
                 />
               </div>
             </div>

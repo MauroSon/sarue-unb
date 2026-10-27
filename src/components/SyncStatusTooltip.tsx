@@ -37,7 +37,7 @@ function StatusIndicator({ status }: { status: SyncStepStatus }) {
   switch (status) {
     case "syncing":
       return (
-        <Loader2 className="w-3.5 h-3.5 animate-spin text-neo-blue shrink-0" />
+        <Loader2 className="w-3.5 h-3.5 animate-spin text-blue-ink shrink-0" />
       );
     case "success":
       return <CheckCircle2 className="w-3.5 h-3.5 text-ink-success shrink-0" />;
@@ -86,7 +86,7 @@ export const SyncStatusTooltip: React.FC<SyncStatusTooltipProps> = ({
   return (
     <div className="w-80 p-3 space-y-3 bg-canvas text-black select-none">
       {/* Cabeçalho */}
-      <div className="flex items-center justify-between border-b-2 border-black pb-2">
+      <div className="flex items-center justify-between border-b-2 border-ink pb-2">
         <div className="flex items-center gap-1.5 font-black text-xs uppercase tracking-wider">
           <span>Status da Sincronização</span>
         </div>
@@ -100,9 +100,9 @@ export const SyncStatusTooltip: React.FC<SyncStatusTooltipProps> = ({
           return (
             <div
               key={step.id}
-              className="p-2 rounded-lg border border-black/15 bg-canvas hover:bg-neutral-100 transition-colors flex items-start gap-2.5"
+              className="p-2 rounded-lg border border-ink/15 bg-canvas hover:bg-neutral-100 transition-colors flex items-start gap-2.5"
             >
-              <div className="p-1 rounded bg-canvas border border-black/15 shrink-0 mt-0.5">
+              <div className="p-1 rounded bg-canvas border border-ink/15 shrink-0 mt-0.5">
                 <Icon className="w-3.5 h-3.5 text-neutral-700" />
               </div>
 
@@ -121,7 +121,7 @@ export const SyncStatusTooltip: React.FC<SyncStatusTooltipProps> = ({
                       : step.status === "success"
                         ? "text-ink-success font-medium"
                         : step.status === "syncing"
-                          ? "text-neo-blue font-semibold"
+                          ? "text-blue-ink font-semibold"
                           : "text-neutral-500"
                   }`}
                 >
@@ -134,7 +134,7 @@ export const SyncStatusTooltip: React.FC<SyncStatusTooltipProps> = ({
       </div>
 
       {/* Rodapé com timestamp */}
-      <div className="pt-2 border-t border-black/10 flex items-center justify-between text-[11px] text-neutral-600 font-semibold">
+      <div className="pt-2 border-t border-ink/10 flex items-center justify-between text-[11px] text-neutral-600 font-semibold">
         <span className="flex items-center gap-1">
           <Clock className="w-3 h-3 text-neutral-500" />
           <span>Última sincronização:</span>

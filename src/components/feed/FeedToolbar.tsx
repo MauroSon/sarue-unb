@@ -94,7 +94,7 @@ export const FeedToolbar: React.FC<FeedToolbarProps> = ({
   const searchInputRef = React.useRef<HTMLInputElement>(null);
 
   return (
-    <div className="bg-white border-2 border-black rounded-lg shadow-[4px_4px_0px_0px_#000]">
+    <div className="bg-paper border-2 border-ink rounded-lg shadow-(--neo-card-shadow)">
       <div className="space-y-3 p-4">
         {/* Busca textual */}
         <div className="relative">
@@ -106,8 +106,8 @@ export const FeedToolbar: React.FC<FeedToolbarProps> = ({
             onChange={(e) => onSearchChange(e.target.value)}
             placeholder={searchPlaceholder}
             aria-label={searchAriaLabel}
-            className={`w-full pl-10 py-2.5 text-sm font-medium text-black border-2 border-black rounded-xl focus:outline-hidden focus:ring-2 focus:ring-neo-blue transition-[transform,box-shadow,background-color,border-color] placeholder:text-neutral-400 shadow-none ${
-              searchQuery.trim() ? "bg-pastel-blue pr-10" : "bg-white pr-4"
+            className={`w-full pl-10 py-2.5 text-sm font-medium text-black border-2 border-ink rounded-xl focus:outline-hidden focus:ring-2 focus:ring-neo-blue transition-[transform,box-shadow,background-color,border-color] placeholder:text-neutral-500 shadow-none ${
+              searchQuery.trim() ? "bg-pastel-blue pr-10" : "bg-paper pr-4"
             }`}
           />
 
@@ -206,12 +206,12 @@ export const FeedToolbar: React.FC<FeedToolbarProps> = ({
         inert={!selectionMode}
       >
         <div className="min-h-0 overflow-hidden">
-          <div className="border-t-2 border-black/10 px-4 py-3">
+          <div className="border-t-2 border-ink/10 px-4 py-3">
             <div className="flex flex-wrap items-center justify-between gap-2">
               {/* Estado da seleção: contagem + alternar todos */}
               <div className="flex flex-wrap items-center gap-3">
                 <span className="text-xs font-bold text-neutral-600">
-                  <span className="text-neo-blue">{selectedCount}</span>{" "}
+                  <span className="text-blue-ink">{selectedCount}</span>{" "}
                   {selectedCount === 1
                     ? "item selecionado"
                     : "itens selecionados"}

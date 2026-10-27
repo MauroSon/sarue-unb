@@ -81,11 +81,11 @@ export const ScheduleTimetable = memo(forwardRef<
           {/* Cabeçalho institucional (integrante do PNG exportado) */}
           <div className="flex items-center justify-between gap-3 pb-2">
             <div className="flex items-center gap-2.5 min-w-0">
-              <div className="w-9 h-9 bg-unb-blue text-white border-2 border-black rounded-xl flex items-center justify-center font-black text-xs shrink-0 shadow-[2px_2px_0px_0px_#000]">
+              <div className="w-9 h-9 bg-unb-blue text-white border-2 border-ink rounded-xl flex items-center justify-center font-black text-xs shrink-0 shadow-[2px_2px_0px_0px_var(--neo-shadow)]">
                 UnB
               </div>
               <div className="min-w-0">
-                <h3 className="text-sm font-black uppercase text-neo-blue tracking-tight">
+                <h3 className="text-sm font-black uppercase text-blue-ink tracking-tight">
                   Universidade de Brasília
                 </h3>
                 <p className="text-[11px] font-bold text-black mt-0.5 truncate">
@@ -198,7 +198,7 @@ export const ScheduleTimetable = memo(forwardRef<
             {DAYS_HEADER.map((day) => (
               <div
                 key={day.id}
-                className="p-1.5 bg-neutral-100 border-2 border-black rounded-lg"
+                className="p-1.5 bg-neutral-100 border-2 border-ink rounded-lg"
               >
                 <span>{day.short}</span>
               </div>
@@ -219,12 +219,12 @@ export const ScheduleTimetable = memo(forwardRef<
                   key={`${timeRow.shift}-${timeRow.period}`}
                   className={`grid grid-cols-[88px_repeat(6,minmax(0,1fr))] gap-1.5 py-1 items-stretch ${
                     isShiftStart
-                      ? "mt-1.5 pt-1.5 border-t-2 border-black/20"
+                      ? "mt-1.5 pt-1.5 border-t-2 border-ink/20"
                       : ""
                   }`}
                 >
                   {/* Faixa horária na esquerda */}
-                  <div className="flex flex-col justify-center items-center text-[11px] font-mono font-bold text-neutral-600 bg-neutral-50 rounded border border-black/15 px-2 py-1">
+                  <div className="flex flex-col justify-center items-center text-[11px] font-mono font-bold text-neutral-600 bg-neutral-50 rounded border border-ink/15 px-2 py-1">
                     <span className="font-black text-black">
                       {timeRow.shift}
                       {timeRow.period}
@@ -244,7 +244,7 @@ export const ScheduleTimetable = memo(forwardRef<
                       return (
                         <div
                           key={day.id}
-                          className="h-11 rounded-lg border border-dashed border-black/15 bg-neutral-50"
+                          className="h-11 rounded-lg border border-dashed border-ink/15 bg-neutral-50"
                         />
                       );
                     }
@@ -254,7 +254,7 @@ export const ScheduleTimetable = memo(forwardRef<
                       return (
                         <div
                           key={day.id}
-                          className="h-11 p-1 rounded-lg border-2 border-neo-danger bg-pastel-red text-ink-error shadow-[1px_1px_0px_0px_#000] flex flex-col justify-center items-center text-center focus:outline-hidden focus-visible:ring-2 focus-visible:ring-neo-danger"
+                          className="h-11 p-1 rounded-lg border-2 border-neo-danger bg-pastel-red text-ink-error shadow-[1px_1px_0px_0px_var(--neo-shadow)] flex flex-col justify-center items-center text-center focus:outline-hidden focus-visible:ring-2 focus-visible:ring-neo-danger"
                           role="status"
                           aria-label={`Conflito entre ${classesInSlot.map((c) => c.disciplineCode).join(" e ")}`}
                           tabIndex={0}
@@ -305,7 +305,7 @@ export const ScheduleTimetable = memo(forwardRef<
 
           {/* Legenda das Disciplinas (incluída no PNG exportado) */}
           {selectedClasses.length > 0 ? (
-            <div className="pt-3 mt-2 border-t-2 border-black/15">
+            <div className="pt-3 mt-2 border-t-2 border-ink/15">
               <span className="text-[11px] font-black uppercase text-black block mb-1.5">
                 Legenda das disciplinas
               </span>
@@ -317,10 +317,10 @@ export const ScheduleTimetable = memo(forwardRef<
                   return (
                     <div
                       key={cls.id}
-                      className="flex items-center gap-2 p-1.5 bg-neutral-50 border border-black/20 rounded-lg text-[11px]"
+                      className="flex items-center gap-2 p-1.5 bg-neutral-50 border border-ink/20 rounded-lg text-[11px]"
                     >
                       <span
-                        className="w-3 h-3 rounded-full border border-black shrink-0"
+                        className="w-3 h-3 rounded-full border border-ink shrink-0"
                         style={{ backgroundColor: color.hex }}
                       />
                       <span className="font-black text-black">

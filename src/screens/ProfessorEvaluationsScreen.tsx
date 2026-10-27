@@ -35,6 +35,10 @@ import {
 
 let cachedEvaluationViewMode: EvaluationViewMode = "professors";
 
+// Formulário da comunidade para enviar um novo relato de professor.
+const PROFESSOR_EVALUATIONS_FORM_URL =
+  "https://docs.google.com/forms/d/e/1FAIpQLSclOkCc4GtNf-wEKu0iIeLBFQ7rX34kR7C5bDI9O9mKhd_8gA/viewform";
+
 export const ProfessorEvaluationsScreen: React.FC = () => {
   const {
     summaries,
@@ -422,18 +426,45 @@ export const ProfessorEvaluationsScreen: React.FC = () => {
       <Alert
         variant="yellow"
         title="Sobre os relatos"
-        description="Estes relatos vêm de uma fonte externa: uma planilha pública mantida pela própria comunidade de estudantes, sem moderação prévia: palavrões e palavras de baixo calão são censurados automaticamente pela plataforma. Cada opinião reflete a visão de quem escreveu — pode vir enviesada, desatualizada ou até conter ofensas (palavrões são censurados). Use as avaliações como apoio na sua decisão, e não como verdade absoluta."
+        description={
+          <>
+            Estes relatos vêm de uma fonte externa: uma planilha pública
+            mantida pela própria comunidade de estudantes, sem moderação
+            prévia:{" "}
+            <strong className="font-bold text-black">
+              palavrões e palavras de baixo calão são censurados
+              automaticamente pela plataforma
+            </strong>
+            . Cada opinião reflete a visão de quem escreveu — pode vir
+            enviesada, desatualizada ou até conter ofensas. Use as avaliações
+            como apoio na sua decisão, e não como verdade absoluta.
+          </>
+        }
         aside={
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => openExternalUrl(PROFESSOR_EVALUATIONS_SHEET_URL)}
-            title="Abrir planilha colaborativa no Google Sheets"
-          >
-            <span>Ver Planilha</span>
-            <ExternalLink className="w-3.5 h-3.5 stroke-[2.5]" />
-          </Button>
+          <div className="flex flex-col items-stretch gap-3 shrink-0">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => openExternalUrl(PROFESSOR_EVALUATIONS_SHEET_URL)}
+              title="Abrir planilha colaborativa no Google Sheets"
+              className="dark:bg-neo-yellow dark:text-ink dark:hover:bg-neo-yellowHover"
+            >
+              <span>Planilha</span>
+              <ExternalLink className="w-3.5 h-3.5 stroke-[2.5]" />
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => openExternalUrl(PROFESSOR_EVALUATIONS_FORM_URL)}
+              title="Abrir o formulário para enviar um novo relato"
+              className="dark:bg-neo-yellow dark:text-ink dark:hover:bg-neo-yellowHover"
+            >
+              <span>Formulário</span>
+              <ExternalLink className="w-3.5 h-3.5 stroke-[2.5]" />
+            </Button>
+          </div>
         }
       />
 

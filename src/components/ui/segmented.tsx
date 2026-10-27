@@ -49,7 +49,7 @@ export function SegmentedControl<T extends string>({
       role="group"
       aria-label={ariaLabel}
       className={cn(
-        "relative grid gap-0.5 p-0.5 bg-white border-2 border-black rounded-xl",
+        "relative grid gap-0.5 p-0.5 bg-paper border-2 border-ink rounded-xl",
         className,
       )}
       style={{ gridTemplateColumns: `repeat(${count}, minmax(0, 1fr))` }}

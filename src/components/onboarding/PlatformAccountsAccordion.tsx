@@ -397,8 +397,10 @@ export const PlatformAccountsAccordion: React.FC<
       name: "SIGAA",
       hint: "Matrícula e senha",
       isSaved: sigaaSaved,
-      block: "bg-neo-green",
-      icon: <GraduationCap className="w-5 h-5 text-black stroke-[2.5]" />,
+      block: "bg-platform-sigaa",
+      icon: (
+        <GraduationCap className="w-5 h-5 text-ink stroke-[2.5]" />
+      ),
     },
     {
       id: "aprender3",
@@ -406,7 +408,9 @@ export const PlatformAccountsAccordion: React.FC<
       hint: "CPF e senha",
       isSaved: aprenderSaved,
       block: "bg-platform-aprender3",
-      icon: <BookOpen className="w-5 h-5 text-black stroke-[2.5]" />,
+      icon: (
+        <BookOpen className="w-5 h-5 text-ink stroke-[2.5]" />
+      ),
     },
     ...(showTeams
       ? [
@@ -416,7 +420,9 @@ export const PlatformAccountsAccordion: React.FC<
             hint: "Login interativo",
             isSaved: teamsConnected,
             block: "bg-platform-teams",
-            icon: <Video className="w-5 h-5 text-black stroke-[2.5]" />,
+            icon: (
+              <Video className="w-5 h-5 text-white stroke-[2.5]" />
+            ),
           },
         ]
       : []),
@@ -468,13 +474,13 @@ export const PlatformAccountsAccordion: React.FC<
                       delay: 0.12 + i * 0.08,
                     }
               }
-              className={`border-2 border-black rounded-lg overflow-hidden ${
+              className={`border-2 border-ink rounded-lg overflow-hidden ${
                 variant === "panel"
                   ? // Painel da Settings: linha segmentada do card — sem sombra própria.
                     ""
                   : // Adesivo do onboarding: sombra dura própria.
-                    "shadow-[4px_4px_0px_0px_#000]"
-              } ${p.isSaved ? "bg-pastel-green" : "bg-white"} ${isLocked ? "opacity-60" : ""}`}
+                    "shadow-(--neo-card-shadow)"
+              } ${p.isSaved ? "bg-pastel-green" : "bg-paper"} ${isLocked ? "opacity-60" : ""}`}
             >
               {/* Cabeçalho do adesivo */}
               <button
@@ -489,7 +495,7 @@ export const PlatformAccountsAccordion: React.FC<
                 className={`w-full flex items-center gap-3 p-4 text-left focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-neo-blue focus-visible:ring-offset-2 transition-colors duration-150 ${isLocked ? "cursor-not-allowed" : "cursor-pointer hover:bg-black/[0.03]"}`}
               >
                 <div
-                  className={`w-9 h-9 shrink-0 ${p.block} border-2 border-black rounded-lg shadow-[2px_2px_0px_0px_#000] flex items-center justify-center`}
+                  className={`w-9 h-9 shrink-0 ${p.block} border-2 border-ink rounded-lg shadow-[2px_2px_0px_0px_var(--neo-shadow)] flex items-center justify-center`}
                 >
                   {p.icon}
                 </div>
@@ -541,7 +547,7 @@ export const PlatformAccountsAccordion: React.FC<
                     }
                     className="overflow-hidden"
                   >
-                    <div className="px-4 pb-4 pt-3 border-t-2 border-black/10 space-y-3">
+                    <div className="px-4 pb-4 pt-3 border-t-2 border-ink/10 space-y-3">
                       {p.id === "sigaa" && (
                         <form
                           onSubmit={(e) => {
@@ -587,7 +593,7 @@ export const PlatformAccountsAccordion: React.FC<
                             />
                           </div>
                           {sigaaSaved && sigaaSuccessMsg ? (
-                            <div className="p-3 bg-pastel-green text-black border-2 border-black rounded-lg text-xs font-bold flex items-center gap-2">
+                            <div className="p-3 bg-pastel-green text-black border-2 border-ink rounded-lg text-xs font-bold flex items-center gap-2">
                               <CheckCircle2 className="w-4 h-4 text-ink-success stroke-[2.5] shrink-0" />
                               <span>{sigaaSuccessMsg}</span>
                             </div>
@@ -662,7 +668,7 @@ export const PlatformAccountsAccordion: React.FC<
                             />
                           </div>
                           {aprenderSaved && aprenderSuccessMsg ? (
-                            <div className="p-3 bg-pastel-green text-black border-2 border-black rounded-lg text-xs font-bold flex items-center gap-2">
+                            <div className="p-3 bg-pastel-green text-black border-2 border-ink rounded-lg text-xs font-bold flex items-center gap-2">
                               <CheckCircle2 className="w-4 h-4 text-ink-success stroke-[2.5] shrink-0" />
                               <span>{aprenderSuccessMsg}</span>
                             </div>
@@ -706,7 +712,7 @@ export const PlatformAccountsAccordion: React.FC<
                           </p>
                           {teamsConnected &&
                           (teamsSuccessMsg || allCredentials.teams?.email) ? (
-                            <div className="p-3 bg-pastel-green text-black border-2 border-black rounded-lg text-xs font-bold flex items-center gap-2">
+                            <div className="p-3 bg-pastel-green text-black border-2 border-ink rounded-lg text-xs font-bold flex items-center gap-2">
                               <CheckCircle2 className="w-4 h-4 text-ink-success stroke-[2.5] shrink-0" />
                               <span>
                                 {teamsSuccessMsg ||
@@ -743,9 +749,9 @@ export const PlatformAccountsAccordion: React.FC<
                       {formError || error ? (
                         <div
                           role="alert"
-                          className="p-3 bg-pastel-red border-2 border-black rounded-lg flex items-start gap-2.5"
+                          className="p-3 bg-pastel-red border-2 border-ink rounded-lg flex items-start gap-2.5"
                         >
-                          <span className="p-1 bg-white border-2 border-black rounded-md shadow-[1px_1px_0px_0px_#000] shrink-0">
+                          <span className="p-1 bg-paper border-2 border-ink rounded-md shadow-[1px_1px_0px_0px_var(--neo-shadow)] shrink-0">
                             <AlertCircle className="w-3.5 h-3.5 text-ink-error stroke-[3]" />
                           </span>
                           <span className="text-xs font-bold text-ink-error leading-relaxed pt-0.5">
@@ -777,7 +783,7 @@ export const PlatformAccountsAccordion: React.FC<
         >
           <DialogHeader>
             <div className="flex items-center gap-2 mb-1">
-              <div className="w-9 h-9 rounded-lg bg-neo-danger text-white border-2 border-black flex items-center justify-center shadow-[2px_2px_0px_0px_#000]">
+              <div className="w-9 h-9 rounded-lg bg-neo-danger text-white border-2 border-ink flex items-center justify-center shadow-[2px_2px_0px_0px_var(--neo-shadow)]">
                 <LogOut className="w-5 h-5 stroke-[2.5]" />
               </div>
               <DialogTitle>Desconectar do SIGAA?</DialogTitle>

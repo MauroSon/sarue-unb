@@ -65,10 +65,10 @@ const DeadlineRow: React.FC<{
         title={isDone ? 'Concluído' : 'Marcar como concluído'}
         aria-label={isDone ? `Concluído: ${item.title}` : `Concluir: ${item.title}`}
         className={cn(
-          'w-5 h-5 mt-0.5 rounded-md border-2 border-black flex items-center justify-center shrink-0 cursor-pointer transition-[transform,box-shadow,background-color] duration-150 ease-out shadow-[1px_1px_0px_0px_#000] hover:translate-x-[0.5px] hover:translate-y-[0.5px] hover:shadow-none active:translate-x-[1px] active:translate-y-[1px]',
+          'w-5 h-5 mt-0.5 rounded-md border-2 border-ink flex items-center justify-center shrink-0 cursor-pointer transition-[transform,box-shadow,background-color] duration-150 ease-out shadow-[1px_1px_0px_0px_var(--neo-shadow)] hover:translate-x-[0.5px] hover:translate-y-[0.5px] hover:shadow-none active:translate-x-[1px] active:translate-y-[1px]',
           isDone
-            ? 'bg-neo-green text-black'
-            : 'bg-white text-neutral-400 hover:bg-neutral-100',
+            ? 'bg-neo-green text-ink'
+            : 'bg-paper text-neutral-400 hover:bg-neutral-100',
         )}
       >
         {isDone ? <Check className="w-3.5 h-3.5 stroke-[3]" /> : null}
@@ -210,7 +210,7 @@ export const DeadlineBell: React.FC<{ className?: string }> = ({ className }) =>
         <Bell className="size-5 stroke-[2.5]" />
         {badgeCount > 0 ? (
           <span
-            className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 inline-flex items-center justify-center text-[11px] leading-none font-bold text-white bg-neo-danger border-2 border-black rounded-full"
+            className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 inline-flex items-center justify-center text-[11px] leading-none font-bold text-white bg-neo-danger border-2 border-ink rounded-full"
             aria-hidden
           >
             {badgeCount > 9 ? '9+' : badgeCount}
@@ -227,12 +227,12 @@ export const DeadlineBell: React.FC<{ className?: string }> = ({ className }) =>
         >
           <PopoverPrimitive.Popup
             aria-label="Prazos próximos"
-            className="w-[380px] max-h-[min(28rem,var(--available-height))] flex flex-col overflow-hidden rounded-lg border-2 border-black bg-canvas outline-none origin-[var(--transform-origin)] transition-[opacity,transform] duration-150 ease-out data-[starting-style]:scale-95 data-[starting-style]:opacity-0 data-[ending-style]:scale-95 data-[ending-style]:opacity-0"
+            className="w-[380px] max-h-[min(28rem,var(--available-height))] flex flex-col overflow-hidden rounded-lg border-2 border-ink bg-canvas outline-none origin-[var(--transform-origin)] transition-[opacity,transform] duration-150 ease-out data-[starting-style]:scale-95 data-[starting-style]:opacity-0 data-[ending-style]:scale-95 data-[ending-style]:opacity-0"
           >
             {/* Cabeçalho do painel */}
-            <div className="flex items-center justify-between px-4 py-3 border-b-2 border-black/15 shrink-0">
+            <div className="flex items-center justify-between px-4 py-3 border-b-2 border-ink/15 shrink-0">
               <div className="flex items-center gap-2">
-                <Bell className="size-4 stroke-[2.5] text-neo-blue" />
+                <Bell className="size-4 stroke-[2.5] text-blue-ink" />
                 <h3 className="text-sm font-extrabold tracking-tight text-black">
                   Prazos
                 </h3>
@@ -250,8 +250,8 @@ export const DeadlineBell: React.FC<{ className?: string }> = ({ className }) =>
             <div className="overflow-y-auto overscroll-contain">
               {snapshot.length === 0 ? (
                 <div className="px-6 py-10 text-center space-y-3">
-                  <div className="w-12 h-12 mx-auto bg-white border-2 border-black rounded-lg shadow-[2px_2px_0px_0px_#000] flex items-center justify-center">
-                    <BellOff className="size-6 stroke-[2.5] text-neo-blue" />
+                  <div className="w-12 h-12 mx-auto bg-paper border-2 border-ink rounded-lg shadow-[2px_2px_0px_0px_var(--neo-shadow)] flex items-center justify-center">
+                    <BellOff className="size-6 stroke-[2.5] text-blue-ink" />
                   </div>
                   <h4 className="text-base font-bold text-black">Nada vencendo</h4>
                   <p className="text-xs font-medium text-neutral-600 leading-relaxed max-w-[260px] mx-auto">

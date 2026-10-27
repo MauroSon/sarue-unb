@@ -20,11 +20,11 @@ export const AppBootSkeleton: React.FC = () => (
       className="flex h-full bg-canvas bg-grid overflow-hidden"
     >
       {/* Sidebar preview: cromo real, conteúdo sem tinta */}
-      <aside className="h-full w-64 shrink-0 bg-white border-r-2 border-black flex flex-col select-none overflow-x-hidden">
+      <aside className="h-full w-64 shrink-0 bg-paper border-r-2 border-ink flex flex-col select-none overflow-x-hidden">
         <div className="min-h-0 flex-1 flex flex-col">
           {/* Header com o logo-bloco real (identidade âncora) e wordmark sem tinta */}
-          <div className="shrink-0 p-4 border-b-2 border-black flex items-center min-h-[69px]">
-            <div className="w-[42px] h-[42px] shrink-0 border-2 border-black rounded-xl overflow-hidden shadow-[2px_2px_0px_0px_#000]">
+          <div className="shrink-0 p-4 border-b-2 border-ink flex items-center min-h-[69px]">
+            <div className="w-[42px] h-[42px] shrink-0 border-2 border-ink rounded-xl overflow-hidden shadow-[2px_2px_0px_0px_var(--neo-shadow)]">
               <img
                 src="/sarue-logo.png"
                 alt=""
@@ -35,12 +35,12 @@ export const AppBootSkeleton: React.FC = () => (
           </div>
 
           {/* Navegação: 6 linhas com as divisórias reais da sidebar */}
-          <nav className="border-b-2 border-black">
+          <nav className="border-b-2 border-ink">
             <ul className="flex flex-col">
               {NAV_LABEL_WIDTHS.map((labelWidth, index) => (
                 <li
                   key={index}
-                  className="border-b-2 border-black last:border-b-0"
+                  className="border-b-2 border-ink last:border-b-0"
                 >
                   <div className="py-3.5 px-4 flex items-center">
                     <div className="w-[42px] h-6 shrink-0 flex items-center justify-center">
@@ -55,7 +55,7 @@ export const AppBootSkeleton: React.FC = () => (
         </div>
 
         {/* Rodapé: pill de Sincronizar (sem borda: não é adesivo ainda), sino e última sync */}
-        <div className="shrink-0 p-4 border-t-2 border-black">
+        <div className="shrink-0 p-4 border-t-2 border-ink">
           <div className="h-10 flex items-center">
             <Skeleton className="h-10 w-[calc(100%-48px)] rounded-2xl" />
             <Skeleton className="h-10 w-10 ml-2 rounded-xl" />
@@ -72,7 +72,7 @@ export const AppBootSkeleton: React.FC = () => (
             <Skeleton className="h-7 w-40" />
 
             {/* Toolbar do Feed: card real (adesivo), controles sem tinta */}
-            <div className="bg-white border-2 border-black rounded-lg shadow-[4px_4px_0px_0px_#000]">
+            <div className="bg-paper border-2 border-ink rounded-lg shadow-(--neo-card-shadow)">
               <div className="space-y-3 p-4">
                 {/* Cavidade de busca */}
                 <Skeleton className="h-11 w-full rounded-xl" />

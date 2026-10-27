@@ -91,7 +91,7 @@ export const ReviewCard: React.FC<ReviewCardProps> = ({
   ].filter((p): p is { label: string; value: string } => p !== null);
 
   return (
-    <Card className="bg-white rounded-lg p-6 shadow-neo space-y-4">
+    <Card className="bg-paper rounded-lg p-6 shadow-neo space-y-4">
       {/* Cabeçalho: Recomendação, SIGAA e Campus */}
       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
         <div className="space-y-1.5 min-w-0 flex-1">
@@ -135,7 +135,7 @@ export const ReviewCard: React.FC<ReviewCardProps> = ({
 
         {/* Bloco Adesivo de Nota da Didática: cor única por faixa */}
         <div
-          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border-2 border-black shadow-neo-xs shrink-0 ${getDidaticaCardStyle(
+          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border-2 border-ink shadow-neo-xs shrink-0 ${getDidaticaCardStyle(
             evaluation.didaticaScore,
           )}`}
         >
@@ -154,9 +154,9 @@ export const ReviewCard: React.FC<ReviewCardProps> = ({
 
       {/* Feedback sincero em destaque */}
       {evaluation.feedback ? (
-        <div className="bg-cream border-2 border-black rounded-lg p-3.5 shadow-neo-xs">
+        <div className="bg-cream border-2 border-ink rounded-lg p-3.5 shadow-neo-xs">
           <div className="flex items-center gap-1.5 text-[11px] font-black uppercase tracking-wider text-neutral-600 mb-1">
-            <MessageSquareQuote className="w-3.5 h-3.5 stroke-[2.5] text-neo-blue shrink-0" />
+            <MessageSquareQuote className="w-3.5 h-3.5 stroke-[2.5] text-blue-ink shrink-0" />
             <span>Feedback Sincero</span>
           </div>
           <p className="text-sm font-medium text-black whitespace-pre-line leading-relaxed">
@@ -183,7 +183,7 @@ export const ReviewCard: React.FC<ReviewCardProps> = ({
       )}
 
       {/* Rodapé: método de avaliação + data; curiosidades ficam atrás de disclosure */}
-      <div className="flex flex-wrap items-center justify-between gap-2 pt-3 border-t-2 border-black/10 text-xs font-semibold text-neutral-600">
+      <div className="flex flex-wrap items-center justify-between gap-2 pt-3 border-t-2 border-ink/10 text-xs font-semibold text-neutral-600">
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
           {evaluation.evaluationMethods && (
             <span className="inline-flex items-center gap-1">

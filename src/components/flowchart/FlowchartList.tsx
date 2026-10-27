@@ -35,7 +35,7 @@ const StatusIcon: React.FC<{ d: FlowchartDiscipline }> = ({ d }) => {
     return (
       <Tooltip>
         <TooltipTrigger aria-label="Cursando" className="shrink-0 cursor-help">
-          <CircleDotDashed className="w-3.5 h-3.5 stroke-[2.5] text-neo-blue" />
+          <CircleDotDashed className="w-3.5 h-3.5 stroke-[2.5] text-blue-ink" />
         </TooltipTrigger>
         <TooltipContent>Cursando neste semestre</TooltipContent>
       </Tooltip>
@@ -90,7 +90,7 @@ const PrereqPill: React.FC<{
     <Tooltip>
       <TooltipTrigger
         aria-label={`Pré-requisitos de ${d.name}: ${d.prerequisites.length} disciplina(s)`}
-        className="hidden md:inline-flex cursor-help items-center gap-1 text-[11px] font-black px-2.5 py-0.5 border-2 border-black rounded-full bg-white text-neutral-700 shrink-0 transition-colors duration-150 hover:bg-pastel-yellow"
+        className="hidden md:inline-flex cursor-help items-center gap-1 text-[11px] font-black px-2.5 py-0.5 border-2 border-ink rounded-full bg-paper text-neutral-700 dark:bg-neutral-300 dark:text-slate-50 shrink-0 transition-colors duration-150 hover:bg-pastel-yellow"
       >
         Pré-requisitos
       </TooltipTrigger>
@@ -128,7 +128,7 @@ const DisciplineRow: React.FC<{
   return (
     <div
       className={`group flex items-center gap-3 px-4 py-2.5 transition-colors duration-150 hover:bg-neutral-50 ${
-        isCompleted ? "bg-neutral-50/70" : "bg-white"
+        isCompleted ? "bg-neutral-50/70" : "bg-paper"
       }`}
     >
       <button
@@ -146,20 +146,20 @@ const DisciplineRow: React.FC<{
             ? "Desmarcar disciplina"
             : "Marcar como concluída manualmente"
         }
-        className={`cursor-pointer w-6 h-6 rounded-md border-2 border-black flex items-center justify-center transition-[transform,box-shadow,background-color] duration-150 shadow-neo-sm focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-neo-blue focus-visible:ring-offset-2 hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-neo-xs active:translate-x-[2px] active:translate-y-[2px] active:shadow-none shrink-0 ${
+        className={`cursor-pointer w-6 h-6 rounded-md border-2 border-ink flex items-center justify-center transition-[transform,box-shadow,background-color] duration-150 shadow-neo-sm focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-neo-blue focus-visible:ring-offset-2 hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-neo-xs active:translate-x-[2px] active:translate-y-[2px] active:shadow-none shrink-0 ${
           isCompleted
-            ? "bg-neo-green text-black"
-            : "bg-white"
+            ? "bg-neo-green text-ink"
+            : "bg-paper"
         }`}
       >
         {isCompleted ? (
           <Check className="w-3 h-3 stroke-[3]" />
         ) : (
-          <div className="w-2 h-2 rounded-full border border-black" />
+          <div className="w-2 h-2 rounded-full border border-ink" />
         )}
       </button>
 
-      <span className="font-mono text-[11px] font-black px-1.5 py-0.5 border border-black rounded-md shrink-0 bg-white text-black">
+      <span className="font-mono text-[11px] font-black px-1.5 py-0.5 border border-ink rounded-md shrink-0 bg-paper text-black dark:bg-neutral-300 dark:text-slate-50">
         {d.code}
       </span>
 
@@ -196,7 +196,7 @@ const DisciplineRow: React.FC<{
               type="button"
               onClick={() => onSendToGrade(d.code, d.name)}
               aria-label={`Enviar ${d.name} para o Montar Grade`}
-              className="cursor-pointer p-1 rounded-md border border-black bg-white hover:bg-pastel-yellow text-neutral-700 hover:text-black transition-[opacity,background-color,color] shrink-0 shadow-neo-xs opacity-0 group-hover:opacity-100 focus-visible:opacity-100"
+              className="cursor-pointer p-1 rounded-md border border-ink bg-paper hover:bg-pastel-yellow text-neutral-700 hover:text-black transition-[opacity,background-color,color] shrink-0 shadow-neo-xs opacity-0 group-hover:opacity-100 focus-visible:opacity-100"
             >
               <CalendarPlus className="w-3.5 h-3.5 stroke-[2.5]" />
             </TooltipTrigger>
@@ -285,9 +285,9 @@ export const FlowchartList: React.FC<FlowchartListProps> = ({
           <AccordionItem
             key={sem.level}
             value={String(sem.level)}
-            className="border-0 border-t-2 border-black first:border-t-0"
+            className="border-0 border-t-2 border-ink first:border-t-0"
           >
-            <AccordionTrigger className="px-4 py-2.5 bg-white hover:bg-neutral-50 rounded-none font-black text-[11px] uppercase tracking-wider text-black">
+            <AccordionTrigger className="px-4 py-2.5 bg-paper hover:bg-neutral-50 rounded-none font-black text-[11px] uppercase tracking-wider text-black">
               <div className="flex items-center gap-2 flex-1 min-w-0">
                 <span>{sem.level}º Semestre</span>
                 {allCompleted && (
@@ -302,7 +302,7 @@ export const FlowchartList: React.FC<FlowchartListProps> = ({
               </span>
             </AccordionTrigger>
 
-            <AccordionContent className="p-0 bg-white border-t-2 border-black">
+            <AccordionContent className="p-0 bg-paper border-t-2 border-ink">
               <div className="divide-y divide-black/10">
                 {discs.map((d) => (
                   <DisciplineRow

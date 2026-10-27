@@ -10,12 +10,12 @@ export interface FlowchartCardProps {
 export const FlowchartCard: React.FC<FlowchartCardProps> = React.memo(
   ({ discipline }) => {
     return (
-      <div className="border-2 border-black rounded-lg p-3 flex flex-col gap-2 bg-white select-none min-h-28">
+      <div className="border-2 border-ink rounded-lg p-3 flex flex-col gap-2 bg-paper select-none min-h-28">
         <div className="flex items-center gap-1 min-w-0">
-          <span className="font-mono text-[11px] font-black px-1.5 py-0.5 bg-white border border-black rounded-md text-black truncate">
+          <span className="font-mono text-[11px] font-black px-1.5 py-0.5 bg-paper border border-ink rounded-md text-black truncate">
             {discipline.code}
           </span>
-          <span className="text-[11px] font-bold px-1.5 py-0.5 bg-white/80 border border-black rounded-md text-neutral-700">
+          <span className="text-[11px] font-bold px-1.5 py-0.5 bg-paper/80 border border-ink rounded-md text-neutral-700">
             {discipline.workloadHours}h
           </span>
         </div>

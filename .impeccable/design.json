@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-10-25T18:00:00Z",
+  "generatedAt": "2026-10-26T13:13:48.271Z",
   "title": "Design System: Saruê UnB",
   "extensions": {
     "colorMeta": {
@@ -533,6 +533,857 @@
           "#b6e1fe",
           "#e6f4fe"
         ]
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Tinta Fixa",
+        "canonical": "#000000",
+        "tonalRamp": [
+          "#272525",
+          "#413e3e",
+          "#605c5c",
+          "#827d7d",
+          "#a09c9c",
+          "#c1bebe",
+          "#dad8d8",
+          "#f3f2f2"
+        ]
+      },
+      "blue-ink": {
+        "role": "primary",
+        "displayName": "Azul Caneta Texto",
+        "canonical": "#2563EB",
+        "tonalRamp": [
+          "#04122F",
+          "#09235D",
+          "#0E3895",
+          "#134FD2",
+          "#3B73ED",
+          "#739BF2",
+          "#ABC3F7",
+          "#DAE4FC"
+        ]
+      },
+      "grid-line": {
+        "role": "neutral",
+        "displayName": "Linha do Grid",
+        "canonical": "rgba(0, 0, 0, 0.06)"
+      },
+      "ink-black-dark": {
+        "role": "neutral",
+        "displayName": "Giz Claro Quente",
+        "canonical": "#F2F0E7",
+        "tonalRamp": [
+          "#211E12",
+          "#423D24",
+          "#6A6139",
+          "#958851",
+          "#B4A874",
+          "#C9C19C",
+          "#DFDAC3",
+          "#F1EEE5"
+        ],
+        "purpose": "a tinta preta do mural vira giz: bordas, texto primário e divisores no tema escuro"
+      },
+      "ink-edge-dark": {
+        "role": "neutral",
+        "displayName": "Giz da Caneta",
+        "canonical": "#4A5A7A",
+        "tonalRamp": [
+          "#161D2A",
+          "#1F2737",
+          "#273144",
+          "#303B52",
+          "#39455F",
+          "#414F6C",
+          "#4A5A79",
+          "#526487"
+        ],
+        "purpose": "caneta grafite: arestas e pinos do Fluxograma no escuro"
+      },
+      "grid-paper-dark": {
+        "role": "neutral",
+        "displayName": "Lousa à Noite",
+        "canonical": "#111622",
+        "tonalRamp": [
+          "#0C101A",
+          "#0D111B",
+          "#0E121D",
+          "#0F131E",
+          "#0F141F",
+          "#101521",
+          "#111622",
+          "#121723"
+        ],
+        "purpose": "fundo da base de corte grafite-azulada no escuro, com grid rgba(255,255,255,0.06)"
+      },
+      "paper-dark": {
+        "role": "neutral",
+        "displayName": "Papel-Noite",
+        "canonical": "#1E2638",
+        "tonalRamp": [
+          "#0E131E",
+          "#111622",
+          "#141926",
+          "#161D2B",
+          "#19202F",
+          "#1B2333",
+          "#1E2638",
+          "#20293C"
+        ],
+        "purpose": "placa de papel grafite elevada (cards, inputs, sidebar) no escuro; mais clara que a base de corte para sombra preta e fio de luz internos recortarem"
+      },
+      "cream-dark": {
+        "role": "neutral",
+        "displayName": "Creme-Noite",
+        "canonical": "#232D42",
+        "tonalRamp": [
+          "#111318",
+          "#151617",
+          "#191817",
+          "#1D1B17",
+          "#211E17",
+          "#262116",
+          "#2A2416",
+          "#2E2716"
+        ],
+        "purpose": "ardósia azulada no escuro — papel do bloco Feedback Sincero nos relatos, nunca marrom"
+      },
+      "paper-gray-dark": {
+        "role": "neutral",
+        "displayName": "Cinza Papel Escuro",
+        "canonical": "#232B3D",
+        "tonalRamp": [
+          "#0F141F",
+          "#131824",
+          "#161C29",
+          "#191F2E",
+          "#1C2333",
+          "#202738",
+          "#232B3D",
+          "#262F42"
+        ],
+        "purpose": "superfície de conteúdo escura (hover, item concluído)"
+      },
+      "neutral-200-dark": {
+        "role": "neutral",
+        "displayName": "Neutral 200 Escuro",
+        "canonical": "#2E3850",
+        "tonalRamp": [
+          "#111622",
+          "#161C2A",
+          "#1B2231",
+          "#202739",
+          "#242D40",
+          "#293248",
+          "#2E3850",
+          "#333D57"
+        ],
+        "purpose": "cavidades e trilhos no escuro"
+      },
+      "neutral-300-dark": {
+        "role": "neutral",
+        "displayName": "Neutral 300 Escuro",
+        "canonical": "#334155",
+        "tonalRamp": [
+          "#121823",
+          "#181F2B",
+          "#1D2634",
+          "#222C3C",
+          "#283344",
+          "#2D3A4C",
+          "#334155",
+          "#38485D"
+        ],
+        "purpose": "trilha do switch desligado e bordas grafite no escuro"
+      },
+      "neutral-500-dark": {
+        "role": "neutral",
+        "displayName": "Neutral 500 Escuro",
+        "canonical": "#8B96AB",
+        "tonalRamp": [
+          "#222732",
+          "#333A46",
+          "#454C5A",
+          "#565E6E",
+          "#687182",
+          "#798396",
+          "#8A95AA",
+          "#9CA8BE"
+        ],
+        "purpose": "metadados e placeholders no escuro"
+      },
+      "neutral-800-dark": {
+        "role": "neutral",
+        "displayName": "Neutral 800 Escuro",
+        "canonical": "#E5E9F1",
+        "tonalRamp": [
+          "#32363F",
+          "#50545D",
+          "#6D717A",
+          "#8B8F97",
+          "#A9ADB5",
+          "#C6CAD2",
+          "#E4E8F0",
+          "#10110510D"
+        ],
+        "purpose": "quase-giz no escuro"
+      },
+      "neutral-900-dark": {
+        "role": "neutral",
+        "displayName": "Neutral 900 Escuro",
+        "canonical": "#F0F3F8",
+        "tonalRamp": [
+          "#343840",
+          "#53575F",
+          "#72767D",
+          "#91959C",
+          "#B1B4BA",
+          "#D0D3D8",
+          "#EFF2F7",
+          "#10E111115"
+        ],
+        "purpose": "quase-giz claro no escuro"
+      },
+      "neutral-950-dark": {
+        "role": "neutral",
+        "displayName": "Neutral 950 Escuro",
+        "canonical": "#0B0F18",
+        "tonalRamp": [
+          "#0B0F18",
+          "#0B0F18",
+          "#0B0F18",
+          "#0B0F18",
+          "#0B0F18",
+          "#0B0F18",
+          "#0B0F18",
+          "#0B0F18"
+        ],
+        "purpose": "tinta profunda no escuro"
+      },
+      "slate-200-dark": {
+        "role": "neutral",
+        "displayName": "Cinza Nota Escuro",
+        "canonical": "#2B3550",
+        "tonalRamp": [
+          "#111622",
+          "#151B2A",
+          "#192031",
+          "#1E2539",
+          "#222A40",
+          "#263048",
+          "#2B3550",
+          "#2F3A57"
+        ],
+        "purpose": "badge de aviso no escuro"
+      },
+      "pastel-blue-dark": {
+        "role": "neutral",
+        "displayName": "Azul Pastel Escuro",
+        "canonical": "#17294A",
+        "tonalRamp": [
+          "#0D1421",
+          "#0F1728",
+          "#101B2F",
+          "#121E35",
+          "#14223C",
+          "#152543",
+          "#17294A",
+          "#192C51"
+        ],
+        "purpose": "post-it azul rico no escuro"
+      },
+      "pastel-green-dark": {
+        "role": "neutral",
+        "displayName": "Verde Pastel Escuro",
+        "canonical": "#0D281E",
+        "tonalRamp": [
+          "#0B1419",
+          "#0C171A",
+          "#0C1A1B",
+          "#0C1E1C",
+          "#0C211C",
+          "#0D241D",
+          "#0D281E",
+          "#0D2B1F"
+        ],
+        "purpose": "verde-esmeralda rico no escuro (card de status)"
+      },
+      "pastel-yellow-dark": {
+        "role": "neutral",
+        "displayName": "Amarelo Pastel Escuro",
+        "canonical": "#362813",
+        "tonalRamp": [
+          "#131417",
+          "#191716",
+          "#1E1A16",
+          "#241E15",
+          "#2A2114",
+          "#302414",
+          "#362813",
+          "#3C2B12"
+        ],
+        "purpose": "âmbar pós-it rico no escuro (banners de aviso)"
+      },
+      "pastel-purple-dark": {
+        "role": "neutral",
+        "displayName": "Lilás Pastel Escuro",
+        "canonical": "#2B1F45",
+        "tonalRamp": [
+          "#111220",
+          "#151426",
+          "#19162C",
+          "#1E1832",
+          "#221B39",
+          "#261D3F",
+          "#2B1F45",
+          "#2F214B"
+        ],
+        "purpose": "lilás rico no escuro"
+      },
+      "pastel-red-dark": {
+        "role": "neutral",
+        "displayName": "Vermelho Pastel Escuro",
+        "canonical": "#3A1620",
+        "tonalRamp": [
+          "#131019",
+          "#1A111B",
+          "#20121C",
+          "#27131D",
+          "#2D141E",
+          "#33151F",
+          "#3A1620",
+          "#401721"
+        ],
+        "purpose": "vermelho rico no escuro"
+      },
+      "pastel-orange-dark": {
+        "role": "neutral",
+        "displayName": "Laranja Pastel Escuro",
+        "canonical": "#33220F",
+        "tonalRamp": [
+          "#121216",
+          "#181515",
+          "#1D1814",
+          "#221A13",
+          "#281D11",
+          "#2D1F10",
+          "#33220F",
+          "#38240E"
+        ],
+        "purpose": "laranja rico no escuro"
+      },
+      "pastel-sky-dark": {
+        "role": "neutral",
+        "displayName": "Céu Pastel Escuro",
+        "canonical": "#123040",
+        "tonalRamp": [
+          "#0C151F",
+          "#0D1925",
+          "#0E1E2A",
+          "#0F222F",
+          "#102735",
+          "#112B3A",
+          "#123040",
+          "#133445"
+        ],
+        "purpose": "céu rico no escuro"
+      },
+      "ink-success-dark": {
+        "role": "neutral",
+        "displayName": "Verde OK Claro",
+        "canonical": "#4ADE80",
+        "tonalRamp": [
+          "#082B15",
+          "#105629",
+          "#198A42",
+          "#23C25D",
+          "#4ADE80",
+          "#7EE7A4",
+          "#B1F1C9",
+          "#DCF9E7"
+        ],
+        "purpose": "tinta de TEXTO clareada no escuro: confirmações sobre papel escuro"
+      },
+      "ink-error-dark": {
+        "role": "neutral",
+        "displayName": "Vermelho Erro Claro",
+        "canonical": "#F87171",
+        "tonalRamp": [
+          "#310202",
+          "#610505",
+          "#9C0808",
+          "#DB0B0B",
+          "#F53333",
+          "#F86D6D",
+          "#FBA8A8",
+          "#FDD8D8"
+        ],
+        "purpose": "tinta de TEXTO clareada no escuro: erros e prazos vencidos"
+      },
+      "blue-ink-dark": {
+        "role": "primary",
+        "displayName": "Azul Caneta Texto Claro",
+        "canonical": "#8FB3FF",
+        "tonalRamp": [
+          "#001033",
+          "#002166",
+          "#0034A3",
+          "#004AE6",
+          "#296EFF",
+          "#6697FF",
+          "#A3C1FF",
+          "#D6E3FF"
+        ],
+        "purpose": "azul-caneta como TEXTO clareado no escuro: links de marca, ícones de cabeçalho, contadores"
+      },
+      "scroll-thumb-dark": {
+        "role": "neutral",
+        "displayName": "Thumb de Scroll Escuro",
+        "canonical": "#4A5568",
+        "tonalRamp": [
+          "#161C26",
+          "#1F2531",
+          "#272F3C",
+          "#303847",
+          "#394252",
+          "#414B5D",
+          "#4A5568",
+          "#525E72"
+        ],
+        "purpose": "thumb da scrollbar no escuro, borda de tinta"
+      },
+      "scroll-thumb-active-dark": {
+        "role": "neutral",
+        "displayName": "Thumb de Scroll Ativo Escuro",
+        "canonical": "#5F6C85",
+        "tonalRamp": [
+          "#1A202C",
+          "#262C3A",
+          "#313949",
+          "#3C4658",
+          "#485267",
+          "#535F76",
+          "#5F6B84",
+          "#6A7893"
+        ],
+        "purpose": "thumb da scrollbar no hover, no escuro"
+      },
+      "neutral-50-dark": {
+        "role": "neutral",
+        "displayName": "Superfície-Noite",
+        "canonical": "#1A2130",
+        "tonalRamp": [
+          "#0E121C",
+          "#101520",
+          "#121723",
+          "#141A26",
+          "#161C29",
+          "#181E2D",
+          "#1A2130",
+          "#1C2333"
+        ],
+        "purpose": "hover de linha arquivada no escuro"
+      },
+      "neutral-400-dark": {
+        "role": "neutral",
+        "displayName": "Giz Apagado",
+        "canonical": "#6B7891",
+        "tonalRamp": [
+          "#1C222E",
+          "#29303E",
+          "#363E4F",
+          "#434D5F",
+          "#505B6F",
+          "#5D6980",
+          "#6A7790",
+          "#7786A1"
+        ],
+        "purpose": "ícones discretos no escuro"
+      },
+      "neutral-600-dark": {
+        "role": "neutral",
+        "displayName": "Tinta Suave-Noite",
+        "canonical": "#B3BCCD",
+        "tonalRamp": [
+          "#292E39",
+          "#404651",
+          "#575D6A",
+          "#6E7582",
+          "#848C9B",
+          "#9BA4B3",
+          "#B2BBCC",
+          "#C9D2E5"
+        ],
+        "purpose": "texto secundário no escuro"
+      },
+      "neutral-700-dark": {
+        "role": "neutral",
+        "displayName": "Giz Médio",
+        "canonical": "#CBD2DF",
+        "tonalRamp": [
+          "#2E323C",
+          "#484D57",
+          "#626772",
+          "#7C818D",
+          "#969CA8",
+          "#B0B6C3",
+          "#CAD1DE",
+          "#E4EBF9"
+        ],
+        "purpose": "texto de ênfase média no escuro"
+      },
+      "neo-shadow-dark": {
+        "role": "shadow",
+        "displayName": "Sombra-Giz",
+        "canonical": "#000000",
+        "tonalRamp": [
+          "#090C14",
+          "#080A10",
+          "#06080D",
+          "#05060A",
+          "#030407",
+          "#020203",
+          "#000000",
+          "#-1-2-3"
+        ],
+        "purpose": "SOMBRA DURA PRETA nos dois temas — recorte da placa contra a base"
+      },
+      "platform-sigaa-dark": {
+        "role": "neutral",
+        "displayName": "Azul UnB-Noite",
+        "canonical": "#7FA9FF",
+        "tonalRamp": [
+          "#232F48",
+          "#324366",
+          "#425785",
+          "#516BA3",
+          "#6080C1",
+          "#6F94DF",
+          "#7EA8FE",
+          "#8EBC11C"
+        ],
+        "purpose": "identidade SIGAA no escuro: texto/ícone sobre blocos noturnos"
+      },
+      "platform-aprender3-dark": {
+        "role": "neutral",
+        "displayName": "Laranja Moodle-Noite",
+        "canonical": "#FFA45B",
+        "tonalRamp": [
+          "#3A2E2B",
+          "#5B4133",
+          "#7B553B",
+          "#9C6943",
+          "#BC7C4B",
+          "#DD9053",
+          "#FEA35B",
+          "#11EB763"
+        ],
+        "purpose": "identidade Aprender 3 no escuro: texto/ícone sobre blocos noturnos"
+      },
+      "platform-teams-dark": {
+        "role": "neutral",
+        "displayName": "Roxo Fluent-Noite",
+        "canonical": "#8E93E0",
+        "tonalRamp": [
+          "#262B43",
+          "#373C5D",
+          "#484D77",
+          "#5A5F91",
+          "#6B70AB",
+          "#7C81C5",
+          "#8D92DF",
+          "#9FA4F9"
+        ],
+        "purpose": "identidade Teams no escuro: texto/ícone sobre blocos noturnos"
+      },
+      "platform-sigaa": {
+        "role": "primary",
+        "displayName": "Azul UnB — SIGAA",
+        "canonical": "#468AFB",
+        "tonalRamp": [
+          "#192947",
+          "#203965",
+          "#284983",
+          "#2F59A1",
+          "#3769BE",
+          "#3E79DC",
+          "#4689FA",
+          "#4D99117"
+        ],
+        "purpose": "identidade da plataforma SIGAA (badge, blocos de ícone, filtros); texto preto"
+      },
+      "platform-aprender3": {
+        "role": "primary",
+        "displayName": "Laranja Moodle — Aprender 3",
+        "canonical": "#F98012",
+        "tonalRamp": [
+          "#39271D",
+          "#59361C",
+          "#79451A",
+          "#985318",
+          "#B86216",
+          "#D87114",
+          "#F87F12",
+          "#1178E10"
+        ],
+        "purpose": "identidade da plataforma Aprender 3 (laranja oficial Moodle); texto preto"
+      },
+      "platform-teams": {
+        "role": "primary",
+        "displayName": "Roxo Fluent — Microsoft Teams",
+        "canonical": "#5B5FC7",
+        "tonalRamp": [
+          "#1D223E",
+          "#272C55",
+          "#31366B",
+          "#3C4082",
+          "#464A99",
+          "#5054AF",
+          "#5B5FC6",
+          "#6569DD"
+        ],
+        "purpose": "identidade da plataforma Microsoft Teams (roxo oficial Fluent); texto branco"
+      },
+      "neo-green-dark": {
+        "role": "primary",
+        "displayName": "Verde Menta (noite)",
+        "canonical": "#34D399",
+        "tonalRamp": [
+          "#12322F",
+          "#184D41",
+          "#1E6752",
+          "#238264",
+          "#299D75",
+          "#2EB787",
+          "#34D298",
+          "#39ECAA"
+        ],
+        "purpose": "tinta de ação verde nos adesivos cheios do escuro"
+      },
+      "neo-green-hover-dark": {
+        "role": "primary",
+        "displayName": "Verde Menta Hover",
+        "canonical": "#6EE7B7",
+        "tonalRamp": [
+          "#1D3635",
+          "#2A534A",
+          "#387160",
+          "#458E75",
+          "#53AB8B",
+          "#60C8A1",
+          "#6DE6B6",
+          "#7B103CC"
+        ],
+        "purpose": "hover da tinta verde no escuro"
+      },
+      "neo-yellow-dark": {
+        "role": "primary",
+        "displayName": "Ouro (noite)",
+        "canonical": "#FDE047",
+        "tonalRamp": [
+          "#373520",
+          "#575127",
+          "#786D2D",
+          "#998A34",
+          "#BAA63A",
+          "#DBC240",
+          "#FCDF47",
+          "#11CFB4D"
+        ],
+        "purpose": "tinta de ação amarela nos adesivos cheios e no selo do post-it no escuro"
+      },
+      "neo-yellow-hover-dark": {
+        "role": "primary",
+        "displayName": "Ouro Hover",
+        "canonical": "#FDE68A",
+        "tonalRamp": [
+          "#37362D",
+          "#57533C",
+          "#78704B",
+          "#998D5B",
+          "#BAAA6A",
+          "#DBC87A",
+          "#FCE589",
+          "#11C10299"
+        ],
+        "purpose": "hover da tinta ouro no escuro"
+      },
+      "neo-danger-hover-dark": {
+        "role": "primary",
+        "displayName": "Vermelho Hover (noite)",
+        "canonical": "#EF4444",
+        "tonalRamp": [
+          "#341920",
+          "#532026",
+          "#72272C",
+          "#912E32",
+          "#B03538",
+          "#CF3D3E",
+          "#EE4444",
+          "#10D4B4A"
+        ],
+        "purpose": "hover do destrutivo no escuro"
+      },
+      "ink-disc-blue-dark": {
+        "role": "neutral",
+        "displayName": "Código Azul Claro",
+        "canonical": "#BFDBFE",
+        "tonalRamp": [
+          "#2B3441",
+          "#444F61",
+          "#5C6B80",
+          "#75879F",
+          "#8DA2BE",
+          "#A6BEDD",
+          "#BEDAFD",
+          "#D6F611C"
+        ],
+        "purpose": "código de disciplina azul nas células escuras da grade"
+      },
+      "ink-disc-green-dark": {
+        "role": "neutral",
+        "displayName": "Código Verde Claro",
+        "canonical": "#BBF7D0",
+        "tonalRamp": [
+          "#2B3939",
+          "#435852",
+          "#5A786B",
+          "#729784",
+          "#8AB79D",
+          "#A2D6B6",
+          "#BAF6CF",
+          "#D2115E8"
+        ],
+        "purpose": "código de disciplina verde nas células escuras da grade"
+      },
+      "ink-disc-yellow-dark": {
+        "role": "neutral",
+        "displayName": "Código Amarelo Claro",
+        "canonical": "#FEF08A",
+        "tonalRamp": [
+          "#37382D",
+          "#58563C",
+          "#79754B",
+          "#9A935B",
+          "#BBB26A",
+          "#DCD07A",
+          "#FDEF89",
+          "#11E10D99"
+        ],
+        "purpose": "código de disciplina amarelo nas células escuras da grade"
+      },
+      "ink-disc-purple-dark": {
+        "role": "neutral",
+        "displayName": "Código Lilás Claro",
+        "canonical": "#E9D5FF",
+        "tonalRamp": [
+          "#333342",
+          "#514E61",
+          "#6F6880",
+          "#8D83A0",
+          "#AB9EBF",
+          "#CAB9DE",
+          "#E8D4FE",
+          "#106EF11D"
+        ],
+        "purpose": "código de disciplina lilás nas células escuras da grade"
+      },
+      "ink-disc-orange-dark": {
+        "role": "neutral",
+        "displayName": "Código Laranja Claro",
+        "canonical": "#FED7AA",
+        "tonalRamp": [
+          "#373332",
+          "#584E46",
+          "#79695A",
+          "#9A846E",
+          "#BBA082",
+          "#DCBB95",
+          "#FDD6A9",
+          "#11EF1BD"
+        ],
+        "purpose": "código de disciplina laranja nas células escuras da grade"
+      },
+      "ink-disc-sky-dark": {
+        "role": "neutral",
+        "displayName": "Código Céu Claro",
+        "canonical": "#A5F3FC",
+        "tonalRamp": [
+          "#273841",
+          "#3C5760",
+          "#51767F",
+          "#65959E",
+          "#7AB4BD",
+          "#8FD3DC",
+          "#A4F2FB",
+          "#B911111A"
+        ],
+        "purpose": "código de disciplina céu nas células escuras da grade"
+      },
+      "sticker-blue-dark": {
+        "role": "primary",
+        "displayName": "Azul Adesivo (noite)",
+        "canonical": "#60A5FA",
+        "tonalRamp": [
+          "#1A2A41",
+          "#263E5F",
+          "#31537E",
+          "#3D679D",
+          "#487BBB",
+          "#5490DA",
+          "#60A4F9",
+          "#6BB8117"
+        ],
+        "purpose": "adesivo de ícone vivo no escuro (onboarding, stats do Meu Curso) e faixa da categoria azul"
+      },
+      "btn-raise-dark": {
+        "role": "neutral",
+        "displayName": "Botão Secundário-Noite",
+        "canonical": "#263044",
+        "tonalRamp": [
+          "#101520",
+          "#141926",
+          "#171E2C",
+          "#1B2232",
+          "#1F2738",
+          "#222B3E",
+          "#263044",
+          "#2A344A"
+        ],
+        "purpose": "fundo dos botões outline no escuro — um degrau acima da placa"
+      },
+      "filter-hover-dark": {
+        "role": "neutral",
+        "displayName": "Filtro Ativo Hover (claro)",
+        "canonical": "#1E293B",
+        "tonalRamp": [
+          "#0E141E",
+          "#111723",
+          "#141B28",
+          "#161E2D",
+          "#192231",
+          "#1B2536",
+          "#1E293B",
+          "#202C40"
+        ],
+        "purpose": "hover do filtro neutro ativo no modo claro"
+      },
+      "ink-deep-dark": {
+        "role": "neutral",
+        "displayName": "Tinta Profunda",
+        "canonical": "#090D16",
+        "tonalRamp": [
+          "#0B0F18",
+          "#0A0E17",
+          "#0A0E17",
+          "#0A0E17",
+          "#0A0E17",
+          "#090D16",
+          "#090D16",
+          "#090D16"
+        ],
+        "purpose": "fundo do filtro neutro ativo no modo claro; preto profundo de texto sobre adesivos vivos"
       }
     },
     "typographyMeta": {
@@ -890,6 +1741,12 @@
         "section": "colors"
       },
       {
+        "name": "A Regra das Mesmas Tintas",
+        "body": "No escuro invertem-se papel e tinta, nunca cor de ação nem física: as tintas de ação são idênticas nos dois temas, as sombras continuam pretas, o texto sobre candy continua preto e o adesivo afunda igual. Quem desenha no mundo claro já sabe desenhar na lousa — só troca o papel.",
+        "section": "colors",
+        "rule": "No escuro invertem-se papel, tinta e SOMBRA — nunca cor de ação como fundo de botão nem física: as tintas de ação são idênticas nos dois temas, a sombra dura é giz no escuro (nunca preto, que some), o texto sobre candy continua preto e o adesivo afunda igual."
+      },
+      {
         "name": "A Regra do Marcador Grosso",
         "body": "Hierarquia vem de peso (800 → 700 → 600 → 500), não de esmaecer cinza. Nunca enfraqueça texto baixando o peso para abaixo de 500 — baixe o tom (neutral-600) mantendo o peso.",
         "section": "typography"
@@ -938,6 +1795,11 @@
         "name": "A Regra do Bloco Sem Borda",
         "body": "Skeleton é conteúdo à espera de tinta: bloco neutro pulsante, nunca adesivo — borda e sombra pertencem ao Card que o contém. Bloco de loading com risco preto finge ser conteúdo.",
         "section": "components"
+      },
+      {
+        "name": "A Regra da Física Intacta",
+        "section": "colors",
+        "rule": "No escuro troca-se a BASE, nunca a física: sombra continua preta sólida deslocada, borda continua tinta, adesivo continua cheio com tinta preta de texto, post-it continua papel rico com detalhe vivo."
       }
     ],
     "dos": [

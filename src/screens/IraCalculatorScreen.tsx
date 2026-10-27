@@ -307,7 +307,7 @@ export const IraCalculatorScreen: React.FC<IraCalculatorScreenProps> = ({ onBack
         <button
           type="button"
           onClick={handleAddFutureSemester}
-          className="min-h-[8rem] rounded-lg border-2 border-dashed border-black/15 bg-neutral-50 hover:bg-neutral-100 cursor-pointer text-[11px] font-black text-neutral-600 hover:text-black transition-colors inline-flex flex-col items-center justify-center gap-1.5"
+          className="min-h-[8rem] rounded-lg border-2 border-dashed border-ink/15 bg-neutral-50 hover:bg-neutral-100 cursor-pointer text-[11px] font-black text-neutral-600 hover:text-black transition-colors inline-flex flex-col items-center justify-center gap-1.5"
         >
           <Plus className="w-4 h-4 stroke-[2.5]" />
           Adicionar semestre futuro

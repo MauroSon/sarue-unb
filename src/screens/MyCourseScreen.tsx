@@ -227,7 +227,7 @@ export const MyCourseScreen: React.FC = () => {
       ) : (
         <>
           {/* Banner de Identificação do Discente (@DESIGN.md) */}
-          <div className="bg-white border-2 border-black rounded-lg p-5 mb-6 shadow-neo">
+          <div className="bg-paper border-2 border-ink rounded-lg p-5 mb-6 shadow-neo">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div className="flex items-center flex-wrap">
                 <span className="text-lg font-black text-black tracking-tight">
@@ -256,14 +256,14 @@ export const MyCourseScreen: React.FC = () => {
           {/* Lista de disciplinas: busca embutida no cabeçalho do card */}
           {flowchartData && (
             <section
-              className="bg-white border-2 border-black rounded-lg shadow-neo"
+              className="bg-paper border-2 border-ink rounded-lg shadow-neo"
               aria-label={
                 viewMode === "list"
                   ? "Fluxograma de disciplinas por semestre"
                   : "Mapa de cadeias de pré-requisitos"
               }
             >
-              <div className="p-4 border-b-2 border-black space-y-3">
+              <div className="p-4 border-b-2 border-ink space-y-3">
                 {/* Linha 1: Campo de busca amplo + Alternador Lista | Mapa */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <div className="relative flex-1 min-w-0">
@@ -273,7 +273,7 @@ export const MyCourseScreen: React.FC = () => {
                       onChange={(e) => setSearchQuery(e.target.value)}
                       placeholder="Buscar por código ou nome (ex: APC, Cálculo, CIC0004)..."
                       aria-label="Buscar disciplina por código ou nome"
-                      className="pl-10 h-9 text-xs bg-white w-full"
+                      className="pl-10 h-9 text-xs bg-paper w-full"
                     />
                   </div>
 
@@ -281,7 +281,7 @@ export const MyCourseScreen: React.FC = () => {
                   <div
                     role="group"
                     aria-label="Modo de visualização do fluxograma"
-                    className="relative grid grid-cols-2 gap-0.5 p-0.5 bg-white border-2 border-black rounded-xl shrink-0 self-end sm:self-auto"
+                    className="relative grid grid-cols-2 gap-0.5 p-0.5 bg-paper border-2 border-ink rounded-xl shrink-0 self-end sm:self-auto"
                   >
                     {/* Thumb-adesivo: pill Azul Caneta que desliza entre as cavidades (transform, 150ms) */}
                     <span
@@ -333,8 +333,8 @@ export const MyCourseScreen: React.FC = () => {
                     aria-pressed={activeFilter === "all"}
                     className={
                       activeFilter === "all"
-                        ? "bg-black text-white hover:bg-black"
-                        : "hover:bg-white"
+                        ? "bg-ink-deep text-white hover:bg-filter-hover dark:bg-slate-50 dark:text-ink dark:hover:bg-slate-200"
+                        : "hover:bg-paper"
                     }
                   >
                     Todas (
@@ -343,18 +343,14 @@ export const MyCourseScreen: React.FC = () => {
 
                   <Button
                     type="button"
-                    variant={
-                      activeFilter === "pending_mandatory"
-                        ? "accent"
-                        : "outline"
-                    }
+                    variant="outline"
                     size="sm"
                     onClick={() => setActiveFilter("pending_mandatory")}
                     aria-pressed={activeFilter === "pending_mandatory"}
                     className={
                       activeFilter === "pending_mandatory"
-                        ? "gap-1 bg-pastel-yellow border-2 border-black text-black"
-                        : "gap-1 hover:bg-pastel-yellow/40"
+                        ? "gap-1 bg-ink-deep text-white hover:bg-filter-hover dark:bg-slate-50 dark:text-ink dark:hover:bg-slate-200"
+                        : "gap-1"
                     }
                     title="Disciplinas obrigatórias que ainda faltam concluir"
                   >
@@ -380,7 +376,7 @@ export const MyCourseScreen: React.FC = () => {
                     className={
                       activeFilter === "completed"
                         ? "gap-1"
-                        : "gap-1 bg-pastel-green text-black hover:bg-pastel-green"
+                        : "gap-1 bg-pastel-green text-black dark:text-neo-green hover:bg-pastel-green"
                     }
                   >
                     <CheckCircle2 className="w-3.5 h-3.5 stroke-[2.5]" />
@@ -399,7 +395,7 @@ export const MyCourseScreen: React.FC = () => {
                     className={
                       activeFilter === "in_progress"
                         ? "gap-1"
-                        : "gap-1 bg-pastel-blue text-black hover:bg-pastel-blue"
+                        : "gap-1 bg-pastel-blue text-black dark:text-blue-ink hover:bg-pastel-blue"
                     }
                     title="Disciplinas que você está matriculado neste semestre"
                   >
@@ -418,7 +414,7 @@ export const MyCourseScreen: React.FC = () => {
                     className={
                       activeFilter === "available"
                         ? "gap-1"
-                        : "gap-1 bg-pastel-yellow text-black hover:bg-neo-yellow/40"
+                        : "gap-1 bg-pastel-yellow text-black dark:text-neo-yellow hover:bg-neo-yellow/40"
                     }
                     title="Disciplinas liberadas para matrícula (pré-requisitos cumpridos)"
                   >
@@ -452,7 +448,7 @@ export const MyCourseScreen: React.FC = () => {
 
           {/* Seção de Optativas Cursadas pelo Discente */}
           {(flowchartData?.electiveCompletedDisciplines?.length || 0) > 0 && (
-            <div className="mt-8 bg-white border-2 border-black rounded-xl p-5 shadow-neo">
+            <div className="mt-8 bg-paper border-2 border-ink rounded-xl p-5 shadow-neo">
               <div className="flex items-center gap-2 mb-3">
                 <BookOpen className="w-4 h-4 text-black stroke-[2.5]" />
                 <h3 className="font-black text-sm text-black">
@@ -465,11 +461,11 @@ export const MyCourseScreen: React.FC = () => {
                 {flowchartData?.electiveCompletedDisciplines.map((d) => (
                   <div
                     key={d.code}
-                    className="bg-neutral-50 border-2 border-black rounded-lg p-2.5 shadow-neo-sm flex items-center justify-between"
+                    className="bg-neutral-50 border-2 border-ink rounded-lg p-2.5 shadow-neo-sm flex items-center justify-between"
                   >
                     <div className="min-w-0 pr-2">
                       <div className="flex items-center gap-1.5 mb-0.5">
-                        <span className="font-mono text-[11px] font-black bg-white px-1.5 py-0.5 border border-black rounded">
+                        <span className="font-mono text-[11px] font-black bg-paper px-1.5 py-0.5 border border-ink rounded">
                           {d.code}
                         </span>
                         {d.workloadHours && (
@@ -486,7 +482,7 @@ export const MyCourseScreen: React.FC = () => {
                       </p>
                     </div>
 
-                    <span className="text-[11px] font-black px-1.5 py-0.5 bg-neo-green border border-black rounded-md shrink-0">
+                    <span className="text-[11px] font-black px-1.5 py-0.5 bg-neo-green border border-ink rounded-md shrink-0">
                       {d.grade || "AP"}
                     </span>
                   </div>

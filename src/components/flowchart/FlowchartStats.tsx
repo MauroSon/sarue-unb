@@ -19,12 +19,12 @@ export const FlowchartStats: React.FC<FlowchartStatsProps> = ({ metrics, onOpenI
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
       {/* 1. Progresso Geral / Integralização Oficial SIGAA */}
-      <div className="bg-white border-2 border-black rounded-xl p-4 shadow-neo flex flex-col justify-between">
+      <div className="bg-paper border-2 border-ink rounded-xl p-4 shadow-neo flex flex-col justify-between">
         <div className="flex items-center justify-between mb-2">
           <span className="text-xs font-black uppercase tracking-wider text-neutral-600">
             {metrics.isSimulated ? "Integralização" : "Integralização SIGAA"}
           </span>
-          <div className="w-8 h-8 rounded-lg bg-pastel-green border-2 border-black flex items-center justify-center text-black shadow-neo-xs">
+          <div className="w-8 h-8 rounded-lg bg-pastel-green border-2 border-ink flex items-center justify-center text-ink dark:bg-neo-green shadow-neo-xs">
             <Award className="w-4 h-4 stroke-[2.5]" />
           </div>
         </div>
@@ -46,10 +46,10 @@ export const FlowchartStats: React.FC<FlowchartStatsProps> = ({ metrics, onOpenI
             aria-valuenow={Math.round(percentual)}
             aria-valuemin={0}
             aria-valuemax={100}
-            className="w-full h-3.5 bg-neutral-100 border-2 border-black rounded-full overflow-hidden p-0.5 shadow-neo-xs"
+            className="w-full h-3.5 bg-neutral-100 border-2 border-ink rounded-full overflow-hidden p-0.5 shadow-neo-xs"
           >
             <div
-              className="h-full bg-neo-green border border-black rounded-full transition-[width] duration-500"
+              className="h-full bg-neo-green border border-ink rounded-full transition-[width] duration-500"
               style={{ width: `${Math.min(100, Math.max(0, percentual))}%` }}
             />
           </div>
@@ -61,12 +61,12 @@ export const FlowchartStats: React.FC<FlowchartStatsProps> = ({ metrics, onOpenI
       </div>
 
       {/* 2. Carga Horária Obrigatória */}
-      <div className="bg-white border-2 border-black rounded-xl p-4 shadow-neo flex flex-col justify-between">
+      <div className="bg-paper border-2 border-ink rounded-xl p-4 shadow-neo flex flex-col justify-between">
         <div className="flex items-center justify-between mb-2">
           <span className="text-xs font-black uppercase tracking-wider text-neutral-600">
             CH Obrigatória
           </span>
-          <div className="w-8 h-8 rounded-lg bg-pastel-blue border-2 border-black flex items-center justify-center text-neo-blue shadow-neo-xs">
+          <div className="w-8 h-8 rounded-lg bg-pastel-blue border-2 border-ink flex items-center justify-center text-blue-ink dark:bg-sticker-blue dark:text-ink shadow-neo-xs">
             <Clock className="w-4 h-4 stroke-[2.5]" />
           </div>
         </div>
@@ -88,12 +88,12 @@ export const FlowchartStats: React.FC<FlowchartStatsProps> = ({ metrics, onOpenI
       </div>
 
       {/* 3. Carga Horária Total do Curso */}
-      <div className="bg-white border-2 border-black rounded-xl p-4 shadow-neo flex flex-col justify-between">
+      <div className="bg-paper border-2 border-ink rounded-xl p-4 shadow-neo flex flex-col justify-between">
         <div className="flex items-center justify-between mb-2">
           <span className="text-xs font-black uppercase tracking-wider text-neutral-600">
             CH Total do Curso
           </span>
-          <div className="w-8 h-8 rounded-lg bg-pastel-yellow border-2 border-black flex items-center justify-center text-black shadow-neo-xs">
+          <div className="w-8 h-8 rounded-lg bg-pastel-yellow border-2 border-ink flex items-center justify-center text-ink dark:bg-neo-yellow shadow-neo-xs">
             <Sparkles className="w-4 h-4 stroke-[2.5]" />
           </div>
         </div>
@@ -113,12 +113,12 @@ export const FlowchartStats: React.FC<FlowchartStatsProps> = ({ metrics, onOpenI
       </div>
 
       {/* 4. Índices Acadêmicos e Situação */}
-      <div className="bg-white border-2 border-black rounded-xl p-4 shadow-neo flex flex-col justify-between">
+      <div className="bg-paper border-2 border-ink rounded-xl p-4 shadow-neo flex flex-col justify-between">
         <div className="flex items-center justify-between mb-2">
           <span className="text-xs font-black uppercase tracking-wider text-neutral-600">
             Índices Acadêmicos
           </span>
-          <div className="w-8 h-8 rounded-lg bg-pastel-purple border-2 border-black flex items-center justify-center text-neo-purple shadow-neo-xs">
+          <div className="w-8 h-8 rounded-lg bg-pastel-purple border-2 border-ink flex items-center justify-center text-neo-purple dark:bg-neo-purple dark:text-ink shadow-neo-xs">
             <BookOpen className="w-4 h-4 stroke-[2.5]" />
           </div>
         </div>

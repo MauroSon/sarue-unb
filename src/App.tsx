@@ -20,6 +20,7 @@ import type { AcademicCalendar } from './core';
 import { NAVIGATE_EVENT } from './lib/utils';
 import { initSoundEffectsListener } from './lib/sound-effects';
 import { AccessibilityProvider } from './context/AccessibilityContext';
+import { ThemeProvider } from './context/ThemeContext';
 
 type AppStep = 'onboarding' | 'main';
 
@@ -192,12 +193,14 @@ const AppShell: React.FC = () => {
 
 const App: React.FC = () => (
   <AccessibilityProvider>
-    <SyncProvider>
-      <TooltipProvider delay={150}>
-        <Toaster />
-        <AppShell />
-      </TooltipProvider>
-    </SyncProvider>
+    <ThemeProvider>
+      <SyncProvider>
+        <TooltipProvider delay={150}>
+          <Toaster />
+          <AppShell />
+        </TooltipProvider>
+      </SyncProvider>
+    </ThemeProvider>
   </AccessibilityProvider>
 );
 

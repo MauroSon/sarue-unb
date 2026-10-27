@@ -227,7 +227,7 @@ export const DashboardScreen: React.FC = () => {
           <Card className="p-0 overflow-hidden">
             {/* Contador do filtro: some quando não há filtro ativo */}
             {hasActiveFilters ? (
-              <div className="border-b-2 border-black/10 bg-canvas px-4 py-2 text-xs font-bold text-neutral-600 md:px-5">
+              <div className="border-b-2 border-ink/10 bg-canvas px-4 py-2 text-xs font-bold text-neutral-600 md:px-5">
                 {items.length} de {totalItems}{" "}
                 {items.length === 1 ? "resultado" : "resultados"}
               </div>

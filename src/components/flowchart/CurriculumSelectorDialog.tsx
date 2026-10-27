@@ -63,7 +63,7 @@ export const CurriculumSelectorDialog: React.FC<
       >
         <DialogHeader>
           <div className="flex items-center gap-2 mb-1">
-            <div className="w-8 h-8 rounded-lg bg-pastel-yellow border-2 border-black flex items-center justify-center shadow-neo-sm">
+            <div className="w-8 h-8 rounded-lg bg-pastel-yellow border-2 border-ink flex items-center justify-center shadow-neo-sm">
               <BookOpen className="w-4 h-4 stroke-[2.5] text-black" />
             </div>
             <DialogTitle>Trocar Matriz Curricular</DialogTitle>
@@ -83,28 +83,28 @@ export const CurriculumSelectorDialog: React.FC<
             return (
               <div
                 key={curr.id}
-                className={`border-2 border-black rounded-lg p-3 flex items-center justify-between gap-2 select-none shadow-neo-sm ${
+                className={`border-2 border-ink rounded-lg p-3 flex items-center justify-between gap-2 select-none shadow-neo-sm ${
                   isSelected
                     ? "bg-pastel-green"
-                    : "bg-white"
+                    : "bg-paper"
                 }`}
               >
                 <div className="min-w-0">
                   <div className="flex items-center gap-2 mb-1 flex-wrap">
-                    <span className="font-mono font-black text-sm text-black px-2 py-0.5 bg-white border border-black rounded-md">
+                    <span className="font-mono font-black text-sm text-black px-2 py-0.5 bg-paper border border-ink rounded-md">
                       {curr.code}
                     </span>
                     <Badge
-                      className={`text-[11px] font-black border border-black ${
+                      className={`text-[11px] font-black border border-ink ${
                         isActive
-                          ? "bg-neo-green text-black"
+                          ? "bg-neo-green text-ink"
                           : "bg-neutral-200 text-neutral-700"
                       }`}
                     >
                       {curr.status}
                     </Badge>
                     {curr.createdYear && (
-                      <span className="text-[11px] font-bold text-neutral-600 bg-white border border-neutral-300 px-1.5 py-0.5 rounded">
+                      <span className="text-[11px] font-bold text-neutral-600 bg-paper border border-neutral-300 px-1.5 py-0.5 rounded">
                         Criada em {curr.createdYear}
                       </span>
                     )}
@@ -125,7 +125,7 @@ export const CurriculumSelectorDialog: React.FC<
                 </div>
 
                 {isSelected ? (
-                  <div className="shrink-0 flex items-center gap-1 px-2 py-1 bg-neo-green border border-black rounded-md text-[11px] font-black">
+                  <div className="shrink-0 flex items-center gap-1 px-2 py-1 bg-neo-green border border-ink rounded-md text-[11px] font-black">
                     <Check className="w-3.5 h-3.5 stroke-[3]" />
                     Atual
                   </div>

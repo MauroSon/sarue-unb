@@ -43,7 +43,7 @@ export const FilterSelect: React.FC<FilterSelectProps> = ({
         className={`h-[34px] w-auto px-3 ${
           active
             ? "bg-neo-blue text-white hover:bg-neo-blueHover"
-            : "bg-white"
+            : "bg-paper"
         }`}
       >
         <SelectValue>

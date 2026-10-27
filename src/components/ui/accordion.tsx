@@ -19,7 +19,7 @@ function AccordionItem({
     <AccordionPrimitive.Item
       data-slot="accordion-item"
       className={cn(
-        "overflow-hidden border-2 border-black",
+        "overflow-hidden border-2 border-ink",
         className,
       )}
       {...props}
@@ -57,7 +57,7 @@ function AccordionContent({
   return (
     <AccordionPrimitive.Panel
       data-slot="accordion-content"
-      className="h-(--accordion-panel-height) overflow-hidden bg-white text-sm transition-[height] duration-200 ease-out data-starting-style:h-0 data-ending-style:h-0"
+      className="h-(--accordion-panel-height) overflow-hidden bg-paper text-sm transition-[height] duration-200 ease-out data-starting-style:h-0 data-ending-style:h-0"
       {...props}
     >
       <div className={cn("p-4", className)}>{children}</div>

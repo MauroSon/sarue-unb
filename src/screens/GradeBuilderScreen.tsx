@@ -160,7 +160,10 @@ export const GradeBuilderScreen: React.FC = () => {
       const dataUrl = await toPng(scheduleGridRef.current, {
         cacheBust: true,
         pixelRatio: 2,
-        backgroundColor: "#FFFFFF",
+        // A exportação segue o tema ativo: base de corte escura exporta fundo escuro.
+        backgroundColor: document.documentElement.classList.contains("dark")
+          ? "#111622"
+          : "#FFFFFF",
         filter: (node) => {
           if (
             node instanceof HTMLElement &&
@@ -268,6 +271,7 @@ export const GradeBuilderScreen: React.FC = () => {
                   variant="outline"
                   size="sm"
                   onClick={startNewPlanning}
+                  className="dark:bg-neo-yellow dark:text-ink dark:hover:bg-neo-yellowHover"
                 >
                   <PlusCircle className="w-3.5 h-3.5 stroke-[2.5]" />
                   <span>Novo planejamento</span>

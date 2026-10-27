@@ -100,7 +100,7 @@ export const DisciplineDrillDown: React.FC<DisciplineDrillDownProps> = ({
       />
 
       {/* Resumo da disciplina */}
-      <Card className="bg-white rounded-lg p-6 shadow-neo space-y-4">
+      <Card className="bg-paper rounded-lg p-6 shadow-neo space-y-4">
         <div className="flex flex-wrap items-center gap-1.5">
           {summary.campuses.map((c) => (
             <Badge key={c} variant="outline" size="sm">
@@ -167,7 +167,7 @@ export const DisciplineDrillDown: React.FC<DisciplineDrillDownProps> = ({
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-4 pt-3 border-t-2 border-black/10 text-xs font-bold">
+        <div className="flex flex-wrap items-center gap-4 pt-3 border-t-2 border-ink/10 text-xs font-bold">
           <span className="inline-flex items-center gap-1.5 text-ink-success">
             <CheckCircle2 className="w-4 h-4 stroke-[2.5]" />
             {summary.recommendYesCount}{' '}

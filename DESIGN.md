@@ -29,6 +29,9 @@ colors:
   error-ink: "#B91C1C"
   ink-black: "#000000"
   ink-soft: "#525252"
+  ink: "#000000"
+  blue-ink: "#2563EB"
+  grid-line: "rgba(0, 0, 0, 0.06)"
   scroll-thumb: "#A3A3A3"
   scroll-thumb-active: "#737373"
   discipline-ink-blue: "#2563EB"
@@ -37,6 +40,61 @@ colors:
   discipline-ink-purple: "#A855F7"
   discipline-ink-orange: "#F97316"
   discipline-ink-sky: "#0EA5E9"
+  platform-sigaa: "#468AFB"
+  platform-aprender3: "#F98012"
+  platform-teams: "#5B5FC7"
+  platform-sigaa-dark: "#7FA9FF"
+  platform-aprender3-dark: "#FFA45B"
+  platform-teams-dark: "#8E93E0"
+  # ── Modo escuro — Dark Stickerbook / Cutting Mat (bloco .dark em src/index.css) ──
+  ink-black-dark: "#F2F0E7"
+  ink-edge-dark: "#4A5A7A"
+  neo-shadow-dark: "#000000"
+  grid-paper-dark: "#111622"
+  paper-dark: "#1E2638"
+  cream-dark: "#2A2416"
+  paper-gray-dark: "#232B3D"
+  neutral-50-dark: "#1A2130"
+  neutral-200-dark: "#2E3850"
+  neutral-300-dark: "#334155"
+  neutral-400-dark: "#6B7891"
+  neutral-500-dark: "#8B96AB"
+  neutral-600-dark: "#B3BCCD"
+  neutral-700-dark: "#CBD2DF"
+  neutral-800-dark: "#E5E9F1"
+  neutral-900-dark: "#F0F3F8"
+  neutral-950-dark: "#0B0F18"
+  slate-200-dark: "#2B3550"
+  pastel-blue-dark: "#17294A"
+  pastel-green-dark: "#0D281E"
+  pastel-yellow-dark: "#362813"
+  pastel-purple-dark: "#2B1F45"
+  pastel-red-dark: "#3A1620"
+  pastel-orange-dark: "#33220F"
+  pastel-sky-dark: "#123040"
+  neo-green-dark: "#34D399"
+  neo-green-hover-dark: "#6EE7B7"
+  neo-yellow-dark: "#FDE047"
+  neo-yellow-hover-dark: "#FDE68A"
+  neo-danger-hover-dark: "#EF4444"
+  ink-disc-blue-dark: "#BFDBFE"
+  ink-disc-green-dark: "#BBF7D0"
+  ink-disc-yellow-dark: "#FEF08A"
+  ink-disc-purple-dark: "#E9D5FF"
+  ink-disc-orange-dark: "#FED7AA"
+  ink-disc-sky-dark: "#A5F3FC"
+  ink-success-dark: "#4ADE80"
+  ink-error-dark: "#F87171"
+  blue-ink-dark: "#8FB3FF"
+  scroll-thumb-dark: "#4A5568"
+  scroll-thumb-active-dark: "#5F6C85"
+  scroll-thumb-border-dark: "#05070B"
+  card-inset-highlight-dark: "rgba(255, 255, 255, 0.08)"
+  sticker-blue-dark: "#60A5FA"
+  btn-raise-dark: "#263044"
+  filter-hover-dark: "#1E293B"
+  ink-deep-dark: "#090D16"
+  grid-line-dark: "rgba(255, 255, 255, 0.06)"
 typography:
   display:
     fontFamily: "Plus Jakarta Sans, system-ui, -apple-system, sans-serif"
@@ -273,9 +331,9 @@ Paleta de material escolar: uma cor de ação por intenção, versões pastel da
 - **Vermelho Correção Forte** (#DC2626): destrutivo e urgente com texto branco. Botão destructive, badge urgent (4.83:1), prazos vencidos ou < 24h, badge de contagem do sino, asterisco de obrigatória, conflito de grade. Hover escurece para **Vermelho Erro** (#B91C1C, 6.47:1). Na Escala de Didática é a faixa < 6 — a única cor da escala sob texto branco.
 
 ### Tertiary
-- **Lápis Laranja** (#FB923C): identidade da plataforma Aprender 3, texto preto.
+- **Laranja Moodle** (#F98012): identidade da plataforma Aprender 3 (laranja oficial da marca Moodle), texto preto. **Lápis Laranja** (#FB923C) segue como tinta de apoio genérica.
 - **Lilás Caderno** (#C084FC): variante purple de card, texto preto. No Fluxograma identifica optativa disponível (cheia) e optativa bloqueada/concluída (pastel).
-- **Azul Céu** (#60A5FA): identidade da plataforma Microsoft Teams.
+- **Roxo Fluent** (#5B5FC7): identidade da plataforma Microsoft Teams (roxo oficial da marca), texto branco.
 - **Verde Institucional** (#006633): verde oficial UnB, definido no tema; uso pontual institucional.
 
 ### Neutral
@@ -297,6 +355,7 @@ Nas Avaliações de Professores, a nota de didática (0–10) veste a cor **chei
 - **6 a 7,9**: **Amarelo Marca-Texto** com texto preto.
 - **< 6**: **Vermelho Correção Forte** com texto branco.
 - **Sem nota**: **Cinza Papel** (#F5F5F5) com texto **Tinta Suave**.
+No escuro, a mesma receita das badges noturnas: fundo lavado da família (Verde/Amarelo/Vermelho Pastel) e a tinta clara da própria família como texto (Verde Giz, Amarelo Marca-Texto, **Vermelho Erro** #F87171). Faixas e ordem nunca mudam.
 
 ### Tintas de Grade e Scrollbar
 Inks escuras da mesma família das cores de ação, usadas como TEXTO e borda interna das células da Grade Horária sobre os pastéis, e no thumb da scrollbar. Texto da tinta sobre o pastel correspondente passa AA.
@@ -306,6 +365,28 @@ Inks escuras da mesma família das cores de ação, usadas como TEXTO e borda in
 
 ### Pastéis (superfícies, nunca texto)
 Versões lavadas das cores de ação, usadas como fundo de cards variante, alerts, blocos de ícone, filtros e estado de seleção — sempre com texto preto e borda preta: **Azul Pastel** (#EBF3FF), **Verde Pastel** (#E6F8EE), **Amarelo Pastel** (#FFF9D2), **Lilás Pastel** (#F3E8FF), **Vermelho Pastel** (#FFEBEB), **Laranja Pastel** (#FFEDD5), **Céu Pastel** (#E0F2FE).
+
+### Modo escuro — Dark Stickerbook / Cutting Mat
+Extensão aprovada do mural, não um mundo novo: a mesma física neo-brutalista **com a base de trocada**. O papel quadriculado vira uma **base de corte grafite-azulada** (#111622, grid sutil claro) e os cards/sidebar viram **placas de papel grafite elevadas** (#1B2232) — mais claras que o fundo de propósito, para a **sombra dura PRETA pura** (`4px 4px 0 #000`) recortar de verdade. Nada de inversão preguiçosa: sombra não brilha, adesivo não vaza.
+
+- **Sombra é tinta preta nos DOIS temas.** `--neo-shadow` fica `#000` também no escuro; a profundidade nasce do par placa-clara | sombra-preta, estilo cutting mat. Cards grandes sombreiam com `shadow-(--neo-card-shadow)`: a sombra preta externa **+ um fio de luz interno no topo** (`inset 0 1px 0 rgba(255,255,255,0.08)`) faz a placa saltar da base. A Zona de Perigo mantém a única sombra tingida (#DC2626); à noite a tinta escurece — sombra **Vermelho Profundo** (#450A0A) sob placa **Vermelho Sangue** (#7F1D1D), fundo mais rico que o pastel lavado para o degrau da sombra continuar lendo.
+- **Bordas de tinta (`border-ink`) permanecem pretas** no escuro — o risco de tinta define o adesivo contra a placa; contorno nunca vira branco (brilho). `border-ink` e `text-black` são tokens distintos: **texto primário é GIZ** (#F2F0E7) e borda é TINTA (#000 via `--color-ink`, que nunca remapa).
+- **Adesivos são adesivos nos dois temas.** Badges, notas de didática, pills de versão e pills de plataforma permanecem **CHEIOS** no escuro: fundo sólido vibrante + tinta preta fixa (`text-ink`, #000 nunca remapa) + borda de tinta. No escuro as tintas de ação usam versões vivas de noite: **Verde Menta** (#34D399), **Ouro** (#FDE047, hover #FDE68A) e Vermelho Correção com hover #EF4444. Cor vazada com contorno colorido é drift.
+- **Etiquetas neutras seguem a receita única** (badge `neutral`, chip de disciplina do feed, pill de código mono, carga horária e `Pré-requisitos` do Meu Curso): no escuro, fundo **#334155** (`neutral-300`), texto **slate-50**, borda de tinta — **etiqueta nenhuma carrega sombra**, em nenhum tema.
+- **Blocos de ícone dos cards de métrica viram adesivos vivos** no escuro (Meu Curso): Menta, Azul-claro (#60A5FA), Ouro e Lilás (#C084FC) com ícone preto fixo — mesma receita dos adesivos do onboarding.
+- **Filtros de status guardam a identidade cromática** no escuro (Meu Curso): inativos vestem o pastel rico da família com **tinta clara da própria família como texto** (Faltam Cursar = outline #263044; Concluídas = verde-esmeralda + menta; Cursando = azul-marinho + azul-claro; Disponíveis = âmbar + ouro); ativos ficam **sólidos vibrantes com tinta preta** (menta/azul/ouro via remap). Filtros NEUTROS ("Todas", "Faltam Cursar") ativos: **preto #090D16 com texto branco e hover grafite #1E293B** no claro, **branco-gelo #F8FAFC com texto tinta e hover #E2E8F0** no escuro — nunca verde, que é do filtro Concluídas; cor de fundo claro leva SEMPRE tinta preta de texto/ícone.
+- **Campos afundam, controles elevam.** Inputs de texto afundam para o poço #0F1420; SELECTS elevam no escuro (`dark:bg-neutral-200`, hover `neutral-300`, texto slate-50, sem sombra) para não sumirem dentro dos cards — vale para os selects de CR/MENÇÃO da Calculadora de IRA. A pílula de período no cabeçalho dos cards de semestre eleva com `dark:bg-neutral-300` + texto slate-50. Faixas de simulação (IRA) viram placa com **borda e ícone Ouro vivo** (`dark:border-neo-yellow dark:text-neo-yellow`), texto giz. O Creme (#FAF7EE no claro) vira **ardósia azulada #232D42** no escuro — é o papel do bloco "Feedback Sincero" nos relatos, nunca marrom.
+- **Banners = placa com fita de ouro.** No escuro, o Alert amarelo vira **placa elevada** (superfície do papel) com **fita lateral esquerda grossa (6px) na tinta Ouro viva** (`dark:border-l-[6px] dark:border-l-neo-yellow`) e selo de ícone sólido Ouro — o destaque vem do detalhe vivo, nunca de fundo âmbar apagado. **Ações dentro do banner vestem o Ouro** (`dark:bg-neo-yellow dark:text-ink dark:hover:bg-neo-yellowHover` — "Ver Planilha", "Novo planejamento"): CTA da mesma tinta da fita. Card verde de status usa o **Verde Pastel esmeralda** (#0D281E). Transparência que vira marrom/oliva é proibida.
+- **Base e placa:** Canvas **#111622** (grid rgba(255,255,255,0.06)), Papel **#1E2638**, Creme **#2A2416**. Superfícies usam `bg-paper` (nunca `bg-white`) exatamente para a placa poder elevar sobre a base. Botões secundários (outline) sobem um degrau: `dark:bg-[#263044]`; tags de campus viram etiquetas `dark:bg-neutral-300` (#334155) com **texto branco-gelo** (`dark:text-slate-50`, que não remapa) e **sem sombra** — badge não carrega sombra. Trilha do Switch desligado: `dark:bg-neutral-300` (#334155) com thumb claro `dark:bg-slate-300` (#CBD5E1).
+- **Escala neutral grafite.** neutral-100 (#232B3D) é a superfície de conteúdo escura (hover, item concluído); neutral-500 sobe para #8B96AB; neutral-800/900 (#E5E9F1/#F0F3F8), que eram quase-preto, viram quase-giz.
+- **Grade horária legível.** Células usam os pastéis ricos com **borda sólida viva da própria cor** e sombra preta curta; os códigos de disciplina (`text-ink-disc-*`) remapam para **pastéis claros >80% de luminosidade** (#BFDBFE, #BBF7D0, #FEF08A, #E9D5FF, #FED7AA, #A5F3FC) — nunca tinta escura sobre fundo escuro.
+- **Onboarding: adesivos vivos e poço de entrada.** Nos cards dos passos 2–3, o bloco de ícone vira **adesivo sólido** no escuro (azul #60A5FA, Ouro, Menta, ícone preto), o card vira placa com **faixa superior da categoria (6px)**, os dots inativos ganham #334155 e as formas decorativas da tela 1 padronizam o contorno (tinta no claro, branco no escuro — nunca misto). **Inputs de credenciais afundam** para #0F1420 (poço contra a placa) com texto slate-50, placeholder slate-500 e foco de borda azul #3B82F6.
+- **Tintas de TEXTO clareiam.** ink-success **#4ADE80**, ink-error **#F87171**, azul-caneta-como-TEXTO **#8FB3FF**.
+- **Thumbs acompanham a placa.** Thumb do Switch/Slider: branco no claro, `dark:bg-neutral-50` no escuro, borda de tinta. `text-white` nunca remapa; backdrop do Dialog é tinta fixa (`bg-ink/60`). Ícones sociais têm variantes `*-dark.svg` trocadas por tema.
+- **Caneta grafite.** Arestas e pinos do Fluxograma desenham em **grafite** (#4A5A7A) — nem preto (some na base), nem branco (brilha). Export PNG da Grade segue o tema (fundo #111622 no escuro). Scrollbar: thumb #4A5568 com borda de tinta.
+- **Alternador:** header do onboarding (sol — switch — lua, canto superior esquerdo) e Configurações → **Preferências** ("Tema da interface", SegmentedControl `md`). Persiste em `localStorage` (`sarue_theme`), aplica `dark` no `<html>` **antes do primeiro paint**, acompanha o SO no modo Sistema e sincroniza o tema nativo da janela Tauri.
+
+**A Regra da Física Intacta.** No escuro troca-se a BASE, nunca a física: sombra continua preta sólida deslocada, borda continua tinta, adesivo continua cheio com tinta preta de texto, post-it continua papel rico com detalhe vivo. O que muda são os valores de superfície e a intensidade das tintas — nunca o gesto.
 
 ### Named Rules
 **A Regra do Risco Preto.** Nenhuma superfície ou elemento interativo existe sem borda preta de 2px. A borda é o contorno do adesivo; sem ela o elemento cai fora do mundo. Exceção confirmada: pill de código de disciplina (font-mono) usa borda de 1px.
@@ -357,7 +438,7 @@ Profundidade é **física e estrutural**: sombras são deslocamentos sólidos de
 - **Micro-adesivo** (`1px 1px 0 0 #000`, token `neo-xs`): o que pesa menos que um adesivo de ação em repouso — checkbox, blocos de ícone pastel, pills de resultado inline, barra de progresso, micro-ações flutuantes de ferramenta, badge de didática, pill de discrepância do IRA; também é a sombra do estágio hover da escala 2px.
 - **Adesivo de card** (`4px 4px 0 0 #000`, token `neo`): cards, alerts, painéis, toolbars e popups de conteúdo; nó do Fluxograma em repouso; minimapa.
 - **Ênfase máxima** (`6px 6px 0 0 #000`, token `neo-lg`): diálogo modal — a única superfície acima de todo o app.
-- **Sombra tingida de perigo** (`4px 4px 0 0 #DC2626`): exclusiva do Card da Zona de Perigo em Settings — a única sombra colorida do sistema.
+- **Sombra tingida de perigo** (`4px 4px 0 0 #DC2626`): exclusiva do Card da Zona de Perigo em Settings — a única sombra colorida do sistema; no escuro vira `#450A0A` sobre placa `#7F1D1D`.
 - **Quase-afundado** (`1px 1px 0 0 #000`): estado hover — o elemento translada em snap inteiro o quanto a sombra encolheu (ação 2px: +1px e sombra 1px; card clicável 4px: +2px e sombra 2px).
 - **Pressionado** (`shadow-none` + translate do offset completo): estado active de qualquer elemento interativo — a superfície toca o papel.
 - **Divisores internos**: bordas de 2px pretas entre seções da sidebar; linhas internas de card em black/10–15%.
@@ -481,7 +562,7 @@ Segunda barra de ferramentas do sistema, mesma gramática da Toolbar do Feed com
 - **States:** sem sombra e sem física de pressionar — a navegação é a encadernação, não um adesivo. Colapsável (264px ↔ 80px); recolhida mostra só ícones centralizados; botões de expandir/recolher aparecem no hover do grupo.
 
 ### Badge (etiqueta de plataforma/tipo/prazo)
-- **Style:** pill (9999px), borda preta 2px, **sem sombra** — etiqueta de tinta colada no papel, não adesivo; padding 2px 12px (md) / 2px 8px (sm), texto 0.75rem/700 (sm em 11px/700). Cor por identidade: Sigaa **Verde Giz**, Aprender 3 **Lápis Laranja**, Teams **Azul Céu**, tarefa **Amarelo Marca-Texto**, prazo urgente **Vermelho Correção Forte** (texto branco), prazo próximo **Amarelo Marca-Texto**, primária **Azul Caneta Ação** (texto branco), aviso **Cinza Nota** (slate-200), sucesso **Verde Giz**, roxa **Lilás Caderno**, neutra/outline branca.
+- **Style:** pill (9999px), borda preta 2px, **sem sombra** — etiqueta de tinta colada no papel, não adesivo; padding 2px 12px (md) / 2px 8px (sm), texto 0.75rem/700 (sm em 11px/700). Cor por identidade: Sigaa **Azul UnB** (#468AFB, texto preto), Aprender 3 **Laranja Moodle** (#F98012, texto preto), Teams **Roxo Fluent** (#5B5FC7, texto branco), tarefa **Amarelo Marca-Texto**, prazo urgente **Vermelho Correção Forte** (texto branco), prazo próximo **Amarelo Marca-Texto**, primária **Azul Caneta Ação** (texto branco), aviso **Cinza Nota** (slate-200), sucesso **Verde Giz**, roxa **Lilás Caderno**, neutra/outline branca. No escuro, badges de família viram noturnas: fundo lavado da família, tinta clara da própria família como texto e a MESMA borda de giz do sistema — contorno nunca vira preto em uma badge e claro na vizinha.
 - **Truncamento:** badge de disciplina com texto longo usa `max-w` + truncate no conteúdo interno — a pílula segura a largura, o texto corta (sino de prazos: max-w-[118px]).
 - **Icon:** Lucide 14–16px, stroke 2.5, opcional à esquerda.
 - **Badge de contagem do sino:** 18px de altura mínima, **Vermelho Correção Forte** com texto branco, borda 2px, pill — colado no canto do ícone, `aria-hidden` (o `aria-label` do sino carrega o número).
@@ -579,7 +660,7 @@ Segunda superfície assinatura: o curso como **mural de adesivos sobre papel** �
 - **Do** vestir filtro engajado com a cor cheia da família (Filtro Select azul, filtros de Disciplinas com sua cor) e a cavidade de busca engajada com o pastel; ordenação nunca engaja.
 - **Do** construir hierarquia com peso de fonte (800/700/600/500) e usar pastéis como fundo, nunca como cor de ação.
 - **Do** usar Plus Jakarta Sans e ícones Lucide com stroke 2.5 (check de checkbox stroke 3); rótulos estruturais em uppercase bold 11–12px; códigos de disciplina em pills font-mono (A Regra do Código em Máquina).
-- **Do** usar as cores de plataforma como identidade fixa (Sigaa verde, Aprender 3 laranja, Teams azul) em badges e filtros.
+- **Do** usar as cores de plataforma como identidade fixa (Sigaa azul UnB #468AFB, Aprender 3 laranja Moodle #F98012, Teams roxo Fluent #5B5FC7) em badges e filtros.
 - **Do** usar raio e sombra como affordance (A Regra dos Dois Adesivos): ação 12–16px + sombra 2px; conteúdo 8px + sombra 4px; painel de pausa/métrica 12px; campo 12px sem sombra.
 - **Do** usar Micro-adesivo 1px (`neo-xs`) em checkbox, blocos de ícone, pills inline, badge de didática e micro-ações flutuantes; badge fica sem sombra.
 - **Do** usar o vocabulário fechado de status do Fluxograma (verde concluída, azul cursando, amarelo disponível, cinza bloqueada, lilás optativa) em mapa, lista e minimapa.

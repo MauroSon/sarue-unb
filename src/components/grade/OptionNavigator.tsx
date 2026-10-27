@@ -18,9 +18,9 @@ export const OptionNavigator: React.FC<OptionNavigatorProps> = ({
   onApplyOption,
 }) => {
   return (
-    <div className="bg-pastel-yellow border-2 border-black rounded-lg shadow-[4px_4px_0px_0px_#000] p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+    <div className="bg-pastel-yellow border-2 border-ink rounded-lg shadow-(--neo-card-shadow) p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
       <div className="flex items-center gap-3 min-w-0">
-        <div className="p-1.5 bg-white border-2 border-black rounded-lg shadow-[2px_2px_0px_0px_#000] shrink-0">
+        <div className="p-1.5 bg-paper border-2 border-ink rounded-lg shadow-[2px_2px_0px_0px_var(--neo-shadow)] shrink-0">
           <Sparkles className="w-4 h-4 stroke-[2.5] text-black" />
         </div>
         <div className="min-w-0">
@@ -33,7 +33,7 @@ export const OptionNavigator: React.FC<OptionNavigatorProps> = ({
         </div>
       </div>
 
-      <div className="flex items-center gap-2 shrink-0 bg-white border-2 border-black rounded-xl p-1 shadow-[2px_2px_0px_0px_#000]">
+      <div className="flex items-center gap-2 shrink-0 bg-paper border-2 border-ink rounded-xl p-1 shadow-[2px_2px_0px_0px_var(--neo-shadow)]">
         <Button
           type="button"
           variant="outline"
@@ -47,7 +47,7 @@ export const OptionNavigator: React.FC<OptionNavigatorProps> = ({
           <ChevronLeft className="w-3.5 h-3.5 stroke-[2.5]" />
         </Button>
 
-        <span className="text-xs font-black text-neo-blue px-1 whitespace-nowrap">
+        <span className="text-xs font-black text-blue-ink px-1 whitespace-nowrap">
           Opção {currentIndex + 1} de {optionsCount}
         </span>
 

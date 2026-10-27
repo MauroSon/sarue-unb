@@ -33,7 +33,7 @@ export const ClickableCard: React.FC<{
       }
     }}
     className={cn(
-      'cursor-pointer bg-white rounded-lg shadow-neo hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-neo-sm active:translate-x-[4px] active:translate-y-[4px] active:shadow-none focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-neo-blue focus-visible:ring-offset-2 transition-[transform,box-shadow,background-color,border-color] duration-150 ease-out group',
+      'cursor-pointer bg-paper rounded-lg shadow-neo hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-neo-sm active:translate-x-[4px] active:translate-y-[4px] active:shadow-none focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-neo-blue focus-visible:ring-offset-2 transition-[transform,box-shadow,background-color,border-color] duration-150 ease-out group',
       className
     )}
   >
@@ -101,7 +101,7 @@ export const CatalogSummaryCard: React.FC<CatalogSummaryCardProps> = ({
           </span>
         </div>
 
-        <h3 className="text-sm md:text-base font-black text-black leading-snug mb-2 group-hover:text-neo-blue transition-colors">
+        <h3 className="text-sm md:text-base font-black text-black leading-snug mb-2 group-hover:text-blue-ink transition-colors">
           {title}
         </h3>
 
@@ -127,14 +127,14 @@ export const CatalogSummaryCard: React.FC<CatalogSummaryCardProps> = ({
         </div>
       </div>
 
-      <div className="flex items-center justify-between gap-2 pt-4 border-t-2 border-black/10 mt-4 text-xs font-bold">
+      <div className="flex items-center justify-between gap-2 pt-4 border-t-2 border-ink/10 mt-4 text-xs font-bold">
         <span className="inline-flex items-center gap-1.5 text-neutral-700">
           <ThumbsUp className="w-3.5 h-3.5 stroke-[2.5] text-ink-success" />
           {recommendationRate}% recomendam
           <span className="text-neutral-500">·</span>
           {evaluationsCount} {evaluationsCount === 1 ? 'relato' : 'relatos'}
         </span>
-        <span className="text-neutral-800 text-[11px] underline decoration-2 group-hover:text-neo-blue font-extrabold">
+        <span className="text-neutral-800 text-[11px] underline decoration-2 group-hover:text-blue-ink font-extrabold">
           Ver relatos →
         </span>
       </div>
@@ -202,7 +202,7 @@ export const DisciplineProfessorCard: React.FC<{
             <ConsensusSeal count={prof.evaluationsCount} />
           )}
         </div>
-        <h3 className="text-sm md:text-base font-black text-black leading-snug truncate group-hover:text-neo-blue transition-colors">
+        <h3 className="text-sm md:text-base font-black text-black leading-snug truncate group-hover:text-blue-ink transition-colors">
           {prof.professorName}
         </h3>
         <span className="inline-flex items-center gap-1.5 text-xs font-bold text-neutral-700 mt-1">

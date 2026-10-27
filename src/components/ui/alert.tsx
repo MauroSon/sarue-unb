@@ -21,25 +21,30 @@ export const Alert: React.FC<AlertProps> = ({
   ...props
 }) => {
   const variantStyles = {
-    yellow: 'bg-pastel-yellow border-black text-black',
-    green: 'bg-pastel-green border-black text-black',
-    blue: 'bg-pastel-blue border-black text-black',
-    neutral: 'bg-white border-black text-black',
-    destructive: 'bg-pastel-red border-black text-black',
+    // Post-it escuro vira placa elevada com fita lateral ouro (Opção B):
+    // superfície do papel + barra esquerda grossa na tinta viva.
+    yellow:
+      'bg-pastel-yellow border-ink text-black dark:bg-paper dark:border-l-[6px] dark:border-l-neo-yellow',
+    green: 'bg-pastel-green border-ink text-black',
+    blue: 'bg-pastel-blue border-ink text-black',
+    neutral: 'bg-paper border-ink text-black',
+    destructive: 'bg-pastel-red border-ink text-black',
   };
 
   const iconStyles = {
-    yellow: 'bg-white text-black',
-    green: 'bg-white text-ink-success',
-    blue: 'bg-white text-neo-blue',
-    neutral: 'bg-white text-black',
+    // Post-it escuro: no banner amarelo, o selo do ícone vira sólido ouro
+    // com tinta preta — o detalhe vivo do post-it rico.
+    yellow: 'bg-paper text-black dark:bg-neo-yellow dark:text-ink',
+    green: 'bg-paper text-ink-success',
+    blue: 'bg-paper text-blue-ink',
+    neutral: 'bg-paper text-black',
     destructive: 'bg-neo-danger text-white',
   };
 
   return (
     <div
       className={cn(
-        'flex items-start gap-3.5 p-4 border-2 border-black rounded-lg shadow-[4px_4px_0px_0px_#000]',
+        'flex items-start gap-3.5 p-4 border-2 border-ink rounded-lg shadow-(--neo-card-shadow)',
         variantStyles[variant],
         className
       )}
@@ -48,7 +53,7 @@ export const Alert: React.FC<AlertProps> = ({
       {Icon ? (
         <div
           className={cn(
-            'p-2 border-2 border-black rounded-lg shadow-[2px_2px_0px_0px_#000] shrink-0',
+            'p-2 border-2 border-ink rounded-lg shadow-[2px_2px_0px_0px_var(--neo-shadow)] shrink-0',
             iconStyles[variant]
           )}
         >

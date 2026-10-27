@@ -60,7 +60,7 @@ export const EvaluationsToolbar: React.FC<EvaluationsToolbarProps> = ({
   totalCount,
 }) => {
   return (
-    <div className="bg-white border-2 border-black rounded-lg p-4 shadow-neo space-y-4">
+    <div className="bg-paper border-2 border-ink rounded-lg p-4 shadow-neo space-y-4">
       {/* Linha 1: Campo de Busca + Segmented Control (Professores | Disciplinas) */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="relative flex-1 min-w-0">
@@ -71,8 +71,8 @@ export const EvaluationsToolbar: React.FC<EvaluationsToolbarProps> = ({
             onChange={(e) => onSearchChange(e.target.value)}
             placeholder="Buscar por professor, disciplina (ex: CIC0004, Cálculo), departamento..."
             aria-label="Buscar avaliações de professores"
-            className={`w-full pl-10 py-2.5 text-sm font-medium text-black border-2 border-black rounded-xl focus:outline-hidden focus:ring-2 focus:ring-neo-blue transition-[transform,box-shadow,background-color,border-color] placeholder:text-neutral-400 shadow-none ${
-              searchQuery.trim() ? 'bg-pastel-blue pr-10' : 'bg-white pr-4'
+            className={`w-full pl-10 py-2.5 text-sm font-medium text-black border-2 border-ink rounded-xl focus:outline-hidden focus:ring-2 focus:ring-neo-blue transition-[transform,box-shadow,background-color,border-color] placeholder:text-neutral-500 shadow-none ${
+              searchQuery.trim() ? 'bg-pastel-blue pr-10' : 'bg-paper pr-4'
             }`}
           />
           {searchQuery.trim() !== '' && (
@@ -180,7 +180,7 @@ export const EvaluationsToolbar: React.FC<EvaluationsToolbarProps> = ({
 
       {/* Contagem filtrada: barra interna do card — nunca linha solta acima */}
       {hasActiveFilters && (
-        <div className="border-t-2 border-black/10 pt-2 text-xs font-bold text-neutral-600">
+        <div className="border-t-2 border-ink/10 pt-2 text-xs font-bold text-neutral-600">
           {viewMode === 'professors'
             ? `${visibleCount} de ${totalCount} ${
                 totalCount === 1 ? 'docente' : 'docentes'

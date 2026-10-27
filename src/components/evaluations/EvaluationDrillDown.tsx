@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   PageContainer,
   PageHeader,
@@ -6,23 +6,21 @@ import {
   Card,
   Badge,
   Pagination,
-} from '@/components/ui';
+} from "@/components/ui";
 import {
   ArrowLeft,
   MapPin,
-  ExternalLink,
   Star,
   ThumbsUp,
   CheckCircle2,
   HelpCircle,
   XCircle,
   type LucideIcon,
-} from 'lucide-react';
-import { openExternalUrl } from '@/lib/utils';
-import { normalizeDepartmentDisplay } from '@/core';
-import { PAGE_SIZE, hasConsensusSeal, type DrillDownSummary } from './types';
-import { ConsensusSeal } from './ConsensusSeal';
-import { ReviewCard } from './ReviewCard';
+} from "lucide-react";
+import { normalizeDepartmentDisplay } from "@/core";
+import { PAGE_SIZE, hasConsensusSeal, type DrillDownSummary } from "./types";
+import { ConsensusSeal } from "./ConsensusSeal";
+import { ReviewCard } from "./ReviewCard";
 
 export interface EvaluationDrillDownProps {
   icon: LucideIcon;
@@ -51,33 +49,33 @@ export const EvaluationDrillDown: React.FC<EvaluationDrillDownProps> = ({
   const safePage = Math.min(page, pageCount);
   const pageItems = reviews.slice(
     (safePage - 1) * PAGE_SIZE,
-    safePage * PAGE_SIZE
+    safePage * PAGE_SIZE,
   );
 
   // Ao abrir o drill-down de relatos, posiciona o scroll no topo
   React.useEffect(() => {
-    const mainEl = document.querySelector('main');
+    const mainEl = document.querySelector("main");
     if (mainEl) {
-      mainEl.scrollTo({ top: 0, behavior: 'instant' });
+      mainEl.scrollTo({ top: 0, behavior: "instant" });
     }
-    window.scrollTo({ top: 0, behavior: 'instant' });
+    window.scrollTo({ top: 0, behavior: "instant" });
   }, []);
 
   const handlePageChange = (newPage: number) => {
     setPage(newPage);
-    const mainEl = document.querySelector('main');
+    const mainEl = document.querySelector("main");
     if (mainEl) {
-      mainEl.scrollTo({ top: 0, behavior: 'smooth' });
+      mainEl.scrollTo({ top: 0, behavior: "smooth" });
     }
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const avgDisplay =
     summary.averageDidatica !== null
-      ? summary.averageDidatica.toLocaleString('pt-BR', {
+      ? summary.averageDidatica.toLocaleString("pt-BR", {
           maximumFractionDigits: 1,
         })
-      : 'N/A';
+      : "N/A";
 
   return (
     <PageContainer>
@@ -99,7 +97,7 @@ export const EvaluationDrillDown: React.FC<EvaluationDrillDownProps> = ({
       />
 
       {/* Resumo do Professor */}
-      <Card className="bg-white rounded-lg p-6 shadow-neo space-y-4">
+      <Card className="bg-paper rounded-lg p-6 shadow-neo space-y-4">
         <div className="flex flex-wrap items-center gap-1.5">
           {summary.campuses.map((c) => (
             <Badge key={c} variant="outline" size="sm">
@@ -119,18 +117,6 @@ export const EvaluationDrillDown: React.FC<EvaluationDrillDownProps> = ({
           ))}
           {hasConsensusSeal(summary) && (
             <ConsensusSeal count={summary.evaluationsCount} />
-          )}
-          {summary.publicUrl && (
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => openExternalUrl(summary.publicUrl!)}
-              className="h-6 px-2.5 text-[11px]"
-            >
-              <span>Página SIGAA</span>
-              <ExternalLink className="w-3 h-3 stroke-[2.5]" />
-            </Button>
           )}
         </div>
 
@@ -179,7 +165,7 @@ export const EvaluationDrillDown: React.FC<EvaluationDrillDownProps> = ({
         </div>
 
         {/* Disciplinas avaliadas */}
-        <div className="pt-3 border-t border-black/10">
+        <div className="pt-3 border-t border-ink/10">
           <p className="text-xs font-black uppercase tracking-wider text-neutral-600 mb-1.5">
             {relatedLabel} ({relatedItems.length})
           </p>
@@ -187,7 +173,7 @@ export const EvaluationDrillDown: React.FC<EvaluationDrillDownProps> = ({
             {relatedItems.map((item) => (
               <span
                 key={item}
-                className="text-xs font-bold bg-neutral-100 px-2.5 py-1 border-2 border-black rounded-lg"
+                className="text-xs font-bold bg-neutral-100 px-2.5 py-1 border-2 border-ink rounded-lg"
               >
                 {item}
               </span>
@@ -195,25 +181,25 @@ export const EvaluationDrillDown: React.FC<EvaluationDrillDownProps> = ({
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-4 pt-3 border-t-2 border-black/10 text-xs font-bold">
+        <div className="flex flex-wrap items-center gap-4 pt-3 border-t-2 border-ink/10 text-xs font-bold">
           <span className="inline-flex items-center gap-1.5 text-ink-success">
             <CheckCircle2 className="w-4 h-4 stroke-[2.5]" />
-            {summary.recommendYesCount}{' '}
-            {summary.recommendYesCount === 1 ? 'recomenda' : 'recomendam'}
+            {summary.recommendYesCount}{" "}
+            {summary.recommendYesCount === 1 ? "recomenda" : "recomendam"}
           </span>
           <span className="inline-flex items-center gap-1.5 text-neutral-700">
             <HelpCircle className="w-4 h-4 stroke-[2.5]" />
-            {summary.recommendDependeCount}{' '}
+            {summary.recommendDependeCount}{" "}
             {summary.recommendDependeCount === 1
               ? 'responde "depende"'
               : 'respondem "depende"'}
           </span>
           <span className="inline-flex items-center gap-1.5 text-ink-error">
             <XCircle className="w-4 h-4 stroke-[2.5]" />
-            {summary.recommendNoCount}{' '}
+            {summary.recommendNoCount}{" "}
             {summary.recommendNoCount === 1
-              ? 'não recomenda'
-              : 'não recomendam'}
+              ? "não recomenda"
+              : "não recomendam"}
           </span>
         </div>
       </Card>
@@ -222,8 +208,8 @@ export const EvaluationDrillDown: React.FC<EvaluationDrillDownProps> = ({
       <div className="space-y-4">
         <div className="flex items-center justify-between text-xs font-bold text-neutral-600 px-1">
           <span>
-            Avaliações registradas ({reviews.length}{' '}
-            {reviews.length === 1 ? 'relato' : 'relatos'})
+            Avaliações registradas ({reviews.length}{" "}
+            {reviews.length === 1 ? "relato" : "relatos"})
           </span>
           <span>Ordenado das mais recentes</span>
         </div>

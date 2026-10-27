@@ -65,8 +65,8 @@ export const UnmatchedCourseDialog: React.FC<UnmatchedCourseDialogProps> = ({
       <DialogContent showCloseButton={true} className="sm:max-w-md">
         <DialogHeader>
           <div className="flex items-center gap-2 mb-1">
-            <div className="w-8 h-8 rounded-lg bg-neo-yellow border-2 border-black flex items-center justify-center shadow-[2px_2px_0px_0px_#000]">
-              <AlertCircle className="w-4 h-4 stroke-[2.5] text-black" />
+            <div className="w-8 h-8 rounded-lg bg-neo-yellow border-2 border-ink flex items-center justify-center shadow-[2px_2px_0px_0px_var(--neo-shadow)]">
+              <AlertCircle className="w-4 h-4 stroke-[2.5] text-ink" />
             </div>
             <DialogTitle>
               Associar Turma (
@@ -82,13 +82,13 @@ export const UnmatchedCourseDialog: React.FC<UnmatchedCourseDialogProps> = ({
         </DialogHeader>
 
         {/* Card de Destaque da Turma */}
-        <div className="bg-canvas border-2 border-black rounded-lg p-3.5 space-y-2 shadow-[4px_4px_0px_0px_#000]">
+        <div className="bg-canvas border-2 border-ink rounded-lg p-3.5 space-y-2 shadow-(--neo-card-shadow)">
           <div className="flex items-center justify-between gap-2">
             <Badge variant={course.platform}>
               {course.platform === "teams" ? "Teams" : "Aprender 3"}
             </Badge>
             {course.code ? (
-              <span className="text-[11px] font-bold bg-white px-2 py-0.5 border border-black rounded-md">
+              <span className="text-[11px] font-bold bg-paper px-2 py-0.5 border border-ink rounded-md">
                 {course.code}
               </span>
             ) : null}
@@ -104,7 +104,7 @@ export const UnmatchedCourseDialog: React.FC<UnmatchedCourseDialogProps> = ({
             htmlFor="discipline-select"
             className="text-xs font-bold text-black flex items-center gap-1.5"
           >
-            <BookOpen className="w-3.5 h-3.5 stroke-[2.5] text-neo-blue" />
+            <BookOpen className="w-3.5 h-3.5 stroke-[2.5] text-blue-ink" />
             <span>Associar a:</span>
           </label>
           <Select

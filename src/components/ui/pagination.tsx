@@ -70,8 +70,8 @@ export const Pagination: React.FC<PaginationProps> = ({ page, pageCount, onPageC
                 className={cn(
                   numberBase,
                   isCurrent
-                    ? 'bg-neo-blue text-white border-black shadow-[2px_2px_0px_0px_#000] cursor-default'
-                    : 'bg-white text-black border-black shadow-[2px_2px_0px_0px_#000] hover:bg-neutral-100 hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none',
+                    ? 'bg-neo-blue text-white border-ink shadow-[2px_2px_0px_0px_var(--neo-shadow)] cursor-default'
+                    : 'bg-paper text-black border-ink shadow-[2px_2px_0px_0px_var(--neo-shadow)] hover:bg-neutral-100 hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px_var(--neo-shadow)] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none',
                 )}
               >
                 {token}

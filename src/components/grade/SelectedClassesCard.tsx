@@ -33,8 +33,8 @@ export const SelectedClassesCard: React.FC<SelectedClassesCardProps> = ({
     <Card className="p-4 space-y-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2.5 min-w-0">
-          <div className="p-1.5 bg-white border-2 border-black rounded-lg shadow-[2px_2px_0px_0px_#000] shrink-0">
-            <BookMarked className="w-4 h-4 stroke-[2.5] text-neo-blue" />
+          <div className="p-1.5 bg-paper border-2 border-ink rounded-lg shadow-[2px_2px_0px_0px_var(--neo-shadow)] shrink-0">
+            <BookMarked className="w-4 h-4 stroke-[2.5] text-blue-ink" />
           </div>
           <h3 className="text-sm font-extrabold tracking-tight text-black">
             Minha grade
@@ -105,8 +105,8 @@ export const SelectedClassesCard: React.FC<SelectedClassesCardProps> = ({
       </div>
 
       {selectedClasses.length === 0 ? (
-        <div className="py-5 px-4 text-center bg-pastel-blue/60 border-2 border-dashed border-black/25 rounded-lg space-y-1.5">
-          <BookOpen className="w-5 h-5 stroke-[2.5] text-neo-blue mx-auto" />
+        <div className="py-5 px-4 text-center bg-pastel-blue/60 border-2 border-dashed border-ink/25 rounded-lg space-y-1.5">
+          <BookOpen className="w-5 h-5 stroke-[2.5] text-blue-ink mx-auto" />
           <p className="text-xs font-extrabold text-black">
             Sua grade está vazia
           </p>

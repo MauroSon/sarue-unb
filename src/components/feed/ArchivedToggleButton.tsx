@@ -17,7 +17,9 @@ export const ArchivedToggleButton: React.FC<ArchivedToggleButtonProps> = ({ show
     aria-pressed={showArchived}
     title={showArchived ? 'Voltar ao feed ativo' : 'Ver itens que você arquivou'}
     className={`cursor-pointer flex items-center gap-1.5 text-xs font-bold h-[34px] ${
-      showArchived ? 'bg-neutral-800 text-white hover:bg-black' : 'bg-white text-neutral-700 hover:text-black'
+      showArchived
+        ? 'bg-neutral-800 text-paper hover:bg-black dark:hover:bg-neutral-700'
+        : 'bg-paper text-neutral-700 hover:text-black'
     }`}
   >
     {showArchived ? (

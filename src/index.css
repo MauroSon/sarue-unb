@@ -1,5 +1,13 @@
 @import 'tailwindcss';
 
+/* Tema escuro por classe no <html> (lib/theme.ts). Utilitários dark: apontam
+   para .dark, e TODA a inversão de cores vive aqui: o modo escuro do Saruê é
+   a Lousa à Noite — o mesmo mural de adesivos com o papel invertido. As
+   tintas de ação (azul caneta, verde giz, amarelo marca-texto, vermelho
+   correção) permanecem IDÊNTICAS nos dois modos; só papel, superfícies e a
+   tinta preta (que vira giz claro) mudam. Sombras continuam pretas sólidas. */
+@custom-variant dark (&:where(.dark, .dark *));
+
 /* Altura percentual + zoom no body. Percentagens pintam 1:1 nos engines
    (não são multiplicadas pelo zoom), então body em 100% ocupa a viewport
    EXATA em qualquer parada — sidebar e conteúdo preenchem a janela de
@@ -8,7 +16,7 @@
    sanduíche da sidebar (nav com overflow-y-auto). */
 html {
   height: 100%;
-  background-color: #e8eff8;
+  background-color: var(--color-canvas);
 }
 body {
   height: 100%;
@@ -39,9 +47,27 @@ body {
   --color-ink-success: #15803d;
   --color-ink-error: #b91c1c;
 
-  --color-platform-sigaa: #46e297;
-  --color-platform-aprender3: #fb923c;
-  --color-platform-teams: #60a5fa;
+  /* Tinta de verdade (nunca remapa): texto e fundos que continuam pretos
+     sobre cores de ação cheia (badges Verde Giz, botão accent/yellow, notas
+     de didática). Diferente de --color-black, que vira GIZ no escuro. */
+  --color-ink: #000000;
+
+  /* Azul caneta como TEXTO sobre papel (links de marca, ícones de cabeçalho,
+     contadores de chip): clareia no escuro para segurar contraste. */
+  --color-blue-ink: #2563eb;
+
+  /* A caneta que desenha arestas e pinos do Fluxograma (SVG usa var()). */
+  --color-ink-edge: #000000;
+
+  /* Linha do grid de papel (canvas do app e do Fluxograma). */
+  --grid-line: rgba(0, 0, 0, 0.06);
+
+  /* Identidade oficial das plataformas: SIGAA veste o azul UnB (#468AFB, a
+     cor da marca no próprio app — o sistema é da UnB), Aprender 3 é Moodle
+     (#F98012 oficial) e Teams é o roxo Fluent (#5B5FC7). */
+  --color-platform-sigaa: #468afb;
+  --color-platform-aprender3: #f98012;
+  --color-platform-teams: #5b5fc7;
 
   --color-pastel-blue: #ebf3ff;
   --color-pastel-green: #e6f8ee;
@@ -51,13 +77,116 @@ body {
   --color-pastel-orange: #ffedd5;
   --color-pastel-sky: #e0f2fe;
 
+  /* Tinta de texto dos códigos de disciplina nas células da grade: escura
+     sobre o pastel claro; no escuro remapa para pastéis claros (>80% L). */
+  --color-ink-disc-blue: #2563eb;
+  --color-ink-disc-green: #15803d;
+  --color-ink-disc-yellow: #a16207;
+  --color-ink-disc-purple: #7e22ce;
+  --color-ink-disc-orange: #c2410c;
+  --color-ink-disc-sky: #0369a1;
+
   --color-canvas: #e8eff8;
+
+  /* Adesivos e estados promovidos a token (audit P3): vivos usados por
+     dark: nos componentes; valores fixos, não remapam. */
+  --color-sticker-blue: #60a5fa;
+  --color-btn-raise: #263044;
+  --color-filter-hover: #1e293b;
+  --color-ink-deep: #090d16;
+
+  --color-canvas: #e8eff8;
+  /* Superfície de adesivo (cards, inputs, sidebar, cavidades). bg-white
+     foi migrado para bg-paper: text-white e thumbs claros continuam usando
+     --color-white, que NÃO remapa. */
+  --color-paper: #ffffff;
   --color-cream: #faf7ee;
 
-  --shadow-neo-xs: 1px 1px 0px 0px #000000;
-  --shadow-neo-sm: 2px 2px 0px 0px #000000;
-  --shadow-neo: 4px 4px 0px 0px #000000;
-  --shadow-neo-lg: 6px 6px 0px 0px #000000;
+  /* Tinta da sombra dura: preta nos dois temas. Sombras inline usam
+     var(--neo-shadow); cards grandes usam shadow-(--neo-card-shadow),
+     que no escuro carrega o highlight interno do topo da placa. */
+  --neo-shadow: #000000;
+  --neo-card-shadow: 4px 4px 0px 0px #000000;
+
+  --shadow-neo-xs: 1px 1px 0px 0px var(--neo-shadow);
+  --shadow-neo-sm: 2px 2px 0px 0px var(--neo-shadow);
+  --shadow-neo: 4px 4px 0px 0px var(--neo-shadow);
+  --shadow-neo-lg: 6px 6px 0px 0px var(--neo-shadow);
+}
+
+/* ══ Dark Stickerbook / Cutting Mat ══
+   Base de corte grafite-azulada (#111622) com placas de papel grafite
+   (#1B2232) ELEVADAS sobre ela — a sombra dura volta a ser PRETA PURA
+   (#000), recortando de verdade contra o papel mais claro: física de
+   placa/cartolina, sem sombra brilhando. Texto primário continua giz
+   quente. Tintas de ação ganham versões vivas de escuro (menta, ouro) e
+   os adesivos (badges, notas, pills) permanecem CHEIOS. Pastéis viram
+   versões ricas e saturadas — nunca lavados lamacentos. */
+.dark {
+  /* Base de corte e placa de papel: fundo mais escuro que a superfície. */
+  --color-canvas: #111622;
+  --color-paper: #1e2638;
+  --color-cream: #232d42;
+
+  /* Texto primário = giz quente. BORDAS e SOMBRAS = tinta preta de
+     verdade (--color-ink / --neo-shadow não remapam). A placa ganha um
+     fio de luz interno no topo para saltar contra a base de corte. */
+  --color-black: #f2f0e7;
+  --neo-shadow: #000000;
+  --neo-card-shadow: 4px 4px 0px 0px #000000,
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.08);
+
+  --color-neutral-50: #1a2130;
+  --color-neutral-100: #232b3d;
+  --color-neutral-200: #2e3850;
+  --color-neutral-300: #334155;
+  --color-neutral-400: #6b7891;
+  --color-neutral-500: #8b96ab;
+  --color-neutral-600: #b3bccd;
+  --color-neutral-700: #cbd2df;
+  --color-neutral-800: #e5e9f1;
+  --color-neutral-900: #f0f3f8;
+  --color-neutral-950: #0b0f18;
+  --color-slate-200: #2b3550;
+
+  /* Post-its e superfícies de família: escuros RICOS e saturados. */
+  --color-pastel-blue: #17294a;
+  --color-pastel-green: #0d281e;
+  --color-pastel-yellow: #362813;
+  --color-pastel-purple: #2b1f45;
+  --color-pastel-red: #3a1620;
+  --color-pastel-orange: #33220f;
+  --color-pastel-sky: #123040;
+
+  /* Tintas de ação vivas de escuro: os adesivos cheios brilham de dia e
+     de noite — menta no lugar do verde-menta claro, ouro no lugar do
+     amarelo puro (amarelo puro é a tinta que mais cansa no escuro). */
+  --color-neo-green: #34d399;
+  --color-neo-greenHover: #6ee7b7;
+  --color-neo-yellow: #fde047;
+  --color-neo-yellowHover: #fde68a;
+  --color-neo-dangerHover: #ef4444;
+
+  --color-ink-success: #4ade80;
+  --color-ink-error: #f87171;
+  --color-blue-ink: #8fb3ff;
+
+  /* Códigos de disciplina nas células da grade: pastéis claros (>80% de
+     luminosidade) sobre as superfícies ricas — nunca tinta escura. */
+  --color-ink-disc-blue: #bfdbfe;
+  --color-ink-disc-green: #bbf7d0;
+  --color-ink-disc-yellow: #fef08a;
+  --color-ink-disc-purple: #e9d5ff;
+  --color-ink-disc-orange: #fed7aa;
+  --color-ink-disc-sky: #a5f3fc;
+
+  /* A caneta do Fluxograma desenha em grafite — nem preto (some), nem
+     giz (brilha). */
+  --color-ink-edge: #4a5a7a;
+  --grid-line: rgba(255, 255, 255, 0.06);
+
+  /* Ring de foco: o offset acompanha a superfície local, não branco fixo. */
+  --tw-ring-offset-color: var(--color-paper);
 }
 
 :root {
@@ -68,9 +197,15 @@ body {
 .bg-grid {
   background-color: #E8EFF8;
   background-size: 32px 32px;
-  background-image: 
+  background-image:
     linear-gradient(to right, rgba(0, 0, 0, 0.05) 1px, transparent 1px),
     linear-gradient(to bottom, rgba(0, 0, 0, 0.05) 1px, transparent 1px);
+}
+.dark .bg-grid {
+  background-color: #111622;
+  background-image:
+    linear-gradient(to right, rgba(255, 255, 255, 0.06) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.06) 1px, transparent 1px);
 }
 
 /* Scrollbar suave Neobrutalista Pop */
@@ -91,6 +226,15 @@ body {
 
 ::-webkit-scrollbar-thumb:hover {
   background: #737373;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: #4a5568;
+  border-color: #05070b;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #5f6c85;
 }
 
 /* Reduced motion: estados continuam (troca instantânea), spinner de loading permanece — é feedback essencial.

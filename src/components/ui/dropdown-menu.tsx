@@ -29,7 +29,7 @@ function DropdownMenuContent({
         <MenuPrimitive.Popup
           data-slot="dropdown-menu-content"
           className={cn(
-            'relative z-50 min-w-[200px] max-h-[min(24rem,var(--available-height))] overflow-y-auto overflow-x-hidden rounded-lg border-2 border-black bg-canvas text-black p-1 outline-hidden origin-[var(--transform-origin)]',
+            'relative z-50 min-w-[200px] max-h-[min(24rem,var(--available-height))] overflow-y-auto overflow-x-hidden rounded-lg border-2 border-ink bg-canvas text-black p-1 outline-hidden origin-[var(--transform-origin)]',
             className,
           )}
           {...props}

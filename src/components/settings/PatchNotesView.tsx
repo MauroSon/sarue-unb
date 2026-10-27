@@ -17,15 +17,22 @@ export interface PatchNotesViewProps {
 
 /** Selo de versão: adesivo pill com borda preta e sombra dura de ação. */
 const versionPillClass =
-  "inline-flex items-center rounded-full border-2 border-black bg-white px-3.5 py-1 text-sm font-extrabold text-black shadow-[2px_2px_0px_0px_#000]";
+  "inline-flex items-center rounded-full border-2 border-ink bg-paper px-3.5 py-1 text-sm font-extrabold text-black shadow-[2px_2px_0px_0px_var(--neo-shadow)]";
 
 const PatchNotesEntryItem: React.FC<{
   entry: PatchNotesEntry;
   isCurrent: boolean;
 }> = ({ entry, isCurrent }) => (
-  <section className="border-b-2 border-black/15 pb-6 last:border-b-0 space-y-2.5">
+  <section className="border-b-2 border-ink/15 pb-6 last:border-b-0 space-y-2.5">
     <div className="flex flex-wrap items-center gap-2">
-      <span className={cn(versionPillClass, isCurrent && "bg-neo-yellow")}>
+      <span
+        className={cn(
+          versionPillClass,
+          // Adesivo de destaque nos dois temas: cheio com tinta fixa de texto
+          // (no escuro, o ouro vivo remapado no .dark).
+          isCurrent && "bg-neo-yellow text-ink",
+        )}
+      >
         v{entry.version}
       </span>
       {isCurrent && (

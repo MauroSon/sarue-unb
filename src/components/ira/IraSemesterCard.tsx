@@ -44,11 +44,11 @@ export const IraSemesterCard: React.FC<IraSemesterCardProps> = ({
       aria-label={semester.label}
       className={
         isFuture && !hasDisciplines
-          ? 'flex flex-col bg-neutral-50 border-2 border-dashed border-black/15 rounded-lg'
-          : 'flex flex-col bg-white border-2 border-black rounded-lg shadow-neo'
+          ? 'flex flex-col bg-neutral-50 border-2 border-dashed border-ink/15 rounded-lg'
+          : 'flex flex-col bg-paper border-2 border-ink rounded-lg shadow-neo'
       }
     >
-      <div className={`px-3 py-2.5 border-b-2 border-black ${SEMESTER_STYLES[semester.kind]} rounded-t-[6px]`}>
+      <div className={`px-3 py-2.5 border-b-2 border-ink ${SEMESTER_STYLES[semester.kind]} rounded-t-[6px]`}>
         <div className="flex items-center justify-between gap-2">
           <h3 className="text-xs font-black text-black tracking-tight truncate" title={semester.label}>
             {semester.label}
@@ -61,7 +61,7 @@ export const IraSemesterCard: React.FC<IraSemesterCardProps> = ({
         </div>
         <div className="flex items-center gap-1.5 mt-1 min-h-5">
           {semester.period && (
-            <span className="inline-flex items-center rounded-full border-2 border-black bg-white px-1.5 py-0 text-[11px] font-black leading-4">
+            <span className="inline-flex items-center rounded-full border-2 border-ink bg-paper dark:bg-neutral-300 dark:text-slate-50 px-1.5 py-0 text-[11px] font-black leading-4">
               {semester.period}
             </span>
           )}
@@ -130,7 +130,7 @@ export const IraSemesterCard: React.FC<IraSemesterCardProps> = ({
                 onClick={() => onRemoveDiscipline(d.id)}
                 aria-label={`Remover disciplina ${index + 1} de ${semester.label}`}
                 title="Remover do cenário"
-                className="inline-flex items-center justify-center w-7 h-7 rounded-lg border-2 border-transparent text-neutral-600 cursor-pointer hover:bg-pastel-red hover:border-black/10 active:translate-y-px transition-[background-color,border-color,transform] shrink-0"
+                className="inline-flex items-center justify-center w-7 h-7 rounded-lg border-2 border-transparent text-neutral-600 cursor-pointer hover:bg-pastel-red hover:border-ink/10 active:translate-y-px transition-[background-color,border-color,transform] shrink-0"
               >
                 <Trash2 className="w-3 h-3 stroke-[2.5]" />
               </button>
@@ -144,7 +144,7 @@ export const IraSemesterCard: React.FC<IraSemesterCardProps> = ({
         </p>
       )}
 
-      <div className="px-2 py-2 border-t-2 border-black/10 mt-auto">
+      <div className="px-2 py-2 border-t-2 border-ink/10 mt-auto">
         <Button
           variant="ghost"
           size="sm"

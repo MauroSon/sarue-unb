@@ -65,8 +65,8 @@ export const GradeFilters: React.FC<GradeFiltersProps> = ({
       {/* Cabeçalho da seção de busca */}
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-2.5 min-w-0">
-          <div className="p-1.5 bg-white border-2 border-black rounded-lg shadow-[2px_2px_0px_0px_#000] shrink-0">
-            <Search className="w-4 h-4 stroke-[2.5] text-neo-blue" />
+          <div className="p-1.5 bg-paper border-2 border-ink rounded-lg shadow-[2px_2px_0px_0px_var(--neo-shadow)] shrink-0">
+            <Search className="w-4 h-4 stroke-[2.5] text-blue-ink" />
           </div>
           <div className="min-w-0">
             <h3 className="text-sm font-extrabold tracking-tight text-black">
@@ -122,7 +122,7 @@ export const GradeFilters: React.FC<GradeFiltersProps> = ({
           </span>
           <div className="flex flex-col lg:flex-row gap-2.5 lg:items-stretch">
             {/* Cavidade composta: campo de texto + escopo de departamento na mesma unidade */}
-            <div className="flex-1 min-w-0 flex items-stretch rounded-xl border-2 border-black bg-white focus-within:ring-2 focus-within:ring-neo-blue transition-[box-shadow]">
+            <div className="flex-1 min-w-0 flex items-stretch rounded-xl border-2 border-ink bg-paper focus-within:ring-2 focus-within:ring-neo-blue transition-[box-shadow]">
               <div className="relative flex-1 min-w-0">
                 <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 stroke-[2.5] pointer-events-none" />
                 <input
@@ -152,7 +152,7 @@ export const GradeFilters: React.FC<GradeFiltersProps> = ({
               </div>
 
               {/* Escopo de departamento */}
-              <div className="shrink-0 border-l-2 border-black/15">
+              <div className="shrink-0 border-l-2 border-ink/15">
                 <DepartmentSelect
                   departments={departments}
                   value={selectedDeptId}

@@ -18,11 +18,12 @@ export interface WelcomeSyncDialogProps {
   platforms: string[];
 }
 
-/** Cor do adesivo por plataforma (identidade fixa do sistema) */
+/** Adesivo por plataforma (identidade fixa): cheio nos dois temas, tinta
+ * de texto fixa — no escuro as tintas ficam nas versões vivas do .dark. */
 const PLATFORM_STICKER_BG: Record<string, string> = {
-  SIGAA: "bg-neo-green",
-  "Aprender 3": "bg-platform-aprender3",
-  "Microsoft Teams": "bg-platform-teams",
+  SIGAA: "bg-platform-sigaa text-ink",
+  "Aprender 3": "bg-platform-aprender3 text-ink",
+  "Microsoft Teams": "bg-platform-teams text-white",
 };
 
 /**
@@ -85,8 +86,8 @@ export const WelcomeSyncDialog: React.FC<WelcomeSyncDialogProps> = ({
                     : { ...springy, delay: 0.3 + i * 0.08 }
                 }
                 className={`px-3 py-1 ${
-                  PLATFORM_STICKER_BG[name] ?? "bg-white"
-                } text-black font-bold text-xs border-2 border-black rounded-full shadow-[2px_2px_0px_0px_#000] inline-flex items-center gap-1.5`}
+                  PLATFORM_STICKER_BG[name] ?? "bg-paper text-black"
+                } font-bold text-xs border-2 border-ink rounded-full shadow-[2px_2px_0px_0px_var(--neo-shadow)] inline-flex items-center gap-1.5`}
               >
                 <CheckCircle2
                   className="w-3.5 h-3.5 stroke-[2.5] shrink-0"

@@ -285,7 +285,7 @@ export const CoursesScreen: React.FC = () => {
           {[1, 2, 3, 4].map((i) => (
             <Card
               key={i}
-              className="bg-white rounded-lg p-5 shadow-[4px_4px_0px_0px_#000] flex flex-col justify-between space-y-4"
+              className="bg-paper rounded-lg p-5 shadow-(--neo-card-shadow) flex flex-col justify-between space-y-4"
             >
               <div className="space-y-3">
                 <div className="flex items-center gap-2">
@@ -298,7 +298,7 @@ export const CoursesScreen: React.FC = () => {
                   <Skeleton className="h-4 w-20 rounded-md" />
                 </div>
               </div>
-              <div className="pt-3 border-t-2 border-black/10 flex justify-between items-center">
+              <div className="pt-3 border-t-2 border-ink/10 flex justify-between items-center">
                 <Skeleton className="h-4 w-28 rounded-md" />
                 <Skeleton className="h-4 w-16 rounded-md" />
               </div>
@@ -455,7 +455,7 @@ export const CoursesScreen: React.FC = () => {
               {drillSearchQuery ||
               drillCategory !== "all" ||
               drillPlatform !== "all" ? (
-                <div className="border-b-2 border-black/10 bg-canvas px-4 py-2 text-xs font-bold text-neutral-600 md:px-5">
+                <div className="border-b-2 border-ink/10 bg-canvas px-4 py-2 text-xs font-bold text-neutral-600 md:px-5">
                   {disciplineFeedItems.length} de {disciplineAllItems.length}{" "}
                   {disciplineFeedItems.length === 1
                     ? "resultado"
@@ -494,9 +494,9 @@ export const CoursesScreen: React.FC = () => {
 
       {/* Alerta caso haja turmas do Aprender 3 ou Teams não associadas */}
       {unmatchedCourses.length > 0 ? (
-        <div className="bg-neo-yellow/20 border-2 border-black rounded-lg p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-[4px_4px_0px_0px_#000]">
+        <div className="bg-neo-yellow/20 border-2 border-ink rounded-lg p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-(--neo-card-shadow)">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-neo-yellow border-2 border-black flex items-center justify-center shrink-0 shadow-[2px_2px_0px_0px_#000]">
+            <div className="w-8 h-8 rounded-lg bg-neo-yellow border-2 border-ink flex items-center justify-center shrink-0 shadow-[2px_2px_0px_0px_var(--neo-shadow)]">
               <AlertCircle className="w-4 h-4 stroke-[2.5] text-black" />
             </div>
             <div>
@@ -546,7 +546,7 @@ export const CoursesScreen: React.FC = () => {
                 setSelectedDiscipline(discipline);
               }
             }}
-            className="cursor-pointer bg-white rounded-lg p-5 shadow-[4px_4px_0px_0px_#000] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_#000] active:translate-x-[4px] active:translate-y-[4px] active:shadow-none transition-[transform,box-shadow,background-color,border-color] duration-150 ease-out flex flex-col justify-between group"
+            className="cursor-pointer bg-paper rounded-lg p-5 shadow-(--neo-card-shadow) hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_var(--neo-shadow)] active:translate-x-[4px] active:translate-y-[4px] active:shadow-none transition-[transform,box-shadow,background-color,border-color] duration-150 ease-out flex flex-col justify-between group"
           >
             <div>
               {/* Topo do card com plataformas integradas alinhadas à esquerda */}
@@ -573,7 +573,7 @@ export const CoursesScreen: React.FC = () => {
               </div>
 
               {/* Nome da disciplina */}
-              <h3 className="text-base md:text-lg font-black text-black leading-snug mb-3 group-hover:text-neo-blue transition-colors">
+              <h3 className="text-base md:text-lg font-black text-black leading-snug mb-3 group-hover:text-blue-ink transition-colors">
                 {discipline.name}
               </h3>
 
@@ -603,13 +603,13 @@ export const CoursesScreen: React.FC = () => {
             </div>
 
             {/* Rodapé com indicadores e atalho */}
-            <div className="flex flex-wrap items-center justify-between gap-2 pt-4 border-t-2 border-black/10 mt-4 text-xs font-bold">
+            <div className="flex flex-wrap items-center justify-between gap-2 pt-4 border-t-2 border-ink/10 mt-4 text-xs font-bold">
               <span className="text-neutral-500">{discipline.semester}</span>
 
               <div className="flex items-center gap-2">
                 {discipline.pendingAssignmentsCount !== undefined &&
                 discipline.pendingAssignmentsCount > 0 ? (
-                  <div className="flex items-center gap-1 text-ink-success bg-pastel-green px-2 py-0.5 border border-black/20 rounded-md">
+                  <div className="flex items-center gap-1 text-ink-success bg-pastel-green px-2 py-0.5 border border-ink/20 rounded-md">
                     <CheckSquare className="w-3.5 h-3.5 stroke-[2.5]" />
                     <span>{discipline.pendingAssignmentsCount} entregas</span>
                   </div>
@@ -617,13 +617,13 @@ export const CoursesScreen: React.FC = () => {
 
                 {discipline.unreadCount !== undefined &&
                 discipline.unreadCount > 0 ? (
-                  <div className="flex items-center gap-1 text-neo-blue bg-pastel-blue px-2 py-0.5 border border-black/20 rounded-md">
+                  <div className="flex items-center gap-1 text-blue-ink bg-pastel-blue px-2 py-0.5 border border-ink/20 rounded-md">
                     <MessageSquare className="w-3.5 h-3.5 stroke-[2.5]" />
                     <span>{discipline.unreadCount} novos</span>
                   </div>
                 ) : null}
 
-                <span className="text-neutral-800 text-[11px] underline decoration-2 group-hover:text-neo-blue font-extrabold ml-1">
+                <span className="text-neutral-800 text-[11px] underline decoration-2 group-hover:text-blue-ink font-extrabold ml-1">
                   Ver feed →
                 </span>
               </div>
@@ -635,10 +635,10 @@ export const CoursesScreen: React.FC = () => {
 
       {/* Seção Outros: Equipes do Teams, Monitorias e Projetos */}
       {otherCourses.length > 0 ? (
-        <div className="space-y-4 pt-6 border-t-2 border-black/10">
+        <div className="space-y-4 pt-6 border-t-2 border-ink/10">
           <div className="flex items-center justify-between text-xs font-bold text-neutral-600 px-1">
             <div className="flex items-center gap-2">
-              <Folder className="w-4 h-4 stroke-[2.5] text-neo-blue" />
+              <Folder className="w-4 h-4 stroke-[2.5] text-blue-ink" />
               <span className="text-sm font-black text-black">
                 Outras Equipes, Monitorias e Projetos ({otherCourses.length})
               </span>
@@ -686,7 +686,7 @@ export const CoursesScreen: React.FC = () => {
                     });
                   }
                 }}
-                className="cursor-pointer bg-white rounded-lg p-5 shadow-[4px_4px_0px_0px_#000] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_#000] active:translate-x-[4px] active:translate-y-[4px] active:shadow-none transition-[transform,box-shadow,background-color,border-color] duration-150 ease-out flex flex-col justify-between group"
+                className="cursor-pointer bg-paper rounded-lg p-5 shadow-(--neo-card-shadow) hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_var(--neo-shadow)] active:translate-x-[4px] active:translate-y-[4px] active:shadow-none transition-[transform,box-shadow,background-color,border-color] duration-150 ease-out flex flex-col justify-between group"
               >
                 <div>
                   <div className="flex items-center gap-1.5 mb-2.5">
@@ -694,13 +694,13 @@ export const CoursesScreen: React.FC = () => {
                       {oc.platform === "teams" ? "Teams" : "Aprender 3"}
                     </Badge>
                     {oc.code && oc.code !== oc.name ? (
-                      <span className="text-[11px] font-bold bg-neutral-100 px-2 py-0.5 border border-black/20 rounded-md">
+                      <span className="text-[11px] font-bold bg-neutral-100 px-2 py-0.5 border border-ink/20 rounded-md">
                         {oc.code}
                       </span>
                     ) : null}
                   </div>
 
-                  <h3 className="text-base md:text-lg font-black text-black leading-snug mb-3 group-hover:text-neo-blue transition-colors">
+                  <h3 className="text-base md:text-lg font-black text-black leading-snug mb-3 group-hover:text-blue-ink transition-colors">
                     {oc.name}
                   </h3>
 
@@ -722,9 +722,9 @@ export const CoursesScreen: React.FC = () => {
                   ) : null}
                 </div>
 
-                <div className="flex flex-wrap items-center justify-between gap-2 pt-4 border-t-2 border-black/10 mt-4 text-xs font-bold">
+                <div className="flex flex-wrap items-center justify-between gap-2 pt-4 border-t-2 border-ink/10 mt-4 text-xs font-bold">
                   <span className="text-neutral-500">{oc.semester || "2026.1"}</span>
-                  <span className="text-neutral-800 text-[11px] underline decoration-2 group-hover:text-neo-blue font-extrabold">
+                  <span className="text-neutral-800 text-[11px] underline decoration-2 group-hover:text-blue-ink font-extrabold">
                     Ver publicações →
                   </span>
                 </div>

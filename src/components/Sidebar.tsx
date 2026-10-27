@@ -167,7 +167,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       aria-label="Status da sincronização"
       onMouseEnter={clearCloseTimer}
       onMouseLeave={scheduleSyncPanelClose}
-      className="w-80 rounded-lg border-2 border-black bg-canvas overflow-hidden outline-none origin-[var(--transform-origin)] transition-[opacity,transform] duration-150 ease-out data-[starting-style]:scale-95 data-[starting-style]:opacity-0 data-[ending-style]:scale-95 data-[ending-style]:opacity-0"
+      className="w-80 rounded-lg border-2 border-ink bg-canvas overflow-hidden outline-none origin-[var(--transform-origin)] transition-[opacity,transform] duration-150 ease-out data-[starting-style]:scale-95 data-[starting-style]:opacity-0 data-[ending-style]:scale-95 data-[ending-style]:opacity-0"
     >
       {syncSteps ? (
         <SyncStatusTooltip
@@ -181,7 +181,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   return (
     <aside
-      className={`group h-full bg-white border-r-2 border-black flex flex-col transition-[width] duration-300 ease-[cubic-bezier(0.2,0,0,1)] select-none z-20 shrink-0 overflow-x-hidden ${
+      className={`group h-full bg-paper border-r-2 border-ink flex flex-col transition-[width] duration-300 ease-[cubic-bezier(0.2,0,0,1)] select-none z-20 shrink-0 overflow-x-hidden ${
         isCollapsed ? "w-20" : "w-64"
       }`}
     >
@@ -190,7 +190,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           ficam sempre fixos (sanduíche) */}
       <div className="min-h-0 flex-1 flex flex-col">
         {/* Header da Sidebar */}
-        <div className="shrink-0 p-4 border-b-2 border-black flex items-center justify-between min-h-[69px] overflow-hidden">
+        <div className="shrink-0 p-4 border-b-2 border-ink flex items-center justify-between min-h-[69px] overflow-hidden">
           <div className="flex items-center min-w-0 flex-1">
             {/* Logo e Botão de Expandir no hover quando colapsado */}
             <div className="relative shrink-0 flex items-center justify-center">
@@ -201,7 +201,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 onClick={() => onSelectTab("home")}
                 title="Ir para a Home"
                 aria-label="Ir para a Home"
-                className={`cursor-pointer w-[42px] h-[42px] border-2 border-black rounded-xl overflow-hidden shadow-[2px_2px_0px_0px_#000] focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-neo-blue focus-visible:ring-offset-2 flex items-center justify-center bg-white transition-opacity duration-200 ${
+                className={`cursor-pointer w-[42px] h-[42px] border-2 border-ink rounded-xl overflow-hidden shadow-[2px_2px_0px_0px_var(--neo-shadow)] focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-neo-blue focus-visible:ring-offset-2 flex items-center justify-center bg-paper transition-opacity duration-200 ${
                   isCollapsed ? "group-hover:opacity-0" : "opacity-100"
                 }`}
               >
@@ -218,7 +218,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 onClick={onToggleCollapse}
                 title="Expandir barra lateral"
                 aria-label="Expandir barra lateral"
-                className={`cursor-pointer absolute inset-0 w-[42px] h-[42px] items-center justify-center border-2 border-black rounded-xl bg-neo-blue hover:bg-neo-blueHover text-white shadow-[2px_2px_0px_0px_#000] focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-neo-blue focus-visible:ring-offset-2 transition-opacity duration-200 flex ${
+                className={`cursor-pointer absolute inset-0 w-[42px] h-[42px] items-center justify-center border-2 border-ink rounded-xl bg-neo-blue hover:bg-neo-blueHover text-white shadow-[2px_2px_0px_0px_var(--neo-shadow)] focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-neo-blue focus-visible:ring-offset-2 transition-opacity duration-200 flex ${
                   isCollapsed
                     ? "opacity-0 group-hover:opacity-100"
                     : "opacity-0 pointer-events-none"
@@ -263,7 +263,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               type="button"
               onClick={onToggleCollapse}
               title="Recolher barra lateral"
-              className="cursor-pointer p-1.5 border-2 border-black rounded-lg bg-white hover:bg-neutral-100 text-black shadow-[2px_2px_0px_0px_#000] focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-neo-blue focus-visible:ring-offset-2 hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-[transform,box-shadow,background-color,border-color]"
+              className="cursor-pointer p-1.5 border-2 border-ink rounded-lg bg-paper hover:bg-neutral-100 text-black shadow-[2px_2px_0px_0px_var(--neo-shadow)] focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-neo-blue focus-visible:ring-offset-2 hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px_var(--neo-shadow)] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-[transform,box-shadow,background-color,border-color]"
             >
               <PanelLeftClose className="w-4 h-4 stroke-[2.5]" />
             </button>
@@ -271,7 +271,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </div>
 
         {/* Lista de Navegação com som fofo/macio tátil (apenas ao alternar para aba inativa) */}
-        <nav className="min-h-0 overflow-y-auto border-b-2 border-black">
+        <nav className="min-h-0 overflow-y-auto border-b-2 border-ink">
           <ul className="flex flex-col">
             {navItems.map((item) => {
               const Icon = item.icon;
@@ -281,7 +281,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               return (
                 <li
                   key={item.id}
-                  className="border-b-2 border-black last:border-b-0"
+                  className="border-b-2 border-ink last:border-b-0"
                 >
                   <button
                     type="button"
@@ -290,10 +290,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     onClick={() => onSelectTab(item.id)}
                     title={item.label}
                     aria-current={isActive ? "page" : undefined}
-                    className={`cursor-pointer w-full flex items-center select-none focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-neo-blue focus-visible:ring-offset-2 focus-visible:ring-offset-white transition-colors duration-150 py-3.5 px-4 overflow-hidden ${
+                    className={`cursor-pointer w-full flex items-center select-none focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-neo-blue focus-visible:ring-offset-2 focus-visible:ring-offset-paper transition-colors duration-150 py-3.5 px-4 overflow-hidden ${
                       isActive
                         ? "bg-neo-blue text-white font-black"
-                        : "bg-white text-neutral-800 hover:bg-neutral-100 font-bold"
+                        : "bg-paper text-neutral-800 hover:bg-neutral-100 font-bold"
                     }`}
                   >
                     <div className="w-[42px] h-6 shrink-0 flex items-center justify-center relative">
@@ -302,7 +302,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                         <span
                           aria-hidden="true"
                           className={`absolute top-0.5 right-2 w-2 h-2 rounded-full ${
-                            isActive ? "bg-white" : "bg-neo-blue"
+                            isActive ? "bg-paper" : "bg-neo-blue"
                           }`}
                         />
                       )}
@@ -323,7 +323,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                           aria-label="Atualização disponível"
                           title="Atualização disponível"
                           className={`w-2 h-2 rounded-full shrink-0 ml-2 ${
-                            isActive ? "bg-white" : "bg-neo-blue"
+                            isActive ? "bg-paper" : "bg-neo-blue"
                           }`}
                         />
                       )}
@@ -337,7 +337,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       </div>
 
       {/* Canto Inferior da Sidebar: Botão de Sincronizar com Efeito Macio */}
-      <div className="shrink-0 p-4 border-t-2 border-black overflow-hidden">
+      <div className="shrink-0 p-4 border-t-2 border-ink overflow-hidden">
         <div
           className={`relative transition-[height] duration-300 ease-[cubic-bezier(0.2,0,0,1)] ${
             isCollapsed ? "h-[88px]" : "h-10"
@@ -366,7 +366,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 className={`w-full h-10 flex items-center justify-center font-bold text-xs rounded-2xl border-2 transition-[transform,box-shadow,background-color,border-color] duration-150 select-none ${
                   !hasConnectedAccounts
                     ? "bg-neutral-200 text-neutral-400 border-neutral-300 cursor-not-allowed shadow-none"
-                    : "cursor-pointer bg-neo-blue hover:bg-neo-blueHover text-white border-black focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-neo-blue focus-visible:ring-offset-2 focus-visible:ring-offset-white shadow-[2px_2px_0px_0px_#000] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
+                    : "cursor-pointer bg-neo-blue hover:bg-neo-blueHover text-white border-ink focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-neo-blue focus-visible:ring-offset-2 focus-visible:ring-offset-paper shadow-[2px_2px_0px_0px_var(--neo-shadow)] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px_var(--neo-shadow)] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
                 }`}
               >
                 <RefreshCw

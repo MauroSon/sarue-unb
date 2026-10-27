@@ -25,8 +25,8 @@ export const SettingsSection: React.FC<SettingsSectionProps> = ({
   className,
 }) => {
   const header = (
-    <div className="flex items-center gap-2 mb-3 pb-2.5 border-b-2 border-black/10">
-      <Icon className="w-4 h-4 stroke-[2.5] text-neo-blue" />
+    <div className="flex items-center gap-2 mb-3 pb-2.5 border-b-2 border-ink/10">
+      <Icon className="w-4 h-4 stroke-[2.5] text-blue-ink" />
       <h3 className="text-sm font-black uppercase tracking-tight text-black">
         {label}
       </h3>

@@ -105,8 +105,8 @@ export const WithdrawalDeadlineDialog: React.FC<WithdrawalDeadlineDialogProps> =
       <DialogContent showCloseButton={true} className="sm:max-w-md">
         <DialogHeader>
           <div className="flex items-center gap-2 mb-1">
-            <div className="w-9 h-9 rounded-lg bg-neo-yellow border-2 border-black flex items-center justify-center shadow-neo-sm">
-              <CalendarClock className="w-5 h-5 stroke-[2.5] text-black" />
+            <div className="w-9 h-9 rounded-lg bg-neo-yellow border-2 border-ink flex items-center justify-center shadow-neo-sm">
+              <CalendarClock className="w-5 h-5 stroke-[2.5] text-ink" />
             </div>
             <DialogTitle>Última Semana de Trancamento</DialogTitle>
           </div>
@@ -119,7 +119,7 @@ export const WithdrawalDeadlineDialog: React.FC<WithdrawalDeadlineDialogProps> =
           {activeAlerts.map((item) => (
             <div
               key={item.type}
-              className="bg-pastel-yellow border-2 border-black rounded-lg p-3.5 shadow-neo-sm space-y-1.5"
+              className="bg-pastel-yellow border-2 border-ink rounded-lg p-3.5 shadow-neo-sm space-y-1.5"
             >
               <div className="flex items-center justify-between gap-2">
                 <span className="text-xs font-black uppercase tracking-tight text-black flex items-center gap-1.5">

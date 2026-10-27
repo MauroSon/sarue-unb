@@ -37,18 +37,21 @@ export const Badge: React.FC<BadgeProps> = ({
   ...props
 }) => {
   const variantStyles: Record<BadgeTypeVariant, string> = {
-    sigaa: "bg-platform-sigaa text-black border-2 border-black",
-    aprender3: "bg-platform-aprender3 text-black border-2 border-black",
-    teams: "bg-platform-teams text-black border-2 border-black",
-    assignment: "bg-neo-yellow text-black border-2 border-black",
-    post: "bg-slate-200 text-black border-2 border-black",
-    urgent: "bg-neo-danger text-white border-2 border-black",
-    neutral: "bg-white text-black border-2 border-black",
-    success: "bg-neo-green text-black border-2 border-black",
-    primary: "bg-neo-blue text-white border-2 border-black",
-    outline: "bg-white text-black border-2 border-black",
-    purple: "bg-neo-purple text-black border-2 border-black",
-    yellow: "bg-neo-yellow text-black border-2 border-black",
+    // Adesivos de verdade nos dois temas: fundo cheio, tinta fixa de texto e
+    // borda de tinta. No escuro as tintas de ação ficam nas versões vivas
+    // (menta, ouro) remapadas no bloco .dark — nunca vazadas.
+    sigaa: "bg-platform-sigaa text-ink border-2 border-ink",
+    aprender3: "bg-platform-aprender3 text-ink border-2 border-ink",
+    teams: "bg-platform-teams text-white border-2 border-ink",
+    assignment: "bg-neo-yellow text-ink border-2 border-ink",
+    post: "bg-slate-200 text-black border-2 border-ink",
+    urgent: "bg-neo-danger text-white border-2 border-ink",
+    neutral: "bg-paper text-black border-2 border-ink dark:bg-neutral-300 dark:text-slate-50",
+    success: "bg-neo-green text-ink border-2 border-ink",
+    primary: "bg-neo-blue text-white border-2 border-ink",
+    outline: "bg-paper text-black border-2 border-ink dark:bg-neutral-300 dark:text-slate-50",
+    purple: "bg-neo-purple text-ink border-2 border-ink",
+    yellow: "bg-neo-yellow text-ink border-2 border-ink",
   };
 
   const sizeStyles = {

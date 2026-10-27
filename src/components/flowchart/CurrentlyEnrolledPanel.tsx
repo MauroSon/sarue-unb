@@ -27,11 +27,11 @@ export const CurrentlyEnrolledPanel: React.FC<CurrentlyEnrolledPanelProps> =
 
     return (
       <div
-        className="bg-pastel-blue border-2 border-black rounded-lg p-4 shadow-neo mb-6"
+        className="bg-pastel-blue border-2 border-ink rounded-lg p-4 shadow-neo mb-6"
         aria-live="polite"
       >
         <div className="flex items-baseline gap-2 mb-3">
-          <CircleDotDashed className="w-4 h-4 stroke-[2.5] text-neo-blue self-center shrink-0" />
+          <CircleDotDashed className="w-4 h-4 stroke-[2.5] text-blue-ink self-center shrink-0" />
           <h3 className="font-black text-sm text-black">Cursando agora</h3>
           <span className="text-[11px] font-bold text-neutral-600">
             {query !== ""

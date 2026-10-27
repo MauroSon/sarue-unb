@@ -12,6 +12,7 @@ import {
   DialogDescription,
   DialogFooter,
   Slider,
+  SegmentedControl,
 } from "@/components/ui";
 import { ConnectedAccountsCard } from "@/components/settings/ConnectedAccountsCard";
 import { SettingsSection } from "@/components/settings/SettingsSection";
@@ -22,6 +23,7 @@ import { useContainer } from "../context/ContainerContext";
 import { useOptionalSync } from "../context/SyncContext";
 import {
   Settings,
+  Heart,
   AlertCircle,
   Trash2,
   RotateCcw,
@@ -29,6 +31,9 @@ import {
   SlidersHorizontal,
   PersonStanding,
   Triangle,
+  Sun,
+  Moon,
+  Monitor,
 } from "lucide-react";
 import { useAppUpdater } from "../hooks/useAppUpdater";
 import { useAutostart } from "../hooks/useAutostart";
@@ -41,6 +46,7 @@ import {
   playButtonClickSound,
 } from "@/lib/sound-effects";
 import { useAccessibility } from "../context/AccessibilityContext";
+import { useTheme } from "../context/ThemeContext";
 import {
   UI_ZOOM_MAX_PERCENT,
   UI_ZOOM_MIN_PERCENT,
@@ -69,6 +75,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
   } = useAutostart();
   const { reduceAnimations, setReduceAnimations, uiZoom, setUiZoom } =
     useAccessibility();
+  const { themeMode, setThemeMode, resolvedTheme } = useTheme();
 
   // Modo explorar: nenhuma conta conectada — o botão da zona de perigo vira
   // "Voltar para o Onboarding", mas a ação continua apagando tudo (grades,
@@ -82,6 +89,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
   const [isWiping, setIsWiping] = useState(false);
   const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
   const [isViewingPatchNotes, setIsViewingPatchNotes] = useState(false);
+  const [isCreditsDialogOpen, setIsCreditsDialogOpen] = useState(false);
   const [isSoundActive, setIsSoundActive] = useState(() =>
     isSoundEffectsEnabled(),
   );
@@ -199,6 +207,57 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
                 />
               </div>
             </div>
+
+            {/* Tema da interface: claro, escuro ou sistema */}
+            <div className="flex items-center justify-between gap-4 py-1">
+              <div className="max-w-md">
+                <span className="text-xs font-black text-black block">
+                  Tema da interface
+                </span>
+                <p className="text-xs font-semibold text-neutral-600 leading-snug mt-0.5">
+                  Claro, escuro ou acompanhando o seu sistema.
+                </p>
+              </div>
+              <SegmentedControl
+                size="md"
+                ariaLabel="Tema da interface"
+                value={themeMode}
+                onValueChange={setThemeMode}
+                className="w-64 shrink-0"
+                options={[
+                  {
+                    value: "light",
+                    label: (
+                      <span className="flex items-center gap-1.5">
+                        <Sun className="w-3.5 h-3.5 stroke-[2.5]" />
+                        Claro
+                      </span>
+                    ),
+                    title: "Tema claro",
+                  },
+                  {
+                    value: "dark",
+                    label: (
+                      <span className="flex items-center gap-1.5">
+                        <Moon className="w-3.5 h-3.5 stroke-[2.5]" />
+                        Escuro
+                      </span>
+                    ),
+                    title: "Tema escuro — a lousa à noite",
+                  },
+                  {
+                    value: "system",
+                    label: (
+                      <span className="flex items-center gap-1.5">
+                        <Monitor className="w-3.5 h-3.5 stroke-[2.5]" />
+                        Sistema
+                      </span>
+                    ),
+                    title: "Seguir o tema do sistema",
+                  },
+                ]}
+              />
+            </div>
           </div>
         </SettingsSection>
 
@@ -247,7 +306,8 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
                     }}
                     onValueCommitted={(value) => {
                       const percent = Array.isArray(value) ? value[0] : value;
-                      const next = typeof percent === "number" ? percent / 100 : NaN;
+                      const next =
+                        typeof percent === "number" ? percent / 100 : NaN;
                       if (Number.isFinite(next) && next !== uiZoom) {
                         setUiZoom(next as UiZoom);
                       }
@@ -273,12 +333,15 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
 
         {/* Zona de Perigo — logo após Atualizações, com respiro maior antes */}
         <div className="pt-6">
-          <Card className="border-2 border-neo-danger bg-pastel-red rounded-lg p-5 shadow-[4px_4px_0px_0px_#dc2626]">
+          {/* No escuro: sombra Vermelho Profundo sob placa Vermelho Sangue —
+              a tinta tingida escurece junto com o tema, o degrau continua
+              lendo contra a base de corte. */}
+          <Card className="border-2 border-neo-danger bg-pastel-red rounded-lg p-5 shadow-[4px_4px_0px_0px_#dc2626] dark:bg-[#7f1d1d] dark:shadow-[4px_4px_0px_0px_#450a0a]">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <div>
                 <div className="flex items-center gap-2 text-ink-error mb-1">
                   <AlertCircle className="w-5 h-5 stroke-[2.5]" />
-                  <h3 className="text-sm font-black uppercase tracking-tight">
+                  <h3 className="text-sm font-black uppercase tracking-tight dark:text-black">
                     Apagar Dados e Credenciais
                   </h3>
                 </div>
@@ -345,6 +408,18 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
               GitHub.
             </p>
 
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsCreditsDialogOpen(true)}
+              title="Quem faz o Saruê"
+              className="mt-3"
+            >
+              <Heart className="w-3.5 h-3.5 stroke-[2.5]" />
+              <span>Contribuidores</span>
+            </Button>
+
             <div className="flex items-center gap-2 mt-3">
               <span className="text-xs font-bold text-neutral-600">
                 © {new Date().getFullYear()} Kaleb Henrique
@@ -361,7 +436,11 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
                 className="w-8 p-0"
               >
                 <img
-                  src="/github-142-svgrepo-com.svg"
+                  src={
+                    resolvedTheme === "dark"
+                      ? "/github-142-svgrepo-com-dark.svg"
+                      : "/github-142-svgrepo-com.svg"
+                  }
                   alt=""
                   className="w-4 h-4 select-none"
                 />
@@ -380,7 +459,11 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
                 className="w-8 p-0"
               >
                 <img
-                  src="/linkedin-svgrepo-com.svg"
+                  src={
+                    resolvedTheme === "dark"
+                      ? "/linkedin-svgrepo-com-dark.svg"
+                      : "/linkedin-svgrepo-com.svg"
+                  }
                   alt=""
                   className="w-4 h-4 select-none"
                 />
@@ -402,7 +485,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
         <DialogContent showCloseButton={!isWiping} className="sm:max-w-md">
           <DialogHeader>
             <div className="flex items-center gap-2 mb-1">
-              <div className="w-9 h-9 rounded-lg bg-neo-danger text-white border-2 border-black flex items-center justify-center shadow-[2px_2px_0px_0px_#000]">
+              <div className="w-9 h-9 rounded-lg bg-neo-danger text-white border-2 border-ink flex items-center justify-center shadow-[2px_2px_0px_0px_var(--neo-shadow)]">
                 <Trash2 className="w-5 h-5 stroke-[2.5]" />
               </div>
               <DialogTitle>
@@ -437,6 +520,73 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
             >
               <Trash2 className="w-4 h-4 stroke-[2.5]" />
               <span>Confirmar Exclusão</span>
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Diálogo de Créditos */}
+      <Dialog
+        open={isCreditsDialogOpen}
+        onOpenChange={setIsCreditsDialogOpen}
+      >
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <div className="flex items-center gap-2 mb-1">
+              {/* Receita do adesivo do onboarding: bloco branco de dia,
+                  sólido vivo de noite, coração de tinta nos dois. */}
+              <div className="w-9 h-9 rounded-lg bg-paper dark:bg-neo-yellow border-2 border-ink flex items-center justify-center shadow-neo-sm">
+                <Heart className="w-5 h-5 stroke-[2.5] text-black dark:text-ink" />
+              </div>
+              <DialogTitle>Contribuidores</DialogTitle>
+            </div>
+            <DialogDescription>
+              Quem faz o Saruê acontecer.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-2.5">
+            {/* Fundador em primeiro, com o grifo amarelo; no escuro, placa
+                com borda e rótulo em Ouro vivo (mesma receita do IRA) */}
+            <div className="bg-pastel-yellow border-2 border-ink rounded-lg p-3.5 shadow-neo-sm dark:bg-paper dark:border-neo-yellow">
+              <span className="text-[11px] font-black uppercase tracking-wider text-neutral-700 block dark:text-neo-yellow">
+                Contribuidor de código
+              </span>
+              <p className="text-sm font-black text-black mt-0.5">
+                Kaleb Henrique
+              </p>
+              <p className="text-xs font-bold text-neutral-700 mt-0.5">
+                Idealizador e desenvolvedor fullstack
+              </p>
+            </div>
+            <div className="bg-white dark:bg-paper border-2 border-ink rounded-lg p-3.5 shadow-neo-sm">
+              <span className="text-[11px] font-black uppercase tracking-wider text-neutral-700 block">
+                Contribuidor de código
+              </span>
+              <p className="text-sm font-black text-black mt-0.5">Mauro</p>
+              <p className="text-xs font-bold text-neutral-700 mt-0.5">
+                Desenvolvedor fullstack
+              </p>
+            </div>
+            <div className="bg-white dark:bg-paper border-2 border-ink rounded-lg p-3.5 shadow-neo-sm">
+              <span className="text-[11px] font-black uppercase tracking-wider text-neutral-700 block">
+                Contribuidor
+              </span>
+              <p className="text-sm font-black text-black mt-0.5">Ricardo</p>
+              <p className="text-xs font-bold text-neutral-700 mt-0.5">
+                Administrador do grupo UnB Geral
+              </p>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="primary"
+              size="md"
+              onClick={() => setIsCreditsDialogOpen(false)}
+            >
+              <span>Fechar</span>
             </Button>
           </DialogFooter>
         </DialogContent>

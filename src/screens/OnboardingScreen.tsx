@@ -5,7 +5,15 @@ import {
   useReducedMotion,
   type Variants,
 } from "motion/react";
-import { Button } from "@/components/ui";
+import { Moon, Sun } from "lucide-react";
+import {
+  Button,
+  Switch,
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+} from "@/components/ui";
+import { useTheme } from "../context/ThemeContext";
 import { CredentialsStep } from "@/components/onboarding/CredentialsStep";
 import {
   ArrowRight,
@@ -32,6 +40,10 @@ const TOTAL_STEPS = 4;
 
 type StepCard = {
   bg: string;
+  /** Barra superior da categoria no escuro (placa + faixa viva). */
+  bar?: string;
+  /** Fundo do adesivo de ícone no escuro (sólido vivo). */
+  sticker?: string;
   icon: React.ReactNode;
   title: string;
   copy: string;
@@ -42,6 +54,7 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
   onExplore,
 }) => {
   const [step, setStep] = useState(1);
+  const { resolvedTheme, setThemeMode } = useTheme();
   const reduced = useReducedMotion();
   const finishRef = useRef<() => void | Promise<void>>(() => {});
   const [credState, setCredState] = useState({ connected: false, busy: false });
@@ -92,14 +105,47 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
     <div className="min-h-full bg-canvas bg-grid flex flex-col">
       {/* Chrome do wizard: logo, progresso, pular */}
       <div className="w-full max-w-2xl mx-auto px-6 pt-6 flex items-center justify-between gap-4 shrink-0">
-        <div className="flex-1 flex">
-          {step > 1 && (
-            <img
-              src="/sarue-logo.png"
-              alt="Saruê UnB"
-              className="w-7 h-7 object-cover border-2 border-black rounded-lg shadow-[2px_2px_0px_0px_#000]"
+        <div className="flex-1 flex items-center gap-2.5">
+          {/* Preferência de ambiente: canto superior esquerdo. Sol e lua
+              nomeiam o switch; tooltip explica cada lado no hover. */}
+          <div className="flex items-center gap-1.5">
+            <Tooltip>
+              <TooltipTrigger
+                aria-label="Ativar modo claro"
+                onClick={() => setThemeMode("light")}
+                className={`cursor-pointer p-1 rounded-md transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-neo-blue ${
+                  resolvedTheme === "light"
+                    ? "text-black"
+                    : "text-neutral-400 hover:text-neutral-600"
+                }`}
+              >
+                <Sun className="w-3.5 h-3.5 stroke-[2.5]" />
+              </TooltipTrigger>
+              <TooltipContent>Modo claro</TooltipContent>
+            </Tooltip>
+            <Switch
+              checked={resolvedTheme === "dark"}
+              onCheckedChange={(checked) =>
+                setThemeMode(checked ? "dark" : "light")
+              }
+              aria-label="Alternar modo claro e escuro"
+              className="shrink-0"
             />
-          )}
+            <Tooltip>
+              <TooltipTrigger
+                aria-label="Ativar modo escuro"
+                onClick={() => setThemeMode("dark")}
+                className={`cursor-pointer p-1 rounded-md transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-neo-blue ${
+                  resolvedTheme === "dark"
+                    ? "text-black"
+                    : "text-neutral-400 hover:text-neutral-600"
+                }`}
+              >
+                <Moon className="w-3.5 h-3.5 stroke-[2.5]" />
+              </TooltipTrigger>
+              <TooltipContent>Modo escuro</TooltipContent>
+            </Tooltip>
+          </div>
         </div>
 
         {/* Indicador de progresso: bolinhas-adesivo */}
@@ -120,7 +166,7 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
                     ? { duration: 0 }
                     : { type: "spring", stiffness: 400, damping: 20 }
                 }
-                className={`inline-block w-3 h-3 rounded-full border-2 border-black ${n <= step ? "bg-neo-blue" : "bg-white"}`}
+                className={`inline-block w-3 h-3 rounded-full border-2 border-ink ${n <= step ? "bg-neo-blue" : "bg-paper dark:bg-neutral-300"}`}
               />
             );
           })}
@@ -179,7 +225,7 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
                   }
                   aria-hidden
                 >
-                  <Star className="w-7 h-7 fill-neo-yellow text-black stroke-[2.5]" />
+                  <Star className="w-7 h-7 fill-neo-yellow text-black dark:text-white stroke-[2.5]" />
                 </motion.div>
                 <motion.div
                   className="absolute -top-3 right-8 z-10 pointer-events-none"
@@ -197,7 +243,7 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
                   }
                   aria-hidden
                 >
-                  <div className="w-5 h-5 rounded-full bg-neo-coral border-2 border-black shadow-[2px_2px_0px_0px_#000]" />
+                  <div className="w-5 h-5 rounded-full bg-neo-coral border-2 border-ink dark:border-white shadow-[2px_2px_0px_0px_var(--neo-shadow)]" />
                 </motion.div>
                 <motion.div
                   className="absolute top-[16%] -left-4 z-10 pointer-events-none"
@@ -215,7 +261,7 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
                   }
                   aria-hidden
                 >
-                  <Triangle className="w-6 h-6 fill-platform-teams text-black stroke-[2.5]" />
+                  <Triangle className="w-6 h-6 fill-platform-teams text-black dark:text-white stroke-[2.5]" />
                 </motion.div>
                 <motion.div
                   className="absolute top-[24%] -right-5 z-10 pointer-events-none"
@@ -233,7 +279,7 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
                   }
                   aria-hidden
                 >
-                  <Plus className="w-6 h-6 text-neo-purple stroke-[3]" />
+                  <Plus className="w-6 h-6 text-neo-purple dark:text-white stroke-[3]" />
                 </motion.div>
                 <motion.div
                   className="absolute bottom-[8%] left-[12%] z-10 pointer-events-none"
@@ -251,7 +297,7 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
                   }
                   aria-hidden
                 >
-                  <div className="w-4 h-4 bg-neo-green border-2 border-black shadow-[2px_2px_0px_0px_#000]" />
+                  <div className="w-4 h-4 bg-neo-green border-2 border-ink dark:border-white shadow-[2px_2px_0px_0px_var(--neo-shadow)]" />
                 </motion.div>
                 <motion.div
                   className="absolute bottom-[14%] right-[10%] z-10 pointer-events-none"
@@ -269,7 +315,7 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
                   }
                   aria-hidden
                 >
-                  <Circle className="w-5 h-5 text-platform-aprender3 stroke-[3]" />
+                  <Circle className="w-5 h-5 text-black dark:text-white stroke-[3]" />
                 </motion.div>
 
                 {/* Hero */}
@@ -290,7 +336,7 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
                     <img
                       src="/sarue-logo.png"
                       alt="Saruê UnB"
-                      className="w-20 h-20 md:w-24 md:h-24 object-cover border-2 border-black rounded-2xl shadow-[4px_4px_0px_0px_#000] select-none pointer-events-none"
+                      className="w-20 h-20 md:w-24 md:h-24 object-cover border-2 border-ink rounded-2xl shadow-(--neo-card-shadow) select-none pointer-events-none"
                     />
                   </motion.div>
                   <h1 className="text-4xl md:text-5xl font-black text-black tracking-tight">
@@ -301,13 +347,13 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
                     feed desktop integrado, seguro e rápido.
                   </p>
                   <div className="flex flex-wrap justify-center gap-2 pt-1">
-                    <span className="px-3 py-1 bg-neo-green text-black font-bold text-xs border-2 border-black rounded-full shadow-[2px_2px_0px_0px_#000]">
+                    <span className="px-3 py-1 bg-platform-sigaa text-ink font-bold text-xs border-2 border-ink rounded-full shadow-[2px_2px_0px_0px_var(--neo-shadow)]">
                       Sigaa
                     </span>
-                    <span className="px-3 py-1 bg-platform-aprender3 text-black font-bold text-xs border-2 border-black rounded-full shadow-[2px_2px_0px_0px_#000]">
+                    <span className="px-3 py-1 bg-platform-aprender3 text-black font-bold text-xs border-2 border-ink rounded-full shadow-[2px_2px_0px_0px_var(--neo-shadow)]">
                       Aprender 3
                     </span>
-                    <span className="px-3 py-1 bg-platform-teams text-black font-bold text-xs border-2 border-black rounded-full shadow-[2px_2px_0px_0px_#000]">
+                    <span className="px-3 py-1 bg-platform-teams text-white font-bold text-xs border-2 border-ink rounded-full shadow-[2px_2px_0px_0px_var(--neo-shadow)]">
                       Microsoft Teams (Beta)
                     </span>
                   </div>
@@ -341,9 +387,9 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
                     <motion.div
                       key={c.title}
                       variants={itemVariants}
-                      className={`${c.bg} border-2 border-black rounded-lg shadow-[4px_4px_0px_0px_#000] p-5`}
+                      className={`${c.bg} ${c.bar ?? ""} border-2 border-ink rounded-lg shadow-(--neo-card-shadow) p-5 dark:bg-paper`}
                     >
-                      <div className="w-10 h-10 bg-white border-2 border-black rounded-lg shadow-[2px_2px_0px_0px_#000] flex items-center justify-center mb-3">
+                      <div className={`w-10 h-10 bg-paper ${c.sticker ?? ""} border-2 border-ink rounded-lg shadow-[2px_2px_0px_0px_var(--neo-shadow)] flex items-center justify-center mb-3`}>
                         {c.icon}
                       </div>
                       <h3 className="text-base font-bold text-black tracking-tight">
@@ -384,9 +430,9 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
                     <motion.div
                       key={c.title}
                       variants={itemVariants}
-                      className={`${c.bg} border-2 border-black rounded-lg shadow-[4px_4px_0px_0px_#000] p-5`}
+                      className={`${c.bg} ${c.bar ?? ""} border-2 border-ink rounded-lg shadow-(--neo-card-shadow) p-5 dark:bg-paper`}
                     >
-                      <div className="w-10 h-10 bg-white border-2 border-black rounded-lg shadow-[2px_2px_0px_0px_#000] flex items-center justify-center mb-3">
+                      <div className={`w-10 h-10 bg-paper ${c.sticker ?? ""} border-2 border-ink rounded-lg shadow-[2px_2px_0px_0px_var(--neo-shadow)] flex items-center justify-center mb-3`}>
                         {c.icon}
                       </div>
                       <h3 className="text-base font-bold text-black tracking-tight">
@@ -472,21 +518,27 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
 const STEP2_CARDS: StepCard[] = [
   {
     bg: "bg-pastel-blue",
-    icon: <Inbox className="w-5 h-5 text-neo-blue stroke-[2.5]" />,
+    bar: "dark:border-t-[6px] dark:border-t-sticker-blue",
+    sticker: "dark:bg-sticker-blue",
+    icon: <Inbox className="w-5 h-5 text-blue-ink dark:text-ink stroke-[2.5]" />,
     title: "Feed Unificado",
     copy: "Posts e tarefas do SIGAA e do Aprender 3 num feed só, com prazo visível e marcação de concluído.",
   },
   {
     bg: "bg-pastel-yellow",
+    bar: "dark:border-t-neo-yellow dark:border-t-[6px]",
+    sticker: "dark:bg-neo-yellow",
     icon: (
-      <CalendarDays className="w-5 h-5 text-platform-aprender3 stroke-[2.5]" />
+      <CalendarDays className="w-5 h-5 text-platform-aprender3 dark:text-ink stroke-[2.5]" />
     ),
     title: "Monte sua Grade",
     copy: "Busque turmas por departamento, gere opções de horário sem conflito e salve grades por semestre.",
   },
   {
     bg: "bg-pastel-green",
-    icon: <BookOpen className="w-5 h-5 text-ink-success stroke-[2.5]" />,
+    bar: "dark:border-t-neo-green dark:border-t-[6px]",
+    sticker: "dark:bg-neo-green",
+    icon: <BookOpen className="w-5 h-5 text-ink-success dark:text-ink stroke-[2.5]" />,
     title: "Disciplinas",
     copy: "Tudo organizado por disciplina: avisos, materiais e o que vence primeiro.",
   },
@@ -495,19 +547,25 @@ const STEP2_CARDS: StepCard[] = [
 const STEP3_CARDS: StepCard[] = [
   {
     bg: "bg-pastel-blue",
-    icon: <Lock className="w-5 h-5 text-neo-blue stroke-[2.5]" />,
+    bar: "dark:border-t-[6px] dark:border-t-sticker-blue",
+    sticker: "dark:bg-sticker-blue",
+    icon: <Lock className="w-5 h-5 text-blue-ink dark:text-ink stroke-[2.5]" />,
     title: "Cofre Local Stronghold",
     copy: "Suas credenciais ficam em cofre criptografado no seu próprio computador. Nada vai para servidores nossos.",
   },
   {
     bg: "bg-pastel-green",
-    icon: <ShieldCheck className="w-5 h-5 text-ink-success stroke-[2.5]" />,
+    bar: "dark:border-t-neo-green dark:border-t-[6px]",
+    sticker: "dark:bg-neo-green",
+    icon: <ShieldCheck className="w-5 h-5 text-ink-success dark:text-ink stroke-[2.5]" />,
     title: "Zero Telemetria",
     copy: "Nenhum dado de uso, clique ou métrica sai do seu computador. Tudo é processado localmente, por construção.",
   },
   {
     bg: "bg-pastel-yellow",
-    icon: <GitBranch className="w-5 h-5 text-neo-blue stroke-[2.5]" />,
+    bar: "dark:border-t-neo-yellow dark:border-t-[6px]",
+    sticker: "dark:bg-neo-yellow",
+    icon: <GitBranch className="w-5 h-5 text-blue-ink dark:text-ink stroke-[2.5]" />,
     title: "Código Aberto",
     copy: "Apache 2.0 no GitHub. Qualquer pessoa pode auditar os scrapers e o cofre, e sugerir melhorias.",
   },
