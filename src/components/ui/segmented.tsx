@@ -10,7 +10,8 @@ export interface SegmentedOption<T extends string> {
 
 export interface SegmentedControlProps<T extends string> {
   options: ReadonlyArray<SegmentedOption<T>>;
-  value: T;
+  /** `null` = nenhum segmento ativo (escolha obrigatória sem default). */
+  value: T | null;
   onValueChange: (value: T) => void;
   /** Nome do grupo para leitores de tela. */
   ariaLabel: string;
@@ -39,10 +40,10 @@ export function SegmentedControl<T extends string>({
 }: SegmentedControlProps<T>) {
   const count = options.length;
   const segmentHeight = size === 'md' ? 'h-9' : 'h-8';
-  const activeIndex = Math.max(
-    0,
-    options.findIndex((option) => option.value === value),
-  );
+  // value null = nenhum segmento escolhido: o thumb-adesivo se esconde até
+  // o usuário escolher (escolha obrigatória sem default).
+  const foundIndex = options.findIndex((option) => option.value === value);
+  const activeIndex = foundIndex === -1 ? -1 : foundIndex;
 
   return (
     <div
@@ -59,7 +60,9 @@ export function SegmentedControl<T extends string>({
           passo de deslize = largura da própria pill + gap de 2px. */}
       <span
         aria-hidden="true"
-        className="pointer-events-none absolute inset-y-0.5 left-0.5 rounded-lg bg-neo-blue transition-transform duration-150 ease-out"
+        className={`pointer-events-none absolute inset-y-0.5 left-0.5 rounded-lg bg-neo-blue transition-[transform,opacity] duration-150 ease-out ${
+          activeIndex === -1 ? "opacity-0" : ""
+        }`}
         style={{
           width: `calc(${100 / count}% - ${(2 * (count - 1) + 4) / count}px)`,
           transform: `translateX(calc(${activeIndex * 100}% + ${activeIndex * 2}px))`,

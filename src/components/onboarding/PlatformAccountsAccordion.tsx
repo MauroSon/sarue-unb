@@ -42,6 +42,8 @@ export interface PlatformAccountsAccordionProps {
   allowAllClosed?: boolean;
   /** Exibir a plataforma Microsoft Teams (padrão true; false no onboarding) */
   showTeams?: boolean;
+  /** Fecha as gavetas automaticamente quando todas as plataformas estiverem conectadas (onboarding) */
+  closeWhenAllConnected?: boolean;
   /**
    * Anatomia das gavetas: "stickers" (padrão, onboarding — adesivos com
    * sombra dura própria) ou "panel" (Settings — linhas segmentadas dentro
@@ -67,6 +69,7 @@ export const PlatformAccountsAccordion: React.FC<
   initialOpenPlatform = "sigaa",
   allowAllClosed = false,
   showTeams = true,
+  closeWhenAllConnected = false,
   variant = "stickers",
 }) => {
   const {
@@ -161,13 +164,16 @@ export const PlatformAccountsAccordion: React.FC<
       if (res.success) {
         setSigaaSaved(true);
         setSigaaSuccessMsg(res.detail || "Conectado ao SIGAA com sucesso!");
-        // Gaveta seguinte: SIGAA fica marcado como conectado e abre a próxima pendente
+        // Gaveta seguinte: SIGAA fica marcado como conectado e abre a próxima pendente;
+        // sem pendente e com closeWhenAllConnected, fecha as gavetas
         setOpenPlatform(
           !aprenderSaved
             ? "aprender3"
             : showTeams && !teamsConnected
               ? "teams"
-              : "sigaa",
+              : closeWhenAllConnected
+                ? null
+                : "sigaa",
         );
       } else {
         setSigaaSaved(false);
@@ -247,7 +253,13 @@ export const PlatformAccountsAccordion: React.FC<
         setAprenderSuccessMsg(
           res.detail || "Conectado ao Aprender 3 com sucesso!",
         );
-        setOpenPlatform(showTeams && !teamsConnected ? "teams" : "aprender3");
+        setOpenPlatform(
+          showTeams && !teamsConnected
+            ? "teams"
+            : closeWhenAllConnected
+              ? null
+              : "aprender3",
+        );
       } else {
         setAprenderSaved(false);
         setAprenderSuccessMsg(null);

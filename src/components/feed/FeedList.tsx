@@ -37,7 +37,7 @@ export interface FeedListProps {
 
 const PLATFORM_LABELS: Record<string, string> = {
   aprender3: "Aprender 3",
-  sigaa: "Sigaa",
+  sigaa: "SIGAA",
   teams: "Teams",
 };
 

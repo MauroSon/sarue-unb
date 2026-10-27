@@ -40,6 +40,7 @@ export const CredentialsStep: React.FC<CredentialsStepProps> = ({
 
       <PlatformAccountsAccordion
         showTeams={false}
+        closeWhenAllConnected
         registerFinish={(finish) => {
           finishRef.current = finish;
           // A ação de concluir do wizard salva o que falta e entra no app

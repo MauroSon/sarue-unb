@@ -14,6 +14,7 @@ import { useUpdateAvailable } from './hooks/useAppUpdater';
 import { SyncProvider, useSync } from './context/SyncContext';
 import { DeadlineProvider } from './context/DeadlineContext';
 import { WelcomeSyncDialog } from './components/onboarding/WelcomeSyncDialog';
+import { FeedbackWidget } from './components/feedback/FeedbackWidget';
 import { WithdrawalDeadlineDialog } from './components/notifications/WithdrawalDeadlineDialog';
 import { useContainer } from './context/ContainerContext';
 import type { AcademicCalendar } from './core';
@@ -23,6 +24,16 @@ import { AccessibilityProvider } from './context/AccessibilityContext';
 import { ThemeProvider } from './context/ThemeContext';
 
 type AppStep = 'onboarding' | 'main';
+
+/** Nome em pt-BR de cada aba — vai nos dados opt-in do feedback. */
+const SCREEN_LABELS: Record<NavTab, string> = {
+  home: 'Início',
+  courses: 'Disciplinas',
+  grade: 'Montar Grade',
+  evaluations: 'Avaliações',
+  'my-course': 'Meu Curso',
+  settings: 'Configurações',
+};
 
 const AppShell: React.FC = () => {
   const { repos, useCases } = useContainer();
@@ -177,6 +188,8 @@ const AppShell: React.FC = () => {
           </ErrorBoundary>
         </main>
       </div>
+      {/* Feedback flutuante: adesivo de ação no canto inferior direito */}
+      <FeedbackWidget screen={SCREEN_LABELS[currentTab]} />
       <WelcomeSyncDialog
         open={welcomeOpen}
         onOpenChange={(open) => {
