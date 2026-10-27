@@ -209,7 +209,12 @@ export const FeedList: React.FC<FeedListProps> = ({
                   {platformLabel}
                 </Badge>
                 {showDiscipline && disciplineLabel ? (
-                  <Badge variant="neutral" size="sm" title={item.courseName} className={`shrink-0${completedFade}`}>
+                  <Badge
+                    variant="neutral"
+                    size="sm"
+                    title={item.courseName}
+                    className={`shrink-0 bg-neutral-200 dark:bg-neutral-300${completedFade}`}
+                  >
                     {disciplineLabel}
                   </Badge>
                 ) : null}

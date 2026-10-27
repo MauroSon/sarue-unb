@@ -196,7 +196,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <div className="relative shrink-0 flex items-center justify-center">
               <button
                 type="button"
-                data-sound={isHomeActive ? undefined : "sidebar"}
                 data-no-sound={isHomeActive ? "true" : undefined}
                 onClick={() => onSelectTab("home")}
                 title="Ir para a Home"
@@ -238,7 +237,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
             >
               <button
                 type="button"
-                data-sound={isHomeActive ? undefined : "sidebar"}
                 data-no-sound={isHomeActive ? "true" : undefined}
                 onClick={() => onSelectTab("home")}
                 title="Ir para a Home"
@@ -285,7 +283,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 >
                   <button
                     type="button"
-                    data-sound={isActive ? undefined : "sidebar"}
                     data-no-sound={isActive ? "true" : undefined}
                     onClick={() => onSelectTab(item.id)}
                     title={item.label}

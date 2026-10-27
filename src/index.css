@@ -62,11 +62,12 @@ body {
   /* Linha do grid de papel (canvas do app e do Fluxograma). */
   --grid-line: rgba(0, 0, 0, 0.06);
 
-  /* Identidade oficial das plataformas: SIGAA veste o azul UnB (#468AFB, a
-     cor da marca no próprio app — o sistema é da UnB), Aprender 3 é Moodle
-     (#F98012 oficial) e Teams é o roxo Fluent (#5B5FC7). */
-  --color-platform-sigaa: #468afb;
-  --color-platform-aprender3: #f98012;
+  /* Identidade oficial das plataformas: SIGAA veste o Verde SIGAA (#3B8748,
+     verde escuro), Aprender 3 veste o azul UnB (#468AFB, a cor da marca —
+     o sistema é da UnB) e Teams é o roxo Fluent (#5B5FC7). Adesivos cheios
+     nos dois temas: platform tokens não remapam no escuro. */
+  --color-platform-sigaa: #3b8748;
+  --color-platform-aprender3: #468afb;
   --color-platform-teams: #5b5fc7;
 
   --color-pastel-blue: #ebf3ff;

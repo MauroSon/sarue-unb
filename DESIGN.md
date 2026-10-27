@@ -40,11 +40,11 @@ colors:
   discipline-ink-purple: "#A855F7"
   discipline-ink-orange: "#F97316"
   discipline-ink-sky: "#0EA5E9"
-  platform-sigaa: "#468AFB"
-  platform-aprender3: "#F98012"
+  platform-sigaa: "#3B8748"
+  platform-aprender3: "#468AFB"
   platform-teams: "#5B5FC7"
-  platform-sigaa-dark: "#7FA9FF"
-  platform-aprender3-dark: "#FFA45B"
+  platform-sigaa-dark: "#7CC087"
+  platform-aprender3-dark: "#7FA9FF"
   platform-teams-dark: "#8E93E0"
   # ── Modo escuro — Dark Stickerbook / Cutting Mat (bloco .dark em src/index.css) ──
   ink-black-dark: "#F2F0E7"
@@ -322,16 +322,17 @@ Paleta de material escolar: uma cor de ação por intenção, versões pastel da
 - **Azul Caneta Ação** (#2563EB): a cor de ação do produto. Todo fundo interativo sob texto branco e todo texto/ícone informativo sobre branco: botões primários, tabs ativas, item de navegação ativo, checkbox de seleção, filtro Select engajado, foco de inputs (ring), links de marca ("Aggregator" no logo), ícones de cabeçalho de página, thumb do Slider e preenchimento da barra de progresso de ferramentas. Branco sobre ela = 5.17:1 (AA). Hover escurece para **Azul Caneta Pressionado** (#1D4ED8, 6.70:1 com branco). No Fluxograma é também o status "cursando".
 
 ### Brand
-- **Azul Caneta** (#468AFB): cor de marca — logo-bloco "UnB", wordmark e blocos decorativos. Isenta de contraste WCAG como logotipo; nenhum texto pequeno branco sobre ela. Nunca como fundo interativo.
+- **Azul Caneta** (#468AFB): cor de marca — logo-bloco "UnB", wordmark, blocos decorativos e identidade da plataforma Aprender 3 em badges e filtros. Isenta de contraste WCAG como logotipo; nenhum texto pequeno branco sobre ela. Nunca como fundo interativo.
 
 ### Secondary
 - **Amarelo Marca-Texto** (#FFE600): ação de destaque e badge de tarefa/entrega/prazo próximo — o amarelo de grifo em cima da leitura. Sempre com texto preto. No Fluxograma é o status "disponível"; na Escala de Didática é a faixa 6–7,9.
-- **Verde Giz** (#46E297): sucesso e plataforma SIGAA. Botão accent, badges de confirmado, badges de plataforma, checkbox de conclusão, preenchimento da barra de progresso de integralização. Texto preto. No Fluxograma é o status "concluída"; na Escala de Didática, faixa ≥ 8.
+- **Verde Giz** (#46E297): sucesso. Botão accent, badges de confirmado, checkbox de conclusão, preenchimento da barra de progresso de integralização. Texto preto. Distinto do Verde SIGAA (#3B8748), mais escuro. No Fluxograma é o status "concluída"; na Escala de Didática, faixa ≥ 8.
 - **Vermelho Correção** (#FF6B6B): tinta de borda/acento destrutiva — contornos, ícones e acentos sempre com TEXTO PRETO (7.57:1). Nunca fundo sob texto branco.
 - **Vermelho Correção Forte** (#DC2626): destrutivo e urgente com texto branco. Botão destructive, badge urgent (4.83:1), prazos vencidos ou < 24h, badge de contagem do sino, asterisco de obrigatória, conflito de grade. Hover escurece para **Vermelho Erro** (#B91C1C, 6.47:1). Na Escala de Didática é a faixa < 6 — a única cor da escala sob texto branco.
 
 ### Tertiary
-- **Laranja Moodle** (#F98012): identidade da plataforma Aprender 3 (laranja oficial da marca Moodle), texto preto. **Lápis Laranja** (#FB923C) segue como tinta de apoio genérica.
+- **Verde SIGAA** (#3B8748): identidade da plataforma SIGAA, verde escuro, texto preto.
+- **Azul UnB** (#468AFB): identidade da plataforma Aprender 3, texto preto — a mesma cor da marca (Azul Caneta). **Lápis Laranja** (#FB923C) segue como tinta de apoio genérica.
 - **Lilás Caderno** (#C084FC): variante purple de card, texto preto. No Fluxograma identifica optativa disponível (cheia) e optativa bloqueada/concluída (pastel).
 - **Roxo Fluent** (#5B5FC7): identidade da plataforma Microsoft Teams (roxo oficial da marca), texto branco.
 - **Verde Institucional** (#006633): verde oficial UnB, definido no tema; uso pontual institucional.
@@ -562,7 +563,7 @@ Segunda barra de ferramentas do sistema, mesma gramática da Toolbar do Feed com
 - **States:** sem sombra e sem física de pressionar — a navegação é a encadernação, não um adesivo. Colapsável (264px ↔ 80px); recolhida mostra só ícones centralizados; botões de expandir/recolher aparecem no hover do grupo.
 
 ### Badge (etiqueta de plataforma/tipo/prazo)
-- **Style:** pill (9999px), borda preta 2px, **sem sombra** — etiqueta de tinta colada no papel, não adesivo; padding 2px 12px (md) / 2px 8px (sm), texto 0.75rem/700 (sm em 11px/700). Cor por identidade: Sigaa **Azul UnB** (#468AFB, texto preto), Aprender 3 **Laranja Moodle** (#F98012, texto preto), Teams **Roxo Fluent** (#5B5FC7, texto branco), tarefa **Amarelo Marca-Texto**, prazo urgente **Vermelho Correção Forte** (texto branco), prazo próximo **Amarelo Marca-Texto**, primária **Azul Caneta Ação** (texto branco), aviso **Cinza Nota** (slate-200), sucesso **Verde Giz**, roxa **Lilás Caderno**, neutra/outline branca. No escuro, badges de família viram noturnas: fundo lavado da família, tinta clara da própria família como texto e a MESMA borda de giz do sistema — contorno nunca vira preto em uma badge e claro na vizinha.
+- **Style:** pill (9999px), borda preta 2px, **sem sombra** — etiqueta de tinta colada no papel, não adesivo; padding 2px 12px (md) / 2px 8px (sm), texto 0.75rem/700 (sm em 11px/700). Cor por identidade: Sigaa **Verde SIGAA** (#3B8748, texto preto), Aprender 3 **Azul UnB** (#468AFB, texto preto), Teams **Roxo Fluent** (#5B5FC7, texto branco), tarefa **Amarelo Marca-Texto**, prazo urgente **Vermelho Correção Forte** (texto branco), prazo próximo **Amarelo Marca-Texto**, primária **Azul Caneta Ação** (texto branco), aviso **Cinza Nota** (slate-200), sucesso **Verde Giz**, roxa **Lilás Caderno**, neutra/outline branca. No escuro, badges de família viram noturnas: fundo lavado da família, tinta clara da própria família como texto e a MESMA borda de giz do sistema — contorno nunca vira preto em uma badge e claro na vizinha.
 - **Truncamento:** badge de disciplina com texto longo usa `max-w` + truncate no conteúdo interno — a pílula segura a largura, o texto corta (sino de prazos: max-w-[118px]).
 - **Icon:** Lucide 14–16px, stroke 2.5, opcional à esquerda.
 - **Badge de contagem do sino:** 18px de altura mínima, **Vermelho Correção Forte** com texto branco, borda 2px, pill — colado no canto do ícone, `aria-hidden` (o `aria-label` do sino carrega o número).
@@ -660,7 +661,7 @@ Segunda superfície assinatura: o curso como **mural de adesivos sobre papel** �
 - **Do** vestir filtro engajado com a cor cheia da família (Filtro Select azul, filtros de Disciplinas com sua cor) e a cavidade de busca engajada com o pastel; ordenação nunca engaja.
 - **Do** construir hierarquia com peso de fonte (800/700/600/500) e usar pastéis como fundo, nunca como cor de ação.
 - **Do** usar Plus Jakarta Sans e ícones Lucide com stroke 2.5 (check de checkbox stroke 3); rótulos estruturais em uppercase bold 11–12px; códigos de disciplina em pills font-mono (A Regra do Código em Máquina).
-- **Do** usar as cores de plataforma como identidade fixa (Sigaa azul UnB #468AFB, Aprender 3 laranja Moodle #F98012, Teams roxo Fluent #5B5FC7) em badges e filtros.
+- **Do** usar as cores de plataforma como identidade fixa (Sigaa verde #3B8748, Aprender 3 azul UnB #468AFB, Teams roxo Fluent #5B5FC7) em badges e filtros.
 - **Do** usar raio e sombra como affordance (A Regra dos Dois Adesivos): ação 12–16px + sombra 2px; conteúdo 8px + sombra 4px; painel de pausa/métrica 12px; campo 12px sem sombra.
 - **Do** usar Micro-adesivo 1px (`neo-xs`) em checkbox, blocos de ícone, pills inline, badge de didática e micro-ações flutuantes; badge fica sem sombra.
 - **Do** usar o vocabulário fechado de status do Fluxograma (verde concluída, azul cursando, amarelo disponível, cinza bloqueada, lilás optativa) em mapa, lista e minimapa.
