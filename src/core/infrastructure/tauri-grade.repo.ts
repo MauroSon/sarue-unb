@@ -7,21 +7,21 @@ import type {
   ScheduleOption,
   ScheduleSlot,
   SavedGrade,
-} from '../domain/entities/grade';
-import { generateAcronyms } from '../domain/grade-acronym';
+} from "../domain/entities/grade";
+import { generateAcronyms } from "../domain/grade-acronym";
 import type {
   CourseCatalogItem,
   CurriculumStructure,
   CurriculumDiscipline,
-} from '../domain/entities/course';
-import type Database from '@tauri-apps/plugin-sql';
+} from "../domain/entities/course";
+import type Database from "@tauri-apps/plugin-sql";
 import type {
   ScrapedClass as RawScrapedClass,
   ScheduleOption as RawScheduleOption,
   ScheduleSlot as RawScheduleSlot,
-} from './bindings';
-import type { IGradeRepository } from '../domain/interfaces/grade-repo.interface';
-import { InMemoryGradeRepository } from './in-memory-grade.repo';
+} from "./bindings";
+import type { IGradeRepository } from "../domain/interfaces/grade-repo.interface";
+import { InMemoryGradeRepository } from "./in-memory-grade.repo";
 
 const inMemorySavedGrades = new Map<string, SavedGrade>();
 let inMemoryLatestGrade: SavedGrade | null = null;
@@ -31,8 +31,8 @@ export class TauriGradeRepository implements IGradeRepository {
 
   private async getDb(): Promise<Database | null> {
     try {
-      const { default: Database } = await import('@tauri-apps/plugin-sql');
-      const { SQLITE_DB_NAME } = await import('./db-config');
+      const { default: Database } = await import("@tauri-apps/plugin-sql");
+      const { SQLITE_DB_NAME } = await import("./db-config");
       const db = await Database.load(SQLITE_DB_NAME);
       await db.execute(`
         CREATE TABLE IF NOT EXISTS saved_grades (
@@ -45,16 +45,16 @@ export class TauriGradeRepository implements IGradeRepository {
       `);
       return db;
     } catch (e) {
-      console.warn('[TauriGradeRepository] Falha ao carregar banco SQLite:', e);
+      console.warn("[TauriGradeRepository] Falha ao carregar banco SQLite:", e);
       return null;
     }
   }
 
   async getDepartments(): Promise<Department[]> {
     try {
-      const { commands } = await import('@/core/infrastructure/bindings');
+      const { commands } = await import("@/core/infrastructure/bindings");
       const response = await commands.getSigaaDepartments();
-      if (response.status === 'error') {
+      if (response.status === "error") {
         throw new Error(response.error);
       }
       if (response.data && response.data.length > 0) {
@@ -72,9 +72,9 @@ export class TauriGradeRepository implements IGradeRepository {
 
   async getProfessors(): Promise<ScrapedProfessor[]> {
     try {
-      const { commands } = await import('@/core/infrastructure/bindings');
+      const { commands } = await import("@/core/infrastructure/bindings");
       const response = await commands.getSigaaProfessors();
-      if (response.status === 'error') {
+      if (response.status === "error") {
         throw new Error(response.error);
       }
       if (response.data && response.data.length > 0) {
@@ -87,7 +87,6 @@ export class TauriGradeRepository implements IGradeRepository {
           departmentIds: p.department_ids || [],
           disciplineCodes: p.discipline_codes || [],
           photoUrl: p.photo_url ?? undefined,
-          publicUrl: p.public_url ?? undefined,
         }));
       }
     } catch {
@@ -98,9 +97,9 @@ export class TauriGradeRepository implements IGradeRepository {
 
   async getCoursesCatalog(): Promise<CourseCatalogItem[]> {
     try {
-      const { commands } = await import('@/core/infrastructure/bindings');
+      const { commands } = await import("@/core/infrastructure/bindings");
       const response = await commands.getCoursesCatalog();
-      if (response.status === 'error') {
+      if (response.status === "error") {
         throw new Error(response.error);
       }
       if (response.data && response.data.length > 0) {
@@ -123,9 +122,9 @@ export class TauriGradeRepository implements IGradeRepository {
 
   async getCourseCurriculum(courseId: string): Promise<CurriculumStructure[]> {
     try {
-      const { commands } = await import('@/core/infrastructure/bindings');
+      const { commands } = await import("@/core/infrastructure/bindings");
       const response = await commands.getCourseCurriculum(courseId);
-      if (response.status === 'error') {
+      if (response.status === "error") {
         throw new Error(response.error);
       }
       if (response.data && response.data.length > 0) {
@@ -143,7 +142,7 @@ export class TauriGradeRepository implements IGradeRepository {
             name: d.name,
             workloadHours: d.workload_hours,
             level: d.level ?? undefined,
-            nature: d.nature as CurriculumDiscipline['nature'],
+            nature: d.nature as CurriculumDiscipline["nature"],
             prerequisitesRaw: d.prerequisites_raw ?? undefined,
             prerequisites: d.prerequisites || [],
             equivalencesRaw: d.equivalences_raw ?? undefined,
@@ -154,23 +153,25 @@ export class TauriGradeRepository implements IGradeRepository {
             name: d.name,
             workloadHours: d.workload_hours,
             level: d.level ?? undefined,
-            nature: d.nature as CurriculumDiscipline['nature'],
+            nature: d.nature as CurriculumDiscipline["nature"],
             prerequisitesRaw: d.prerequisites_raw ?? undefined,
             prerequisites: d.prerequisites || [],
             equivalencesRaw: d.equivalences_raw ?? undefined,
             equivalences: d.equivalences || [],
           })),
-          complementaryDisciplines: (curr.complementary_disciplines || []).map((d) => ({
-            code: d.code,
-            name: d.name,
-            workloadHours: d.workload_hours,
-            level: d.level ?? undefined,
-            nature: d.nature as CurriculumDiscipline['nature'],
-            prerequisitesRaw: d.prerequisites_raw ?? undefined,
-            prerequisites: d.prerequisites || [],
-            equivalencesRaw: d.equivalences_raw ?? undefined,
-            equivalences: d.equivalences || [],
-          })),
+          complementaryDisciplines: (curr.complementary_disciplines || []).map(
+            (d) => ({
+              code: d.code,
+              name: d.name,
+              workloadHours: d.workload_hours,
+              level: d.level ?? undefined,
+              nature: d.nature as CurriculumDiscipline["nature"],
+              prerequisitesRaw: d.prerequisites_raw ?? undefined,
+              prerequisites: d.prerequisites || [],
+              equivalencesRaw: d.equivalences_raw ?? undefined,
+              equivalences: d.equivalences || [],
+            }),
+          ),
         }));
       }
     } catch {
@@ -182,12 +183,12 @@ export class TauriGradeRepository implements IGradeRepository {
   async scrapeDepartmentClasses(
     deptId: string,
     year: string,
-    period: string
+    period: string,
   ): Promise<ScrapedDiscipline[]> {
     try {
-      const { commands } = await import('@/core/infrastructure/bindings');
+      const { commands } = await import("@/core/infrastructure/bindings");
       const response = await commands.scrapeSigaaClasses(deptId, year, period);
-      if (response.status === 'error') {
+      if (response.status === "error") {
         throw new Error(response.error);
       }
       const rawDisciplines = response.data;
@@ -201,30 +202,34 @@ export class TauriGradeRepository implements IGradeRepository {
             name: d.name,
             departmentId: d.department_id || deptId,
             acronym: d.acronym || gen.acronym || undefined,
-            acronyms: d.acronyms || (gen.acronyms.length > 0 ? gen.acronyms : undefined),
+            acronyms:
+              d.acronyms ||
+              (gen.acronyms.length > 0 ? gen.acronyms : undefined),
             classes: (d.classes || []).map((c: RawScrapedClass) => ({
-            id: c.id,
-            disciplineCode: c.discipline_code,
-            disciplineName: c.discipline_name,
-            classCode: c.class_code,
-            teachers: c.teachers || [],
-            classroom: c.classroom || 'A definir',
-            scheduleCode: c.schedule_code,
-            scheduleDescription: c.schedule_description ?? undefined,
-            dateRange: c.date_range ?? undefined,
-            scheduleSlots: (c.schedule_slots || []).map((s: RawScheduleSlot) => ({
-              day: s.day,
-              dayName: s.day_name,
-              shift: s.shift as ScheduleSlot['shift'],
-              period: s.period,
-              timeRange: s.time_range,
-              globalSlotIndex: s.global_slot_index,
+              id: c.id,
+              disciplineCode: c.discipline_code,
+              disciplineName: c.discipline_name,
+              classCode: c.class_code,
+              teachers: c.teachers || [],
+              classroom: c.classroom || "A definir",
+              scheduleCode: c.schedule_code,
+              scheduleDescription: c.schedule_description ?? undefined,
+              dateRange: c.date_range ?? undefined,
+              scheduleSlots: (c.schedule_slots || []).map(
+                (s: RawScheduleSlot) => ({
+                  day: s.day,
+                  dayName: s.day_name,
+                  shift: s.shift as ScheduleSlot["shift"],
+                  period: s.period,
+                  timeRange: s.time_range,
+                  globalSlotIndex: s.global_slot_index,
+                }),
+              ),
+              vacancies: c.vacancies ?? undefined,
+              occupied: c.occupied ?? undefined,
             })),
-            vacancies: c.vacancies ?? undefined,
-            occupied: c.occupied ?? undefined,
-          })),
-        };
-      });
+          };
+        });
       }
     } catch {
       // Degradação elegante com fallback
@@ -234,7 +239,7 @@ export class TauriGradeRepository implements IGradeRepository {
 
   async checkConflicts(classes: ScrapedClass[]): Promise<string[]> {
     try {
-      const { commands } = await import('@/core/infrastructure/bindings');
+      const { commands } = await import("@/core/infrastructure/bindings");
       const response = await commands.checkScheduleConflicts(
         classes.map((c) => ({
           id: c.id,
@@ -256,11 +261,14 @@ export class TauriGradeRepository implements IGradeRepository {
           })),
           vacancies: c.vacancies ?? null,
           occupied: c.occupied ?? null,
-        }))
+        })),
       );
-      if (response.status === 'ok') return response.data;
+      if (response.status === "ok") return response.data;
     } catch (e) {
-      console.warn('[TauriGradeRepository] Falha ao checar conflitos via Tauri, usando solver local:', e);
+      console.warn(
+        "[TauriGradeRepository] Falha ao checar conflitos via Tauri, usando solver local:",
+        e,
+      );
     }
 
     // Fallback TS
@@ -287,10 +295,10 @@ export class TauriGradeRepository implements IGradeRepository {
 
   async solveSchedules(
     classes: ScrapedClass[],
-    preferenceShift?: 'M' | 'T' | 'N'
+    preferenceShift?: "M" | "T" | "N",
   ): Promise<ScheduleOption[]> {
     try {
-      const { commands } = await import('@/core/infrastructure/bindings');
+      const { commands } = await import("@/core/infrastructure/bindings");
       const response = await commands.solveSchedules(
         classes.map((c) => ({
           id: c.id,
@@ -313,10 +321,10 @@ export class TauriGradeRepository implements IGradeRepository {
           vacancies: c.vacancies ?? null,
           occupied: c.occupied ?? null,
         })),
-        preferenceShift ?? null
+        preferenceShift ?? null,
       );
 
-      if (response.status === 'error') {
+      if (response.status === "error") {
         throw new Error(response.error);
       }
       const rawOptions = response.data;
@@ -333,25 +341,30 @@ export class TauriGradeRepository implements IGradeRepository {
             disciplineName: c.discipline_name,
             classCode: c.class_code,
             teachers: c.teachers || [],
-            classroom: c.classroom || 'A definir',
+            classroom: c.classroom || "A definir",
             scheduleCode: c.schedule_code,
             scheduleDescription: c.schedule_description ?? undefined,
             dateRange: c.date_range ?? undefined,
-            scheduleSlots: (c.schedule_slots || []).map((s: RawScheduleSlot) => ({
-              day: s.day,
-              dayName: s.day_name,
-              shift: s.shift as ScheduleSlot['shift'],
-              period: s.period,
-              timeRange: s.time_range,
-              globalSlotIndex: s.global_slot_index,
-            })),
+            scheduleSlots: (c.schedule_slots || []).map(
+              (s: RawScheduleSlot) => ({
+                day: s.day,
+                dayName: s.day_name,
+                shift: s.shift as ScheduleSlot["shift"],
+                period: s.period,
+                timeRange: s.time_range,
+                globalSlotIndex: s.global_slot_index,
+              }),
+            ),
             vacancies: c.vacancies ?? undefined,
             occupied: c.occupied ?? undefined,
           })),
         }));
       }
     } catch (e) {
-      console.warn('[TauriGradeRepository] Falha ao resolver grade via Tauri, usando solver local:', e);
+      console.warn(
+        "[TauriGradeRepository] Falha ao resolver grade via Tauri, usando solver local:",
+        e,
+      );
     }
 
     // Fallback TS solver
@@ -416,7 +429,7 @@ export class TauriGradeRepository implements IGradeRepository {
           grade.semester,
           JSON.stringify(grade.selectedClasses),
           grade.updatedAt,
-        ]
+        ],
       );
     }
   }
@@ -429,13 +442,15 @@ export class TauriGradeRepository implements IGradeRepository {
           ? `SELECT id, name, semester, data, updated_at FROM saved_grades WHERE semester = $1 ORDER BY updated_at DESC LIMIT 1`
           : `SELECT id, name, semester, data, updated_at FROM saved_grades ORDER BY updated_at DESC LIMIT 1`;
         const params = semester ? [semester] : [];
-        const rows = await db.select<{
-          id: string;
-          name: string;
-          semester: string;
-          data: string;
-          updated_at: string;
-        }[]>(query, params);
+        const rows = await db.select<
+          {
+            id: string;
+            name: string;
+            semester: string;
+            data: string;
+            updated_at: string;
+          }[]
+        >(query, params);
         if (rows && rows.length > 0) {
           const row = rows[0];
           const loaded: SavedGrade = {
@@ -449,7 +464,7 @@ export class TauriGradeRepository implements IGradeRepository {
           return loaded;
         }
       } catch (e) {
-        console.warn('[TauriGradeRepository] Falha ao ler grade do SQLite:', e);
+        console.warn("[TauriGradeRepository] Falha ao ler grade do SQLite:", e);
       }
     }
     if (semester) {
@@ -472,12 +487,14 @@ export class TauriGradeRepository implements IGradeRepository {
     if (db) {
       try {
         if (semester) {
-          await db.execute('DELETE FROM saved_grades WHERE semester = $1', [semester]);
+          await db.execute("DELETE FROM saved_grades WHERE semester = $1", [
+            semester,
+          ]);
         } else {
-          await db.execute('DELETE FROM saved_grades');
+          await db.execute("DELETE FROM saved_grades");
         }
       } catch (e) {
-        console.warn('[TauriGradeRepository] Falha ao limpar saved_grades:', e);
+        console.warn("[TauriGradeRepository] Falha ao limpar saved_grades:", e);
       }
     }
   }

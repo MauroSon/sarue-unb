@@ -106,8 +106,6 @@ pub struct ScrapedProfessor {
     pub discipline_codes: Vec<String>,
     #[serde(default)]
     pub photo_url: Option<String>,
-    #[serde(default)]
-    pub public_url: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, specta::Type)]

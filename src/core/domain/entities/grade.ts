@@ -2,7 +2,7 @@
  * Semestre corrente usado nos cruzamentos com o SIGAA (ex.: enriquecimento de
  * avaliações de docentes). Fonte única no app — atualize aqui ao virar o semestre.
  */
-export const SIGAA_CURRENT_SEMESTER = { year: '2026', period: '2' } as const;
+export const SIGAA_CURRENT_SEMESTER = { year: "2026", period: "2" } as const;
 
 export interface Department {
   id: string;
@@ -12,7 +12,7 @@ export interface Department {
 export interface ScheduleSlot {
   day: number; // 2..=7 (2 = Seg, 3 = Ter, 4 = Qua, 5 = Qui, 6 = Sex, 7 = Sab)
   dayName: string;
-  shift: 'M' | 'T' | 'N';
+  shift: "M" | "T" | "N";
   period: number;
   timeRange: string;
   globalSlotIndex: number; // 0..=14
@@ -59,7 +59,6 @@ export interface ScrapedProfessor {
   departmentIds: string[];
   disciplineCodes: string[];
   photoUrl?: string;
-  publicUrl?: string;
 }
 
 export interface ScheduleOption {

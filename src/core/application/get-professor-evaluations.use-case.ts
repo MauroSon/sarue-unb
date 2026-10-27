@@ -4,7 +4,7 @@ import type {
   ProfessorSummary,
   DisciplineSummary,
   CampusName,
-} from '../domain/entities/professor-evaluation';
+} from "../domain/entities/professor-evaluation";
 import {
   normalizeText,
   normalizeDisciplineTokens,
@@ -12,10 +12,10 @@ import {
   crossReferenceEvaluationsWithSigaa,
   hasConsistentDifficultyConsensus,
   professorKeyOf,
-} from '../domain/entities/professor-evaluation';
-import type { IProfessorEvaluationRepository } from '../domain/interfaces/professor-evaluation-repo.interface';
-import type { IGradeRepository } from '../domain/interfaces/grade-repo.interface';
-import { SIGAA_CURRENT_SEMESTER } from '../domain/entities/grade';
+} from "../domain/entities/professor-evaluation";
+import type { IProfessorEvaluationRepository } from "../domain/interfaces/professor-evaluation-repo.interface";
+import type { IGradeRepository } from "../domain/interfaces/grade-repo.interface";
+import { SIGAA_CURRENT_SEMESTER } from "../domain/entities/grade";
 
 export class GetProfessorEvaluationsUseCase {
   private enrichedCache: ProfessorEvaluation[] | null = null;
@@ -24,7 +24,7 @@ export class GetProfessorEvaluationsUseCase {
 
   constructor(
     private evaluationRepo: IProfessorEvaluationRepository,
-    private gradeRepo?: IGradeRepository
+    private gradeRepo?: IGradeRepository,
   ) {}
 
   /** Prazo para o enriquecimento SIGAA; estourou, renderiza os dados crus da planilha. */
@@ -33,7 +33,7 @@ export class GetProfessorEvaluationsUseCase {
   private static readonly DATA_TIMEOUT_MS = 25_000;
 
   private async getEnrichedEvaluations(
-    forceRefresh = false
+    forceRefresh = false,
   ): Promise<ProfessorEvaluation[]> {
     if (!forceRefresh && this.enrichedCache && this.enrichedCache.length > 0) {
       return this.enrichedCache;
@@ -48,7 +48,10 @@ export class GetProfessorEvaluationsUseCase {
     const work = (async () => {
       // Se não for forceRefresh, tenta carregar do armazenamento persistente (SQLite)
       // para exibir as avaliações instantaneamente sem latência de rede.
-      if (!forceRefresh && this.evaluationRepo.getPersistedEnrichedEvaluations) {
+      if (
+        !forceRefresh &&
+        this.evaluationRepo.getPersistedEnrichedEvaluations
+      ) {
         try {
           const persisted =
             await this.evaluationRepo.getPersistedEnrichedEvaluations();
@@ -76,7 +79,7 @@ export class GetProfessorEvaluationsUseCase {
   }
 
   private async loadAndEnrich(
-    forceRefresh: boolean
+    forceRefresh: boolean,
   ): Promise<ProfessorEvaluation[]> {
     // Prazo rejeitante: se o fetch bruto pendurar, vira erro (a tela mostra
     // "Tentar novamente") — nunca spinner eterno.
@@ -85,9 +88,11 @@ export class GetProfessorEvaluationsUseCase {
         const timer = setTimeout(
           () =>
             reject(
-              new Error('Tempo esgotado ao carregar as avaliações da planilha.')
+              new Error(
+                "Tempo esgotado ao carregar as avaliações da planilha.",
+              ),
             ),
-          GetProfessorEvaluationsUseCase.DATA_TIMEOUT_MS
+          GetProfessorEvaluationsUseCase.DATA_TIMEOUT_MS,
         );
         this.evaluationRepo.getEvaluations(forceRefresh).then(
           (value) => {
@@ -97,9 +102,9 @@ export class GetProfessorEvaluationsUseCase {
           (err) => {
             clearTimeout(timer);
             reject(err);
-          }
+          },
         );
-      }
+      },
     );
 
     if (!this.gradeRepo || rawEvaluations.length === 0) {
@@ -113,7 +118,7 @@ export class GetProfessorEvaluationsUseCase {
       return new Promise<T>((resolve) => {
         const timer = setTimeout(
           () => resolve(fallback),
-          GetProfessorEvaluationsUseCase.ENRICHMENT_TIMEOUT_MS
+          GetProfessorEvaluationsUseCase.ENRICHMENT_TIMEOUT_MS,
         );
         p.then(
           (value) => {
@@ -123,7 +128,7 @@ export class GetProfessorEvaluationsUseCase {
           () => {
             clearTimeout(timer);
             resolve(fallback);
-          }
+          },
         );
       });
     };
@@ -132,20 +137,23 @@ export class GetProfessorEvaluationsUseCase {
       withDeadline(
         this.gradeRepo
           .scrapeDepartmentClasses(
-            'ALL',
+            "ALL",
             SIGAA_CURRENT_SEMESTER.year,
-            SIGAA_CURRENT_SEMESTER.period
+            SIGAA_CURRENT_SEMESTER.period,
           )
           .catch(() => []),
-        []
+        [],
       ),
       withDeadline(
         this.gradeRepo.getProfessors
           ? this.gradeRepo.getProfessors().catch(() => [])
           : Promise.resolve([]),
-        []
+        [],
       ),
-      withDeadline(this.gradeRepo.getDepartments().catch(() => []), []),
+      withDeadline(
+        this.gradeRepo.getDepartments().catch(() => []),
+        [],
+      ),
     ]);
 
     try {
@@ -153,7 +161,7 @@ export class GetProfessorEvaluationsUseCase {
         rawEvaluations,
         disciplines,
         professors,
-        departments
+        departments,
       );
       // Relatos sem professor associado no SIGAA saem do acervo: sem docente
       // verificado, não há como agregá-los com confiança às notas. Se NENHUM
@@ -196,16 +204,16 @@ export class GetProfessorEvaluationsUseCase {
 
   async execute(
     filters?: ProfessorEvaluationFilters,
-    forceRefresh = false
+    forceRefresh = false,
   ): Promise<ProfessorEvaluation[]> {
     const all = await this.getEnrichedEvaluations(forceRefresh);
     const filtered = this.applyFilters(all, filters);
-    return this.sortEvaluations(filtered, filters?.sortBy ?? 'reviews_desc');
+    return this.sortEvaluations(filtered, filters?.sortBy ?? "reviews_desc");
   }
 
   async getSummaries(
     filters?: ProfessorEvaluationFilters,
-    forceRefresh = false
+    forceRefresh = false,
   ): Promise<ProfessorSummary[]> {
     const all = await this.getEnrichedEvaluations(forceRefresh);
 
@@ -214,11 +222,11 @@ export class GetProfessorEvaluationsUseCase {
     // ele ofereceu: há poucos relatos por matéria, e o agregado por professor
     // é o sinal confiável para a escolha.
     const matchingKeys = new Set(
-      this.applyFilters(all, filters).map((ev) => professorKeyOf(ev.professor))
+      this.applyFilters(all, filters).map((ev) => professorKeyOf(ev.professor)),
     );
     if (matchingKeys.size === 0) return [];
     const scoped = all.filter((ev) =>
-      matchingKeys.has(professorKeyOf(ev.professor))
+      matchingKeys.has(professorKeyOf(ev.professor)),
     );
 
     const groups = this.collectGroups(
@@ -228,7 +236,6 @@ export class GetProfessorEvaluationsUseCase {
         displayName: ev.professor.trim(),
         siape: ev.siape,
         photoUrl: ev.photoUrl,
-        publicUrl: ev.publicUrl,
         isSigaaVerified: ev.isSigaaVerified,
         evaluations: [ev],
       }),
@@ -239,16 +246,15 @@ export class GetProfessorEvaluationsUseCase {
         }
         if (!group.siape && ev.siape) group.siape = ev.siape;
         if (!group.photoUrl && ev.photoUrl) group.photoUrl = ev.photoUrl;
-        if (!group.publicUrl && ev.publicUrl) group.publicUrl = ev.publicUrl;
         if (ev.isSigaaVerified) group.isSigaaVerified = true;
-      }
+      },
     );
 
     const summaries: ProfessorSummary[] = [];
 
     for (const [professorKey, group] of groups.entries()) {
       const evals = [...group.evaluations].sort((a, b) =>
-        b.createdAtIso.localeCompare(a.createdAtIso)
+        b.createdAtIso.localeCompare(a.createdAtIso),
       );
 
       const scores = evals
@@ -258,7 +264,7 @@ export class GetProfessorEvaluationsUseCase {
       const averageDidatica =
         scores.length > 0
           ? Math.round(
-              (scores.reduce((acc, s) => acc + s, 0) / scores.length) * 10
+              (scores.reduce((acc, s) => acc + s, 0) / scores.length) * 10,
             ) / 10
           : null;
 
@@ -271,9 +277,9 @@ export class GetProfessorEvaluationsUseCase {
       const disciplinesMap = new Map<string, string>();
 
       for (const e of evals) {
-        if (e.recommendation === 'sim') recommendYesCount++;
-        else if (e.recommendation === 'depende') recommendDependeCount++;
-        else if (e.recommendation === 'nao') recommendNoCount++;
+        if (e.recommendation === "sim") recommendYesCount++;
+        else if (e.recommendation === "depende") recommendDependeCount++;
+        else if (e.recommendation === "nao") recommendNoCount++;
 
         if (e.campus) campusesSet.add(e.campus);
 
@@ -300,7 +306,6 @@ export class GetProfessorEvaluationsUseCase {
         professorName: group.displayName,
         siape: group.siape,
         photoUrl: group.photoUrl,
-        publicUrl: group.publicUrl,
         isSigaaVerified: group.isSigaaVerified,
         evaluationsCount: total,
         averageDidatica,
@@ -316,21 +321,21 @@ export class GetProfessorEvaluationsUseCase {
       });
     }
 
-    const sortBy = filters?.sortBy ?? 'reviews_desc';
+    const sortBy = filters?.sortBy ?? "reviews_desc";
     summaries.sort((a, b) => {
-      if (sortBy === 'recommendation_desc') {
+      if (sortBy === "recommendation_desc") {
         if (a.recommendationRate !== b.recommendationRate) {
           return b.recommendationRate - a.recommendationRate;
         }
         return b.evaluationsCount - a.evaluationsCount;
       }
-      if (sortBy === 'rating_desc') {
+      if (sortBy === "rating_desc") {
         const aScore = a.averageDidatica ?? -1;
         const bScore = b.averageDidatica ?? -1;
         if (bScore !== aScore) return bScore - aScore;
         return b.evaluationsCount - a.evaluationsCount;
       }
-      if (sortBy === 'rating_asc') {
+      if (sortBy === "rating_asc") {
         const aScore = a.averageDidatica ?? 99;
         const bScore = b.averageDidatica ?? 99;
         if (aScore !== bScore) return aScore - bScore;
@@ -348,7 +353,7 @@ export class GetProfessorEvaluationsUseCase {
 
   async getDisciplineSummaries(
     filters?: ProfessorEvaluationFilters,
-    forceRefresh = false
+    forceRefresh = false,
   ): Promise<DisciplineSummary[]> {
     const all = await this.getEnrichedEvaluations(forceRefresh);
 
@@ -357,11 +362,11 @@ export class GetProfessorEvaluationsUseCase {
     // por matéria tem poucos relatos, e este agregado documenta o histórico
     // real da disciplina.
     const matchingKeys = new Set(
-      this.applyFilters(all, filters).map((ev) => this.disciplineKeyOf(ev))
+      this.applyFilters(all, filters).map((ev) => this.disciplineKeyOf(ev)),
     );
     if (matchingKeys.size === 0) return [];
     const scoped = all.filter((ev) =>
-      matchingKeys.has(this.disciplineKeyOf(ev))
+      matchingKeys.has(this.disciplineKeyOf(ev)),
     );
 
     const groups = this.collectGroups(
@@ -387,14 +392,14 @@ export class GetProfessorEvaluationsUseCase {
         if (ev.disciplineCode) {
           group.isSigaaVerified = true;
         }
-      }
+      },
     );
 
     const summaries: DisciplineSummary[] = [];
 
     for (const [disciplineKey, group] of groups.entries()) {
       const evals = [...group.evaluations].sort((a, b) =>
-        b.createdAtIso.localeCompare(a.createdAtIso)
+        b.createdAtIso.localeCompare(a.createdAtIso),
       );
 
       const scores = evals
@@ -404,7 +409,7 @@ export class GetProfessorEvaluationsUseCase {
       const averageDidatica =
         scores.length > 0
           ? Math.round(
-              (scores.reduce((acc, s) => acc + s, 0) / scores.length) * 10
+              (scores.reduce((acc, s) => acc + s, 0) / scores.length) * 10,
             ) / 10
           : null;
 
@@ -417,9 +422,9 @@ export class GetProfessorEvaluationsUseCase {
       const professorsMap = new Map<string, string>();
 
       for (const e of evals) {
-        if (e.recommendation === 'sim') recommendYesCount++;
-        else if (e.recommendation === 'depende') recommendDependeCount++;
-        else if (e.recommendation === 'nao') recommendNoCount++;
+        if (e.recommendation === "sim") recommendYesCount++;
+        else if (e.recommendation === "depende") recommendDependeCount++;
+        else if (e.recommendation === "nao") recommendNoCount++;
 
         if (e.campus) campusesSet.add(e.campus);
 
@@ -462,21 +467,21 @@ export class GetProfessorEvaluationsUseCase {
       });
     }
 
-    const sortBy = filters?.sortBy ?? 'reviews_desc';
+    const sortBy = filters?.sortBy ?? "reviews_desc";
     summaries.sort((a, b) => {
-      if (sortBy === 'recommendation_desc') {
+      if (sortBy === "recommendation_desc") {
         if (a.recommendationRate !== b.recommendationRate) {
           return b.recommendationRate - a.recommendationRate;
         }
         return b.evaluationsCount - a.evaluationsCount;
       }
-      if (sortBy === 'rating_desc') {
+      if (sortBy === "rating_desc") {
         const aScore = a.averageDidatica ?? -1;
         const bScore = b.averageDidatica ?? -1;
         if (bScore !== aScore) return bScore - aScore;
         return b.evaluationsCount - a.evaluationsCount;
       }
-      if (sortBy === 'rating_asc') {
+      if (sortBy === "rating_asc") {
         const aScore = a.averageDidatica ?? 99;
         const bScore = b.averageDidatica ?? 99;
         if (aScore !== bScore) return aScore - bScore;
@@ -498,7 +503,7 @@ export class GetProfessorEvaluationsUseCase {
     items: E[],
     keyOf: (item: E) => string,
     create: (item: E) => G,
-    merge: (group: G, item: E) => void
+    merge: (group: G, item: E) => void,
   ): Map<string, G> {
     const groups = new Map<string, G>();
     for (const item of items) {
@@ -517,23 +522,23 @@ export class GetProfessorEvaluationsUseCase {
   private disciplineKeyOf(ev: ProfessorEvaluation): string {
     return (
       ev.disciplineCode ||
-      normalizeDisciplineTokens(ev.discipline).join(' ') ||
+      normalizeDisciplineTokens(ev.discipline).join(" ") ||
       normalizeText(ev.discipline)
     );
   }
 
   private applyFilters(
     items: ProfessorEvaluation[],
-    filters?: ProfessorEvaluationFilters
+    filters?: ProfessorEvaluationFilters,
   ): ProfessorEvaluation[] {
     if (!filters) return items;
 
-    const queryNorm = filters.query ? normalizeText(filters.query) : '';
+    const queryNorm = filters.query ? normalizeText(filters.query) : "";
 
     return items.filter((item) => {
       if (
         filters.campus &&
-        filters.campus !== 'all' &&
+        filters.campus !== "all" &&
         item.campus !== filters.campus
       ) {
         return false;
@@ -541,7 +546,7 @@ export class GetProfessorEvaluationsUseCase {
 
       if (
         filters.recommendation &&
-        filters.recommendation !== 'all' &&
+        filters.recommendation !== "all" &&
         item.recommendation !== filters.recommendation
       ) {
         return false;
@@ -549,7 +554,7 @@ export class GetProfessorEvaluationsUseCase {
 
       if (
         filters.difficulty &&
-        filters.difficulty !== 'all' &&
+        filters.difficulty !== "all" &&
         item.difficultyLevel !== filters.difficulty
       ) {
         return false;
@@ -557,7 +562,7 @@ export class GetProfessorEvaluationsUseCase {
 
       if (
         filters.attendance &&
-        filters.attendance !== 'all' &&
+        filters.attendance !== "all" &&
         item.attendanceStrictness !== filters.attendance
       ) {
         return false;
@@ -592,20 +597,20 @@ export class GetProfessorEvaluationsUseCase {
 
   private sortEvaluations(
     items: ProfessorEvaluation[],
-    sortBy: NonNullable<ProfessorEvaluationFilters['sortBy']>
+    sortBy: NonNullable<ProfessorEvaluationFilters["sortBy"]>,
   ): ProfessorEvaluation[] {
     const copy = [...items];
 
-    if (sortBy === 'recommendation_desc') {
-      const rank = (r: string) => (r === 'sim' ? 2 : r === 'depende' ? 1 : 0);
+    if (sortBy === "recommendation_desc") {
+      const rank = (r: string) => (r === "sim" ? 2 : r === "depende" ? 1 : 0);
       return copy.sort(
         (a, b) =>
           rank(b.recommendation) - rank(a.recommendation) ||
-          b.createdAtIso.localeCompare(a.createdAtIso)
+          b.createdAtIso.localeCompare(a.createdAtIso),
       );
     }
 
-    if (sortBy === 'rating_desc') {
+    if (sortBy === "rating_desc") {
       return copy.sort((a, b) => {
         const aScore = a.didaticaScore ?? -1;
         const bScore = b.didaticaScore ?? -1;
@@ -614,7 +619,7 @@ export class GetProfessorEvaluationsUseCase {
       });
     }
 
-    if (sortBy === 'rating_asc') {
+    if (sortBy === "rating_asc") {
       return copy.sort((a, b) => {
         const aScore = a.didaticaScore ?? 99;
         const bScore = b.didaticaScore ?? 99;

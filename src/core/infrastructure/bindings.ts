@@ -195,7 +195,6 @@ export type ScrapedProfessor = {
 	department_ids?: string[],
 	discipline_codes?: string[],
 	photo_url?: string | null,
-	public_url?: string | null,
 };
 
 export type SigaaCreds = {
