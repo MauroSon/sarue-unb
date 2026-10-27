@@ -4,7 +4,6 @@ import {
   setSoundEffectsEnabled,
   preloadSoundEffects,
   playButtonClickSound,
-  playSidebarSound,
   initSoundEffectsListener,
 } from '../sound-effects';
 
@@ -67,7 +66,6 @@ describe('Módulo de Efeitos Sonoros (sound-effects.ts)', () => {
     it('não toca som nem lança erro quando efeitos estão desativados', async () => {
       setSoundEffectsEnabled(false);
       await expect(playButtonClickSound()).resolves.toBeUndefined();
-      await expect(playSidebarSound()).resolves.toBeUndefined();
       await expect(preloadSoundEffects()).resolves.toBeUndefined();
     });
 

@@ -8,11 +8,9 @@
 
 const STORAGE_KEY = 'sarue_sound_effects_enabled';
 const BUTTON_AUDIO_URL = '/566196__scholzi982__press_button_01.wav';
-const SIDEBAR_AUDIO_URL = '/sidebar-tap.wav';
 
 let audioCtx: AudioContext | null = null;
 let buttonSoundBuffer: AudioBuffer | null = null;
-let sidebarSoundBuffer: AudioBuffer | null = null;
 let loadingPromise: Promise<void> | null = null;
 let isListenerInitialized = false;
 
@@ -50,7 +48,7 @@ async function loadAudioBuffer(url: string, ctx: AudioContext): Promise<AudioBuf
  */
 export async function preloadSoundEffects(): Promise<void> {
   if (typeof window === 'undefined') return;
-  if (buttonSoundBuffer && sidebarSoundBuffer) return;
+  if (buttonSoundBuffer) return;
   if (loadingPromise) return loadingPromise;
 
   const ctx = getAudioContext();
@@ -64,14 +62,6 @@ export async function preloadSoundEffects(): Promise<void> {
         promises.push(
           loadAudioBuffer(BUTTON_AUDIO_URL, ctx).then((buffer) => {
             buttonSoundBuffer = buffer;
-          })
-        );
-      }
-
-      if (!sidebarSoundBuffer) {
-        promises.push(
-          loadAudioBuffer(SIDEBAR_AUDIO_URL, ctx).then((buffer) => {
-            sidebarSoundBuffer = buffer;
           })
         );
       }
@@ -163,13 +153,6 @@ export async function playButtonClickSound(): Promise<void> {
 }
 
 /**
- * Reproduz o som suave, fofo e acolchoado da sidebar ("pop macio") ao navegar entre abas.
- */
-export async function playSidebarSound(): Promise<void> {
-  return playBuffer(() => sidebarSoundBuffer, [0.98, 0.04], 0.25, 'som da sidebar');
-}
-
-/**
  * Registra um listener global de pointerdown para interceptar cliques em botões,
  * links e checkboxes sem poluir componentes individuais com onClick.
  */
@@ -203,7 +186,7 @@ export function initSoundEffectsListener(): () => void {
     if (!target) return;
 
     const clickable = target.closest<HTMLElement>(
-      'button, [role="button"], [role="checkbox"], input[type="checkbox"], a[href], [data-sound="click"], [data-sound="sidebar"]',
+      'button, [role="button"], [role="checkbox"], input[type="checkbox"], a[href], [data-sound="click"]',
     );
 
     if (!clickable) return;
@@ -220,12 +203,6 @@ export function initSoundEffectsListener(): () => void {
       clickable.classList.contains('pointer-events-none') ||
       clickable.classList.contains('cursor-not-allowed')
     ) {
-      return;
-    }
-
-    // Se estiver em container ou elemento com data-sound="sidebar", toca o som suave da sidebar
-    if (clickable.closest('[data-sound="sidebar"]')) {
-      playSidebarSound();
       return;
     }
 
