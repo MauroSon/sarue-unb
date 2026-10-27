@@ -573,8 +573,10 @@ export const CoursesScreen: React.FC = () => {
               </div>
 
               {/* Nome da disciplina */}
-              <h3 className="text-base md:text-lg font-black text-black leading-snug mb-3 group-hover:text-blue-ink transition-colors">
-                {discipline.name}
+              <h3 className="text-base font-black text-black leading-snug mb-3 group-hover:text-blue-ink transition-colors">
+                {discipline.code && !discipline.name.startsWith(discipline.code)
+                  ? `${discipline.code} - ${discipline.name}`
+                  : discipline.name}
               </h3>
 
               {/* Informações detalhadas */}

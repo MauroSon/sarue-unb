@@ -273,7 +273,9 @@ export const MyCourseScreen: React.FC = () => {
                       onChange={(e) => setSearchQuery(e.target.value)}
                       placeholder="Buscar por código ou nome (ex: APC, Cálculo, CIC0004)..."
                       aria-label="Buscar disciplina por código ou nome"
-                      className="pl-10 h-9 text-xs bg-paper w-full"
+                      className={`pl-10 h-9 text-xs w-full transition-[background-color] ${
+                        searchQuery.trim() ? "bg-pastel-blue" : "bg-paper"
+                      }`}
                     />
                   </div>
 
