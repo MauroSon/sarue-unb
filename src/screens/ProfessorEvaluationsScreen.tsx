@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { useProfessorEvaluations } from "../hooks/useProfessorEvaluations";
+import { useScrollRestore } from "../hooks/useScrollRestore";
 import { useContainer } from "../context/ContainerContext";
 import { subscribeToSyncComplete } from "../context/SyncContext";
 import { resolveCourseIdForProfile } from "../hooks/useMyCourse";
@@ -178,21 +179,25 @@ export const ProfessorEvaluationsScreen: React.FC = () => {
     useState<DisciplineSummary | null>(null);
 
   // Armazena e restaura a posição do scroll ao navegar entre catálogo e drill-down
-  const catalogScrollPosRef = React.useRef(0);
-  const disciplineScrollPosRef = React.useRef(0);
+  const catalogScroll = useScrollRestore();
+  const disciplineScroll = useScrollRestore();
   const isReturningFromDrillDownRef = React.useRef(false);
 
-  const handleOpenProfessor = useCallback((prof: ProfessorSummary) => {
-    const mainEl = document.querySelector("main");
-    catalogScrollPosRef.current = mainEl ? mainEl.scrollTop : window.scrollY;
-    setSelectedProfessor(prof);
-  }, []);
+  const handleOpenProfessor = useCallback(
+    (prof: ProfessorSummary) => {
+      catalogScroll.save();
+      setSelectedProfessor(prof);
+    },
+    [catalogScroll],
+  );
 
-  const handleOpenDiscipline = useCallback((disc: DisciplineSummary) => {
-    const mainEl = document.querySelector("main");
-    catalogScrollPosRef.current = mainEl ? mainEl.scrollTop : window.scrollY;
-    setSelectedDiscipline(disc);
-  }, []);
+  const handleOpenDiscipline = useCallback(
+    (disc: DisciplineSummary) => {
+      catalogScroll.save();
+      setSelectedDiscipline(disc);
+    },
+    [catalogScroll],
+  );
 
   // Restaura o scroll do catálogo quando o usuário volta de uma visualização detalhada
   useEffect(() => {
@@ -202,20 +207,9 @@ export const ProfessorEvaluationsScreen: React.FC = () => {
       isReturningFromDrillDownRef.current
     ) {
       isReturningFromDrillDownRef.current = false;
-      const targetScroll = catalogScrollPosRef.current;
-      const restoreScroll = () => {
-        const mainEl = document.querySelector("main");
-        if (mainEl) {
-          mainEl.scrollTo({ top: targetScroll, behavior: "instant" });
-        }
-        window.scrollTo({ top: targetScroll, behavior: "instant" });
-      };
-
-      restoreScroll();
-      const rafId = requestAnimationFrame(restoreScroll);
-      return () => cancelAnimationFrame(rafId);
+      catalogScroll.restore();
     }
-  }, [selectedProfessor, selectedDiscipline]);
+  }, [selectedProfessor, selectedDiscipline, catalogScroll]);
 
   // Professores da disciplina em drill-down, com o histórico completo de cada
   // um (as notas do card agregam todas as disciplinas do docente). Base SEM
@@ -247,13 +241,20 @@ export const ProfessorEvaluationsScreen: React.FC = () => {
   const [page, setPage] = useState(1);
 
   useEffect(() => {
-    catalogScrollPosRef.current = 0;
+    catalogScroll.reset();
     setPage(1);
-  }, [searchQuery, selectedCampus, selectedDifficulty, sortBy, viewMode]);
+  }, [
+    catalogScroll,
+    searchQuery,
+    selectedCampus,
+    selectedDifficulty,
+    sortBy,
+    viewMode,
+  ]);
 
   const handleCatalogPageChange = (newPage: number) => {
     setPage(newPage);
-    catalogScrollPosRef.current = 0;
+    catalogScroll.reset();
     const mainEl = document.querySelector("main");
     if (mainEl) {
       mainEl.scrollTo({ top: 0, behavior: "smooth" });
@@ -341,17 +342,14 @@ export const ProfessorEvaluationsScreen: React.FC = () => {
       <DisciplineDrillDown
         summary={selectedDiscipline}
         professorSummaries={disciplineProfessors}
-        initialScrollTop={disciplineScrollPosRef.current}
+        initialScrollTop={disciplineScroll.savedTopRef.current}
         onBack={() => {
-          disciplineScrollPosRef.current = 0;
+          disciplineScroll.reset();
           isReturningFromDrillDownRef.current = true;
           setSelectedDiscipline(null);
         }}
         onOpenProfessor={(prof) => {
-          const mainEl = document.querySelector("main");
-          disciplineScrollPosRef.current = mainEl
-            ? mainEl.scrollTop
-            : window.scrollY;
+          disciplineScroll.save();
           setPreviousDiscipline(selectedDiscipline);
           setSelectedDiscipline(null);
           setSelectedProfessor(prof);

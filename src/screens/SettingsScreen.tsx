@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   Card,
   Button,
@@ -18,6 +18,7 @@ import { ConnectedAccountsCard } from "@/components/settings/ConnectedAccountsCa
 import { SettingsSection } from "@/components/settings/SettingsSection";
 import { useCredentials } from "../hooks/useCredentials";
 import { useFeed } from "../hooks/useFeed";
+import { useScrollRestore } from "../hooks/useScrollRestore";
 import { resetMyCourseCache } from "../hooks/useMyCourse";
 import { useContainer } from "../context/ContainerContext";
 import { useOptionalSync } from "../context/SyncContext";
@@ -90,6 +91,35 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
   const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
   const [isViewingPatchNotes, setIsViewingPatchNotes] = useState(false);
   const [isCreditsDialogOpen, setIsCreditsDialogOpen] = useState(false);
+
+  // Patch notes substituem esta tela (e o Dialog trava o scroll): guardamos
+  // a posição antes de sair e restauramos quando o usuário volta.
+  const { save: saveScroll, restore: restoreScroll } = useScrollRestore();
+  const shouldRestoreScrollRef = useRef(false);
+  useEffect(() => {
+    if (
+      !isViewingPatchNotes &&
+      !isCreditsDialogOpen &&
+      shouldRestoreScrollRef.current
+    ) {
+      shouldRestoreScrollRef.current = false;
+      restoreScroll();
+    }
+  }, [isViewingPatchNotes, isCreditsDialogOpen, restoreScroll]);
+
+  const handleOpenPatchNotes = () => {
+    saveScroll();
+    shouldRestoreScrollRef.current = true;
+    setIsViewingPatchNotes(true);
+  };
+
+  const handleCreditsOpenChange = (open: boolean) => {
+    if (open) {
+      saveScroll();
+      shouldRestoreScrollRef.current = true;
+    }
+    setIsCreditsDialogOpen(open);
+  };
   const [isSoundActive, setIsSoundActive] = useState(() =>
     isSoundEffectsEnabled(),
   );
@@ -190,7 +220,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
                   Som de clique
                 </span>
                 <p className="text-xs font-semibold text-neutral-600 leading-snug mt-0.5">
-                  Clique macio de switch mecânico ao apertar botões.
+                  Efeito sonoro de clique macio e tátil ao apertar botões.
                 </p>
               </div>
               {/* Wrapper mutado: o listener global de som escala o DOM a
@@ -395,7 +425,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
               type="button"
               variant="ghost"
               size="sm"
-              onClick={() => setIsViewingPatchNotes(true)}
+              onClick={handleOpenPatchNotes}
               title="Ver as novidades e patch notes desta versão"
             >
               <RotateCwClock className="w-3.5 h-3.5 stroke-[2.5]" />
@@ -482,7 +512,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
       {/* Diálogo de Créditos */}
       <ContributorsDialog
         open={isCreditsDialogOpen}
-        onOpenChange={setIsCreditsDialogOpen}
+        onOpenChange={handleCreditsOpenChange}
       />
     </PageContainer>
   );
