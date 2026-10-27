@@ -37,9 +37,9 @@ import {
 } from "lucide-react";
 import { useAppUpdater } from "../hooks/useAppUpdater";
 import { useAutostart } from "../hooks/useAutostart";
-import { openExternalUrl } from "@/lib/utils";
 import { AppUpdaterCard } from "@/components/settings/AppUpdaterCard";
 import { PatchNotesView } from "@/components/settings/PatchNotesView";
+import { ContributorsDialog } from "@/components/settings/ContributorsDialog";
 import {
   isSoundEffectsEnabled,
   setSoundEffectsEnabled,
@@ -75,7 +75,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
   } = useAutostart();
   const { reduceAnimations, setReduceAnimations, uiZoom, setUiZoom } =
     useAccessibility();
-  const { themeMode, setThemeMode, resolvedTheme } = useTheme();
+  const { themeMode, setThemeMode } = useTheme();
 
   // Modo explorar: nenhuma conta conectada — o botão da zona de perigo vira
   // "Voltar para o Onboarding", mas a ação continua apagando tudo (grades,
@@ -420,55 +420,9 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
               <span>Contribuidores</span>
             </Button>
 
-            <div className="flex items-center gap-2 mt-3">
-              <span className="text-xs font-bold text-neutral-600">
-                © {new Date().getFullYear()} Kaleb Henrique
-              </span>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                title="https://github.com/kalebhenrique"
-                aria-label="GitHub de Kaleb Henrique"
-                onClick={() =>
-                  void openExternalUrl("https://github.com/kalebhenrique")
-                }
-                className="w-8 p-0"
-              >
-                <img
-                  src={
-                    resolvedTheme === "dark"
-                      ? "/github-142-svgrepo-com-dark.svg"
-                      : "/github-142-svgrepo-com.svg"
-                  }
-                  alt=""
-                  className="w-4 h-4 select-none"
-                />
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                title="https://www.linkedin.com/in/kalebhenrique"
-                aria-label="LinkedIn de Kaleb Henrique"
-                onClick={() =>
-                  void openExternalUrl(
-                    "https://www.linkedin.com/in/kalebhenrique",
-                  )
-                }
-                className="w-8 p-0"
-              >
-                <img
-                  src={
-                    resolvedTheme === "dark"
-                      ? "/linkedin-svgrepo-com-dark.svg"
-                      : "/linkedin-svgrepo-com.svg"
-                  }
-                  alt=""
-                  className="w-4 h-4 select-none"
-                />
-              </Button>
-            </div>
+            <span className="text-xs font-bold text-neutral-600 mt-3">
+              © {new Date().getFullYear()} Kaleb Henrique
+            </span>
           </div>
         </section>
       </div>
@@ -526,71 +480,10 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
       </Dialog>
 
       {/* Diálogo de Créditos */}
-      <Dialog
+      <ContributorsDialog
         open={isCreditsDialogOpen}
         onOpenChange={setIsCreditsDialogOpen}
-      >
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <div className="flex items-center gap-2 mb-1">
-              {/* Receita do adesivo do onboarding: bloco branco de dia,
-                  sólido vivo de noite, coração de tinta nos dois. */}
-              <div className="w-9 h-9 rounded-lg bg-paper dark:bg-neo-yellow border-2 border-ink flex items-center justify-center shadow-neo-sm">
-                <Heart className="w-5 h-5 stroke-[2.5] text-black dark:text-ink" />
-              </div>
-              <DialogTitle>Contribuidores</DialogTitle>
-            </div>
-            <DialogDescription>
-              Quem faz o Saruê acontecer.
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="space-y-2.5">
-            {/* Fundador em primeiro, com o grifo amarelo; no escuro, placa
-                com borda e rótulo em Ouro vivo (mesma receita do IRA) */}
-            <div className="bg-pastel-yellow border-2 border-ink rounded-lg p-3.5 shadow-neo-sm dark:bg-paper dark:border-neo-yellow">
-              <span className="text-[11px] font-black uppercase tracking-wider text-neutral-700 block dark:text-neo-yellow">
-                Contribuidor de código
-              </span>
-              <p className="text-sm font-black text-black mt-0.5">
-                Kaleb Henrique
-              </p>
-              <p className="text-xs font-bold text-neutral-700 mt-0.5">
-                Idealizador e desenvolvedor fullstack
-              </p>
-            </div>
-            <div className="bg-white dark:bg-paper border-2 border-ink rounded-lg p-3.5 shadow-neo-sm">
-              <span className="text-[11px] font-black uppercase tracking-wider text-neutral-700 block">
-                Contribuidor de código
-              </span>
-              <p className="text-sm font-black text-black mt-0.5">Mauro</p>
-              <p className="text-xs font-bold text-neutral-700 mt-0.5">
-                Desenvolvedor fullstack
-              </p>
-            </div>
-            <div className="bg-white dark:bg-paper border-2 border-ink rounded-lg p-3.5 shadow-neo-sm">
-              <span className="text-[11px] font-black uppercase tracking-wider text-neutral-700 block">
-                Contribuidor
-              </span>
-              <p className="text-sm font-black text-black mt-0.5">Ricardo</p>
-              <p className="text-xs font-bold text-neutral-700 mt-0.5">
-                Administrador do grupo UnB Geral
-              </p>
-            </div>
-          </div>
-
-          <DialogFooter>
-            <Button
-              type="button"
-              variant="primary"
-              size="md"
-              onClick={() => setIsCreditsDialogOpen(false)}
-            >
-              <span>Fechar</span>
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      />
     </PageContainer>
   );
 };
