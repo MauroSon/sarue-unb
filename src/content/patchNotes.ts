@@ -22,6 +22,22 @@ export interface PatchNotesEntry {
 
 export const PATCH_NOTES: PatchNotesEntry[] = [
   {
+    version: "0.3.0",
+    date: "28/10/2026",
+    title: "Avaliação de Professores, Modo Escuro e Acessibilidade",
+    items: [
+      "Avaliação de Professores: notas e relatos via planilha pública da comunidade (obrigado @MauroSon).",
+      "Modo escuro em toda a interface.",
+      "Envio de feedback e reporte de bugs diretamente pelo app.",
+      "Opção de manter o app aberto em segundo plano na bandeja.",
+      "Configurações: interface aprimorada, mais amigável e intuitiva.",
+      "Feed aprimorado com seleção múltipla de itens.",
+      "Tela de carregamento com esqueleto visual da plataforma.",
+      "Opções de acessibilidade (redução de animações e escala da interface).",
+      "Nova seção de contribuidores em Configurações.",
+    ],
+  },
+  {
     version: "0.2.2",
     date: "22/10/2026",
     title: "Hotfix: Estabilidade Gerais",
