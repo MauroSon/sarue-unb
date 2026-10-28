@@ -5,9 +5,9 @@ import React, {
   useCallback,
   useMemo,
   useRef,
+  useEffect,
 } from "react";
 import { useContainer } from "./ContainerContext";
-import { useCredentials } from "../hooks/useCredentials";
 import { notifyMyCourseListeners, resolveCourseIdForProfile } from "../hooks/useMyCourse";
 import { notifyFeedListeners } from "../hooks/useFeed";
 import { toast } from "@/components/ui";
@@ -109,14 +109,17 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   const { useCases, repos } = useContainer();
-  const { allCredentials } = useCredentials();
 
   const [isSyncing, setIsSyncing] = useState<boolean>(false);
-  const [lastSyncedAt, setLastSyncedAt] = useState<string | null>(null);
+  const [lastSyncedAt, setLastSyncedAt] = useState<string | null>(() => {
+    if (typeof window === "undefined") return null;
+    return localStorage.getItem("sarue_last_synced_at");
+  });
   const [steps, setSteps] =
     useState<Record<SyncStepId, SyncStepInfo>>(INITIAL_STEPS);
   const syncInFlightRef = useRef<boolean>(false);
   const syncGenerationRef = useRef<number>(0);
+  const syncAllRef = useRef<() => Promise<void>>(() => Promise.resolve());
 
   const updateStep = useCallback(
     (id: SyncStepId, patch: Partial<SyncStepInfo>) => {
@@ -142,6 +145,7 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({
       void (async () => {
         try {
           const { commands } = await import("@/core/infrastructure/bindings");
+          await commands.setTraySyncState(false);
           await commands.disconnectTeams();
         } catch {}
       })();
@@ -157,16 +161,24 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({
 
     syncInFlightRef.current = true;
     setIsSyncing(true);
+    if (typeof window !== "undefined" && "__TAURI_INTERNALS__" in window) {
+      void import("@/core/infrastructure/bindings").then(({ commands }) => {
+        void commands.setTraySyncState(true);
+      });
+    }
 
     try {
       // Dispara verificação silenciosa de atualizações do app em segundo plano
       void checkForUpdates(true);
 
+      // Carrega credenciais em tempo real diretamente do cofre para evitar estados defasados de React
+      const activeCreds = await useCases.getCredentials.getAllCredentials();
+
       // 1. Sincronização do Catálogo UnB (GitHub Pages / CDN).
       // Com SIGAA configurado, o passo espera o histórico (Meu Curso) criar o
       // perfil: é ele que diz qual curso baixar — sem isso a primeira
       // sincronização baixaria o catálogo inteiro (612 matrizes) sem precisar.
-      const sigaaCreds = allCredentials.sigaa;
+      const sigaaCreds = activeCreds.sigaa;
       const hasSigaa = Boolean(
         sigaaCreds?.matricula?.trim() && sigaaCreds?.senha,
       );
@@ -276,7 +288,7 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({
       })();
 
       // 3. Sincronização do Aprender 3
-      const aprenderCreds = allCredentials.aprender3;
+      const aprenderCreds = activeCreds.aprender3;
       const hasAprender = Boolean(
         aprenderCreds?.cpf?.trim() && aprenderCreds?.senha,
       );
@@ -336,7 +348,7 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({
       })();
 
       // Marca estado inicial do Teams antes de aguardar os canais HTTP rápidos
-      const teamsCreds = allCredentials.teams;
+      const teamsCreds = activeCreds.teams;
       const hasTeams = Boolean(teamsCreds?.isConnected);
       if (!hasTeams) {
         updateStep("teams", {
@@ -438,7 +450,15 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({
 
       const now = new Date().toISOString();
       setLastSyncedAt(now);
+      if (typeof window !== "undefined") {
+        localStorage.setItem("sarue_last_synced_at", now);
+      }
       setIsSyncing(false);
+      if (typeof window !== "undefined" && "__TAURI_INTERNALS__" in window) {
+        void import("@/core/infrastructure/bindings").then(({ commands }) => {
+          void commands.setTraySyncState(false);
+        });
+      }
       notifyFeedListeners();
       notifySyncComplete();
 
@@ -524,9 +544,51 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({
       if (!isCancelled()) {
         setIsSyncing(false);
         syncInFlightRef.current = false;
+        if (typeof window !== "undefined" && "__TAURI_INTERNALS__" in window) {
+          void import("@/core/infrastructure/bindings").then(({ commands }) => {
+            void commands.setTraySyncState(false);
+          });
+        }
       }
     }
-  }, [allCredentials, repos.gradeRepo, updateStep, useCases]);
+  }, [repos.gradeRepo, updateStep, useCases]);
+
+  syncAllRef.current = syncAll;
+
+  useEffect(() => {
+    let unlisten: (() => void) | undefined;
+    if (typeof window !== "undefined" && "__TAURI_INTERNALS__" in window) {
+      void import("@tauri-apps/api/event").then(({ listen }) => {
+        void listen("request-sync", () => {
+          void syncAllRef.current();
+        }).then((fn) => {
+          unlisten = fn;
+        });
+      });
+    }
+
+    const SIX_HOURS_MS = 6 * 60 * 60 * 1000;
+    const checkPeriodicSync = () => {
+      if (typeof window === "undefined") return;
+      const isBgEnabled =
+        localStorage.getItem("sarue_background_run_enabled") !== "false";
+      if (!isBgEnabled) return;
+      const last = localStorage.getItem("sarue_last_synced_at");
+      if (!last || Date.now() - new Date(last).getTime() >= SIX_HOURS_MS) {
+        void syncAllRef.current();
+      }
+    };
+
+    // Executa verificação preventiva logo após o boot (após 5s) e depois a cada 10 minutos
+    const bootTimer = setTimeout(checkPeriodicSync, 5000);
+    const intervalId = setInterval(checkPeriodicSync, 10 * 60 * 1000);
+
+    return () => {
+      if (unlisten) unlisten();
+      clearTimeout(bootTimer);
+      clearInterval(intervalId);
+    };
+  }, []);
 
   const value = useMemo(
     () => ({

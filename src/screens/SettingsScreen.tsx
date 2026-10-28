@@ -38,6 +38,7 @@ import {
 } from "lucide-react";
 import { useAppUpdater } from "../hooks/useAppUpdater";
 import { useAutostart } from "../hooks/useAutostart";
+import { useBackgroundRun } from "../hooks/useBackgroundRun";
 import { AppUpdaterCard } from "@/components/settings/AppUpdaterCard";
 import { PatchNotesView } from "@/components/settings/PatchNotesView";
 import { ContributorsDialog } from "@/components/settings/ContributorsDialog";
@@ -74,6 +75,11 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
     toggle: toggleAutostart,
     isLoading: isAutostartLoading,
   } = useAutostart();
+  const {
+    isEnabled: isBackgroundRunEnabled,
+    toggle: toggleBackgroundRun,
+    isLoading: isBackgroundRunLoading,
+  } = useBackgroundRun();
   const { reduceAnimations, setReduceAnimations, uiZoom, setUiZoom } =
     useAccessibility();
   const { themeMode, setThemeMode } = useTheme();
@@ -161,6 +167,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
         localStorage.removeItem("unb_aggregator_academic_profile_v1");
         localStorage.removeItem("sarue_ira_scenario_v1");
         localStorage.removeItem("unb_aggregator_ira_scenario_v1");
+        localStorage.removeItem("sarue_last_synced_at");
       } catch {}
       // 6. Fecha o diálogo e redireciona imediatamente para o onboarding
       setIsConfirmDialogOpen(false);
@@ -209,6 +216,26 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
                 disabled={isAutostartLoading}
                 onCheckedChange={toggleAutostart}
                 aria-label="Iniciar automaticamente com o sistema"
+                className="shrink-0"
+              />
+            </div>
+
+            {/* Rodar em segundo plano */}
+            <div className="flex items-center justify-between gap-4 py-1">
+              <div className="max-w-md">
+                <span className="text-xs font-black text-black block">
+                  Rodar em segundo plano
+                </span>
+                <p className="text-xs font-semibold text-neutral-600 leading-snug mt-0.5">
+                  Mantém o Saruê ativo na bandeja para não perder prazos e sincroniza
+                  a cada 6 horas automaticamente.
+                </p>
+              </div>
+              <Switch
+                checked={isBackgroundRunEnabled}
+                disabled={isBackgroundRunLoading}
+                onCheckedChange={toggleBackgroundRun}
+                aria-label="Rodar em segundo plano"
                 className="shrink-0"
               />
             </div>

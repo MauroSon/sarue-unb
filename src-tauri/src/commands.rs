@@ -799,3 +799,39 @@ pub async fn fetch_professor_evaluations_csv(force_refresh: bool) -> Result<Stri
 
     Ok(text)
 }
+
+#[command]
+#[specta::specta]
+pub async fn set_background_run(app: AppHandle, enabled: bool) -> Result<(), String> {
+    use tauri::Manager;
+    let state = app.state::<crate::BackgroundRunState>();
+    state.0.store(enabled, std::sync::atomic::Ordering::Relaxed);
+    log::info!("Execução em segundo plano definida para: {}", enabled);
+    Ok(())
+}
+
+#[command]
+#[specta::specta]
+pub async fn is_background_run_enabled(app: AppHandle) -> Result<bool, String> {
+    use tauri::Manager;
+    let state = app.state::<crate::BackgroundRunState>();
+    Ok(state.0.load(std::sync::atomic::Ordering::Relaxed))
+}
+
+#[command]
+#[specta::specta]
+pub async fn set_tray_sync_state(app: AppHandle, syncing: bool) -> Result<(), String> {
+    crate::tray::update_tray_sync_state(&app, syncing)
+}
+
+#[command]
+#[specta::specta]
+pub async fn show_main_window(app: AppHandle) -> Result<(), String> {
+    use tauri::Manager;
+    if let Some(window) = app.get_webview_window("main") {
+        let _ = window.show();
+        let _ = window.unminimize();
+        let _ = window.set_focus();
+    }
+    Ok(())
+}

@@ -5,9 +5,12 @@ pub mod moodle;
 pub mod schedule_solver;
 pub mod scraper;
 pub mod sigaa;
+pub mod tray;
 
 use tauri::Manager;
 use tauri_specta::{collect_commands, Builder};
+
+pub struct BackgroundRunState(pub std::sync::atomic::AtomicBool);
 
 /// Fonte única da superfície IPC: os commands registrados aqui geram os
 /// bindings TypeScript em `src/lib/bindings.ts` (via `cargo test export_bindings`).
@@ -34,6 +37,10 @@ pub fn builder() -> Builder<tauri::Wry> {
         commands::backup_vault_file,
         commands::restore_vault_file,
         commands::fetch_professor_evaluations_csv,
+        commands::set_background_run,
+        commands::is_background_run_enabled,
+        commands::set_tray_sync_state,
+        commands::show_main_window,
     ])
 }
 
@@ -50,6 +57,7 @@ pub fn run() {
         .expect("Falha ao exportar bindings TypeScript");
 
     tauri::Builder::default()
+        .manage(BackgroundRunState(std::sync::atomic::AtomicBool::new(true)))
         .plugin(
             tauri_plugin_window_state::Builder::new()
                 .with_filter(|label| label == "main")
@@ -88,15 +96,63 @@ pub fn run() {
                     tauri_plugin_autostart::MacosLauncher::LaunchAgent,
                     None,
                 ))?;
+
+                // Inicializa o System Tray
+                if let Err(e) = tray::setup_tray(app.handle()) {
+                    log::warn!("Não foi possível inicializar o System Tray: {}", e);
+                }
+
+                // Tarefa em segundo plano: timer de 6 horas para sincronização automática
+                let app_handle = app.handle().clone();
+                tauri::async_runtime::spawn(async move {
+                    use tauri::Emitter;
+                    let mut interval =
+                        tokio::time::interval(std::time::Duration::from_secs(6 * 3600));
+                    interval.tick().await; // Pula o primeiro tick imediato no startup
+                    loop {
+                        interval.tick().await;
+                        if let Some(state) = app_handle.try_state::<BackgroundRunState>() {
+                            if state.0.load(std::sync::atomic::Ordering::Relaxed) {
+                                log::info!(
+                                    "Temporizador de 6h: disparando sincronização em segundo plano"
+                                );
+                                let _ = app_handle.emit("request-sync", ());
+                            }
+                        }
+                    }
+                });
             }
 
             log::info!("Plugins Tauri Stronghold e SQL (SQLite) inicializados com sucesso.");
 
             Ok(())
         })
+        .on_window_event(|window, event| {
+            if let tauri::WindowEvent::CloseRequested { api, .. } = event {
+                if window.label() == "main" {
+                    let app = window.app_handle();
+                    if let Some(state) = app.try_state::<BackgroundRunState>() {
+                        if state.0.load(std::sync::atomic::Ordering::Relaxed) {
+                            api.prevent_close();
+                            let _ = window.hide();
+                        }
+                    }
+                }
+            }
+        })
         .invoke_handler(builder.invoke_handler())
-        .run(tauri::generate_context!())
-        .expect("erro durante a execução do aplicativo Saruê UnB");
+        .build(tauri::generate_context!())
+        .expect("erro durante a compilação do aplicativo Saruê UnB")
+        .run(|app_handle, event| {
+            #[cfg(target_os = "macos")]
+            if let tauri::RunEvent::Reopen { .. } = event {
+                if let Some(window) = app_handle.get_webview_window("main") {
+                    let _ = window.show();
+                    let _ = window.unminimize();
+                    let _ = window.set_focus();
+                }
+            }
+        });
 }
 
 #[cfg(test)]

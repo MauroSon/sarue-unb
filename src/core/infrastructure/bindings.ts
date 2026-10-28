@@ -34,6 +34,10 @@ export const commands = {
 	backupVaultFile: (filename: string) => typedError<string, string>(__TAURI_INVOKE("backup_vault_file", { filename })),
 	restoreVaultFile: (filename: string) => typedError<null, string>(__TAURI_INVOKE("restore_vault_file", { filename })),
 	fetchProfessorEvaluationsCsv: (forceRefresh: boolean) => typedError<string, string>(__TAURI_INVOKE("fetch_professor_evaluations_csv", { forceRefresh })),
+	setBackgroundRun: (enabled: boolean) => typedError<null, string>(__TAURI_INVOKE("set_background_run", { enabled })),
+	isBackgroundRunEnabled: () => typedError<boolean, string>(__TAURI_INVOKE("is_background_run_enabled")),
+	setTraySyncState: (syncing: boolean) => typedError<null, string>(__TAURI_INVOKE("set_tray_sync_state", { syncing })),
+	showMainWindow: () => typedError<null, string>(__TAURI_INVOKE("show_main_window")),
 };
 
 /* Types */
