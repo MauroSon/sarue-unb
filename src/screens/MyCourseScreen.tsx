@@ -484,7 +484,7 @@ export const MyCourseScreen: React.FC = () => {
                       </p>
                     </div>
 
-                    <span className="text-[11px] font-black px-1.5 py-0.5 bg-neo-green border border-ink rounded-md shrink-0">
+                    <span className="text-[11px] font-black px-1.5 py-0.5 bg-neo-green text-ink border border-ink rounded-md shrink-0">
                       {d.grade || "AP"}
                     </span>
                   </div>
