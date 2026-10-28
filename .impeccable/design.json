@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-10-26T13:13:48.271Z",
+  "generatedAt": "2026-10-27T21:30:00-03:00",
   "title": "Design System: Saruê UnB",
   "extensions": {
     "colorMeta": {
@@ -8,1703 +8,286 @@
         "role": "primary",
         "displayName": "Azul Caneta Ação",
         "canonical": "#2563EB",
-        "tonalRamp": [
-          "#061a46",
-          "#0b2c75",
-          "#1041ad",
-          "#1558ea",
-          "#4d80ef",
-          "#8aabf4",
-          "#b9cdf9",
-          "#e8eefd"
-        ]
-      },
-      "pen-blue-brand": {
-        "role": "primary",
-        "displayName": "Azul Caneta",
-        "canonical": "#468AFB",
-        "tonalRamp": [
-          "#021d4b",
-          "#03317d",
-          "#0448b9",
-          "#0561fa",
-          "#4187fb",
-          "#82b0fc",
-          "#b4d0fd",
-          "#e6effe"
-        ]
+        "tonalRamp": ["oklch(15% 0.06 262)", "oklch(25% 0.11 262)", "oklch(35% 0.16 262)", "oklch(45% 0.2 262)", "oklch(55% 0.22 262)", "oklch(70% 0.17 262)", "oklch(85% 0.09 262)", "oklch(95% 0.04 262)"]
       },
       "pen-blue-deep": {
         "role": "primary",
         "displayName": "Azul Caneta Pressionado",
         "canonical": "#1D4ED8",
-        "tonalRamp": [
-          "#091843",
-          "#0f2970",
-          "#163ca6",
-          "#1e51e1",
-          "#547be8",
-          "#8fa8f0",
-          "#bccbf6",
-          "#e9eefc"
-        ]
+        "tonalRamp": ["oklch(14% 0.06 265)", "oklch(23% 0.11 265)", "oklch(32% 0.16 265)", "oklch(41% 0.2 265)", "oklch(50% 0.22 265)", "oklch(65% 0.17 265)", "oklch(82% 0.09 265)", "oklch(94% 0.04 265)"]
+      },
+      "pen-blue-brand": {
+        "role": "brand",
+        "displayName": "Azul UnB (marca)",
+        "canonical": "#468AFB",
+        "tonalRamp": ["oklch(18% 0.06 258)", "oklch(30% 0.11 258)", "oklch(42% 0.15 258)", "oklch(54% 0.18 258)", "oklch(66% 0.19 258)", "oklch(78% 0.13 258)", "oklch(88% 0.07 258)", "oklch(96% 0.03 258)"]
       },
       "highlighter-yellow": {
         "role": "secondary",
         "displayName": "Amarelo Marca-Texto",
         "canonical": "#FFE600",
-        "tonalRamp": [
-          "#4d4500",
-          "#807300",
-          "#bdaa00",
-          "#ffe600",
-          "#ffec3d",
-          "#fff380",
-          "#fff8b3",
-          "#fffde5"
-        ],
-        "tailwindToken": "neo.yellow / neo.yellowHover (#F2DA00)"
+        "tonalRamp": ["oklch(20% 0.07 100)", "oklch(33% 0.12 100)", "oklch(46% 0.16 100)", "oklch(59% 0.19 100)", "oklch(72% 0.21 100)", "oklch(83% 0.18 100)", "oklch(91% 0.14 100)", "oklch(97% 0.08 100)"]
       },
       "chalk-green": {
         "role": "secondary",
         "displayName": "Verde Giz",
         "canonical": "#46E297",
-        "tonalRamp": [
-          "#0a4227",
-          "#116e42",
-          "#1aa361",
-          "#23dc83",
-          "#57e5a1",
-          "#91eec1",
-          "#bdf5da",
-          "#e9fcf3"
-        ],
-        "tailwindToken": "neo.green / neo.greenHover (#39D68A)"
+        "tonalRamp": ["oklch(18% 0.05 155)", "oklch(30% 0.09 155)", "oklch(42% 0.13 155)", "oklch(54% 0.16 155)", "oklch(66% 0.18 155)", "oklch(78% 0.15 155)", "oklch(88% 0.1 155)", "oklch(96% 0.05 155)"]
       },
       "correction-red": {
         "role": "secondary",
         "displayName": "Vermelho Correção",
         "canonical": "#FF6B6B",
-        "tonalRamp": [
-          "#4d0000",
-          "#800000",
-          "#bd0000",
-          "#ff0000",
-          "#ff3d3d",
-          "#ff8080",
-          "#ffb3b3",
-          "#ffe5e5"
-        ]
+        "tonalRamp": ["oklch(20% 0.07 25)", "oklch(32% 0.12 25)", "oklch(44% 0.16 25)", "oklch(56% 0.19 25)", "oklch(68% 0.2 25)", "oklch(80% 0.15 25)", "oklch(90% 0.09 25)", "oklch(96% 0.04 25)"]
       },
       "correction-red-strong": {
         "role": "secondary",
         "displayName": "Vermelho Correção Forte",
         "canonical": "#DC2626",
-        "tonalRamp": [
-          "#420b0b",
-          "#6e1212",
-          "#a21a1a",
-          "#dc2323",
-          "#e45858",
-          "#ed9191",
-          "#f4bdbd",
-          "#fbe9e9"
-        ]
+        "tonalRamp": ["oklch(17% 0.07 27)", "oklch(28% 0.12 27)", "oklch(38% 0.16 27)", "oklch(49% 0.2 27)", "oklch(58% 0.22 27)", "oklch(72% 0.17 27)", "oklch(86% 0.1 27)", "oklch(95% 0.04 27)"]
       },
       "notebook-purple": {
         "role": "tertiary",
         "displayName": "Lilás Caderno",
         "canonical": "#C084FC",
-        "tonalRamp": [
-          "#26024b",
-          "#40037c",
-          "#5e04b8",
-          "#8006f9",
-          "#9e42fa",
-          "#bf83fc",
-          "#d9b4fd",
-          "#f2e6fe"
-        ]
+        "tonalRamp": ["oklch(20% 0.06 300)", "oklch(32% 0.1 300)", "oklch(44% 0.14 300)", "oklch(56% 0.17 300)", "oklch(68% 0.18 300)", "oklch(80% 0.13 300)", "oklch(90% 0.08 300)", "oklch(96% 0.04 300)"]
       },
       "pencil-orange": {
         "role": "tertiary",
         "displayName": "Lápis Laranja",
         "canonical": "#FB923C",
-        "tonalRamp": [
-          "#4b2302",
-          "#7d3a03",
-          "#b95504",
-          "#fa7305",
-          "#fb9541",
-          "#fcb982",
-          "#fdd5b4",
-          "#fef1e6"
-        ]
-      },
-      "sky-blue": {
-        "role": "tertiary",
-        "displayName": "Azul Céu",
-        "canonical": "#60A5FA",
-        "tonalRamp": [
-          "#02234a",
-          "#043a7c",
-          "#0655b7",
-          "#0873f7",
-          "#4395f9",
-          "#83b9fb",
-          "#b5d5fd",
-          "#e6f1fe"
-        ]
+        "tonalRamp": ["oklch(20% 0.06 55)", "oklch(33% 0.1 55)", "oklch(45% 0.14 55)", "oklch(57% 0.17 55)", "oklch(70% 0.18 55)", "oklch(82% 0.14 55)", "oklch(91% 0.08 55)", "oklch(96% 0.04 55)"]
       },
       "institutional-green": {
         "role": "tertiary",
-        "displayName": "Verde Institucional",
+        "displayName": "Verde Institucional UnB",
         "canonical": "#006633",
-        "tonalRamp": [
-          "#004d26",
-          "#008040",
-          "#00bd5e",
-          "#00ff80",
-          "#3dff9e",
-          "#80ffbf",
-          "#b3ffd9",
-          "#e5fff2"
-        ]
+        "tonalRamp": ["oklch(15% 0.05 155)", "oklch(24% 0.08 155)", "oklch(33% 0.11 155)", "oklch(42% 0.13 155)", "oklch(51% 0.14 155)", "oklch(66% 0.11 155)", "oklch(82% 0.07 155)", "oklch(94% 0.03 155)"]
       },
       "grid-paper": {
         "role": "neutral",
-        "displayName": "Papel Quadriculado",
+        "displayName": "Papel Quadriculado (canvas)",
         "canonical": "#E8EFF8",
-        "tonalRamp": [
-          "#12243b",
-          "#1e3c62",
-          "#2c5891",
-          "#3b77c4",
-          "#6a98d2",
-          "#9dbbe1",
-          "#c4d6ed",
-          "#ebf1f9"
-        ]
+        "tonalRamp": ["oklch(18% 0.02 230)", "oklch(30% 0.02 230)", "oklch(45% 0.02 230)", "oklch(60% 0.02 230)", "oklch(75% 0.02 230)", "oklch(86% 0.02 230)", "oklch(93% 0.015 230)", "oklch(98% 0.008 230)"]
       },
       "paper-cream": {
         "role": "neutral",
         "displayName": "Creme Papel",
         "canonical": "#FAF7EE",
-        "tonalRamp": [
-          "#3b3111",
-          "#63511d",
-          "#92782b",
-          "#c5a23a",
-          "#d3b969",
-          "#e2d19c",
-          "#eee3c4",
-          "#f9f6eb"
-        ]
+        "tonalRamp": ["oklch(20% 0.02 90)", "oklch(33% 0.02 90)", "oklch(47% 0.025 90)", "oklch(62% 0.03 90)", "oklch(76% 0.03 90)", "oklch(87% 0.025 90)", "oklch(94% 0.02 90)", "oklch(98% 0.01 90)"]
       },
       "paper-gray": {
         "role": "neutral",
         "displayName": "Cinza Papel",
         "canonical": "#F5F5F5",
-        "tonalRamp": [
-          "#1a1a1a",
-          "#2e2e2e",
-          "#454545",
-          "#5f5f5f",
-          "#8a8a8a",
-          "#b3b3b3",
-          "#d6d6d6",
-          "#f0f0f0"
-        ],
-        "tailwindToken": "neutral-100"
-      },
-      "pastel-blue": {
-        "role": "neutral",
-        "displayName": "Azul Pastel",
-        "canonical": "#EBF3FF",
-        "tonalRamp": [
-          "#001f4d",
-          "#003380",
-          "#004bbd",
-          "#0066ff",
-          "#3d8bff",
-          "#80b3ff",
-          "#b3d1ff",
-          "#e5f0ff"
-        ]
-      },
-      "pastel-green": {
-        "role": "neutral",
-        "displayName": "Verde Pastel",
-        "canonical": "#E6F8EE",
-        "tonalRamp": [
-          "#113c24",
-          "#1c643c",
-          "#299358",
-          "#38c778",
-          "#68d598",
-          "#9be3bb",
-          "#c3eed6",
-          "#ebf9f1"
-        ]
-      },
-      "pastel-yellow": {
-        "role": "neutral",
-        "displayName": "Amarelo Pastel",
-        "canonical": "#FFF9D2",
-        "tonalRamp": [
-          "#4d4200",
-          "#806e00",
-          "#bda400",
-          "#ffdd00",
-          "#ffe53d",
-          "#ffee80",
-          "#fff5b3",
-          "#fffce5"
-        ]
-      },
-      "pastel-purple": {
-        "role": "neutral",
-        "displayName": "Lilás Pastel",
-        "canonical": "#F3E8FF",
-        "tonalRamp": [
-          "#25004d",
-          "#3d0080",
-          "#5a00bd",
-          "#7a00ff",
-          "#9a3dff",
-          "#bc80ff",
-          "#d7b3ff",
-          "#f2e5ff"
-        ]
-      },
-      "pastel-red": {
-        "role": "neutral",
-        "displayName": "Vermelho Pastel",
-        "canonical": "#FFEBEB",
-        "tonalRamp": [
-          "#4d0000",
-          "#800000",
-          "#bd0000",
-          "#ff0000",
-          "#ff3d3d",
-          "#ff8080",
-          "#ffb3b3",
-          "#ffe5e5"
-        ]
-      },
-      "pastel-orange": {
-        "role": "neutral",
-        "displayName": "Laranja Pastel",
-        "canonical": "#FFEDD5",
-        "tonalRamp": [
-          "#2a1000",
-          "#4a1d00",
-          "#7a2f01",
-          "#b34703",
-          "#e66a0d",
-          "#fb923c",
-          "#fdc48b",
-          "#ffedd5"
-        ]
-      },
-      "pastel-sky": {
-        "role": "neutral",
-        "displayName": "Céu Pastel",
-        "canonical": "#E0F2FE",
-        "tonalRamp": [
-          "#041b2b",
-          "#07304d",
-          "#0b4a7a",
-          "#116ca8",
-          "#0ea5e9",
-          "#4dc0fb",
-          "#b6e6fe",
-          "#e0f2fe"
-        ]
+        "tonalRamp": ["oklch(20% 0 0)", "oklch(33% 0 0)", "oklch(47% 0 0)", "oklch(62% 0 0)", "oklch(76% 0 0)", "oklch(87% 0 0)", "oklch(94% 0 0)", "oklch(98% 0 0)"]
       },
       "success-ink": {
         "role": "neutral",
-        "displayName": "Verde OK",
+        "displayName": "Verde OK (texto)",
         "canonical": "#15803D",
-        "tonalRamp": [
-          "#0b421f",
-          "#126e34",
-          "#1ba24d",
-          "#24db68",
-          "#59e48d",
-          "#91edb4",
-          "#bdf4d2",
-          "#e9fbf0"
-        ]
+        "tonalRamp": ["oklch(17% 0.06 152)", "oklch(27% 0.1 152)", "oklch(37% 0.13 152)", "oklch(47% 0.16 152)", "oklch(57% 0.17 152)", "oklch(72% 0.14 152)", "oklch(87% 0.08 152)", "oklch(95% 0.04 152)"]
       },
       "error-ink": {
         "role": "neutral",
-        "displayName": "Vermelho Erro",
+        "displayName": "Vermelho Erro (texto)",
         "canonical": "#B91C1C",
-        "tonalRamp": [
-          "#420a0a",
-          "#6f1111",
-          "#a41919",
-          "#dd2222",
-          "#e65757",
-          "#ee9090",
-          "#f5bdbd",
-          "#fce9e9"
-        ]
-      },
-      "ink-black": {
-        "role": "neutral",
-        "displayName": "Tinta Preta",
-        "canonical": "#000000",
-        "tonalRamp": [
-          "#272525",
-          "#413e3e",
-          "#605c5c",
-          "#827d7d",
-          "#a09c9c",
-          "#c1bebe",
-          "#dad8d8",
-          "#f3f2f2"
-        ]
-      },
-      "ink-soft": {
-        "role": "neutral",
-        "displayName": "Tinta Suave",
-        "canonical": "#525252",
-        "tonalRamp": [
-          "#272525",
-          "#413e3e",
-          "#605c5c",
-          "#827d7d",
-          "#a09c9c",
-          "#c1bebe",
-          "#dad8d8",
-          "#f3f2f2"
-        ]
-      },
-      "highlighter-yellow-hover": {
-        "role": "secondary",
-        "displayName": "Amarelo Marca-Texto Pressionado",
-        "canonical": "#F2DA00",
-        "tonalRamp": [
-          "#100e00",
-          "#2f2900",
-          "#514903",
-          "#a49409",
-          "#ceb907",
-          "#f1da0f",
-          "#f5dd10",
-          "#fff5aa"
-        ],
-        "tailwindToken": "neo.yellowHover"
-      },
-      "chalk-green-hover": {
-        "role": "secondary",
-        "displayName": "Verde Giz Pressionado",
-        "canonical": "#39D68A",
-        "tonalRamp": [
-          "#011207",
-          "#00321b",
-          "#025632",
-          "#05ae6a",
-          "#3ad78b",
-          "#68fcad",
-          "#d1ffe2",
-          "#f4fff8"
-        ],
-        "tailwindToken": "neo.greenHover"
-      },
-      "scroll-thumb": {
-        "role": "neutral",
-        "displayName": "Thumb de Scroll",
-        "canonical": "#A3A3A3",
-        "tonalRamp": [
-          "#0d0d0d",
-          "#292929",
-          "#484848",
-          "#929292",
-          "#a4a4a4",
-          "#b7b7b7",
-          "#dbdbdb",
-          "#f2f2f2"
-        ]
-      },
-      "scroll-thumb-active": {
-        "role": "neutral",
-        "displayName": "Thumb de Scroll Ativo",
-        "canonical": "#737373",
-        "tonalRamp": [
-          "#0d0d0d",
-          "#292929",
-          "#484848",
-          "#747474",
-          "#929292",
-          "#b7b7b7",
-          "#dbdbdb",
-          "#f2f2f2"
-        ]
-      },
-      "discipline-ink-blue": {
-        "role": "tertiary",
-        "displayName": "Tinta Azul",
-        "canonical": "#2563EB",
-        "tonalRamp": [
-          "#00082e",
-          "#001d6c",
-          "#0036b0",
-          "#2664ec",
-          "#558cfe",
-          "#92b7ff",
-          "#c8dbff",
-          "#ecf2fe"
-        ]
-      },
-      "discipline-ink-green": {
-        "role": "tertiary",
-        "displayName": "Tinta Verde",
-        "canonical": "#15803D",
-        "tonalRamp": [
-          "#001204",
-          "#023313",
-          "#025725",
-          "#17813e",
-          "#49a964",
-          "#71d088",
-          "#95f4aa",
-          "#d4ffdb"
-        ]
-      },
-      "discipline-ink-yellow": {
-        "role": "tertiary",
-        "displayName": "Tinta Amarela",
-        "canonical": "#EAB308",
-        "tonalRamp": [
-          "#130c00",
-          "#352601",
-          "#5b4400",
-          "#b68b07",
-          "#e4ae0d",
-          "#ecb50f",
-          "#ffd578",
-          "#fff0d1"
-        ]
-      },
-      "discipline-ink-purple": {
-        "role": "tertiary",
-        "displayName": "Tinta Roxa",
-        "canonical": "#A855F7",
-        "tonalRamp": [
-          "#150029",
-          "#390160",
-          "#62019f",
-          "#a956f8",
-          "#b163ff",
-          "#caa0fe",
-          "#e4d1fe",
-          "#f5eeff"
-        ]
-      },
-      "discipline-ink-orange": {
-        "role": "tertiary",
-        "displayName": "Tinta Laranja",
-        "canonical": "#F97316",
-        "tonalRamp": [
-          "#1b0700",
-          "#461a00",
-          "#753101",
-          "#e76700",
-          "#f77112",
-          "#ff9a65",
-          "#ffcfb8",
-          "#feeee6"
-        ]
-      },
-      "discipline-ink-sky": {
-        "role": "tertiary",
-        "displayName": "Tinta Céu",
-        "canonical": "#0EA5E9",
-        "tonalRamp": [
-          "#000f1a",
-          "#022d43",
-          "#044d70",
-          "#059ddf",
-          "#08a4e7",
-          "#5dc3ff",
-          "#b6e1fe",
-          "#e6f4fe"
-        ]
+        "tonalRamp": ["oklch(16% 0.06 27)", "oklch(26% 0.11 27)", "oklch(36% 0.15 27)", "oklch(46% 0.19 27)", "oklch(55% 0.21 27)", "oklch(70% 0.16 27)", "oklch(85% 0.09 27)", "oklch(95% 0.04 27)"]
       },
       "ink": {
         "role": "neutral",
-        "displayName": "Tinta Fixa",
+        "displayName": "Tinta Preta (bordas, sombras, texto)",
         "canonical": "#000000",
-        "tonalRamp": [
-          "#272525",
-          "#413e3e",
-          "#605c5c",
-          "#827d7d",
-          "#a09c9c",
-          "#c1bebe",
-          "#dad8d8",
-          "#f3f2f2"
-        ]
+        "tonalRamp": ["oklch(10% 0 0)", "oklch(22% 0 0)", "oklch(36% 0 0)", "oklch(50% 0 0)", "oklch(64% 0 0)", "oklch(78% 0 0)", "oklch(90% 0 0)", "oklch(97% 0 0)"]
       },
       "blue-ink": {
-        "role": "primary",
-        "displayName": "Azul Caneta Texto",
+        "role": "neutral",
+        "displayName": "Azul Caneta como Texto",
         "canonical": "#2563EB",
-        "tonalRamp": [
-          "#04122F",
-          "#09235D",
-          "#0E3895",
-          "#134FD2",
-          "#3B73ED",
-          "#739BF2",
-          "#ABC3F7",
-          "#DAE4FC"
-        ]
-      },
-      "grid-line": {
-        "role": "neutral",
-        "displayName": "Linha do Grid",
-        "canonical": "rgba(0, 0, 0, 0.06)"
-      },
-      "ink-black-dark": {
-        "role": "neutral",
-        "displayName": "Giz Claro Quente",
-        "canonical": "#F2F0E7",
-        "tonalRamp": [
-          "#211E12",
-          "#423D24",
-          "#6A6139",
-          "#958851",
-          "#B4A874",
-          "#C9C19C",
-          "#DFDAC3",
-          "#F1EEE5"
-        ],
-        "purpose": "a tinta preta do mural vira giz: bordas, texto primário e divisores no tema escuro"
-      },
-      "ink-edge-dark": {
-        "role": "neutral",
-        "displayName": "Giz da Caneta",
-        "canonical": "#4A5A7A",
-        "tonalRamp": [
-          "#161D2A",
-          "#1F2737",
-          "#273144",
-          "#303B52",
-          "#39455F",
-          "#414F6C",
-          "#4A5A79",
-          "#526487"
-        ],
-        "purpose": "caneta grafite: arestas e pinos do Fluxograma no escuro"
-      },
-      "grid-paper-dark": {
-        "role": "neutral",
-        "displayName": "Lousa à Noite",
-        "canonical": "#111622",
-        "tonalRamp": [
-          "#0C101A",
-          "#0D111B",
-          "#0E121D",
-          "#0F131E",
-          "#0F141F",
-          "#101521",
-          "#111622",
-          "#121723"
-        ],
-        "purpose": "fundo da base de corte grafite-azulada no escuro, com grid rgba(255,255,255,0.06)"
-      },
-      "paper-dark": {
-        "role": "neutral",
-        "displayName": "Papel-Noite",
-        "canonical": "#1E2638",
-        "tonalRamp": [
-          "#0E131E",
-          "#111622",
-          "#141926",
-          "#161D2B",
-          "#19202F",
-          "#1B2333",
-          "#1E2638",
-          "#20293C"
-        ],
-        "purpose": "placa de papel grafite elevada (cards, inputs, sidebar) no escuro; mais clara que a base de corte para sombra preta e fio de luz internos recortarem"
-      },
-      "cream-dark": {
-        "role": "neutral",
-        "displayName": "Creme-Noite",
-        "canonical": "#232D42",
-        "tonalRamp": [
-          "#111318",
-          "#151617",
-          "#191817",
-          "#1D1B17",
-          "#211E17",
-          "#262116",
-          "#2A2416",
-          "#2E2716"
-        ],
-        "purpose": "ardósia azulada no escuro — papel do bloco Feedback Sincero nos relatos, nunca marrom"
-      },
-      "paper-gray-dark": {
-        "role": "neutral",
-        "displayName": "Cinza Papel Escuro",
-        "canonical": "#232B3D",
-        "tonalRamp": [
-          "#0F141F",
-          "#131824",
-          "#161C29",
-          "#191F2E",
-          "#1C2333",
-          "#202738",
-          "#232B3D",
-          "#262F42"
-        ],
-        "purpose": "superfície de conteúdo escura (hover, item concluído)"
-      },
-      "neutral-200-dark": {
-        "role": "neutral",
-        "displayName": "Neutral 200 Escuro",
-        "canonical": "#2E3850",
-        "tonalRamp": [
-          "#111622",
-          "#161C2A",
-          "#1B2231",
-          "#202739",
-          "#242D40",
-          "#293248",
-          "#2E3850",
-          "#333D57"
-        ],
-        "purpose": "cavidades e trilhos no escuro"
-      },
-      "neutral-300-dark": {
-        "role": "neutral",
-        "displayName": "Neutral 300 Escuro",
-        "canonical": "#334155",
-        "tonalRamp": [
-          "#121823",
-          "#181F2B",
-          "#1D2634",
-          "#222C3C",
-          "#283344",
-          "#2D3A4C",
-          "#334155",
-          "#38485D"
-        ],
-        "purpose": "trilha do switch desligado e bordas grafite no escuro"
-      },
-      "neutral-500-dark": {
-        "role": "neutral",
-        "displayName": "Neutral 500 Escuro",
-        "canonical": "#8B96AB",
-        "tonalRamp": [
-          "#222732",
-          "#333A46",
-          "#454C5A",
-          "#565E6E",
-          "#687182",
-          "#798396",
-          "#8A95AA",
-          "#9CA8BE"
-        ],
-        "purpose": "metadados e placeholders no escuro"
-      },
-      "neutral-800-dark": {
-        "role": "neutral",
-        "displayName": "Neutral 800 Escuro",
-        "canonical": "#E5E9F1",
-        "tonalRamp": [
-          "#32363F",
-          "#50545D",
-          "#6D717A",
-          "#8B8F97",
-          "#A9ADB5",
-          "#C6CAD2",
-          "#E4E8F0",
-          "#10110510D"
-        ],
-        "purpose": "quase-giz no escuro"
-      },
-      "neutral-900-dark": {
-        "role": "neutral",
-        "displayName": "Neutral 900 Escuro",
-        "canonical": "#F0F3F8",
-        "tonalRamp": [
-          "#343840",
-          "#53575F",
-          "#72767D",
-          "#91959C",
-          "#B1B4BA",
-          "#D0D3D8",
-          "#EFF2F7",
-          "#10E111115"
-        ],
-        "purpose": "quase-giz claro no escuro"
-      },
-      "neutral-950-dark": {
-        "role": "neutral",
-        "displayName": "Neutral 950 Escuro",
-        "canonical": "#0B0F18",
-        "tonalRamp": [
-          "#0B0F18",
-          "#0B0F18",
-          "#0B0F18",
-          "#0B0F18",
-          "#0B0F18",
-          "#0B0F18",
-          "#0B0F18",
-          "#0B0F18"
-        ],
-        "purpose": "tinta profunda no escuro"
-      },
-      "slate-200-dark": {
-        "role": "neutral",
-        "displayName": "Cinza Nota Escuro",
-        "canonical": "#2B3550",
-        "tonalRamp": [
-          "#111622",
-          "#151B2A",
-          "#192031",
-          "#1E2539",
-          "#222A40",
-          "#263048",
-          "#2B3550",
-          "#2F3A57"
-        ],
-        "purpose": "badge de aviso no escuro"
-      },
-      "pastel-blue-dark": {
-        "role": "neutral",
-        "displayName": "Azul Pastel Escuro",
-        "canonical": "#17294A",
-        "tonalRamp": [
-          "#0D1421",
-          "#0F1728",
-          "#101B2F",
-          "#121E35",
-          "#14223C",
-          "#152543",
-          "#17294A",
-          "#192C51"
-        ],
-        "purpose": "post-it azul rico no escuro"
-      },
-      "pastel-green-dark": {
-        "role": "neutral",
-        "displayName": "Verde Pastel Escuro",
-        "canonical": "#0D281E",
-        "tonalRamp": [
-          "#0B1419",
-          "#0C171A",
-          "#0C1A1B",
-          "#0C1E1C",
-          "#0C211C",
-          "#0D241D",
-          "#0D281E",
-          "#0D2B1F"
-        ],
-        "purpose": "verde-esmeralda rico no escuro (card de status)"
-      },
-      "pastel-yellow-dark": {
-        "role": "neutral",
-        "displayName": "Amarelo Pastel Escuro",
-        "canonical": "#362813",
-        "tonalRamp": [
-          "#131417",
-          "#191716",
-          "#1E1A16",
-          "#241E15",
-          "#2A2114",
-          "#302414",
-          "#362813",
-          "#3C2B12"
-        ],
-        "purpose": "âmbar pós-it rico no escuro (banners de aviso)"
-      },
-      "pastel-purple-dark": {
-        "role": "neutral",
-        "displayName": "Lilás Pastel Escuro",
-        "canonical": "#2B1F45",
-        "tonalRamp": [
-          "#111220",
-          "#151426",
-          "#19162C",
-          "#1E1832",
-          "#221B39",
-          "#261D3F",
-          "#2B1F45",
-          "#2F214B"
-        ],
-        "purpose": "lilás rico no escuro"
-      },
-      "pastel-red-dark": {
-        "role": "neutral",
-        "displayName": "Vermelho Pastel Escuro",
-        "canonical": "#3A1620",
-        "tonalRamp": [
-          "#131019",
-          "#1A111B",
-          "#20121C",
-          "#27131D",
-          "#2D141E",
-          "#33151F",
-          "#3A1620",
-          "#401721"
-        ],
-        "purpose": "vermelho rico no escuro"
-      },
-      "pastel-orange-dark": {
-        "role": "neutral",
-        "displayName": "Laranja Pastel Escuro",
-        "canonical": "#33220F",
-        "tonalRamp": [
-          "#121216",
-          "#181515",
-          "#1D1814",
-          "#221A13",
-          "#281D11",
-          "#2D1F10",
-          "#33220F",
-          "#38240E"
-        ],
-        "purpose": "laranja rico no escuro"
-      },
-      "pastel-sky-dark": {
-        "role": "neutral",
-        "displayName": "Céu Pastel Escuro",
-        "canonical": "#123040",
-        "tonalRamp": [
-          "#0C151F",
-          "#0D1925",
-          "#0E1E2A",
-          "#0F222F",
-          "#102735",
-          "#112B3A",
-          "#123040",
-          "#133445"
-        ],
-        "purpose": "céu rico no escuro"
-      },
-      "ink-success-dark": {
-        "role": "neutral",
-        "displayName": "Verde OK Claro",
-        "canonical": "#4ADE80",
-        "tonalRamp": [
-          "#082B15",
-          "#105629",
-          "#198A42",
-          "#23C25D",
-          "#4ADE80",
-          "#7EE7A4",
-          "#B1F1C9",
-          "#DCF9E7"
-        ],
-        "purpose": "tinta de TEXTO clareada no escuro: confirmações sobre papel escuro"
-      },
-      "ink-error-dark": {
-        "role": "neutral",
-        "displayName": "Vermelho Erro Claro",
-        "canonical": "#F87171",
-        "tonalRamp": [
-          "#310202",
-          "#610505",
-          "#9C0808",
-          "#DB0B0B",
-          "#F53333",
-          "#F86D6D",
-          "#FBA8A8",
-          "#FDD8D8"
-        ],
-        "purpose": "tinta de TEXTO clareada no escuro: erros e prazos vencidos"
-      },
-      "blue-ink-dark": {
-        "role": "primary",
-        "displayName": "Azul Caneta Texto Claro",
-        "canonical": "#8FB3FF",
-        "tonalRamp": [
-          "#001033",
-          "#002166",
-          "#0034A3",
-          "#004AE6",
-          "#296EFF",
-          "#6697FF",
-          "#A3C1FF",
-          "#D6E3FF"
-        ],
-        "purpose": "azul-caneta como TEXTO clareado no escuro: links de marca, ícones de cabeçalho, contadores"
-      },
-      "scroll-thumb-dark": {
-        "role": "neutral",
-        "displayName": "Thumb de Scroll Escuro",
-        "canonical": "#4A5568",
-        "tonalRamp": [
-          "#161C26",
-          "#1F2531",
-          "#272F3C",
-          "#303847",
-          "#394252",
-          "#414B5D",
-          "#4A5568",
-          "#525E72"
-        ],
-        "purpose": "thumb da scrollbar no escuro, borda de tinta"
-      },
-      "scroll-thumb-active-dark": {
-        "role": "neutral",
-        "displayName": "Thumb de Scroll Ativo Escuro",
-        "canonical": "#5F6C85",
-        "tonalRamp": [
-          "#1A202C",
-          "#262C3A",
-          "#313949",
-          "#3C4658",
-          "#485267",
-          "#535F76",
-          "#5F6B84",
-          "#6A7893"
-        ],
-        "purpose": "thumb da scrollbar no hover, no escuro"
-      },
-      "neutral-50-dark": {
-        "role": "neutral",
-        "displayName": "Superfície-Noite",
-        "canonical": "#1A2130",
-        "tonalRamp": [
-          "#0E121C",
-          "#101520",
-          "#121723",
-          "#141A26",
-          "#161C29",
-          "#181E2D",
-          "#1A2130",
-          "#1C2333"
-        ],
-        "purpose": "hover de linha arquivada no escuro"
-      },
-      "neutral-400-dark": {
-        "role": "neutral",
-        "displayName": "Giz Apagado",
-        "canonical": "#6B7891",
-        "tonalRamp": [
-          "#1C222E",
-          "#29303E",
-          "#363E4F",
-          "#434D5F",
-          "#505B6F",
-          "#5D6980",
-          "#6A7790",
-          "#7786A1"
-        ],
-        "purpose": "ícones discretos no escuro"
-      },
-      "neutral-600-dark": {
-        "role": "neutral",
-        "displayName": "Tinta Suave-Noite",
-        "canonical": "#B3BCCD",
-        "tonalRamp": [
-          "#292E39",
-          "#404651",
-          "#575D6A",
-          "#6E7582",
-          "#848C9B",
-          "#9BA4B3",
-          "#B2BBCC",
-          "#C9D2E5"
-        ],
-        "purpose": "texto secundário no escuro"
-      },
-      "neutral-700-dark": {
-        "role": "neutral",
-        "displayName": "Giz Médio",
-        "canonical": "#CBD2DF",
-        "tonalRamp": [
-          "#2E323C",
-          "#484D57",
-          "#626772",
-          "#7C818D",
-          "#969CA8",
-          "#B0B6C3",
-          "#CAD1DE",
-          "#E4EBF9"
-        ],
-        "purpose": "texto de ênfase média no escuro"
-      },
-      "neo-shadow-dark": {
-        "role": "shadow",
-        "displayName": "Sombra-Giz",
-        "canonical": "#000000",
-        "tonalRamp": [
-          "#090C14",
-          "#080A10",
-          "#06080D",
-          "#05060A",
-          "#030407",
-          "#020203",
-          "#000000",
-          "#-1-2-3"
-        ],
-        "purpose": "SOMBRA DURA PRETA nos dois temas — recorte da placa contra a base"
-      },
-      "platform-sigaa-dark": {
-        "role": "neutral",
-        "displayName": "Azul UnB-Noite",
-        "canonical": "#7FA9FF",
-        "tonalRamp": [
-          "#232F48",
-          "#324366",
-          "#425785",
-          "#516BA3",
-          "#6080C1",
-          "#6F94DF",
-          "#7EA8FE",
-          "#8EBC11C"
-        ],
-        "purpose": "identidade SIGAA no escuro: texto/ícone sobre blocos noturnos"
-      },
-      "platform-aprender3-dark": {
-        "role": "neutral",
-        "displayName": "Laranja Moodle-Noite",
-        "canonical": "#FFA45B",
-        "tonalRamp": [
-          "#3A2E2B",
-          "#5B4133",
-          "#7B553B",
-          "#9C6943",
-          "#BC7C4B",
-          "#DD9053",
-          "#FEA35B",
-          "#11EB763"
-        ],
-        "purpose": "identidade Aprender 3 no escuro: texto/ícone sobre blocos noturnos"
-      },
-      "platform-teams-dark": {
-        "role": "neutral",
-        "displayName": "Roxo Fluent-Noite",
-        "canonical": "#8E93E0",
-        "tonalRamp": [
-          "#262B43",
-          "#373C5D",
-          "#484D77",
-          "#5A5F91",
-          "#6B70AB",
-          "#7C81C5",
-          "#8D92DF",
-          "#9FA4F9"
-        ],
-        "purpose": "identidade Teams no escuro: texto/ícone sobre blocos noturnos"
+        "tonalRamp": ["oklch(15% 0.06 262)", "oklch(25% 0.11 262)", "oklch(35% 0.16 262)", "oklch(45% 0.2 262)", "oklch(55% 0.22 262)", "oklch(70% 0.17 262)", "oklch(85% 0.09 262)", "oklch(95% 0.04 262)"]
       },
       "platform-sigaa": {
-        "role": "primary",
-        "displayName": "Azul UnB — SIGAA",
-        "canonical": "#468AFB",
-        "tonalRamp": [
-          "#192947",
-          "#203965",
-          "#284983",
-          "#2F59A1",
-          "#3769BE",
-          "#3E79DC",
-          "#4689FA",
-          "#4D99117"
-        ],
-        "purpose": "identidade da plataforma SIGAA (badge, blocos de ícone, filtros); texto preto"
+        "role": "tertiary",
+        "displayName": "Verde SIGAA",
+        "canonical": "#3B8748",
+        "tonalRamp": ["oklch(17% 0.05 150)", "oklch(28% 0.08 150)", "oklch(39% 0.11 150)", "oklch(50% 0.13 150)", "oklch(61% 0.14 150)", "oklch(75% 0.11 150)", "oklch(88% 0.07 150)", "oklch(96% 0.03 150)"]
       },
       "platform-aprender3": {
-        "role": "primary",
-        "displayName": "Laranja Moodle — Aprender 3",
-        "canonical": "#F98012",
-        "tonalRamp": [
-          "#39271D",
-          "#59361C",
-          "#79451A",
-          "#985318",
-          "#B86216",
-          "#D87114",
-          "#F87F12",
-          "#1178E10"
-        ],
-        "purpose": "identidade da plataforma Aprender 3 (laranja oficial Moodle); texto preto"
+        "role": "brand",
+        "displayName": "Azul UnB (Aprender 3)",
+        "canonical": "#468AFB",
+        "tonalRamp": ["oklch(18% 0.06 258)", "oklch(30% 0.11 258)", "oklch(42% 0.15 258)", "oklch(54% 0.18 258)", "oklch(66% 0.19 258)", "oklch(78% 0.13 258)", "oklch(88% 0.07 258)", "oklch(96% 0.03 258)"]
       },
       "platform-teams": {
-        "role": "primary",
-        "displayName": "Roxo Fluent — Microsoft Teams",
+        "role": "tertiary",
+        "displayName": "Roxo Fluent (Teams)",
         "canonical": "#5B5FC7",
-        "tonalRamp": [
-          "#1D223E",
-          "#272C55",
-          "#31366B",
-          "#3C4082",
-          "#464A99",
-          "#5054AF",
-          "#5B5FC6",
-          "#6569DD"
-        ],
-        "purpose": "identidade da plataforma Microsoft Teams (roxo oficial Fluent); texto branco"
+        "tonalRamp": ["oklch(17% 0.06 280)", "oklch(28% 0.1 280)", "oklch(39% 0.14 280)", "oklch(50% 0.17 280)", "oklch(61% 0.18 280)", "oklch(75% 0.13 280)", "oklch(88% 0.07 280)", "oklch(96% 0.03 280)"]
       },
-      "neo-green-dark": {
-        "role": "primary",
-        "displayName": "Verde Menta (noite)",
-        "canonical": "#34D399",
-        "tonalRamp": [
-          "#12322F",
-          "#184D41",
-          "#1E6752",
-          "#238264",
-          "#299D75",
-          "#2EB787",
-          "#34D298",
-          "#39ECAA"
-        ],
-        "purpose": "tinta de ação verde nos adesivos cheios do escuro"
-      },
-      "neo-green-hover-dark": {
-        "role": "primary",
-        "displayName": "Verde Menta Hover",
-        "canonical": "#6EE7B7",
-        "tonalRamp": [
-          "#1D3635",
-          "#2A534A",
-          "#387160",
-          "#458E75",
-          "#53AB8B",
-          "#60C8A1",
-          "#6DE6B6",
-          "#7B103CC"
-        ],
-        "purpose": "hover da tinta verde no escuro"
-      },
-      "neo-yellow-dark": {
-        "role": "primary",
-        "displayName": "Ouro (noite)",
-        "canonical": "#FDE047",
-        "tonalRamp": [
-          "#373520",
-          "#575127",
-          "#786D2D",
-          "#998A34",
-          "#BAA63A",
-          "#DBC240",
-          "#FCDF47",
-          "#11CFB4D"
-        ],
-        "purpose": "tinta de ação amarela nos adesivos cheios e no selo do post-it no escuro"
-      },
-      "neo-yellow-hover-dark": {
-        "role": "primary",
-        "displayName": "Ouro Hover",
-        "canonical": "#FDE68A",
-        "tonalRamp": [
-          "#37362D",
-          "#57533C",
-          "#78704B",
-          "#998D5B",
-          "#BAAA6A",
-          "#DBC87A",
-          "#FCE589",
-          "#11C10299"
-        ],
-        "purpose": "hover da tinta ouro no escuro"
-      },
-      "neo-danger-hover-dark": {
-        "role": "primary",
-        "displayName": "Vermelho Hover (noite)",
-        "canonical": "#EF4444",
-        "tonalRamp": [
-          "#341920",
-          "#532026",
-          "#72272C",
-          "#912E32",
-          "#B03538",
-          "#CF3D3E",
-          "#EE4444",
-          "#10D4B4A"
-        ],
-        "purpose": "hover do destrutivo no escuro"
-      },
-      "ink-disc-blue-dark": {
-        "role": "neutral",
-        "displayName": "Código Azul Claro",
-        "canonical": "#BFDBFE",
-        "tonalRamp": [
-          "#2B3441",
-          "#444F61",
-          "#5C6B80",
-          "#75879F",
-          "#8DA2BE",
-          "#A6BEDD",
-          "#BEDAFD",
-          "#D6F611C"
-        ],
-        "purpose": "código de disciplina azul nas células escuras da grade"
-      },
-      "ink-disc-green-dark": {
-        "role": "neutral",
-        "displayName": "Código Verde Claro",
-        "canonical": "#BBF7D0",
-        "tonalRamp": [
-          "#2B3939",
-          "#435852",
-          "#5A786B",
-          "#729784",
-          "#8AB79D",
-          "#A2D6B6",
-          "#BAF6CF",
-          "#D2115E8"
-        ],
-        "purpose": "código de disciplina verde nas células escuras da grade"
-      },
-      "ink-disc-yellow-dark": {
-        "role": "neutral",
-        "displayName": "Código Amarelo Claro",
-        "canonical": "#FEF08A",
-        "tonalRamp": [
-          "#37382D",
-          "#58563C",
-          "#79754B",
-          "#9A935B",
-          "#BBB26A",
-          "#DCD07A",
-          "#FDEF89",
-          "#11E10D99"
-        ],
-        "purpose": "código de disciplina amarelo nas células escuras da grade"
-      },
-      "ink-disc-purple-dark": {
-        "role": "neutral",
-        "displayName": "Código Lilás Claro",
-        "canonical": "#E9D5FF",
-        "tonalRamp": [
-          "#333342",
-          "#514E61",
-          "#6F6880",
-          "#8D83A0",
-          "#AB9EBF",
-          "#CAB9DE",
-          "#E8D4FE",
-          "#106EF11D"
-        ],
-        "purpose": "código de disciplina lilás nas células escuras da grade"
-      },
-      "ink-disc-orange-dark": {
-        "role": "neutral",
-        "displayName": "Código Laranja Claro",
-        "canonical": "#FED7AA",
-        "tonalRamp": [
-          "#373332",
-          "#584E46",
-          "#79695A",
-          "#9A846E",
-          "#BBA082",
-          "#DCBB95",
-          "#FDD6A9",
-          "#11EF1BD"
-        ],
-        "purpose": "código de disciplina laranja nas células escuras da grade"
-      },
-      "ink-disc-sky-dark": {
-        "role": "neutral",
-        "displayName": "Código Céu Claro",
-        "canonical": "#A5F3FC",
-        "tonalRamp": [
-          "#273841",
-          "#3C5760",
-          "#51767F",
-          "#65959E",
-          "#7AB4BD",
-          "#8FD3DC",
-          "#A4F2FB",
-          "#B911111A"
-        ],
-        "purpose": "código de disciplina céu nas células escuras da grade"
-      },
-      "sticker-blue-dark": {
-        "role": "primary",
-        "displayName": "Azul Adesivo (noite)",
+      "sticker-blue": {
+        "role": "accent",
+        "displayName": "Azul-claro de Adesivo",
         "canonical": "#60A5FA",
-        "tonalRamp": [
-          "#1A2A41",
-          "#263E5F",
-          "#31537E",
-          "#3D679D",
-          "#487BBB",
-          "#5490DA",
-          "#60A4F9",
-          "#6BB8117"
-        ],
-        "purpose": "adesivo de ícone vivo no escuro (onboarding, stats do Meu Curso) e faixa da categoria azul"
+        "tonalRamp": ["oklch(20% 0.06 255)", "oklch(32% 0.1 255)", "oklch(44% 0.14 255)", "oklch(56% 0.17 255)", "oklch(68% 0.17 255)", "oklch(80% 0.12 255)", "oklch(90% 0.07 255)", "oklch(96% 0.03 255)"]
       },
-      "btn-raise-dark": {
+      "btn-raise": {
         "role": "neutral",
-        "displayName": "Botão Secundário-Noite",
+        "displayName": "Placa do Botão Outline (escuro)",
         "canonical": "#263044",
-        "tonalRamp": [
-          "#101520",
-          "#141926",
-          "#171E2C",
-          "#1B2232",
-          "#1F2738",
-          "#222B3E",
-          "#263044",
-          "#2A344A"
-        ],
-        "purpose": "fundo dos botões outline no escuro — um degrau acima da placa"
+        "tonalRamp": ["oklch(18% 0.03 255)", "oklch(26% 0.035 255)", "oklch(34% 0.04 255)", "oklch(42% 0.04 255)", "oklch(52% 0.035 255)", "oklch(66% 0.03 255)", "oklch(82% 0.02 255)", "oklch(94% 0.01 255)"]
       },
-      "filter-hover-dark": {
-        "role": "neutral",
-        "displayName": "Filtro Ativo Hover (claro)",
-        "canonical": "#1E293B",
-        "tonalRamp": [
-          "#0E141E",
-          "#111723",
-          "#141B28",
-          "#161E2D",
-          "#192231",
-          "#1B2536",
-          "#1E293B",
-          "#202C40"
-        ],
-        "purpose": "hover do filtro neutro ativo no modo claro"
+      "ink-disc-blue": {
+        "role": "accent",
+        "displayName": "Tinta Azul (grade)",
+        "canonical": "#2563EB",
+        "tonalRamp": ["oklch(15% 0.06 262)", "oklch(25% 0.11 262)", "oklch(35% 0.16 262)", "oklch(45% 0.2 262)", "oklch(55% 0.22 262)", "oklch(70% 0.17 262)", "oklch(85% 0.09 262)", "oklch(95% 0.04 262)"]
       },
-      "ink-deep-dark": {
-        "role": "neutral",
-        "displayName": "Tinta Profunda",
-        "canonical": "#090D16",
-        "tonalRamp": [
-          "#0B0F18",
-          "#0A0E17",
-          "#0A0E17",
-          "#0A0E17",
-          "#0A0E17",
-          "#090D16",
-          "#090D16",
-          "#090D16"
-        ],
-        "purpose": "fundo do filtro neutro ativo no modo claro; preto profundo de texto sobre adesivos vivos"
+      "ink-disc-green": {
+        "role": "accent",
+        "displayName": "Tinta Verde (grade)",
+        "canonical": "#15803D",
+        "tonalRamp": ["oklch(17% 0.06 152)", "oklch(27% 0.1 152)", "oklch(37% 0.13 152)", "oklch(47% 0.16 152)", "oklch(57% 0.17 152)", "oklch(72% 0.14 152)", "oklch(87% 0.08 152)", "oklch(95% 0.04 152)"]
+      },
+      "ink-disc-yellow": {
+        "role": "accent",
+        "displayName": "Tinta Amarela (grade)",
+        "canonical": "#A16207",
+        "tonalRamp": ["oklch(18% 0.06 80)", "oklch(29% 0.1 80)", "oklch(40% 0.13 80)", "oklch(51% 0.15 80)", "oklch(62% 0.16 80)", "oklch(76% 0.14 80)", "oklch(89% 0.1 80)", "oklch(96% 0.06 80)"]
+      },
+      "ink-disc-purple": {
+        "role": "accent",
+        "displayName": "Tinta Roxa (grade)",
+        "canonical": "#7E22CE",
+        "tonalRamp": ["oklch(18% 0.07 300)", "oklch(29% 0.11 300)", "oklch(40% 0.15 300)", "oklch(51% 0.18 300)", "oklch(62% 0.19 300)", "oklch(76% 0.14 300)", "oklch(89% 0.08 300)", "oklch(96% 0.04 300)"]
+      },
+      "ink-disc-orange": {
+        "role": "accent",
+        "displayName": "Tinta Laranja (grade)",
+        "canonical": "#C2410C",
+        "tonalRamp": ["oklch(18% 0.07 45)", "oklch(29% 0.11 45)", "oklch(40% 0.15 45)", "oklch(51% 0.18 45)", "oklch(62% 0.19 45)", "oklch(76% 0.15 45)", "oklch(89% 0.09 45)", "oklch(96% 0.04 45)"]
+      },
+      "ink-disc-sky": {
+        "role": "accent",
+        "displayName": "Tinta Céu (grade)",
+        "canonical": "#0369A1",
+        "tonalRamp": ["oklch(18% 0.05 240)", "oklch(29% 0.08 240)", "oklch(40% 0.11 240)", "oklch(51% 0.13 240)", "oklch(62% 0.14 240)", "oklch(76% 0.11 240)", "oklch(89% 0.07 240)", "oklch(96% 0.03 240)"]
       }
     },
     "typographyMeta": {
-      "display": {
-        "displayName": "Display",
-        "purpose": "Único momento hero: título do onboarding. Weight 800 (teto da família)."
-      },
-      "title": {
-        "displayName": "Title",
-        "purpose": "Cabeçalho de página (PageHeader) com ícone de 16px; aceita sufixo de contagem em 0.875rem/700 Tinta Suave."
-      },
-      "heading": {
-        "displayName": "Heading",
-        "purpose": "Título de card (CardTitle)."
-      },
-      "stat": {
-        "displayName": "Stat",
-        "purpose": "Números de indicadores (IRA, %, horas): 3rem no painel de resultado, 1.875rem nos cards de métrica, 1.5rem na faixa de drill-down. Sempre com rótulo uppercase 11px/800 em cima."
-      },
-      "body": {
-        "displayName": "Body",
-        "purpose": "Conteúdo e descrições; secundário em neutral-600 mantendo peso 500+."
-      },
-      "label": {
-        "displayName": "Label",
-        "purpose": "Botões, badges, labels de input, rótulos de filtro; versão uppercase 0.05em para rótulos de grupo."
-      },
-      "micro": {
-        "displayName": "Micro",
-        "purpose": "Rótulos mínimos (contadores, badges sm, meta do feed, links de serviço, pills de código mono); 11px, 10px banido do sistema."
-      },
-      "mono-code": {
-        "displayName": "Mono de Código",
-        "purpose": "Stack mono nativa exclusiva de códigos de disciplina (SIGAA) em pills e tooltips — carimbo de máquina, nunca texto corrido."
-      }
+      "display": { "displayName": "Display", "purpose": "Título de boas-vindas no onboarding — único momento de hero." },
+      "title": { "displayName": "Title", "purpose": "Cabeçalho de página (PageHeader) e títulos de diálogo." },
+      "heading": { "displayName": "Heading", "purpose": "Título de card (CardTitle)." },
+      "stat": { "displayName": "Stat", "purpose": "Números de indicadores (IRA, métricas) — 800, tabular-nums quando comparável." },
+      "body": { "displayName": "Body", "purpose": "Conteúdo de cards, descrições, itens de lista." },
+      "label": { "displayName": "Label", "purpose": "Labels de input, badges, botões, tabs; versão uppercase para rótulos de grupo." },
+      "micro": { "displayName": "Micro", "purpose": "Contadores, badges sm, meta do feed, pills de código mono. 10px banido." },
+      "mono-code": { "displayName": "Mono (código)", "purpose": "Exclusiva de códigos de disciplina em pills e tooltips." }
     },
     "shadows": [
-      {
-        "name": "sticker-micro",
-        "value": "2px 2px 0 0 #000",
-        "purpose": "Adesivo de ação em repouso: botões, tabs/chips, micro-ações permanentes, logo-bloco, controles de canvas do Fluxograma, nó do Fluxograma em hover."
-      },
-      {
-        "name": "sticker-icon",
-        "value": "1px 1px 0 0 #000",
-        "purpose": "Micro-adesivo (token neo-xs): checkbox, blocos de ícone pastel, pills de resultado inline, barra de progresso, badge de didática, pill de discrepância do IRA, micro-ações flutuantes de ferramenta; também é o estágio hover da escala 2px. Badge não usa sombra."
-      },
-      {
-        "name": "sticker-card",
-        "value": "4px 4px 0 0 #000",
-        "purpose": "Superfícies de conteúdo: cards, alerts, toolbars, nós do Fluxograma, minimapa, popups (Select, Dropdown)."
-      },
-      {
-        "name": "sticker-max",
-        "value": "6px 6px 0 0 #000",
-        "purpose": "Ênfase máxima — exclusiva do diálogo modal."
-      },
-      {
-        "name": "danger-tinted",
-        "value": "4px 4px 0 0 #DC2626",
-        "purpose": "Única sombra colorida do sistema: exclusiva do Card da Zona de Perigo em Settings — perigo tinge a própria física, e só ele."
-      },
-      {
-        "name": "sunk-snap",
-        "value": "1px 1px 0 0 #000",
-        "purpose": "Estado hover: elemento translada em snap inteiro na direção da sombra e ela encolhe o equivalente (ação 2px: +1px e sombra 1px; card clicável 4px: +2px e sombra 2px). Exceção confirmada: checkbox de 20px afunda 0.5px (sombra de 1px não tem meio inteiro)."
-      },
-      {
-        "name": "pressed",
-        "value": "none",
-        "purpose": "Estado active: elemento afunda o offset completo (translate = sombra de repouso) até a superfície tocar o papel."
-      }
+      { "name": "neo-xs", "value": "1px 1px 0px 0px var(--neo-shadow, #000)", "purpose": "Micro-adesivo: checkbox, blocos de ícone, pills inline, badge de didática." },
+      { "name": "neo-sm", "value": "2px 2px 0px 0px var(--neo-shadow, #000)", "purpose": "Adesivo de ação em repouso: botões, tabs/chips, gatilho do Feedback." },
+      { "name": "neo", "value": "4px 4px 0px 0px var(--neo-shadow, #000)", "purpose": "Adesivo de card: cards, alerts, painéis, toolbars, nó do Fluxograma." },
+      { "name": "neo-card-shadow", "value": "4px 4px 0px 0px #000000", "purpose": "Sombra de card via token; no escuro carrega o fio de luz interno (inset 0 1px 0 rgba(255,255,255,0.08))." },
+      { "name": "danger-tint", "value": "4px 4px 0px 0px #DC2626", "purpose": "Exclusiva da Zona de Perigo em Settings; no escuro #450A0A sobre placa #7F1D1D." },
+      { "name": "pressed", "value": "none", "purpose": "Estado active: translate do offset completo — a superfície toca o papel." }
     ],
     "motion": [
-      {
-        "name": "press",
-        "value": "150ms ease-out",
-        "purpose": "Transições de transform/box-shadow/cor dos estados: hover afunda com snap inteiro, active afunda tudo, disabled congela."
-      },
-      {
-        "name": "expand",
-        "value": "grid-template-rows 150ms ease-out (0fr→1fr)",
-        "purpose": "Modo Selecionar do feed: a barra de lote expande para baixo dentro do card da toolbar, aria-hidden + inert quando recolhida."
-      },
-      {
-        "name": "collapse",
-        "value": "200ms ease",
-        "purpose": "Expansão/recolhimento da sidebar (264px ↔ 80px)."
-      },
-      {
-        "name": "accordion-panel",
-        "value": "height 200ms ease-out",
-        "purpose": "Abrir/fechar painel de accordion (semestres do Fluxograma, Cofre); chevron do trigger gira 180° no mesmo tempo."
-      },
-      {
-        "name": "toast-stack",
-        "value": "transform/opacity 500ms cubic-bezier(0.22,1,0.36,1)",
-        "purpose": "Pilha de toasts: entra subindo (translateY 150%), escala −10% por profundidade, peek de 12px; sai deslizando na direção do swipe. Física de pilha de papéis, não de adesivo."
-      },
-      {
-        "name": "flowchart-chain",
-        "value": "opacity 150ms ease-out; stroke 2px→3px na cadeia",
-        "purpose": "Mapa do Fluxograma: hover no nó acende a cadeia ancestral (aresta 3px) e esmaece o resto a 25–30%; filtro esmaece fora da cadeia."
-      },
-      {
-        "name": "progress-fill",
-        "value": "width 500ms",
-        "purpose": "Preenchimento da barra de progresso de integralização (Verde Giz em trilho-cavidade)."
-      },
-      {
-        "name": "click-sound",
-        "value": "Web Audio, sample de switch mecânico, playbackRate 0.97–1.03, ganho 0.25",
-        "purpose": "Clique mecânico opcional (A Regra do Clique Mecânico): opt-in via Switch em Settings (localStorage), listener global para button/link/checkbox; sidebar e logo levam data-no-sound; desabilitado é mudo."
-      },
-      {
-        "name": "spinner",
-        "value": "animate-spin 1s linear infinite",
-        "purpose": "Loading em botões, toast loading e verificação de cofre."
-      },
-      {
-        "name": "reduced-motion",
-        "value": "transições 1ms; animate-pulse desligado; animate-spin mantido",
-        "purpose": "prefers-reduced-motion e o toggle \"Reduzir animações\" de Settings (html.reduce-motion): estados trocam instantâneo, conflito de grade para de pulsar (ênfase decorativa), spinner permanece por ser feedback essencial."
-      }
+      { "name": "transition-base", "value": "150ms ease-out", "purpose": "Ritmo padrão de todas as transições de estado (hover, active, cores)." },
+      { "name": "press-sink", "value": "translate 1px/2px inteiros na direção da sombra", "purpose": "Física de afundar: hover metade com snap inteiro, active offset completo com shadow-none." },
+      { "name": "toast-stack", "value": "transform 500ms cubic-bezier(0.22, 1, 0.36, 1)", "purpose": "Física da pilha de toasts (entra de baixo, sai por swipe), não a de adesivo." },
+      { "name": "reduced-motion", "value": "transition-duration: 1ms", "purpose": "prefers-reduced-motion e toggle \"Reduzir animações\": estados trocam instantâneo; spinner permanece." }
     ],
     "breakpoints": [
-      {
-        "name": "sm",
-        "value": "640px"
-      },
-      {
-        "name": "md",
-        "value": "768px"
-      },
-      {
-        "name": "lg",
-        "value": "1024px"
-      },
-      {
-        "name": "xl",
-        "value": "1280px"
-      },
-      {
-        "name": "cofre-panel",
-        "value": "container query: inputs lado a lado a partir de 580px de painel (@min-[580px])"
-      }
+      { "name": "sm", "value": "640px" },
+      { "name": "md", "value": "768px" },
+      { "name": "lg", "value": "1024px" }
     ]
   },
   "components": [
     {
-      "name": "Botão Primário",
+      "name": "Primary Button",
       "kind": "button",
       "refersTo": "button-primary",
-      "description": "Ação principal da tela. Azul Caneta Ação com física de adesivo: afunda com snap inteiro no hover (fica a 1px do papel), afunda tudo no click.",
-      "html": "<button class=\"ds-btn ds-btn-primary\">Sincronizar agora</button>",
-      "css": ".ds-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:40px;padding:0 20px;font-family:'Plus Jakarta Sans',system-ui,-apple-system,sans-serif;font-size:0.75rem;font-weight:700;border:2px solid #000;border-radius:16px;cursor:pointer;user-select:none;transform:translate(0,0);box-shadow:2px 2px 0 0 #000;transition:transform 150ms ease-out,box-shadow 150ms ease-out,background-color 150ms ease-out,border-color 150ms ease-out;}.ds-btn-primary{background:#2563EB;color:#fff}.ds-btn-primary:hover{transform:translate(1px,1px);box-shadow:1px 1px 0 0 #000;background:#1D4ED8}.ds-btn-primary:active{transform:translate(2px,2px);box-shadow:none}.ds-btn:focus-visible{outline:none;box-shadow:2px 2px 0 0 #000,0 0 0 2px #ffffff,0 0 0 4px #2563EB}.ds-btn:disabled{opacity:.5;cursor:not-allowed}"
+      "description": "Adesivo de ação azul caneta com física de afundar — ação principal da tela.",
+      "html": "<button class=\"ds-btn-primary\">Enviar feedback</button>",
+      "css": ".ds-btn-primary { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 40px; padding: 0 20px; background: var(--color-neo-blue, #2563eb); color: #fff; font: 700 14px/1 'Plus Jakarta Sans', system-ui, sans-serif; border: 2px solid var(--color-ink, #000); border-radius: 16px; cursor: pointer; user-select: none; box-shadow: 2px 2px 0px 0px var(--neo-shadow, #000); transform: translate(0, 0); transition: transform 150ms ease-out, box-shadow 150ms ease-out, background-color 150ms ease-out; } .ds-btn-primary:hover { background: var(--color-neo-blueHover, #1d4ed8); transform: translate(1px, 1px); box-shadow: 1px 1px 0px 0px var(--neo-shadow, #000); } .ds-btn-primary:active { transform: translate(2px, 2px); box-shadow: none; } .ds-btn-primary:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--color-paper, #fff), 0 0 0 4px var(--color-neo-blue, #2563eb); } .ds-btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: 2px 2px 0px 0px var(--neo-shadow, #000); }"
     },
     {
-      "name": "Botão Accent",
+      "name": "Accent Button",
       "kind": "button",
       "refersTo": "button-accent",
-      "description": "Ação positiva de destaque em Verde Giz, texto preto — conclusão em lote, confirmação.",
-      "html": "<button class=\"ds-btn ds-btn-accent\">Concluir</button>",
-      "css": ".ds-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:40px;padding:0 20px;font-family:'Plus Jakarta Sans',system-ui,-apple-system,sans-serif;font-size:0.75rem;font-weight:700;border:2px solid #000;border-radius:16px;cursor:pointer;user-select:none;transform:translate(0,0);box-shadow:2px 2px 0 0 #000;transition:transform 150ms ease-out,box-shadow 150ms ease-out,background-color 150ms ease-out,border-color 150ms ease-out;}.ds-btn-accent{background:#46E297;color:#000}.ds-btn-accent:hover{transform:translate(1px,1px);box-shadow:1px 1px 0 0 #000;background:#39D68A}.ds-btn-accent:active{transform:translate(2px,2px);box-shadow:none}.ds-btn:focus-visible{outline:none;box-shadow:2px 2px 0 0 #000,0 0 0 2px #ffffff,0 0 0 4px #2563EB}.ds-btn:disabled{opacity:.5;cursor:not-allowed}"
+      "description": "Adesivo de ação Verde Giz com tinta preta — confirmação e conclusão.",
+      "html": "<button class=\"ds-btn-accent\">Concluir</button>",
+      "css": ".ds-btn-accent { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 40px; padding: 0 20px; background: var(--color-neo-green, #46e297); color: var(--color-ink, #000); font: 700 14px/1 'Plus Jakarta Sans', system-ui, sans-serif; border: 2px solid var(--color-ink, #000); border-radius: 16px; cursor: pointer; user-select: none; box-shadow: 2px 2px 0px 0px var(--neo-shadow, #000); transition: transform 150ms ease-out, box-shadow 150ms ease-out, background-color 150ms ease-out; } .ds-btn-accent:hover { background: var(--color-neo-greenHover, #39d68a); transform: translate(1px, 1px); box-shadow: 1px 1px 0px 0px var(--neo-shadow, #000); } .ds-btn-accent:active { transform: translate(2px, 2px); box-shadow: none; } .ds-btn-accent:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--color-paper, #fff), 0 0 0 4px var(--color-neo-blue, #2563eb); }"
     },
     {
-      "name": "Botão Outline",
+      "name": "Outline Button",
       "kind": "button",
       "refersTo": "button-outline",
-      "description": "Ação secundária sobre papel branco; mesma física dos demais.",
-      "html": "<button class=\"ds-btn ds-btn-outline\">Cancelar</button>",
-      "css": ".ds-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:40px;padding:0 20px;font-family:'Plus Jakarta Sans',system-ui,-apple-system,sans-serif;font-size:0.75rem;font-weight:700;border:2px solid #000;border-radius:16px;cursor:pointer;user-select:none;transform:translate(0,0);box-shadow:2px 2px 0 0 #000;transition:transform 150ms ease-out,box-shadow 150ms ease-out,background-color 150ms ease-out,border-color 150ms ease-out;}.ds-btn-outline{background:#fff;color:#000}.ds-btn-outline:hover{transform:translate(1px,1px);box-shadow:1px 1px 0 0 #000;background:#F5F5F5}.ds-btn-outline:active{transform:translate(2px,2px);box-shadow:none}.ds-btn:focus-visible{outline:none;box-shadow:2px 2px 0 0 #000,0 0 0 2px #ffffff,0 0 0 4px #2563EB}.ds-btn:disabled{opacity:.5;cursor:not-allowed}"
+      "description": "Adesivo de ação branco — ação secundária; no escuro sobe para a placa #263044.",
+      "html": "<button class=\"ds-btn-outline\">Arquivar</button>",
+      "css": ".ds-btn-outline { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 40px; padding: 0 20px; background: var(--color-paper, #fff); color: #000; font: 700 14px/1 'Plus Jakarta Sans', system-ui, sans-serif; border: 2px solid var(--color-ink, #000); border-radius: 16px; cursor: pointer; user-select: none; box-shadow: 2px 2px 0px 0px var(--neo-shadow, #000); transition: transform 150ms ease-out, box-shadow 150ms ease-out, background-color 150ms ease-out; } .ds-btn-outline:hover { background: var(--color-neutral-100, #f5f5f5); transform: translate(1px, 1px); box-shadow: 1px 1px 0px 0px var(--neo-shadow, #000); } .ds-btn-outline:active { transform: translate(2px, 2px); box-shadow: none; } .ds-btn-outline:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--color-paper, #fff), 0 0 0 4px var(--color-neo-blue, #2563eb); }"
     },
     {
-      "name": "Campo de Texto",
+      "name": "Input",
       "kind": "input",
       "refersTo": "input-default",
-      "description": "Input padrão com label bold acima e ring Azul Caneta Ação no foco.",
-      "html": "<div class=\"ds-input-wrap\"><label class=\"ds-input-label\" for=\"ds-usuario\">Usuário SIGAA</label><input id=\"ds-usuario\" class=\"ds-input-field\" placeholder=\"seu.login@unb.br\" /></div>",
-      "css": ".ds-input-wrap{display:flex;flex-direction:column;gap:6px;font-family:'Plus Jakarta Sans',system-ui,-apple-system,sans-serif}.ds-input-label{font-size:0.75rem;font-weight:700;color:#262626}.ds-input-field{width:100%;background:#fff;padding:10px 16px;font-size:0.875rem;font-weight:500;color:#000;border:2px solid #000;border-radius:12px;outline:none;transition:all 150ms ease-out}.ds-input-field::placeholder{color:#A3A3A3}.ds-input-field:focus-visible{box-shadow:0 0 0 2px #2563EB}.ds-input-field.ds-input-error{border-color:#DC2626;box-shadow:0 0 0 2px #DC2626}"
+      "description": "Cavidade no papel: sem sombra em repouso, foco em ring azul de 2px.",
+      "html": "<label class=\"ds-field\"><span class=\"ds-field-label\">Matrícula</span><input class=\"ds-input\" type=\"text\" placeholder=\"0 0 0 0 0 0 0 0\" /></label>",
+      "css": ".ds-field { display: flex; flex-direction: column; gap: 6px; font-family: 'Plus Jakarta Sans', system-ui, sans-serif; } .ds-field-label { font: 700 12px/1.4 'Plus Jakarta Sans', system-ui, sans-serif; color: var(--color-neutral-800, #262626); } .ds-input { width: 100%; background: var(--color-paper, #fff); color: #000; padding: 10px 16px; font: 500 14px/1.5 'Plus Jakarta Sans', system-ui, sans-serif; border: 2px solid var(--color-ink, #000); border-radius: 12px; } .ds-input::placeholder { color: var(--color-neutral-500, #737373); } .ds-input:focus { outline: none; box-shadow: 0 0 0 2px var(--color-neo-blue, #2563eb); } .ds-input:disabled { opacity: 0.5; background: var(--color-neutral-100, #f5f5f5); }"
     },
     {
-      "name": "Campo de Busca",
+      "name": "Select Trigger",
       "kind": "input",
-      "refersTo": "input-search",
-      "description": "Cavidade de busca do feed: sem sombra; quando engajada (há texto), acende Azul Pastel.",
-      "html": "<div class=\"ds-search\"><svg class=\"ds-search-icon\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\" width=\"16\" height=\"16\" aria-hidden=\"true\"><path d=\"m21 21-4.34-4.34\"/><circle cx=\"11\" cy=\"11\" r=\"8\"/></svg><input class=\"ds-search-field ds-search-engaged\" placeholder=\"Buscar por disciplina, título ou professor...\" aria-label=\"Buscar no feed\" /></div>",
-      "css": ".ds-search{position:relative;max-width:480px;font-family:'Plus Jakarta Sans',system-ui,-apple-system,sans-serif}.ds-search-icon{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:#737373;pointer-events:none}.ds-search-field{width:100%;padding:10px 16px 10px 40px;font-size:0.875rem;font-weight:500;color:#000;background:#fff;border:2px solid #000;border-radius:12px;outline:none;transition:background-color 150ms ease-out,box-shadow 150ms ease-out}.ds-search-field::placeholder{color:#A3A3A3}.ds-search-field:focus-visible{box-shadow:0 0 0 2px #2563EB}.ds-search-engaged{background:#EBF3FF}"
+      "refersTo": "select-trigger",
+      "description": "Trigger de filtro/select: cavidade branca 40px com chevron; engajado vira azul cheio.",
+      "html": "<button class=\"ds-select\">Todas as plataformas <svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"m6 9 6 6 6-6\"/></svg></button>",
+      "css": ".ds-select { display: flex; align-items: center; justify-content: space-between; gap: 8px; width: 100%; height: 40px; padding: 0 12px; background: var(--color-paper, #fff); color: #000; font: 700 12px/1.4 'Plus Jakarta Sans', system-ui, sans-serif; border: 2px solid var(--color-ink, #000); border-radius: 12px; cursor: pointer; user-select: none; transition: box-shadow 150ms ease-out, border-color 150ms ease-out; } .ds-select:focus { outline: none; box-shadow: 0 0 0 2px var(--color-neo-blue, #2563eb); } .ds-select.ds-engaged { background: var(--color-neo-blue, #2563eb); color: #fff; } .ds-select.ds-engaged:hover { background: var(--color-neo-blueHover, #1d4ed8); }"
     },
     {
-      "name": "Filtro Select",
-      "kind": "input",
-      "refersTo": "select-trigger-active",
-      "description": "Filtro do feed com rótulo em cima: trigger branco; engajado (≠ padrão) veste Azul Caneta Ação cheio — engajamento veste tinta de ação.",
-      "html": "<div class=\"ds-filters\"><div class=\"ds-filter\"><span class=\"ds-filter-label\">Categoria:</span><button class=\"ds-filter-trigger\">Tudo<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\" width=\"16\" height=\"16\" aria-hidden=\"true\"><path d=\"m6 9 6 6 6-6\"/></svg></button></div><div class=\"ds-filter\"><span class=\"ds-filter-label\">Categoria:</span><button class=\"ds-filter-trigger ds-filter-on\">Tarefas<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\" width=\"16\" height=\"16\" aria-hidden=\"true\"><path d=\"m6 9 6 6 6-6\"/></svg></button></div></div>",
-      "css": ".ds-filters{display:flex;gap:16px;font-family:'Plus Jakarta Sans',system-ui,-apple-system,sans-serif}.ds-filter{display:flex;flex-direction:column;gap:6px}.ds-filter-label{font-size:0.75rem;font-weight:700;color:#404040}.ds-filter-trigger{display:inline-flex;align-items:center;justify-content:space-between;gap:8px;height:34px;padding:0 12px;background:#fff;color:#000;font-size:0.75rem;font-weight:700;border:2px solid #000;border-radius:12px;cursor:pointer;transition:background-color 150ms ease-out,color 150ms ease-out}.ds-filter-trigger:hover{background:#F5F5F5}.ds-filter-on,.ds-filter-on:hover{background:#2563EB;color:#fff}.ds-filter-on:hover{background:#1D4ED8}.ds-filter-trigger:focus-visible{outline:none;box-shadow:0 0 0 2px #fff,0 0 0 4px #2563EB}"
+      "name": "Badge (plataforma)",
+      "kind": "chip",
+      "refersTo": "badge-sticker",
+      "description": "Etiqueta de tinta colada no papel: pill cheia, borda de tinta, sem sombra.",
+      "html": "<span class=\"ds-badge ds-badge-sigaa\"><svg width=\"12\" height=\"12\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z\"/><path d=\"M22 10v6\"/><path d=\"M6 12.5V16a6 3 0 0 0 12 0v-3.5\"/></svg>SIGAA</span> <span class=\"ds-badge ds-badge-urgent\">Urgente</span>",
+      "css": ".ds-badge { display: inline-flex; align-items: center; gap: 6px; padding: 2px 12px; border-radius: 9999px; font: 700 12px/1.3 'Plus Jakarta Sans', system-ui, sans-serif; border: 2px solid var(--color-ink, #000); user-select: none; } .ds-badge-sigaa { background: var(--color-platform-sigaa, #3b8748); color: var(--color-ink, #000); } .ds-badge-urgent { background: var(--color-neo-danger, #dc2626); color: #fff; }"
+    },
+    {
+      "name": "Card",
+      "kind": "card",
+      "refersTo": "stat-card",
+      "description": "Adesivo de conteúdo: raio 8px, sombra dura 4px, padding 24px.",
+      "html": "<div class=\"ds-card\"><h2 class=\"ds-card-title\">Cursando agora</h2><p class=\"ds-card-desc\">3 disciplinas neste semestre.</p></div>",
+      "css": ".ds-card { background: var(--color-paper, #fff); color: #000; border: 2px solid var(--color-ink, #000); border-radius: 8px; box-shadow: var(--neo-card-shadow, 4px 4px 0px 0px #000); padding: 24px; font-family: 'Plus Jakarta Sans', system-ui, sans-serif; } .ds-card-title { margin: 0 0 6px; font: 700 18px/1.4 'Plus Jakarta Sans', system-ui, sans-serif; letter-spacing: -0.01em; color: #000; } .ds-card-desc { margin: 0; font: 500 14px/1.5 'Plus Jakarta Sans', system-ui, sans-serif; color: var(--color-neutral-600, #525252); }"
     },
     {
       "name": "Checkbox",
       "kind": "custom",
       "refersTo": "checkbox-selected",
-      "description": "Marcação de 20px com sombra micro: azul = seleção, verde = conclusão — uma cor por significado. Física em meio-passo (exceção ao Snap Inteiro).",
-      "html": "<div class=\"ds-checks\"><button type=\"button\" role=\"checkbox\" aria-checked=\"false\" class=\"ds-check\" aria-label=\"Selecionar item\"></button><button type=\"button\" role=\"checkbox\" aria-checked=\"true\" class=\"ds-check ds-check-on\" aria-label=\"Selecionado\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"3\" stroke-linecap=\"round\" stroke-linejoin=\"round\" width=\"14\" height=\"14\" aria-hidden=\"true\"><path d=\"M20 6 9 17l-5-5\"/></svg></button><button type=\"button\" role=\"checkbox\" aria-checked=\"true\" class=\"ds-check ds-check-done\" aria-label=\"Concluído\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"3\" stroke-linecap=\"round\" stroke-linejoin=\"round\" width=\"14\" height=\"14\" aria-hidden=\"true\"><path d=\"M20 6 9 17l-5-5\"/></svg></button></div>",
-      "css": ".ds-checks{display:flex;align-items:center;gap:12px;font-family:'Plus Jakarta Sans',system-ui,-apple-system,sans-serif}.ds-check{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;padding:0;background:#fff;color:#A3A3A3;border:2px solid #000;border-radius:6px;box-shadow:1px 1px 0 0 #000;cursor:pointer;transition:transform 150ms ease-out,box-shadow 150ms ease-out,background-color 150ms ease-out}.ds-check:hover{transform:translate(0.5px,0.5px);box-shadow:none}.ds-check:active{transform:translate(1px,1px);box-shadow:none}.ds-check:focus-visible{outline:none;box-shadow:0 0 0 2px #fff,0 0 0 4px #2563EB}.ds-check-on{background:#2563EB;color:#fff}.ds-check-done{background:#46E297;color:#000}"
-    },
-    {
-      "name": "Card",
-      "kind": "card",
-      "refersTo": "card-default",
-      "description": "Superfície adesivo padrão: branco, borda 2px, sombra 4px, padding 24px (ferramentas usam 16px).",
-      "html": "<div class=\"ds-card\"><h3 class=\"ds-card-title\">Estatística Cálculo 2</h3><p class=\"ds-card-desc\">Entrega da lista 3 disponível até sexta-feira.</p></div>",
-      "css": ".ds-card{background:#fff;color:#000;border:2px solid #000;border-radius:8px;box-shadow:4px 4px 0 0 #000;padding:24px;max-width:360px;font-family:'Plus Jakarta Sans',system-ui,-apple-system,sans-serif}.ds-card-title{font-size:1.125rem;font-weight:700;letter-spacing:-0.01em;margin:0 0 4px}.ds-card-desc{font-size:0.875rem;font-weight:500;color:#525252;margin:0;line-height:1.5}"
-    },
-    {
-      "name": "Card de Métrica",
-      "kind": "card",
-      "refersTo": "stat-card",
-      "description": "Painel de pausa 12px com rótulo uppercase, bloco-ícone pastel, número Stat e barra de progresso-cavidade.",
-      "html": "<div class=\"ds-stat\"><div class=\"ds-stat-head\"><span class=\"ds-stat-label\">Integralização</span><span class=\"ds-stat-icon\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\" width=\"16\" height=\"16\" aria-hidden=\"true\"><path d=\"M6 9H4.5a2.5 2.5 0 0 1 0-5H6\"/><path d=\"M18 9h1.5a2.5 2.5 0 0 0 0-5H18\"/><path d=\"M4 22h16\"/><path d=\"M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22\"/><path d=\"M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22\"/><path d=\"M18 2H6v7a6 6 0 0 0 12 0V2Z\"/></svg></span></div><div class=\"ds-stat-number\">42,7<span class=\"ds-stat-unit\">%</span></div><div class=\"ds-stat-bar\" role=\"progressbar\" aria-valuenow=\"43\" aria-valuemin=\"0\" aria-valuemax=\"100\"><span class=\"ds-stat-fill\"></span></div><p class=\"ds-stat-foot\">18 de 42 obrigatórias feitas</p></div>",
-      "css": ".ds-stat{background:#fff;border:2px solid #000;border-radius:12px;box-shadow:4px 4px 0 0 #000;padding:16px;max-width:280px;font-family:'Plus Jakarta Sans',system-ui,-apple-system,sans-serif;display:flex;flex-direction:column}.ds-stat-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}.ds-stat-label{font-size:0.75rem;font-weight:800;text-transform:uppercase;letter-spacing:0.05em;color:#525252}.ds-stat-icon{display:flex;align-items:center;justify-content:center;width:32px;height:32px;background:#E6F8EE;color:#000;border:2px solid #000;border-radius:8px;box-shadow:1px 1px 0 0 #000}.ds-stat-number{font-size:1.875rem;font-weight:800;color:#000;letter-spacing:-0.02em}.ds-stat-unit{font-size:0.75rem;font-weight:700;color:#525252;margin-left:4px}.ds-stat-bar{margin-top:8px;height:14px;background:#F5F5F5;border:2px solid #000;border-radius:9999px;padding:2px;box-shadow:1px 1px 0 0 #000;overflow:hidden}.ds-stat-fill{display:block;height:100%;width:43%;background:#46E297;border:1px solid #000;border-radius:9999px}.ds-stat-foot{margin:8px 0 0;font-size:11px;font-weight:700;color:#525252}"
-    },
-    {
-      "name": "Badge de Plataforma",
-      "kind": "chip",
-      "refersTo": "badge-sticker",
-      "description": "Etiqueta de identidade sem sombra: Sigaa em Verde Giz, tinta colada no papel — não adesivo.",
-      "html": "<span class=\"ds-badge\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\" width=\"14\" height=\"14\" aria-hidden=\"true\"><path d=\"M20 6 9 17l-5-5\"/></svg>Sigaa</span>",
-      "css": ".ds-badge{display:inline-flex;align-items:center;gap:6px;padding:2px 12px;background:#46E297;color:#000;border:2px solid #000;border-radius:9999px;font-family:'Plus Jakarta Sans',system-ui,-apple-system,sans-serif;font-size:11px;font-weight:700;user-select:none}"
-    },
-    {
-      "name": "Escala de Didática",
-      "kind": "chip",
-      "refersTo": "didatica-badge-high",
-      "description": "Nota 0–10 por faixa de cor cheia: ≥ 8 Verde Giz, 6–7,9 Amarelo Marca-Texto, < 6 Vermelho Forte (texto branco), sem nota Cinza Papel. Sem escala contínua.",
-      "html": "<div class=\"ds-did-row\"><span class=\"ds-did ds-did-high\"><svg viewBox=\"0 0 24 24\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"2.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\" width=\"14\" height=\"14\" aria-hidden=\"true\"><polygon points=\"12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2\"/></svg>8,9</span><span class=\"ds-did ds-did-mid\"><svg viewBox=\"0 0 24 24\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"2.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\" width=\"14\" height=\"14\" aria-hidden=\"true\"><polygon points=\"12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2\"/></svg>6,5</span><span class=\"ds-did ds-did-low\"><svg viewBox=\"0 0 24 24\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"2.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\" width=\"14\" height=\"14\" aria-hidden=\"true\"><polygon points=\"12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2\"/></svg>4,2</span><span class=\"ds-did ds-did-none\"><svg viewBox=\"0 0 24 24\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"2.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\" width=\"14\" height=\"14\" aria-hidden=\"true\"><polygon points=\"12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2\"/></svg>N/A</span></div>",
-      "css": ".ds-did-row{display:flex;gap:10px;font-family:'Plus Jakarta Sans',system-ui,-apple-system,sans-serif}.ds-did{display:inline-flex;align-items:center;gap:4px;padding:2px 10px;font-size:11px;font-weight:800;border:2px solid #000;border-radius:6px;box-shadow:1px 1px 0 0 #000;user-select:none}.ds-did-high{background:#46E297;color:#000}.ds-did-mid{background:#FFE600;color:#000}.ds-did-low{background:#DC2626;color:#fff}.ds-did-none{background:#F5F5F5;color:#525252}"
-    },
-    {
-      "name": "Nó do Fluxograma",
-      "kind": "custom",
-      "refersTo": "card-default",
-      "description": "Adesivo de disciplina 212×78px sobre papel quadriculado: raio 8px, sombra 4px, física de card clicável. Status veste a cor: concluída Verde Giz, cursando Azul Caneta (texto branco), disponível Amarelo, bloqueada Cinza Papel.",
-      "html": "<div class=\"ds-node-row\"><div class=\"ds-node ds-node-done\" role=\"button\" tabindex=\"0\"><div class=\"ds-node-top\"><span class=\"ds-node-code\">CIC0004</span><span class=\"ds-node-level\">3º</span></div><span class=\"ds-node-name\">Estruturas de Dados</span><span class=\"ds-node-hours\">60h</span></div><div class=\"ds-node ds-node-progress\" role=\"button\" tabindex=\"0\"><div class=\"ds-node-top\"><span class=\"ds-node-code\">MAT0025</span><span class=\"ds-node-level\">4º</span></div><span class=\"ds-node-name\">Cálculo Diferencial</span><span class=\"ds-node-hours\">90h</span></div></div>",
-      "css": ".ds-node-row{display:flex;gap:16px;font-family:'Plus Jakarta Sans',system-ui,-apple-system,sans-serif}.ds-node{width:212px;min-height:78px;padding:8px;display:flex;flex-direction:column;gap:4px;text-align:left;border:2px solid #000;border-radius:8px;box-shadow:4px 4px 0 0 #000;cursor:pointer;user-select:none;transition:transform 150ms ease-out,box-shadow 150ms ease-out,opacity 150ms ease-out}.ds-node:hover{transform:translate(2px,2px);box-shadow:2px 2px 0 0 #000}.ds-node:active{transform:translate(4px,4px);box-shadow:none}.ds-node:focus-visible{outline:none;box-shadow:4px 4px 0 0 #000,0 0 0 2px #fff,0 0 0 4px #2563EB}.ds-node-done{background:#46E297;color:#000}.ds-node-progress{background:#2563EB;color:#fff}.ds-node-top{display:flex;align-items:center;gap:6px}.ds-node-code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;font-weight:800;padding:1px 4px;background:#fff;border:1px solid #000;border-radius:4px;color:#000}.ds-node-level{margin-left:auto;font-size:11px;font-weight:800;padding:1px 4px;background:#fff;border:1px solid #000;border-radius:4px;color:#000}.ds-node-name{font-size:11px;font-weight:800;line-height:1.25;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}.ds-node-hours{font-size:11px;font-weight:700}.ds-node-done .ds-node-hours{color:rgba(0,0,0,.7)}.ds-node-progress .ds-node-hours{color:rgba(255,255,255,.9)}"
-    },
-    {
-      "name": "Chips de Contagem (Grade)",
-      "kind": "chip",
-      "refersTo": "card-default",
-      "description": "Tabs com contador da Grade: inativa branca, ativa Azul Caneta Ação com contador invertido; física de pressionar na escala 2px. No feed os filtros são Filtro Select.",
-      "html": "<div class=\"ds-chips\"><button class=\"ds-chip ds-chip-active\">Todas<span class=\"ds-chip-count ds-chip-count-active\">7</span></button><button class=\"ds-chip\">Aprender 3<span class=\"ds-chip-count\">2</span></button></div>",
-      "css": ".ds-chips{display:flex;gap:10px;font-family:'Plus Jakarta Sans',system-ui,-apple-system,sans-serif}.ds-chip{display:inline-flex;align-items:center;gap:8px;padding:6px 14px;background:#fff;color:#404040;font-size:0.75rem;font-weight:700;border:2px solid #000;border-radius:12px;cursor:pointer;user-select:none;transform:translate(0,0);box-shadow:2px 2px 0 0 #000;transition:transform 150ms ease-out,box-shadow 150ms ease-out,background-color 150ms ease-out,border-color 150ms ease-out}.ds-chip:hover{transform:translate(1px,1px);box-shadow:1px 1px 0 0 #000}.ds-chip:active{transform:translate(2px,2px);box-shadow:none}.ds-chip-active{background:#2563EB;color:#fff}.ds-chip-count{padding:2px 8px;background:#2563EB;color:#fff;border-radius:9999px;font-size:11px;font-weight:700}.ds-chip-count-active{background:#fff;color:#2563EB}"
-    },
-    {
-      "name": "Segmented Control",
-      "kind": "custom",
-      "refersTo": "card-default",
-      "description": "Alternador Lista | Mapa: cavidade do fichário com o thumb-adesivo Azul Caneta deslizando até o segmento ativo.",
-      "html": "<div class=\"ds-seg\" role=\"group\" aria-label=\"Modo de visualização\"><span class=\"ds-seg-thumb\" aria-hidden=\"true\"></span><button class=\"ds-seg-btn ds-seg-on\" aria-pressed=\"true\">Lista</button><button class=\"ds-seg-btn\" aria-pressed=\"false\">Mapa</button></div>",
-      "css": ".ds-seg{position:relative;display:grid;grid-template-columns:1fr 1fr;gap:2px;padding:2px;background:#fff;border:2px solid #000;border-radius:12px;width:200px;font-family:'Plus Jakarta Sans',system-ui,-apple-system,sans-serif}.ds-seg-thumb{pointer-events:none;position:absolute;top:2px;bottom:2px;left:2px;width:calc(50% - 3px);background:#2563EB;border-radius:8px;transition:transform 150ms ease-out}.ds-seg:hover .ds-seg-thumb{transform:translate(calc(100% + 2px),0)}.ds-seg-btn{position:relative;display:inline-flex;align-items:center;justify-content:center;gap:6px;height:32px;padding:0 12px;background:transparent;color:#000;font-size:0.75rem;font-weight:800;border:none;border-radius:8px;cursor:pointer;transition:color 150ms ease-out,background-color 150ms ease-out}.ds-seg-btn:hover{background:#F5F5F5}.ds-seg-btn:active{transform:translateY(1px)}.ds-seg-btn:focus-visible{outline:none;box-shadow:0 0 0 2px #fff,0 0 0 4px #2563EB}.ds-seg-on,.ds-seg-on:hover{color:#fff}"
+      "description": "Mini-adesivo de marcação 20px com física micro; seleção azul, conclusão verde.",
+      "html": "<span role=\"checkbox\" aria-checked=\"true\" tabindex=\"0\" class=\"ds-checkbox ds-checked\"></span> <span role=\"checkbox\" aria-checked=\"false\" tabindex=\"0\" class=\"ds-checkbox\"></span>",
+      "css": ".ds-checkbox { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; background: var(--color-paper, #fff); border: 2px solid var(--color-ink, #000); border-radius: 6px; box-shadow: 1px 1px 0px 0px var(--neo-shadow, #000); cursor: pointer; transition: transform 150ms ease-out, box-shadow 150ms ease-out, background-color 150ms ease-out; vertical-align: middle; } .ds-checkbox:hover { transform: translate(0.5px, 0.5px); box-shadow: none; background: var(--color-neutral-100, #f5f5f5); } .ds-checkbox:active { transform: translate(1px, 1px); box-shadow: none; } .ds-checkbox.ds-checked { background: var(--color-neo-blue, #2563eb); } .ds-checkbox.ds-checked::after { content: ''; width: 12px; height: 12px; background: no-repeat center / contain url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E\"); }"
     },
     {
       "name": "Switch",
       "kind": "custom",
-      "refersTo": "card-default",
-      "description": "Pill 44×24px de Settings: trilho Cinza desligado / Azul Caneta Ação ligado, thumb branco com borda preta deslizando.",
-      "html": "<div class=\"ds-switch-row\"><span class=\"ds-switch-label\">Efeito sonoro de botão</span><button type=\"button\" role=\"switch\" aria-checked=\"true\" class=\"ds-switch\"><span class=\"ds-switch-thumb\"></span></button></div>",
-      "css": ".ds-switch-row{display:flex;align-items:center;gap:12px;font-family:'Plus Jakarta Sans',system-ui,-apple-system,sans-serif}.ds-switch-label{font-size:0.75rem;font-weight:800;color:#000}.ds-switch{position:relative;display:inline-flex;align-items:center;width:44px;height:24px;background:#E5E5E5;border:2px solid #000;border-radius:9999px;cursor:pointer;transition:background 150ms ease-out;padding:0}.ds-switch[aria-checked=\"true\"]{background:#2563EB}.ds-switch-thumb{display:block;width:18px;height:18px;background:#fff;border:2px solid #000;border-radius:9999px;transform:translateX(2px);transition:transform 150ms ease-out}.ds-switch[aria-checked=\"true\"] .ds-switch-thumb{transform:translateX(22px)}.ds-switch:focus-visible{outline:none;box-shadow:0 0 0 2px #fff,0 0 0 4px #2563EB}.ds-switch:disabled{opacity:.5;cursor:not-allowed}"
+      "refersTo": "checkbox",
+      "description": "Pílula 44×24 com thumb branco deslizante; ligado veste Azul Caneta Ação.",
+      "html": "<button role=\"switch\" aria-checked=\"true\" class=\"ds-switch\"><span class=\"ds-switch-thumb\"></span></button>",
+      "css": ".ds-switch { display: inline-flex; align-items: center; width: 44px; height: 24px; padding: 0; background: var(--color-neutral-200, #e5e5e5); border: 2px solid var(--color-ink, #000); border-radius: 9999px; cursor: pointer; transition: background-color 150ms ease-out; } .ds-switch[aria-checked='true'] { background: var(--color-neo-blue, #2563eb); } .ds-switch:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--color-paper, #fff), 0 0 0 4px var(--color-neo-blue, #2563eb); } .ds-switch-thumb { display: block; width: 18px; height: 18px; background: #fff; border: 2px solid var(--color-ink, #000); border-radius: 9999px; transform: translateX(2px); transition: transform 150ms ease-out; pointer-events: none; } .ds-switch[aria-checked='true'] .ds-switch-thumb { transform: translateX(22px); }"
     },
     {
-      "name": "Slider",
-      "kind": "custom",
-      "refersTo": "card-default",
-      "description": "Trilho-cavidade pill com preenchimento Azul Caneta Ação e thumb-adesivo branco de 20px com Micro-adesivo 1px.",
-      "html": "<div class=\"ds-slider\" role=\"slider\" aria-valuemin=\"0\" aria-valuemax=\"100\" aria-valuenow=\"60\" tabindex=\"0\"><div class=\"ds-slider-track\"><div class=\"ds-slider-fill\"></div></div><span class=\"ds-slider-thumb\"></span></div>",
-      "css": ".ds-slider{position:relative;display:flex;align-items:center;width:220px;font-family:'Plus Jakarta Sans',system-ui,-apple-system,sans-serif}.ds-slider-track{position:relative;flex:1;height:12px;background:#E5E5E5;border:2px solid #000;border-radius:9999px;overflow:hidden}.ds-slider-fill{height:100%;width:60%;background:#2563EB}.ds-slider-thumb{position:absolute;left:60%;transform:translateX(-50%);width:20px;height:20px;background:#fff;border:2px solid #000;border-radius:9999px;box-shadow:1px 1px 0 0 #000;pointer-events:none}.ds-slider:focus-visible{outline:none;border-radius:9999px;box-shadow:0 0 0 2px #fff,0 0 0 4px #2563EB}"
-    },
-    {
-      "name": "Alert Pastel",
-      "kind": "custom",
-      "refersTo": "card-pastel-blue",
-      "description": "Aviso em papel pastel com ícone em bloco branco pressionado.",
-      "html": "<div class=\"ds-alert\"><span class=\"ds-alert-icon\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\" width=\"16\" height=\"16\" aria-hidden=\"true\"><path d=\"M20 6 9 17l-5-5\"/></svg></span><div><h4 class=\"ds-alert-title\">Credenciais salvas</h4><p class=\"ds-alert-desc\">Seus dados ficam no cofre local do dispositivo.</p></div></div>",
-      "css": ".ds-alert{display:flex;align-items:flex-start;gap:14px;padding:16px;background:#E6F8EE;border:2px solid #000;border-radius:8px;box-shadow:4px 4px 0 0 #000;max-width:420px;font-family:'Plus Jakarta Sans',system-ui,-apple-system,sans-serif}.ds-alert-icon{display:flex;align-items:center;justify-content:center;padding:8px;background:#fff;color:#15803D;border:2px solid #000;border-radius:8px;box-shadow:2px 2px 0 0 #000;flex-shrink:0}.ds-alert-title{margin:0;font-size:0.875rem;font-weight:700;letter-spacing:-0.01em;color:#000}.ds-alert-desc{margin:4px 0 0;font-size:0.75rem;font-weight:600;color:#262626;line-height:1.5}"
-    },
-    {
-      "name": "Tooltip (papel)",
-      "kind": "custom",
-      "refersTo": "tooltip-popup",
-      "description": "Folha de Papel Quadriculado sem sombra: o contorno preto faz o destaque (A Regra do Popup de Papel).",
-      "html": "<div class=\"ds-tip-wrap\"><span class=\"ds-tip-anchor\">Selo Consenso</span><span class=\"ds-tip\" role=\"tooltip\">A comunidade converge: a partir de 5 relatos com nível de dificuldade parecido.</span></div>",
-      "css": ".ds-tip-wrap{display:flex;flex-direction:column;gap:8px;align-items:flex-start;font-family:'Plus Jakarta Sans',system-ui,-apple-system,sans-serif}.ds-tip-anchor{display:inline-flex;padding:2px 8px;background:#FFE600;color:#000;border:2px solid #000;border-radius:9999px;font-size:11px;font-weight:700;cursor:help}.ds-tip{display:inline-block;max-width:320px;padding:8px 12px;background:#E8EFF8;color:#000;border:2px solid #000;border-radius:8px;font-size:0.75rem;font-weight:600;line-height:1.45}"
-    },
-    {
-      "name": "Toast (papel)",
-      "kind": "custom",
-      "refersTo": "toast-popup",
-      "description": "Folha de Papel Quadriculado empilhada no canto inferior: borda 2px, sem sombra, ícone por tipo, ação outline sm e fechar fantasma.",
-      "html": "<div class=\"ds-toast\" role=\"status\"><svg class=\"ds-toast-icon\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\" width=\"16\" height=\"16\" aria-hidden=\"true\"><path d=\"M21.801 10A10 10 0 1 1 17 3.335\"/><path d=\"m9 11 3 3L22 4\"/></svg><div class=\"ds-toast-body\"><span class=\"ds-toast-title\">Sincronização concluída</span><span class=\"ds-toast-desc\">12 novidades de 3 plataformas.</span></div><button class=\"ds-toast-action\" type=\"button\">Ver</button><button class=\"ds-toast-close\" type=\"button\" aria-label=\"Fechar\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\" width=\"14\" height=\"14\" aria-hidden=\"true\"><path d=\"M18 6 6 18\"/><path d=\"m6 6 12 12\"/></svg></button></div>",
-      "css": ".ds-toast{display:flex;align-items:center;gap:12px;width:360px;padding:12px 16px;background:#E8EFF8;color:#000;border:2px solid #000;border-radius:8px;font-family:'Plus Jakarta Sans',system-ui,-apple-system,sans-serif}.ds-toast-icon{flex-shrink:0}.ds-toast-body{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}.ds-toast-title{font-size:0.875rem;font-weight:800;letter-spacing:-0.01em}.ds-toast-desc{font-size:0.875rem;font-weight:600;color:#262626}.ds-toast-action{flex-shrink:0;display:inline-flex;align-items:center;height:32px;padding:0 14px;background:#fff;color:#000;font-size:0.75rem;font-weight:700;border:2px solid #000;border-radius:12px;cursor:pointer;transition:transform 150ms ease-out,box-shadow 150ms ease-out,background-color 150ms ease-out}.ds-toast-action:hover{transform:translate(1px,1px);box-shadow:1px 1px 0 0 #000;background:#F5F5F5}.ds-toast-action:active{transform:translate(2px,2px);box-shadow:none}.ds-toast-close{flex-shrink:0;display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;background:transparent;border:none;border-radius:8px;color:#000;cursor:pointer;transition:opacity 150ms ease-out}.ds-toast-close:hover{opacity:.7}"
-    },
-    {
-      "name": "Item de Navegação (Ledger)",
+      "name": "Segmented Control",
       "kind": "nav",
-      "refersTo": "card-default",
-      "description": "Faixa inteira do fichário: ativa em Azul Caneta Ação font-black, inativa branca, separada por borda 2px. Sem sombra — a encadernação não é adesivo — e muda por definição (data-no-sound).",
-      "html": "<nav class=\"ds-nav\"><button class=\"ds-nav-item ds-nav-active\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\" width=\"18\" height=\"18\" aria-hidden=\"true\"><path d=\"m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z\"/><path d=\"M9 22V12h6v10\"/></svg>Home</button><button class=\"ds-nav-item\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\" width=\"18\" height=\"18\" aria-hidden=\"true\"><path d=\"M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20\"/></svg>Turmas</button></nav>",
-      "css": ".ds-nav{display:flex;flex-direction:column;width:240px;font-family:'Plus Jakarta Sans',system-ui,-apple-system,sans-serif}.ds-nav-item{display:flex;align-items:center;gap:12px;width:100%;padding:14px 16px;background:#fff;color:#404040;font-size:0.875rem;font-weight:700;border:none;border-bottom:2px solid #000;border-top:none;border-left:none;border-right:none;text-align:left;cursor:pointer;transition:background 150ms ease-out,color 150ms ease-out}.ds-nav-item:hover{background:#F5F5F5}.ds-nav-active,.ds-nav-active:hover{background:#2563EB;color:#fff;font-weight:800}"
-    },
-    {
-      "name": "Skeleton de Lista",
-      "kind": "custom",
-      "refersTo": "skeleton-block",
-      "description": "Conteúdo à espera de tinta: blocos neutros pulsantes, sem borda nem sombra, espelhando a geometria das linhas do feed (um pill de prazo à direita) para trocar sem salto.",
-      "html": "<div class=\"ds-skeleton-row\"><span class=\"ds-sk ds-sk-icon\"></span><div class=\"ds-sk-col\"><span class=\"ds-sk ds-sk-title\"></span><span class=\"ds-sk ds-sk-meta\"></span></div><span class=\"ds-sk ds-sk-due\"></span></div>",
-      "css": ".ds-skeleton-row{display:flex;align-items:center;gap:12px;padding:16px;font-family:'Plus Jakarta Sans',system-ui,-apple-system,sans-serif}.ds-sk{display:block;background:#E5E5E5;border-radius:4px;animation:ds-pulse 2s cubic-bezier(0.4,0,0.6,1) infinite}.ds-sk-icon{width:16px;height:16px;flex-shrink:0}.ds-sk-col{flex:1;min-width:0;display:flex;flex-direction:column;gap:8px}.ds-sk-title{height:12px;width:40%}.ds-sk-meta{height:24px;width:30%;border-radius:9999px}.ds-sk-due{width:56px;height:24px;border-radius:9999px;flex-shrink:0}@keyframes ds-pulse{50%{opacity:.5}}@media (prefers-reduced-motion:reduce){.ds-sk{animation:none}}"
+      "refersTo": "button-primary",
+      "description": "Cavidade do fichário com thumb-adesivo azul deslizando (Lista | Mapa); sem default quando obrigatório.",
+      "html": "<div role=\"group\" aria-label=\"Vista\" class=\"ds-seg\"><button type=\"button\" aria-pressed=\"true\" class=\"ds-seg-item ds-seg-active\">Lista</button><button type=\"button\" aria-pressed=\"false\" class=\"ds-seg-item\">Mapa</button></div>",
+      "css": ".ds-seg { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 2px; padding: 2px; background: var(--color-paper, #fff); border: 2px solid var(--color-ink, #000); border-radius: 12px; width: 240px; font-family: 'Plus Jakarta Sans', system-ui, sans-serif; } .ds-seg-item { display: flex; align-items: center; justify-content: center; gap: 6px; height: 32px; padding: 0 12px; border: 0; border-radius: 8px; background: transparent; color: #000; font: 800 12px/1 'Plus Jakarta Sans', system-ui, sans-serif; cursor: pointer; transition: background-color 150ms ease-out, color 150ms ease-out; } .ds-seg-item:hover { background: var(--color-neutral-100, #f5f5f5); } .ds-seg-item.ds-seg-active { background: var(--color-neo-blue, #2563eb); color: #fff; } .ds-seg-item:active { transform: translateY(1px); } .ds-seg-item:focus-visible { outline: none; box-shadow: inset 0 0 0 2px var(--color-neo-blue, #2563eb); }"
     }
   ],
   "narrative": {
     "northStar": "Mural de Adesivos",
-    "overview": "Todo o sistema se comporta como uma muralha de papel quadriculado onde adesivos grossos foram pressionados à mão: cards, badges, botões e campos são adesivos com borda preta declarada (2px sólida) e sombra dura deslocada, sem um pixel de blur. Nada flutua no ar — tudo está colado na superfície. Quando o usuário clica, o adesivo afunda fisicamente: a sombra desaparece e o elemento se desloca na direção dela. A interface responde ao toque como objeto, não como holograma.\n\nA personalidade é de app de estudante, não de empresa: cores de material escolar (caneta azul, marca-texto amarelo, giz verde, caneta corretora vermelha) sobre papel quadriculado sutil, com hierarquia construída por peso tipográfico (black/extrabold/bold) em vez de tons de cinza apagados. Por baixo da brincadeira existe um produto de trabalho sério: densidade organizada, grid discreto, ritmo consistente de 150ms em todas as transições.\n\nO mundo é opaco e de alto contraste. Sombras suaves difusas, vidro fosco, gradiente e translucidez são a anti-referência declarada — nunca entram.",
+    "overview": "Todo o sistema se comporta como uma muralha de papel quadriculado onde adesivos grossos foram pressionados à mão: cards, badges, botões e campos são adesivos com borda preta declarada (2px sólida) e sombra dura deslocada, sem um pixel de blur. Nada flutua no ar — tudo está colado na superfície. Quando o usuário clica, o adesivo afunda fisicamente: a sombra desaparece e o elemento se desloca na direção dela. A interface responde ao toque como objeto, não como holograma.\n\nA personalidade é de app de estudante, não de empresa: cores de material escolar (caneta azul, marca-texto amarelo, giz verde, caneta corretora vermelha) sobre papel quadriculado sutil, com hierarquia construída por peso tipográfico (black/extrabold/bold) em vez de tons de cinza apagados. Por baixo da brincadeira existe um produto de trabalho sério: densidade organizada, grid discreto, ritmo consistente de 150ms em todas as transições.\n\nO mundo é opaco e de alto contraste. Sombras suaves difusas, gradiente e translucidez são a anti-referência declarada — nenhuma superfície os usa. A única exceção é o véu do Dialog: o backdrop escurece o fundo com tinta a 10% e blur de 2px, o bastante para separar camadas sem criar vidro.",
     "keyCharacteristics": [
       "Borda preta de 2px em toda superfície e elemento interativo",
       "Sombra dura deslocada, cor preta sólida, blur zero",
@@ -1713,119 +296,56 @@
       "Cores candy de material escolar sobre papel quadriculado (#E8EFF8, grid de 32px)",
       "Uma cor por significado: azul = ação e seleção, verde giz = conclusão — nunca cruzam",
       "Hierarquia por peso de fonte, não por cinza",
-      "Raio como affordance (A Regra dos Dois Adesivos): ação 12–16px, conteúdo 8px — clique se distingue de leitura à primeira vista",
-      "Popups de leitura e seleção (Select, Dropdown, Tooltip, Toast) são papel, não adesivo: Papel Quadriculado, sem sombra",
+      "Raio como affordance (A Regra dos Dois Adesivos): ação 12–16px, conteúdo 8px",
+      "Popups de leitura e seleção (Select, Dropdown, Tooltip, Toast, Dialog) são papel, não adesivo: Papel Quadriculado, sem sombra",
       "Nota de didática veste cor de ação por faixa, sem escala contínua (A Regra da Nota por Faixa)",
-      "Duas superfícies assinatura: a Grade Horária e o mapa do Fluxograma — mural de adesivos de status sobre papel quadriculado, com arestas desenhadas à caneta",
+      "Duas superfícies assinatura: a Grade Horária e o mapa do Fluxograma",
+      "Adesivo de feedback fixo no canto inferior direito (Megaphone); a pilha de toasts vive acima dele",
       "Tudo em 150ms ease-out"
     ],
     "rules": [
-      {
-        "name": "A Regra do Risco Preto",
-        "body": "Nenhuma superfície ou elemento interativo existe sem borda preta de 2px. A borda é o contorno do adesivo; sem ela o elemento cai fora do mundo. Exceção confirmada: pill de código de disciplina (font-mono) usa borda de 1px.",
-        "section": "colors"
-      },
-      {
-        "name": "A Regra do Pastel como Papel",
-        "body": "Cores de ação (caneta, giz, correção) marcam interação e identidade; as versões pastel servem de papel de fundo. Uma nunca faz o trabalho da outra: pastel nunca é botão, cor cheia nunca é fundo de seção inteira. Exceção confirmada: filtro engajado e segmento ativo vestem a cor cheia da família — engajamento veste tinta de ação.",
-        "section": "colors"
-      },
-      {
-        "name": "A Regra da Cor por Significado",
-        "body": "Azul é de seleção e ação; Verde Giz é só de conclusão. O checkbox de selecionar é azul, o de concluir é verde, e nenhum contexto troca esse papel — quem procura o que já fez e o que marcou não pode trocar as duas tintas.",
-        "section": "colors"
-      },
-      {
-        "name": "A Regra da Nota por Faixa",
-        "body": "Nota de didática não tem escala contínua: três faixas de cor cheia (verde ≥ 8, amarelo ≥ 6, vermelho forte abaixo) + cinza sem nota. Verde aqui significa \"ótimo\", não \"concluído\" — contexto de avaliação, não de tarefa.",
-        "section": "colors"
-      },
-      {
-        "name": "A Regra das Mesmas Tintas",
-        "body": "No escuro invertem-se papel e tinta, nunca cor de ação nem física: as tintas de ação são idênticas nos dois temas, as sombras continuam pretas, o texto sobre candy continua preto e o adesivo afunda igual. Quem desenha no mundo claro já sabe desenhar na lousa — só troca o papel.",
-        "section": "colors",
-        "rule": "No escuro invertem-se papel, tinta e SOMBRA — nunca cor de ação como fundo de botão nem física: as tintas de ação são idênticas nos dois temas, a sombra dura é giz no escuro (nunca preto, que some), o texto sobre candy continua preto e o adesivo afunda igual."
-      },
-      {
-        "name": "A Regra do Marcador Grosso",
-        "body": "Hierarquia vem de peso (800 → 700 → 600 → 500), não de esmaecer cinza. Nunca enfraqueça texto baixando o peso para abaixo de 500 — baixe o tom (neutral-600) mantendo o peso.",
-        "section": "typography"
-      },
-      {
-        "name": "A Regra do Rótulo Gritado",
-        "body": "Rótulos estruturais (grupos, cabeçalhos de tabela, micro-cabeçalhos, labels de indicador) são uppercase, font-black ou font-bold, 11–12px, com tracking largo. Dá o tom de etiqueta de fichário.",
-        "section": "typography"
-      },
-      {
-        "name": "A Regra do Código em Máquina",
-        "body": "Código de disciplina (ex. CIC0004) vive sempre em pill mono (font-mono, 11px, font-black, borda de 1px, fundo branco) — o código é carimbo de máquina, não título. O nome por extenso anda ao lado, em Plus Jakarta Sans.",
-        "section": "typography"
-      },
-      {
-        "name": "A Regra da Sombra Dura",
-        "body": "Sombra é deslocamento sólido preto, nunca blur, nunca rgba difusa, nunca cor. Se precisar de menos profundidade, diminua o deslocamento — não amacie. Única exceção declarada: a Zona de Perigo usa a sombra na própria cor do risco (#DC2626) — perigo tinge a própria física, e nenhum outro elemento.",
-        "section": "elevation"
-      },
-      {
-        "name": "A Regra do Afundar",
-        "body": "Todo elemento interativo em repouso com sombra dura afunda em dois tempos: no hover, com snap inteiro (ação de sombra 2px: translate +1px na direção da sombra, sombra reduzida a 1px — fica a 1px do papel; card clicável de sombra 4px: +2px e sombra 2px); no active, tudo (translate +offset completo, shadow-none — a superfície toca o papel). Ghost sem sombra mantém micro-afundar de 1px no active. Elemento que levanta no hover (translate negativo ou sombra crescendo) é bug físico.",
-        "section": "elevation"
-      },
-      {
-        "name": "A Regra do Snap Inteiro",
-        "body": "Todo translate de press em elemento de sombra 2px ou mais é número inteiro de pixels — nunca meia-pixel (1.5px), que antialiasa a borda preta em telas de escala não-inteira e borra o adesivo. Se a metade do offset não é inteira, afunde para o inteiro imediato (metade de 3px vira 2px) e dê o resto à sombra. Única exceção confirmada: o checkbox de 20px (sombra micro 1px) afunda 0.5px no hover e 1px no active — metade de 1px não tem inteiro entre hover e active, e pular direto ao afundar total no hover apagaria o estágio de repouso do adesivo.",
-        "section": "elevation"
-      },
-      {
-        "name": "A Regra do Popup de Papel",
-        "body": "Popup de leitura ou seleção (Select, Dropdown, Tooltip, Toast) é folha de Papel Quadriculado com contorno preto de 2px e sem sombra — o contorno faz o destaque, não a elevação. Popup que precisa de peso físico (o menu do nó do Fluxograma, ancorado a um adesivo) é a exceção declarada: branco, borda 2px, Adesivo de card 4px.",
-        "section": "elevation"
-      },
-      {
-        "name": "A Regra do Clique Mecânico",
-        "body": "O som é feedback de objeto, não enfeite: opt-in, desligado por padrão (Switch \"Efeito sonoro de botão\" em Settings), sample de switch mecânico via Web Audio com pitch jitter de ±3% e ganho a 25% para nunca soar robótico, disparado por um listener global. A encadernação é muda: navegação da sidebar e logo-bloco levam data-no-sound=\"true\". Elemento desabilitado não faz barulho.",
-        "section": "components"
-      },
-      {
-        "name": "A Regra do Link de Serviço",
-        "body": "Dentro de uma barra, ação que corrige ou auxilia (limpar, selecionar tudo) é texto sublinhado, não adesivo — o adesivo (borda + sombra) é a ação principal da linha; se tudo é botão, nada é.",
-        "section": "components"
-      },
-      {
-        "name": "A Regra do Bloco Sem Borda",
-        "body": "Skeleton é conteúdo à espera de tinta: bloco neutro pulsante, nunca adesivo — borda e sombra pertencem ao Card que o contém. Bloco de loading com risco preto finge ser conteúdo.",
-        "section": "components"
-      },
-      {
-        "name": "A Regra da Física Intacta",
-        "section": "colors",
-        "rule": "No escuro troca-se a BASE, nunca a física: sombra continua preta sólida deslocada, borda continua tinta, adesivo continua cheio com tinta preta de texto, post-it continua papel rico com detalhe vivo."
-      }
+      { "name": "A Regra do Risco Preto", "body": "Nenhuma superfície ou elemento interativo existe sem borda preta de 2px. A borda é o contorno do adesivo; sem ela o elemento cai fora do mundo. Exceção confirmada: pill de código de disciplina (font-mono) usa borda de 1px.", "section": "colors" },
+      { "name": "A Regra do Pastel como Papel", "body": "Cores de ação (caneta, giz, correção) marcam interação e identidade; as versões pastel servem de papel de fundo. Uma nunca faz o trabalho da outra: pastel nunca é botão, cor cheia nunca é fundo de seção inteira. Exceção confirmada: filtro engajado e segmento ativo vestem a cor cheia da família.", "section": "colors" },
+      { "name": "A Regra da Cor por Significado", "body": "Azul é de seleção e ação; Verde Giz é só de conclusão. O checkbox de selecionar é azul, o de concluir é verde, e nenhum contexto troca esse papel.", "section": "colors" },
+      { "name": "A Regra da Nota por Faixa", "body": "Nota de didática não tem escala contínua: três faixas de cor cheia (verde ≥ 8, amarelo ≥ 6, vermelho forte abaixo) + cinza sem nota. Verde aqui significa \"ótimo\", não \"concluído\".", "section": "colors" },
+      { "name": "A Regra da Física Intacta", "body": "No escuro troca-se a BASE, nunca a física: sombra continua preta sólida deslocada, borda continua tinta, adesivo continua cheio com tinta preta de texto. O que muda são os valores de superfície e a intensidade das tintas — nunca o gesto.", "section": "colors" },
+      { "name": "A Regra do Marcador Grosso", "body": "Hierarquia vem de peso (800 → 700 → 600 → 500), não de esmaecer cinza. Nunca enfraqueça texto baixando o peso para abaixo de 500 — baixe o tom (neutral-600) mantendo o peso.", "section": "typography" },
+      { "name": "A Regra do Rótulo Gritado", "body": "Rótulos estruturais (grupos, cabeçalhos de tabela, micro-cabeçalhos, labels de indicador) são uppercase, font-black ou font-bold, 11–12px, com tracking largo.", "section": "typography" },
+      { "name": "A Regra do Código em Máquina", "body": "Código de disciplina vive sempre em pill mono (font-mono, 11px, font-black, borda de 1px, fundo branco) — o código é carimbo de máquina, não título.", "section": "typography" },
+      { "name": "A Regra da Sombra Dura", "body": "Sombra é deslocamento sólido preto, nunca blur, nunca rgba difusa, nunca cor. Se precisar de menos profundidade, diminua o deslocamento — não amacie. Única exceção: a Zona de Perigo usa a sombra na própria cor do risco.", "section": "elevation" },
+      { "name": "A Regra do Afundar", "body": "Todo elemento interativo em repouso com sombra dura afunda em dois tempos: hover com snap inteiro, active afunda tudo (a superfície toca o papel). Ghost sem sombra mantém micro-afundar de 1px no active. Elemento que levanta no hover é bug físico.", "section": "elevation" },
+      { "name": "A Regra do Snap Inteiro", "body": "Todo translate de press em elemento de sombra 2px ou mais é número inteiro de pixels — nunca meia-pixel, que antialiasa a borda preta. Única exceção: o checkbox de 20px (0.5px/1px).", "section": "elevation" },
+      { "name": "A Regra do Popup de Papel", "body": "Popup de leitura ou seleção (Select, Dropdown, Tooltip, Toast, Dialog modal) é folha de Papel Quadriculado com contorno preto de 2px e sem sombra — o contorno faz o destaque, não a elevação.", "section": "elevation" },
+      { "name": "A Regra do Link de Serviço", "body": "Dentro de uma barra, ação que corrige ou auxilia (limpar, selecionar tudo) é texto sublinhado, não adesivo — se tudo é botão, nada é.", "section": "components" },
+      { "name": "A Regra do Clique Mecânico", "body": "O som é feedback de objeto, não enfeite: opt-in, desligado por padrão, sample de switch mecânico via Web Audio. A encadernação é muda: navegação da sidebar e logo-bloco não fazem barulho.", "section": "components" },
+      { "name": "A Regra do Bloco Sem Borda", "body": "Skeleton é conteúdo à espera de tinta: bloco neutro pulsante, nunca adesivo — borda e sombra pertencem ao Card que o contém.", "section": "components" },
+      { "name": "A Regra dos Dois Adesivos", "body": "Raio e sombra dizem o que o adesivo faz: adesivo de conteúdo (8px + sombra 4px) é papel de leitura; adesivo de ação (12–16px + sombra 2px) é convite ao clique. Informação nunca se veste de botão, e botão nunca se veste de informação.", "section": "components" }
     ],
     "dos": [
       "Do dar borda preta de 2px a toda superfície e elemento interativo (A Regra do Risco Preto); pills de código mono usam borda de 1px.",
       "Do usar sombra dura deslocada preta (Xpx Xpx 0 0 #000) e física completa: hover afunda com snap inteiro, active afunda tudo, disabled congela.",
       "Do usar azul para seleção e Verde Giz só para conclusão — checkbox azul de selecionar, verde de concluir (A Regra da Cor por Significado).",
       "Do usar a Escala de Didática por faixa (≥ 8 verde, ≥ 6 amarelo, < 6 vermelho forte, sem nota cinza) — nunca tom contínuo nem degradê (A Regra da Nota por Faixa).",
-      "Do usar folha de Papel Quadriculado sem sombra para todo popup de leitura/seleção — Select, Dropdown, Tooltip, Toast (A Regra do Popup de Papel).",
+      "Do usar folha de Papel Quadriculado sem sombra para todo popup de leitura/seleção — Select, Dropdown, Tooltip, Toast e Dialog modal (A Regra do Popup de Papel); o modal separa camadas com o véu de tinta a 10% + blur 2px.",
       "Do pôr a contagem absoluta no título da página e a contagem filtrada na barra interna do card (feed) ou no rodapé da toolbar (catálogo), sempre com o filtro visível.",
       "Do usar link sublinhado para ação terciária de barra (\"Limpar filtros\", \"Selecionar tudo\") (A Regra do Link de Serviço).",
       "Do vestir filtro engajado com a cor cheia da família (Filtro Select azul, filtros de Disciplinas com sua cor) e a cavidade de busca engajada com o pastel; ordenação nunca engaja.",
       "Do construir hierarquia com peso de fonte (800/700/600/500) e usar pastéis como fundo, nunca como cor de ação.",
       "Do usar Plus Jakarta Sans e ícones Lucide com stroke 2.5 (check de checkbox stroke 3); rótulos estruturais em uppercase bold 11–12px; códigos de disciplina em pills font-mono (A Regra do Código em Máquina).",
-      "Do usar as cores de plataforma como identidade fixa (Sigaa verde, Aprender 3 laranja, Teams azul) em badges e filtros.",
+      "Do usar as cores de plataforma como identidade fixa (Sigaa verde #3B8748, Aprender 3 azul UnB #468AFB, Teams roxo Fluent #5B5FC7) em badges e filtros — tokens que não remapam no escuro.",
       "Do usar raio e sombra como affordance (A Regra dos Dois Adesivos): ação 12–16px + sombra 2px; conteúdo 8px + sombra 4px; painel de pausa/métrica 12px; campo 12px sem sombra.",
       "Do usar Micro-adesivo 1px (neo-xs) em checkbox, blocos de ícone, pills inline, badge de didática e micro-ações flutuantes; badge fica sem sombra.",
       "Do usar o vocabulário fechado de status do Fluxograma (verde concluída, azul cursando, amarelo disponível, cinza bloqueada, lilás optativa) em mapa, lista e minimapa.",
       "Do dar som mecânico só com opt-in, nunca na navegação nem em elemento desabilitado (A Regra do Clique Mecânico).",
-      "Do usar #2563EB/#DC2626 como fundo sob texto branco; #468AFB/#FF6B6B ficam para marca/bordas."
+      "Do usar #2563EB/#DC2626 como fundo sob texto branco; #468AFB/#FF6B6B ficam para marca/bordas.",
+      "Do manter o canto inferior direito organizado: adesivo de feedback a 16px da base, pilha de toasts acima dele (68px) — nenhum flutuante cobre o outro."
     ],
     "donts": [
       "Don't usar sombra com blur, box-shadow difusa, rgba ambiente ou elevação estilo Material — sombra dura ou nenhuma.",
-      "Don't usar glassmorphism, backdrop-blur, gradientes ou superfícies translúcidas — o mundo é opaco.",
+      "Don't usar glassmorphism, gradientes ou superfícies translúcidas — o mundo é opaco; a única translucidez permitida é o véu do backdrop do Dialog (bg-ink/10 + blur de 2px), que escurece o fundo sem criar vidro.",
       "Don't usar verde para seleção ou azul para conclusão — as tintas não trocam de significado (A Regra da Cor por Significado).",
       "Don't inventar status ou cor nova para disciplina no Fluxograma — o vocabulário de 5 estados é fechado e compartilhado por mapa, lista e minimapa.",
-      "Don't dar sombra a Tooltip, Toast ou popup de papel — o contorno preto faz o destaque (A Regra do Popup de Papel).",
+      "Don't dar sombra a Tooltip, Toast, Dialog ou popup de papel — o contorno preto faz o destaque (A Regra do Popup de Papel).",
       "Don't soltar linha de legenda de contagem acima do card — contagem vive no título (absoluta) ou na barra interna/rodapé da toolbar (filtrada).",
       "Don't dar adesivo (borda + sombra) a ação terciária de barra — é link de serviço.",
       "Don't criar elemento interativo com sombra que não afunde no active (A Regra do Afundar).",

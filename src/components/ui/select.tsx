@@ -134,7 +134,7 @@ function SelectLabel({
     <SelectPrimitive.GroupLabel
       data-slot="select-label"
       className={cn(
-        'py-1.5 pr-8 pl-2 text-xs font-black uppercase tracking-wider text-neutral-500',
+        'py-1.5 pr-8 pl-2 text-xs font-black uppercase tracking-wider text-neutral-600',
         className
       )}
       {...props}

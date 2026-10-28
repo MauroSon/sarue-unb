@@ -98,7 +98,7 @@ export const ContributorsDialog: React.FC<ContributorsDialogProps> = ({
               </Button>
             </div>
           </div>
-          <div className="flex items-center justify-between gap-3 bg-white dark:bg-paper border-2 border-ink rounded-lg p-3.5 shadow-neo-sm">
+          <div className="flex items-center justify-between gap-3 bg-paper border-2 border-ink rounded-lg p-3.5 shadow-neo-sm">
             <div className="min-w-0 flex-1">
               <span className="text-[11px] font-black uppercase tracking-wider text-neutral-700 block">
                 Contribuidor de código
@@ -157,7 +157,7 @@ export const ContributorsDialog: React.FC<ContributorsDialogProps> = ({
               </Button>
             </div>
           </div>
-          <div className="flex items-center justify-between gap-3 bg-white dark:bg-paper border-2 border-ink rounded-lg p-3.5 shadow-neo-sm">
+          <div className="flex items-center justify-between gap-3 bg-paper border-2 border-ink rounded-lg p-3.5 shadow-neo-sm">
             <div className="min-w-0 flex-1">
               <span className="text-[11px] font-black uppercase tracking-wider text-neutral-700 block">
                 Contribuidor

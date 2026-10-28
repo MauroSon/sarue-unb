@@ -243,7 +243,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 className="cursor-pointer text-left block focus-visible:outline-hidden"
               >
                 <span className="font-extrabold text-base tracking-tight whitespace-nowrap text-black block truncate">
-                  Saruê <span className="text-[#468AFB]">UnB</span>
+                  Saruê <span className="text-unb-blue">UnB</span>
                 </span>
               </button>
             </div>
