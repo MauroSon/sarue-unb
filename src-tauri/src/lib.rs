@@ -143,10 +143,10 @@ pub fn run() {
         .invoke_handler(builder.invoke_handler())
         .build(tauri::generate_context!())
         .expect("erro durante a compilação do aplicativo Saruê UnB")
-        .run(|app_handle, event| {
+        .run(|_app_handle, _event| {
             #[cfg(target_os = "macos")]
-            if let tauri::RunEvent::Reopen { .. } = event {
-                if let Some(window) = app_handle.get_webview_window("main") {
+            if let tauri::RunEvent::Reopen { .. } = _event {
+                if let Some(window) = _app_handle.get_webview_window("main") {
                     let _ = window.show();
                     let _ = window.unminimize();
                     let _ = window.set_focus();
