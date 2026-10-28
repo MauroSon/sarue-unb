@@ -1,5 +1,5 @@
 <h1 align="center">
-<strong>Saruê UnB 0.2</strong>
+<strong>Saruê UnB 0.3</strong>
 </h1>
 
 <p align="center">
@@ -8,7 +8,7 @@
     <img alt="Windows" src="https://img.shields.io/badge/Windows-0078D6?style=for-the-badge&logo=windows&logoColor=white">
 </p>
 
-Saruê UnB é o **agregador acadêmico definitivo e moderno** para estudantes da [Universidade de Brasília (UnB)](https://www.unb.br), reimaginado e construído do zero como uma aplicação desktop de alta performance em **Tauri 2**, **Rust** e **React 19**. Ele centraliza e revitaliza a rotina universitária ao integrar **SIGAA**, **Aprender 3 (Moodle)** e **Microsoft Teams** em um feed unificado, sem atrito e com foco total em privacidade — mantendo todas as credenciais em um cofre criptográfico local e disponibilizando ferramentas essenciais como o **Monte sua Grade**, **Fluxograma Curricular interativo** de mais de 150 cursos e **Calculadora de IRA**.
+Saruê UnB é o **agregador acadêmico definitivo e moderno** para estudantes da [Universidade de Brasília (UnB)](https://www.unb.br), uma aplicação desktop de alta performance em **Tauri 2**, **Rust** e **React 19**. Ele centraliza e revitaliza a rotina universitária ao integrar **SIGAA**, **Aprender 3 (Moodle)** e **Microsoft Teams** em um feed unificado, sem atrito e com foco total em privacidade — mantendo todas as credenciais em um cofre criptográfico local e disponibilizando ferramentas essenciais como o **Monte sua Grade**, **Fluxograma Curricular interativo** de mais de 150 cursos e **Calculadora de IRA**.
 
 ---
 
@@ -16,14 +16,16 @@ Saruê UnB é o **agregador acadêmico definitivo e moderno** para estudantes da
     <img alt="Saruê UnB" src="public/sarue-logo.png" width="280">
 </p>
 
-## ✨ Funcionalidades
+## ✨ Funcionalidades Principais
 
-- **Feed Acadêmico Centralizado (SIGAA, Aprender 3 & Teams)**: Agregação unificada de posts, tarefas com prazo, avisos institucionais e lembretes em uma única linha do tempo fluida. Permite marcar atividades como concluídas e acompanhar o status de entrega sem precisar abrir dezenas de abas no navegador.
-- **Monte sua Grade com Solver em Rust**: Busca instantânea por turmas e departamentos da UnB. Conta com um algoritmo nativo em Rust que resolve e sugere combinações de horários sem choques (com suporte total aos códigos de horários da UnB, como `24M12`, `35T34`, `6N12`), filtros por turno e exportação da grade montada.
-- **Segurança Local-First com IOTA Stronghold**: Arquitetura estritamente orientada à privacidade. Suas credenciais institucionais são criptografadas diretamente no dispositivo via **Argon2id** e **ChaCha20-Poly1305** no cofre Stronghold. Zero credenciais enviadas para servidores externos; dados acadêmicos e tarefas salvos em local.
-- **Fluxograma Curricular Interativo**: Matrizes curriculares completas de mais de 150 cursos de graduação da UnB renderizadas dinamicamente em diagramas. Visualize disciplinas obrigatórias por nível/semestre, optativas, créditos, cargas horárias e cadeias completas de pré-requisitos e equivalências.
-- **Calculadora e Simulador de IRA**: Aplicação fiel da fórmula institucional do Índice de Rendimento Acadêmico da UnB e simulador de cenários para projetar o impacto de notas futuras antes de trancar ou cursar disciplinas.
-- **Performance Extrema com Dados Estáticos via CDN**: Extração pesada de turmas e matrizes curriculares desacoplada em pipelines agendadas no GitHub Actions e servidas via CDN estático (branch `gh-pages`), eliminando lentidão de scraping em tempo de execução e garantindo tempo de resposta em microssegundos.
+- **Feed Acadêmico Centralizado (SIGAA, Aprender 3 & Teams)**
+- **Monte sua Grade com Solver em Rust**
+- **Segurança Local-First com IOTA Stronghold**
+- **Fluxograma Curricular Interativo**
+- **Avaliação de Professores Usando Planilha Externa da Comunidade**
+- **Calculadora e Simulador de IRA**
+- **Performance Extrema com Dados Estáticos via CDN**
+- **Opções de Acessibilidade**
 
 ---
 
