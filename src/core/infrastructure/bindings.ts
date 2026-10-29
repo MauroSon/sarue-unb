@@ -106,10 +106,7 @@ export type Department = {
 export type DiscenteAcademicHistoryPayload = {
 	profile: DiscenteProfile,
 	pdfBase64: string | null,
-	/**
-	 *  Texto do PDF já extraído no Rust: parsear no webview (unpdf/pdf.js)
-	 *  estourava o WebProcess e recarregava a página em loop.
-	 */
+	/**  Texto do PDF já extraído no backend para evitar overhead no webview. */
 	pdfText: string | null,
 };
 
@@ -117,11 +114,7 @@ export type DiscenteProfile = {
 	matricula: string,
 	nome: string | null,
 	curso: string,
-	/**
-	 *  Token de turno anexado pelo SIGAA ao campo Curso (ex.: "MT", "N",
-	 *  "DIURNO"). Sem ele, cursos homônimos diurno/noturno viram o mesmo
-	 *  curso no catálogo e o fluxograma sai da matriz errada.
-	 */
+	/**  Turno informado pelo SIGAA (ex.: "MT", "N", "DIURNO"). */
 	turno?: string | null,
 	nivel: string,
 	status: string,

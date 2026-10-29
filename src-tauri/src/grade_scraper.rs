@@ -195,10 +195,22 @@ impl SigaaGradeScraper {
             if let Some(exe_dir) = exe_path.parent() {
                 candidates.push(exe_dir.join("public").join("data").join(file_name));
                 candidates.push(exe_dir.join("data").join(file_name));
-                candidates.push(exe_dir.join("resources").join("public").join("data").join(file_name));
+                candidates.push(
+                    exe_dir
+                        .join("resources")
+                        .join("public")
+                        .join("data")
+                        .join(file_name),
+                );
                 candidates.push(exe_dir.join("resources").join("data").join(file_name));
                 if let Some(contents_dir) = exe_dir.parent() {
-                    candidates.push(contents_dir.join("Resources").join("public").join("data").join(file_name));
+                    candidates.push(
+                        contents_dir
+                            .join("Resources")
+                            .join("public")
+                            .join("data")
+                            .join(file_name),
+                    );
                     candidates.push(contents_dir.join("Resources").join("data").join(file_name));
                 }
             }
@@ -415,7 +427,10 @@ impl SigaaGradeScraper {
                     e,
                     course_id
                 );
-                Err(format!("Falha ao carregar matrizes do curso {}: {}", course_id, e))
+                Err(format!(
+                    "Falha ao carregar matrizes do curso {}: {}",
+                    course_id, e
+                ))
             }
         }
     }
