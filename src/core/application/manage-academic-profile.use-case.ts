@@ -3,7 +3,7 @@ import type { CurriculumStructure } from '../domain/entities/course';
 import type { SigaaCredentials } from '../domain/entities/credential';
 import type { IAcademicProfileRepository } from '../domain/interfaces/academic-profile-repo.interface';
 import type { IGradeRepository } from '../domain/interfaces/grade-repo.interface';
-import { normalizeCourseText } from './get-courses.use-case';
+import { resolveCourseIdFromCatalog } from './get-courses.use-case';
 import { ParseHistoricoUseCase } from './parse-historico.use-case';
 
 export class ManageAcademicProfileUseCase {
@@ -188,8 +188,9 @@ export class ManageAcademicProfileUseCase {
     // catálogo pequeno (courses.json, ~48KB) e baixa só as matrizes dele.
     // O catálogo completo é último recurso.
     let curriculaCatalog: CurriculumStructure[] = [];
+    let usedFullCatalog = false;
     try {
-      const courseId = await this.resolveCourseId(rawRes.curso);
+      const courseId = await this.resolveCourseId(rawRes.curso, rawRes.turno);
       if (courseId) {
         curriculaCatalog = await this.repo.getCurriculaForCourse(courseId);
       }
@@ -201,9 +202,10 @@ export class ManageAcademicProfileUseCase {
     }
     if (curriculaCatalog.length === 0) {
       curriculaCatalog = await this.repo.getAllCurricula();
+      usedFullCatalog = true;
     }
 
-    const parseResult = await this.parseHistoricoUseCase.execute({
+    const parseInput = {
       rawText: rawRes.pdfText,
       pdfBase64: rawRes.pdfBase64,
       defaultProfile: {
@@ -219,9 +221,39 @@ export class ManageAcademicProfileUseCase {
         chTotalCurriculo: rawRes.chTotalCurriculo,
         chComplementarPendente: rawRes.chComplementarPendente,
         percentualIntegralizado: rawRes.percentualIntegralizado,
+        // `turno` do payload (Rust, em pt) alimenta `shift` do perfil
+        shift: rawRes.turno ?? undefined,
       },
       curriculaCatalog,
-    });
+    };
+
+    let parseResult = await this.parseHistoricoUseCase.execute(parseInput);
+
+    // Auto-cura: o histórico aponta uma matriz cujo código não existe nas
+    // matrizes do curso resolvido pelo nome (acontece quando o SIGAA oferece
+    // o mesmo curso em turnos distintos e a resolução ficou ambígua). Nesse
+    // caso, casa contra o catálogo completo, que contém a matriz real.
+    const curriculumPrefix = parseResult.profile.curriculumCode?.match(/^(\d{3,5})\//)?.[1];
+    if (
+      !usedFullCatalog &&
+      curriculumPrefix &&
+      !curriculaCatalog.some((c) => c.code.startsWith(curriculumPrefix))
+    ) {
+      try {
+        const fullCatalog = await this.repo.getAllCurricula();
+        if (fullCatalog.some((c) => c.code.startsWith(curriculumPrefix))) {
+          parseResult = await this.parseHistoricoUseCase.execute({
+            ...parseInput,
+            curriculaCatalog: fullCatalog,
+          });
+        }
+      } catch (e) {
+        console.warn(
+          '[ManageAcademicProfile] Auto-cura com catálogo completo falhou:',
+          e
+        );
+      }
+    }
 
     const currentProfile = await this.repo.getProfile();
     // Preserva eventuais marcações manuais e matriz customizada anteriores
@@ -248,19 +280,14 @@ export class ManageAcademicProfileUseCase {
   }
 
   /** Resolve o course_id no catálogo pequeno de cursos (~48KB, via Rust). */
-  private async resolveCourseId(courseName: string): Promise<string | null> {
+  private async resolveCourseId(
+    courseName: string,
+    shiftToken?: string | null
+  ): Promise<string | null> {
     if (!courseName || !this.gradeRepo?.getCoursesCatalog) return null;
     try {
       const catalog = (await this.gradeRepo.getCoursesCatalog()) || [];
-      if (catalog.length === 0) return null;
-      const target = normalizeCourseText(courseName);
-      const hit =
-        catalog.find((c) => normalizeCourseText(c.name) === target) ||
-        catalog.find((c) => {
-          const n = normalizeCourseText(c.name);
-          return n.length >= 4 && (n.includes(target) || target.includes(n));
-        });
-      return hit ? hit.id : null;
+      return resolveCourseIdFromCatalog(catalog, courseName, shiftToken);
     } catch {
       return null;
     }

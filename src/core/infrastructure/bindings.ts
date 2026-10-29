@@ -117,6 +117,12 @@ export type DiscenteProfile = {
 	matricula: string,
 	nome: string | null,
 	curso: string,
+	/**
+	 *  Token de turno anexado pelo SIGAA ao campo Curso (ex.: "MT", "N",
+	 *  "DIURNO"). Sem ele, cursos homônimos diurno/noturno viram o mesmo
+	 *  curso no catálogo e o fluxograma sai da matriz errada.
+	 */
+	turno?: string | null,
 	nivel: string,
 	status: string,
 	entrada: string,

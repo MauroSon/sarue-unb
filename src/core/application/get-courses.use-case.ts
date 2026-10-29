@@ -1,5 +1,6 @@
-import type { Course, CourseAssociation, Discipline } from '../domain/entities/course';
+import type { Course, CourseAssociation, CourseCatalogItem, Discipline } from '../domain/entities/course';
 import type { IFeedRepository } from '../domain/interfaces/feed-repo.interface';
+import { catalogShiftMatchesFamily, shiftFamilyFromSigaaToken } from '../domain/course-shift';
 
 export interface GetDisciplinesResult {
   disciplines: Discipline[];
@@ -17,6 +18,45 @@ export function normalizeCourseText(text: string): string {
     .replace(/\s+/g, ' ')
     .trim();
 }
+
+/**
+ * Resolve o course_id do cat\u00e1logo de cursos a partir do nome e do turno.
+ * Cursos hom\u00f4nimos existem em turnos distintos com course_ids diferentes
+ * (ex.: FARM\u00c1CIA diurno = 414906/414286, noturno = 414287): casar s\u00f3 pelo
+ * nome devolve sempre a primeira entrada, de outro turno. O token de turno
+ * do SIGAA ("MT", "N", "DIURNO"...) desambigua quando houver concorr\u00eancia.
+ */
+export function resolveCourseIdFromCatalog(
+  catalog: Pick<CourseCatalogItem, 'id' | 'name' | 'shift'>[],
+  courseName: string,
+  shiftToken?: string | null
+): string | null {
+  if (!courseName || catalog.length === 0) return null;
+  const target = normalizeCourseText(courseName);
+  const sameName = catalog.filter((c) => normalizeCourseText(c.name) === target);
+  const partial =
+    sameName.length === 0
+      ? catalog.filter((c) => {
+          const n = normalizeCourseText(c.name);
+          return n.length >= 4 && (n.includes(target) || target.includes(n));
+        })
+      : [];
+  const pool = sameName.length > 0 ? sameName : partial;
+  if (pool.length === 0) return null;
+  if (pool.length === 1) return pool[0].id;
+
+  const family = shiftFamilyFromSigaaToken(shiftToken);
+  if (family) {
+    const compatible = pool.filter((c) => catalogShiftMatchesFamily(c.shift, family));
+    // Exato primeiro: pistas "DIURNO" preferem entradas DIURNO a INTEGRAL
+    const initial = family[0];
+    const exact = compatible.filter((c) => normalizeCourseText(c.shift ?? '')[0] === initial);
+    if (exact.length > 0) return exact[0].id;
+    if (compatible.length > 0) return compatible[0].id;
+  }
+  return pool[0].id;
+}
+
 
 export function getCourseAcronym(name: string): string {
   const stopWords = new Set([

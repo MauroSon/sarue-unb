@@ -1,6 +1,7 @@
 import { extractText } from 'unpdf';
 import type { CompletedDiscipline, StudentAcademicProfile } from '../domain/entities/academic-profile';
 import type { CurriculumStructure } from '../domain/entities/course';
+import { preferShiftCompatible, shiftFamilyFromSigaaToken } from '../domain/course-shift';
 
 export interface ParseHistoricoInput {
   pdfData?: Uint8Array;
@@ -191,6 +192,14 @@ export class ParseHistoricoUseCase {
     // Ano de Ingresso
     const anoMatch = fullText.match(/(?:Ano\s*\/\s*Per[íi]odo\s*Letivo\s*Inicial|Entrada):\s*(\d{4}\.[12]|\d{4})/i);
     const admissionYear = anoMatch?.[1] || input.defaultProfile?.admissionYear || '';
+
+    // Turno do curso: o SIGAA anexa o token ao campo Curso do portal do
+    // discente (ex.: "- MT") e o histórico escolar imprime a palavra por
+    // extenso na linha do curso (ex.: "... - BACHARELADO - DIURNO"). O token
+    // cru do portal tem prioridade; o texto do histórico serve de reforço.
+    const shiftWord = headerPortion.match(/\b(DIURNO|NOTURNO|INTEGRAL|MATUTINO|VESPERTINO)\b/i)?.[1];
+    const shift =
+      shiftFamilyFromSigaaToken(input.defaultProfile?.shift || shiftWord) || 'DIURNO';
 
     // Nível
     const nivelMatch = fullText.match(/N[íi]vel:\s*([^\n\r]+)/i);
@@ -408,7 +417,10 @@ export class ParseHistoricoUseCase {
       matchedCurriculum = curricula.find((c) => c.code === curriculumCode);
       if (!matchedCurriculum) {
         const prefix = curriculumCode.split('/')[0];
-        const candidates = curricula.filter((c) => c.code.startsWith(`${prefix}/`) || c.code.startsWith(prefix));
+        let candidates = curricula.filter((c) => c.code.startsWith(`${prefix}/`) || c.code.startsWith(prefix));
+        // Mesmo prefixo pode ter versões de turnos distintos: as do turno do
+        // discente vêm primeiro nos desempates abaixo
+        candidates = preferShiftCompatible(candidates, shift);
 
         // Prioridade 1: Carga horária total correspondente (ex: 3480h)
         if (input.defaultProfile?.chTotalCurriculo) {
@@ -438,9 +450,13 @@ export class ParseHistoricoUseCase {
     // Se não encontrou por código de currículo, tenta por nome de curso normalizado
     if (!matchedCurriculum && courseName && curricula.length > 0) {
       const normCourse = normalizeName(courseName);
-      const candidates = curricula.filter(
+      let candidates = curricula.filter(
         (c) => normalizeName(c.courseName) === normCourse || normalizeName(c.courseName).includes(normCourse)
       );
+      // Cursos homônimos existem em turnos distintos com matrizes diferentes
+      // (ex.: FARMÁCIA diurno 7013 vs noturno 7609): as do turno do discente
+      // vêm primeiro nos desempates abaixo
+      candidates = preferShiftCompatible(candidates, shift);
 
       // Prioridade 1: Carga horária total correspondente
       if (input.defaultProfile?.chTotalCurriculo) {
@@ -553,7 +569,7 @@ export class ParseHistoricoUseCase {
       studentName,
       courseName,
       degree: input.defaultProfile?.degree || 'Bacharelado',
-      shift: input.defaultProfile?.shift || 'DIURNO',
+      shift,
       level,
       admissionYear,
       curriculumCode: curriculumCode || matchedCurriculum?.code,

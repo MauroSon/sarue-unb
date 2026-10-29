@@ -2,7 +2,11 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useContainer } from '../context/ContainerContext';
 import { useCredentials } from './useCredentials';
 import { toast } from '@/components/ui';
-import { normalizeCourseText } from '@/core';
+import {
+  preferShiftCompatible,
+  resolveCourseIdFromCatalog,
+  shiftFamilyFromSigaaToken,
+} from '@/core';
 import type {
   StudentAcademicProfile,
   FlowchartData,
@@ -19,6 +23,7 @@ export function notifyMyCourseListeners() {
 
 // Resolve o course_id do curso do perfil no catálogo de cursos (courses.json, ~47 KB).
 // Com ele, o app baixa só as matrizes do curso em vez do catálogo inteiro da UnB.
+// O turno do perfil desambigua cursos homônios diurno/noturno (ex.: FARMÁCIA).
 export async function resolveCourseIdForProfile(
   profile: StudentAcademicProfile,
   gradeRepo: IGradeRepository,
@@ -26,15 +31,7 @@ export async function resolveCourseIdForProfile(
   if (!profile.courseName) return null;
   try {
     const catalog = (await gradeRepo.getCoursesCatalog?.()) || [];
-    if (catalog.length === 0) return null;
-    const target = normalizeCourseText(profile.courseName);
-    const hit =
-      catalog.find((c) => normalizeCourseText(c.name) === target) ||
-      catalog.find((c) => {
-        const n = normalizeCourseText(c.name);
-        return n.length >= 4 && (n.includes(target) || target.includes(n));
-      });
-    return hit ? hit.id : null;
+    return resolveCourseIdFromCatalog(catalog, profile.courseName, profile.shift);
   } catch (e) {
     console.warn('[useMyCourse] Não foi possível resolver o curso no catálogo:', e);
     return null;
@@ -100,6 +97,25 @@ export function useMyCourse() {
             ? cachedCurricula
             : await useCases.manageAcademicProfile.getAllCurricula();
         curriculaScope = 'ALL';
+      }
+
+      // Auto-cura: o perfil aponta uma matriz cujo código não existe nas
+      // matrizes do curso resolvido pelo nome (resolução ambígua antiga,
+      // perfis salvos antes da correção de turno). Recarrega o catálogo
+      // completo, que contém a matriz real do histórico.
+      const curriculumPrefix = currentProfile?.curriculumCode?.match(/^(\d{3,5})\//)?.[1];
+      if (
+        curriculaScope !== 'ALL' &&
+        curriculumPrefix &&
+        curricula.length > 0 &&
+        !curricula.some((c) => c.code.startsWith(curriculumPrefix))
+      ) {
+        try {
+          curricula = await useCases.manageAcademicProfile.getAllCurricula();
+          curriculaScope = 'ALL';
+        } catch (e) {
+          console.warn('[useMyCourse] Auto-cura com catálogo completo falhou:', e);
+        }
       }
 
       cachedCurricula = curricula;
@@ -232,13 +248,17 @@ export function useMyCourse() {
 
         if (!matched && currentProfile.courseName) {
           const normCourse = currentProfile.courseName.toUpperCase().trim();
+          // Mesmo nome pode ter matrizes de turnos distintos: as do turno do
+          // discente vêm primeiro no casamento por CH total e por status
+          const byName = preferShiftCompatible(
+            curricula.filter((c) => c.courseName.toUpperCase().includes(normCourse)),
+            shiftFamilyFromSigaaToken(currentProfile.shift)
+          );
           if (currentProfile.chTotalCurriculo) {
-            matched = curricula.find((c) => c.courseName.toUpperCase().includes(normCourse) && c.totalHours === currentProfile.chTotalCurriculo);
+            matched = byName.find((c) => c.totalHours === currentProfile.chTotalCurriculo);
           }
           if (!matched) {
-            matched =
-              curricula.find((c) => c.courseName.toUpperCase().includes(normCourse) && c.status === 'Ativa') ||
-              curricula.find((c) => c.courseName.toUpperCase().includes(normCourse));
+            matched = byName.find((c) => c.status === 'Ativa') || byName[0];
           }
         }
 

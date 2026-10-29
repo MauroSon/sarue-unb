@@ -105,6 +105,11 @@ pub struct DiscenteProfile {
     pub matricula: String,
     pub nome: Option<String>,
     pub curso: String,
+    /// Token de turno anexado pelo SIGAA ao campo Curso (ex.: "MT", "N",
+    /// "DIURNO"). Sem ele, cursos homônimos diurno/noturno viram o mesmo
+    /// curso no catálogo e o fluxograma sai da matriz errada.
+    #[serde(default)]
+    pub turno: Option<String>,
     pub nivel: String,
     pub status: String,
     pub entrada: String,
