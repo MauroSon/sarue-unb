@@ -391,13 +391,7 @@ impl SigaaClient {
             .trim()
             .to_string();
 
-        // Turno informado pelo SIGAA no campo Curso: sufixo após " - "
-        // (ex.: "FARMÁCIA/CBC - Bacharelado - MT") ou entre parênteses
-        // (ex.: "FARMÁCIA (NOTURNO)/CBC"). Guardar o token cru permite o
-        // frontend distinguir cursos homônimos diurno/noturno no catálogo.
-        // O sufixo só vale se tiver cara de turno — graus como "Bacharelado"
-        // não contam — e o parêntese serve de fallback para nomes sem turno
-        // no sufixo.
+        // Turno informado pelo SIGAA (ex.: "- MT" ou "(NOTURNO)")
         let turno_re = Regex::new(
             r"(?i)\b((?:DIURNO|NOTURNO|INTEGRAL|MATUTINO|VESPERTINO)(?:\s+E\s+(?:DIURNO|NOTURNO|INTEGRAL|MATUTINO|VESPERTINO))?|[MVTNDI]{1,3})\b",
         )
@@ -410,9 +404,7 @@ impl SigaaClient {
                 .map(|c| c[1].to_uppercase())
         });
 
-        // Remove o turno parenthezado do nome do curso, já capturado acima
-        // (ex.: "ENFERMAGEM (DIURNO)" -> "ENFERMAGEM"), para casar com o nome
-        // limpo do catálogo de cursos.
+        // Remove turno parentesado do nome
         let curso = Regex::new(r"(?i)\s*\((?:DIURNO|NOTURNO|INTEGRAL|MATUTINO|VESPERTINO)\)\s*$")
             .ok()
             .map(|re| re.replace(&curso, "").trim().to_string())

@@ -19,13 +19,7 @@ export function normalizeCourseText(text: string): string {
     .trim();
 }
 
-/**
- * Resolve o course_id do cat\u00e1logo de cursos a partir do nome e do turno.
- * Cursos hom\u00f4nimos existem em turnos distintos com course_ids diferentes
- * (ex.: FARM\u00c1CIA diurno = 414906/414286, noturno = 414287): casar s\u00f3 pelo
- * nome devolve sempre a primeira entrada, de outro turno. O token de turno
- * do SIGAA ("MT", "N", "DIURNO"...) desambigua quando houver concorr\u00eancia.
- */
+/** Resolve o course_id no catálogo desambiguando cursos homônimos pelo turno. */
 export function resolveCourseIdFromCatalog(
   catalog: Pick<CourseCatalogItem, 'id' | 'name' | 'shift'>[],
   courseName: string,
@@ -48,7 +42,6 @@ export function resolveCourseIdFromCatalog(
   const family = shiftFamilyFromSigaaToken(shiftToken);
   if (family) {
     const compatible = pool.filter((c) => catalogShiftMatchesFamily(c.shift, family));
-    // Exato primeiro: pistas "DIURNO" preferem entradas DIURNO a INTEGRAL
     const initial = family[0];
     const exact = compatible.filter((c) => normalizeCourseText(c.shift ?? '')[0] === initial);
     if (exact.length > 0) return exact[0].id;

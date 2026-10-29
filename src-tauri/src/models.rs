@@ -105,9 +105,7 @@ pub struct DiscenteProfile {
     pub matricula: String,
     pub nome: Option<String>,
     pub curso: String,
-    /// Token de turno anexado pelo SIGAA ao campo Curso (ex.: "MT", "N",
-    /// "DIURNO"). Sem ele, cursos homônimos diurno/noturno viram o mesmo
-    /// curso no catálogo e o fluxograma sai da matriz errada.
+    /// Turno informado pelo SIGAA (ex.: "MT", "N", "DIURNO").
     #[serde(default)]
     pub turno: Option<String>,
     pub nivel: String,
@@ -128,7 +126,6 @@ pub struct DiscenteProfile {
 pub struct DiscenteAcademicHistoryPayload {
     pub profile: DiscenteProfile,
     pub pdf_base64: Option<String>,
-    /// Texto do PDF já extraído no Rust: parsear no webview (unpdf/pdf.js)
-    /// estourava o WebProcess e recarregava a página em loop.
+    /// Texto do PDF já extraído no backend para evitar overhead no webview.
     pub pdf_text: Option<String>,
 }

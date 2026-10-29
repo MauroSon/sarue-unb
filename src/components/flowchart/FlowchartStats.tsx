@@ -12,7 +12,6 @@ export const FlowchartStats: React.FC<FlowchartStatsProps> = ({ metrics, onOpenI
   const rawPercentual = metrics.percentualIntegralizado ?? metrics.mandatoryProgressPercentage;
   const percentual = Number.isFinite(rawPercentual) ? Math.max(0, Math.min(100, rawPercentual)) : 0;
   const totalCurriculo = metrics.chTotalCurriculo ?? metrics.totalHours;
-  // CH obrigatória da própria matriz (soma das disciplinas obrigatórias)
   const obrigatoriaTotal = metrics.chObrigatoriaTotal;
   const obrigatoriaPendente = metrics.chObrigatoriaPendente;
   const optativaPendente = metrics.chOptativaPendente;
@@ -31,7 +30,6 @@ export const FlowchartStats: React.FC<FlowchartStatsProps> = ({ metrics, onOpenI
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-      {/* 1. Progresso Geral / Integralização Oficial SIGAA */}
       <div className="bg-paper border-2 border-ink rounded-xl p-4 shadow-neo flex flex-col justify-between">
         <div className="flex items-center justify-between mb-2">
           <span className="text-xs font-black uppercase tracking-wider text-neutral-600">
@@ -52,7 +50,6 @@ export const FlowchartStats: React.FC<FlowchartStatsProps> = ({ metrics, onOpenI
             </span>
           </div>
 
-          {/* Barra de progresso neo-brutalista */}
           <div
             role="progressbar"
             aria-label="Percentual de integralização do curso"
@@ -73,7 +70,6 @@ export const FlowchartStats: React.FC<FlowchartStatsProps> = ({ metrics, onOpenI
         </p>
       </div>
 
-      {/* 2. Carga Horária Obrigatória */}
       <div className="bg-paper border-2 border-ink rounded-xl p-4 shadow-neo flex flex-col justify-between">
         <div className="flex items-center justify-between mb-2">
           <span className="text-xs font-black uppercase tracking-wider text-neutral-600">
@@ -100,7 +96,6 @@ export const FlowchartStats: React.FC<FlowchartStatsProps> = ({ metrics, onOpenI
         </p>
       </div>
 
-      {/* 3. Carga Horária Total do Curso */}
       <div className="bg-paper border-2 border-ink rounded-xl p-4 shadow-neo flex flex-col justify-between">
         <div className="flex items-center justify-between mb-2">
           <span className="text-xs font-black uppercase tracking-wider text-neutral-600">
@@ -125,7 +120,6 @@ export const FlowchartStats: React.FC<FlowchartStatsProps> = ({ metrics, onOpenI
         </p>
       </div>
 
-      {/* 4. Índices Acadêmicos e Situação */}
       <div className="bg-paper border-2 border-ink rounded-xl p-4 shadow-neo flex flex-col justify-between">
         <div className="flex items-center justify-between mb-2">
           <span className="text-xs font-black uppercase tracking-wider text-neutral-600">

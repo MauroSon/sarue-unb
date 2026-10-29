@@ -902,7 +902,6 @@ Currículo: 1741/1
 
     it('syncWithSigaa não deve zerar disciplinas salvas se a emissão do PDF falhar ou retornar vazia', async () => {
       const repo = new InMemoryAcademicProfileRepository();
-      // Perfil pré-existente válido
       await repo.saveProfile({
         matricula: '202000000',
         courseName: 'ENGENHARIA DE COMPUTAÇÃO',
@@ -918,7 +917,6 @@ Currículo: 1741/1
         updatedAt: new Date().toISOString(),
       });
 
-      // Mock repo onde fetchSigaaHistory retorna apenas metadados básicos sem PDF (falha de emissão no SIGAA)
       repo.fetchSigaaHistory = async () => ({
         matricula: '202000000',
         nome: 'Discente Teste',
@@ -934,10 +932,8 @@ Currículo: 1741/1
       const useCase = new ManageAcademicProfileUseCase(repo);
       const result = await useCase.syncWithSigaa({ matricula: '202000000', senha: '123' });
 
-      // As disciplinas anteriores devem ter sido preservadas
       expect(result.profile.completedDisciplines.length).toBe(2);
       expect(result.profile.completedDisciplines.map((d) => d.code)).toEqual(['CIC0004', 'MAT0025']);
-      // E o IRA novo deve ter sido atualizado
       expect(result.profile.ira).toBe(4.5);
     });
 
@@ -970,14 +966,12 @@ Currículo: 1741/1
       repo.getAllCurricula = async () => curriculaCatalog;
       repo.getCurriculaForCourse = async () => curriculaCatalog;
 
-      // Discente selecionou manualmente a matriz antiga 1741/1
       const useCase = new ManageAcademicProfileUseCase(repo);
       await useCase.setCurriculum(curriculaCatalog[1]);
 
       const profileBefore = await repo.getProfile();
       expect(profileBefore?.userSelectedCurriculumCode).toBe('1741/1');
 
-      // Simula uma nova sincronização automática com o SIGAA
       repo.fetchSigaaHistory = async () => ({
         matricula: '202000000',
         nome: 'Discente Teste',
@@ -990,7 +984,6 @@ Currículo: 1741/1
 
       const syncResult = await useCase.syncWithSigaa({ matricula: '202000000', senha: '123' });
 
-      // Deve manter a matriz 1741/1 escolhida pelo usuário, e não sobrescrever para 1741/3
       expect(syncResult.profile.userSelectedCurriculumCode).toBe('1741/1');
       expect(syncResult.matchedCurriculum?.code).toBe('1741/1');
     });
@@ -1000,11 +993,9 @@ Currículo: 1741/1
         { code: 'CUSTOM/1', createdYear: undefined },
         { code: '1741/1', createdYear: '2016' },
       ];
-      // Se tiver ano, casa com a compatível
       const matched = resolveCurriculumByAdmissionYear(candidates, '2020.1');
       expect(matched?.code).toBe('1741/1');
 
-      // Se só houver matriz sem createdYear, não descarta
       const customOnly = [{ code: 'CUSTOM/1', createdYear: undefined }];
       const matchedCustom = resolveCurriculumByAdmissionYear(customOnly, '2020.1');
       expect(matchedCustom?.code).toBe('CUSTOM/1');

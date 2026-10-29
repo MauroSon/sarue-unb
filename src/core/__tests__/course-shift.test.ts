@@ -8,9 +8,6 @@ import {
   type CurriculumStructure,
 } from '@/core';
 
-// Catálogo no formato real do courses.json: a UnB oferece FARMÁCIA em
-// diurno e noturno com course_ids distintos — casar só pelo nome devolve
-// sempre a primeira entrada (a noturna).
 const MOCK_CATALOG: CourseCatalogItem[] = [
   {
     id: '414287',
@@ -130,7 +127,6 @@ describe('course-shift', () => {
     it('desambigua cursos homônimos pelo turno do SIGAA', () => {
       expect(resolveCourseIdFromCatalog(MOCK_CATALOG, 'FARMÁCIA', 'N')).toBe('414287');
       expect(resolveCourseIdFromCatalog(MOCK_CATALOG, 'FARMÁCIA', 'NOTURNO')).toBe('414287');
-      // "MT" (matutino) → entradas DIURNO; primeira delas na ordem do catálogo
       expect(resolveCourseIdFromCatalog(MOCK_CATALOG, 'FARMÁCIA', 'MT')).toBe('414286');
       expect(resolveCourseIdFromCatalog(MOCK_CATALOG, 'FARMÁCIA', 'DIURNO')).toBe('414286');
     });

@@ -256,7 +256,7 @@ export class InMemoryAcademicProfileRepository implements IAcademicProfileReposi
     const cached = sharedCurriculaByCourse.get(courseId);
     if (cached) return cached;
 
-    // Tenta carregar do localStorage prévio (para persistência no navegador / web fallback)
+    // Cache local web
     const storageKey = `sarue_curricula_course_${courseId}`;
     if (typeof localStorage !== 'undefined') {
       try {

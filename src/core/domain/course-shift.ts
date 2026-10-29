@@ -1,21 +1,13 @@
-/**
- * Turno de um curso/matriz da UnB. O SIGAA usa o vocabulário DIURNO /
- * NOTURNO / INTEGRAL na listagem oficial de cursos, mas abrevia o turno
- * no portal do discente (ex.: "- MT" para matutino, "- N" para noturno).
- */
+/** Turno de um curso/matriz da UnB (DIURNO / NOTURNO / INTEGRAL). */
 export type ShiftFamily = 'DIURNO' | 'NOTURNO' | 'INTEGRAL';
 
-/** Primeira letra canônica de cada família (D/N/I) para casamento rápido. */
 const FAMILY_INITIAL: Record<ShiftFamily, string> = {
   DIURNO: 'D',
   NOTURNO: 'N',
   INTEGRAL: 'I',
 };
 
-/**
- * Normaliza um token de turno para comparação: maiúsculas, sem acentos,
- * só a primeira letra relevantemente distinta (M/T/V são variantes diurnas).
- */
+/** Normaliza token de turno para a primeira letra representativa em maiúsculo. */
 function initialOf(text: string | null | undefined): string | null {
   if (!text) return null;
   const clean = text
@@ -26,13 +18,7 @@ function initialOf(text: string | null | undefined): string | null {
   return clean[0] || null;
 }
 
-/**
- * Converte o token de turno do SIGAA (portal do discente, histórico ou valor
- * legado já persistido no perfil) na família canônica. Regra pela primeira
- * letra: N = noturno; D/I = explícitos; M/V/T = matutino, vespertino e
- * combinações (MT, MTV...) que o catálogo lista como DIURNO. Graus como
- * "Bacharelado" no lugar do turno viram null (sem pistas).
- */
+/** Converte token de turno do SIGAA na família canônica correspondente. */
 export function shiftFamilyFromSigaaToken(token: string | null | undefined): ShiftFamily | null {
   switch (initialOf(token)) {
     case 'N':
@@ -50,11 +36,7 @@ export function shiftFamilyFromSigaaToken(token: string | null | undefined): Shi
   }
 }
 
-/**
- * O turno de uma entrada do catálogo (curso ou matriz) pertence à família?
- * Noturno casa só com noturno; integral casa com integral; diurno aceita
- * diurno, integral e as variantes matutino/vespertino ("Matutino e Vespertino").
- */
+/** Verifica se o turno do catálogo pertence à família especificada. */
 export function catalogShiftMatchesFamily(
   catalogShift: string | null | undefined,
   family: ShiftFamily
@@ -66,12 +48,7 @@ export function catalogShiftMatchesFamily(
   return catalogInitial !== 'N';
 }
 
-/**
- * Reordena estávelmente matrizes/entradas colocando primeiro as do turno do
- * discente (exatas, depois compatíveis). Usado nos fallbacks de casamento de
- * matriz por nome/ano, para não escolher a matriz de outro turno quando o
- * curso existe em diurno e noturno.
- */
+/** Ordena matrizes priorizando compatibilidade com o turno do discente. */
 export function preferShiftCompatible<T extends { shift?: string | null }>(
   items: T[],
   family: ShiftFamily | null
@@ -87,11 +64,7 @@ export function preferShiftCompatible<T extends { shift?: string | null }>(
   return [...items].sort((a, b) => rank(a.shift) - rank(b.shift));
 }
 
-/**
- * Seleciona a melhor matriz entre as candidatas considerando o ano de ingresso do discente.
- * Prioriza matrizes criadas até o ano de ingresso (mais recentes primeiro).
- * Tolera matrizes sem createdYear para não excluir currículos válidos mas sem ano cadastrado.
- */
+/** Seleciona a matriz mais recente criada até o ano de ingresso do discente. */
 export function resolveCurriculumByAdmissionYear<T extends { createdYear?: string | null }>(
   candidates: T[],
   admissionYear?: string | null,

@@ -157,8 +157,6 @@ export class TauriAcademicProfileRepository implements IAcademicProfileRepositor
   }
 
   async getAllCurricula(): Promise<CurriculumStructure[]> {
-    // Carrega via fetch('/data/curricula.json') em chunks não-bloqueantes com cache compartilhado,
-    // evitando serializar 40 MB via evaluateJavaScript na Main Thread do macOS (WKWebView).
     const fromStaticAsset = await this.fallbackRepo.getAllCurricula();
     if (fromStaticAsset.length > 0) {
       return fromStaticAsset;
@@ -181,7 +179,6 @@ export class TauriAcademicProfileRepository implements IAcademicProfileRepositor
     if (!courseId) return [];
     const db = await getDatabase();
 
-    // 1. Tenta buscar via bindings Tauri (lê de arquivo empacotado ou CDN)
     try {
       const { commands } = await import('@/core/infrastructure/bindings');
       const response = await commands.getCourseCurriculum(courseId);
@@ -194,7 +191,7 @@ export class TauriAcademicProfileRepository implements IAcademicProfileRepositor
       console.warn('[TauriAcademicProfileRepository] Erro ao buscar matrizes do curso via bindings Tauri:', e);
     }
 
-    // 2. Se a chamada Tauri falhar ou estiver sem internet, consulta o cache do SQLite (Offline First)
+    // Cache offline SQLite
     if (db) {
       try {
         await ensureAcademicTable(db);
@@ -213,7 +210,7 @@ export class TauriAcademicProfileRepository implements IAcademicProfileRepositor
       }
     }
 
-    // 3. Fallback estático em memória / localStorage / fetch
+    // Fallback estático
     const fromFallback = await this.fallbackRepo.getCurriculaForCourse(courseId);
     if (fromFallback.length > 0 && db) {
       await saveCurriculaToDb(db, courseId, fromFallback);

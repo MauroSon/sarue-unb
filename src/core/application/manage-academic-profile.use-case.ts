@@ -186,9 +186,7 @@ export class ManageAcademicProfileUseCase {
   }> {
     const rawRes = await this.repo.fetchSigaaHistory(creds);
 
-    // O catálogo completo (curricula.json) tem ~43MB: resolve o curso no
-    // catálogo pequeno (courses.json, ~48KB) e baixa só as matrizes dele.
-    // O catálogo completo é último recurso.
+    // Baixa apenas matrizes do curso para evitar download do catálogo completo
     let curriculaCatalog: CurriculumStructure[] = [];
     let usedFullCatalog = false;
     try {
@@ -223,7 +221,6 @@ export class ManageAcademicProfileUseCase {
         chTotalCurriculo: rawRes.chTotalCurriculo,
         chComplementarPendente: rawRes.chComplementarPendente,
         percentualIntegralizado: rawRes.percentualIntegralizado,
-        // `turno` do payload (Rust, em pt) alimenta `shift` do perfil
         shift: rawRes.turno ?? undefined,
       },
       curriculaCatalog,
@@ -231,10 +228,7 @@ export class ManageAcademicProfileUseCase {
 
     let parseResult = await this.parseHistoricoUseCase.execute(parseInput);
 
-    // Auto-cura: o histórico aponta uma matriz cujo código não existe nas
-    // matrizes do curso resolvido pelo nome (acontece quando o SIGAA oferece
-    // o mesmo curso em turnos distintos e a resolução ficou ambígua). Nesse
-    // caso, casa contra o catálogo completo, que contém a matriz real.
+    // Auto-cura: se a matriz não constar no arquivo do curso, tenta o catálogo completo
     const curriculumPrefix = parseResult.profile.curriculumCode?.match(/^(\d{3,5})\//)?.[1];
     if (
       !usedFullCatalog &&
@@ -258,14 +252,12 @@ export class ManageAcademicProfileUseCase {
     }
 
     const currentProfile = await this.repo.getProfile();
-    // Preserva integridade de dados anteriores contra scraping parcial ou falhas transitórias
     if (currentProfile) {
       parseResult.profile.manualCompletedCodes = currentProfile.manualCompletedCodes || [];
       parseResult.profile.manualUncompletedCodes = currentProfile.manualUncompletedCodes || [];
       parseResult.profile.customCurriculum = currentProfile.customCurriculum;
 
-      // Se a emissão do PDF não trouxe disciplinas mas já tínhamos histórico salvo,
-      // preservamos as disciplinas anteriores para não corromper o estado do discente
+      // Preserva histórico anterior caso o PDF venha sem disciplinas
       if (
         (!parseResult.profile.completedDisciplines || parseResult.profile.completedDisciplines.length === 0) &&
         (currentProfile.completedDisciplines?.length || 0) > 0
@@ -281,8 +273,7 @@ export class ManageAcademicProfileUseCase {
         }
       }
 
-      // Se o discente escolheu manualmente uma matriz antiga ou específica,
-      // essa escolha é soberana e sobrepõe a inferência automática da sincronização
+      // Preserva matriz escolhida manualmente pelo discente
       if (currentProfile.userSelectedCurriculumCode) {
         parseResult.profile.userSelectedCurriculumCode = currentProfile.userSelectedCurriculumCode;
         parseResult.profile.userSelectedCurriculumId = currentProfile.userSelectedCurriculumId;

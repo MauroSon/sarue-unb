@@ -173,9 +173,8 @@ impl SigaaGradeScraper {
             .unwrap_or_else(|_| reqwest::Client::new())
     }
 
-    /// Busca um arquivo JSON a partir do disco local (dev/build), CDN GitHub Pages ou raw.githubusercontent.com
+    /// Busca um arquivo JSON a partir do disco local ou CDN
     async fn fetch_static_json<T: for<'de> Deserialize<'de>>(file_name: &str) -> Result<T, String> {
-        // 1. Tenta carregar do disco local se disponível (desenvolvimento ou build local)
         let mut candidates = vec![
             std::path::PathBuf::from(format!("public/data/{}", file_name)),
             std::path::PathBuf::from(format!("../public/data/{}", file_name)),
@@ -192,14 +191,12 @@ impl SigaaGradeScraper {
             }
         }
 
-        // Suporte para aplicativo empacotado em produção (Resources bundle do Tauri)
         if let Ok(exe_path) = std::env::current_exe() {
             if let Some(exe_dir) = exe_path.parent() {
                 candidates.push(exe_dir.join("public").join("data").join(file_name));
                 candidates.push(exe_dir.join("data").join(file_name));
                 candidates.push(exe_dir.join("resources").join("public").join("data").join(file_name));
                 candidates.push(exe_dir.join("resources").join("data").join(file_name));
-                // macOS app bundle: exe_dir = Contents/MacOS -> Contents -> Resources
                 if let Some(contents_dir) = exe_dir.parent() {
                     candidates.push(contents_dir.join("Resources").join("public").join("data").join(file_name));
                     candidates.push(contents_dir.join("Resources").join("data").join(file_name));
@@ -217,7 +214,6 @@ impl SigaaGradeScraper {
             }
         }
 
-        // 2. Tenta GitHub Pages
         let client = Self::http_client();
         let url_pages = format!("{}/{}", GITHUB_PAGES_BASE_URL, file_name);
         if let Ok(res) = client.get(&url_pages).send().await {
@@ -228,7 +224,6 @@ impl SigaaGradeScraper {
             }
         }
 
-        // 3. Tenta raw.githubusercontent.com
         let url_raw = format!("{}/{}", CDN_BASE_URL, file_name);
         match client.get(&url_raw).send().await {
             Ok(res) if res.status().is_success() => res
