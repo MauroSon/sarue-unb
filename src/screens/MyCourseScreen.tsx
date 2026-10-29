@@ -50,6 +50,7 @@ export const MyCourseScreen: React.FC = () => {
     toggleDiscipline,
     resetOverrides,
     selectCurriculum,
+    reload,
   } = useMyCourse();
 
   const [searchQuery, setSearchQuery] = useState("");
@@ -212,40 +213,52 @@ export const MyCourseScreen: React.FC = () => {
         }
       />
 
-      {!profile ? (
-        <EmptyState
-          title="Nenhum Perfil Acadêmico Carregado"
-          description={
-            <>
-              Sincronize com o SIGAA na aba <strong>Configurações</strong> para
-              carregar seu curso, disciplinas cursadas, IRA e acompanhar seu
-              progresso no fluxograma.
-            </>
-          }
-          className="mb-6"
-        />
-      ) : (
-        <>
-          {/* Banner de Identificação do Discente (@DESIGN.md) */}
-          <div className="bg-paper border-2 border-ink rounded-lg p-5 mb-6 shadow-neo">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-              <div className="flex items-center flex-wrap">
-                <span className="text-lg font-black text-black tracking-tight">
-                  {profile.courseName ||
-                    curriculum?.courseName ||
-                    "Curso de Graduação"}
-                </span>
+      <ErrorBoundary
+        key="my-course-overview"
+        fallbackTitle="Não foi possível carregar a visualização do curso"
+        fallbackDescription="Ocorreu um erro inesperado ao processar os dados curriculares. Tente recarregar ou selecionar uma matriz diferente."
+        onReset={() => reload()}
+      >
+        {!profile ? (
+          <EmptyState
+            title="Nenhum Perfil Acadêmico Carregado"
+            description={
+              <>
+                Sincronize com o SIGAA na aba <strong>Configurações</strong> para
+                carregar seu curso, disciplinas cursadas, IRA e acompanhar seu
+                progresso no fluxograma.
+              </>
+            }
+            className="mb-6"
+          />
+        ) : (
+          <>
+            {/* Banner de Identificação do Discente (@DESIGN.md) */}
+            <div className="bg-paper border-2 border-ink rounded-lg p-5 mb-6 shadow-neo">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div className="flex items-center flex-wrap">
+                  <span className="text-lg font-black text-black tracking-tight">
+                    {profile.courseName ||
+                      curriculum?.courseName ||
+                      "Curso de Graduação"}
+                  </span>
+                </div>
               </div>
             </div>
-          </div>
 
-          {/* Painel de Métricas e Integralização */}
-          {flowchartData && (
-            <FlowchartStats
-              metrics={flowchartData.metrics}
-              onOpenIraCalculator={() => setView("ira-calculator")}
-            />
-          )}
+            {/* Painel de Métricas e Integralização */}
+            {flowchartData ? (
+              <FlowchartStats
+                metrics={flowchartData.metrics}
+                onOpenIraCalculator={() => setView("ira-calculator")}
+              />
+            ) : !isLoading ? (
+              <EmptyState
+                title="Matriz Curricular Não Encontrada"
+                description="Não foi possível mapear automaticamente a estrutura curricular deste curso. Clique em 'Trocar Matriz' acima para selecionar ou carregar sua matriz oficial."
+                className="mb-6"
+              />
+            ) : null}
 
           {/* Painel "Cursando agora" — resposta direta a "o que estou fazendo neste semestre?" */}
           <CurrentlyEnrolledPanel
@@ -494,6 +507,7 @@ export const MyCourseScreen: React.FC = () => {
           )}
         </>
       )}
+      </ErrorBoundary>
 
       {/* Diálogos modais */}
       <CurriculumSelectorDialog

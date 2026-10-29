@@ -1,7 +1,11 @@
 import { extractText } from 'unpdf';
 import type { CompletedDiscipline, StudentAcademicProfile } from '../domain/entities/academic-profile';
 import type { CurriculumStructure } from '../domain/entities/course';
-import { preferShiftCompatible, shiftFamilyFromSigaaToken } from '../domain/course-shift';
+import {
+  preferShiftCompatible,
+  resolveCurriculumByAdmissionYear,
+  shiftFamilyFromSigaaToken,
+} from '../domain/course-shift';
 
 export interface ParseHistoricoInput {
   pdfData?: Uint8Array;
@@ -429,16 +433,7 @@ export class ParseHistoricoUseCase {
 
         // Prioridade 2: Ano de criação compatível com ano de ingresso (<= ingresso)
         if (!matchedCurriculum && admissionYear) {
-          const admYear = parseInt(admissionYear.split('.')[0], 10);
-          if (!isNaN(admYear)) {
-            const compatible = candidates.filter((c) => {
-              const yr = c.createdYear ? parseInt(c.createdYear, 10) : undefined;
-              return yr ? yr <= admYear : true;
-            });
-            if (compatible.length > 0) {
-              matchedCurriculum = compatible[compatible.length - 1]; // Mais recente até o ingresso
-            }
-          }
+          matchedCurriculum = resolveCurriculumByAdmissionYear(candidates, admissionYear);
         }
 
         if (!matchedCurriculum) {
@@ -465,16 +460,7 @@ export class ParseHistoricoUseCase {
 
       // Prioridade 2: Ano de ingresso compatível
       if (!matchedCurriculum && admissionYear) {
-        const admYear = parseInt(admissionYear.split('.')[0], 10);
-        if (!isNaN(admYear)) {
-          const compatible = candidates.filter((c) => {
-            const yr = c.createdYear ? parseInt(c.createdYear, 10) : undefined;
-            return yr ? yr <= admYear : true;
-          });
-          if (compatible.length > 0) {
-            matchedCurriculum = compatible[compatible.length - 1];
-          }
-        }
+        matchedCurriculum = resolveCurriculumByAdmissionYear(candidates, admissionYear);
       }
 
       if (!matchedCurriculum) {

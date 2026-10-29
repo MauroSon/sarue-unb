@@ -86,3 +86,31 @@ export function preferShiftCompatible<T extends { shift?: string | null }>(
   };
   return [...items].sort((a, b) => rank(a.shift) - rank(b.shift));
 }
+
+/**
+ * Seleciona a melhor matriz entre as candidatas considerando o ano de ingresso do discente.
+ * Prioriza matrizes criadas até o ano de ingresso (mais recentes primeiro).
+ * Tolera matrizes sem createdYear para não excluir currículos válidos mas sem ano cadastrado.
+ */
+export function resolveCurriculumByAdmissionYear<T extends { createdYear?: string | null }>(
+  candidates: T[],
+  admissionYear?: string | null,
+): T | undefined {
+  if (!candidates || candidates.length === 0 || !admissionYear) return undefined;
+  const admYear = parseInt(admissionYear.split('.')[0], 10);
+  if (isNaN(admYear)) return undefined;
+
+  const compatible = candidates
+    .filter((c) => {
+      if (!c.createdYear) return true;
+      const yr = parseInt(c.createdYear, 10);
+      return !isNaN(yr) && yr <= admYear;
+    })
+    .sort((a, b) => {
+      const yrA = a.createdYear ? parseInt(a.createdYear, 10) : 0;
+      const yrB = b.createdYear ? parseInt(b.createdYear, 10) : 0;
+      return yrB - yrA;
+    });
+
+  return compatible[0];
+}

@@ -192,6 +192,21 @@ impl SigaaGradeScraper {
             }
         }
 
+        // Suporte para aplicativo empacotado em produção (Resources bundle do Tauri)
+        if let Ok(exe_path) = std::env::current_exe() {
+            if let Some(exe_dir) = exe_path.parent() {
+                candidates.push(exe_dir.join("public").join("data").join(file_name));
+                candidates.push(exe_dir.join("data").join(file_name));
+                candidates.push(exe_dir.join("resources").join("public").join("data").join(file_name));
+                candidates.push(exe_dir.join("resources").join("data").join(file_name));
+                // macOS app bundle: exe_dir = Contents/MacOS -> Contents -> Resources
+                if let Some(contents_dir) = exe_dir.parent() {
+                    candidates.push(contents_dir.join("Resources").join("public").join("data").join(file_name));
+                    candidates.push(contents_dir.join("Resources").join("data").join(file_name));
+                }
+            }
+        }
+
         for path in &candidates {
             if path.exists() {
                 if let Ok(content) = std::fs::read_to_string(path) {
@@ -382,8 +397,6 @@ impl SigaaGradeScraper {
                     .collect();
                 if !filtered.is_empty() {
                     return Ok(filtered);
-                } else {
-                    return Ok(Self::fallback_curricula_for_course(course_id));
                 }
             }
         }
@@ -399,19 +412,15 @@ impl SigaaGradeScraper {
                 let mut lock = get_curricula_lock().write().await;
                 *lock = Some(all_curricula);
 
-                if filtered.is_empty() {
-                    Ok(Self::fallback_curricula_for_course(course_id))
-                } else {
-                    Ok(filtered)
-                }
+                Ok(filtered)
             }
             Err(e) => {
                 log::warn!(
-                    "[SigaaData] Erro ao buscar currículos estáticos ({}), usando fallback local para curso {}",
+                    "[SigaaData] Erro ao buscar currículos estáticos ({}) para o curso {}",
                     e,
                     course_id
                 );
-                Ok(Self::fallback_curricula_for_course(course_id))
+                Err(format!("Falha ao carregar matrizes do curso {}: {}", course_id, e))
             }
         }
     }

@@ -5,6 +5,7 @@ import { toast } from '@/components/ui';
 import {
   preferShiftCompatible,
   resolveCourseIdFromCatalog,
+  resolveCurriculumByAdmissionYear,
   shiftFamilyFromSigaaToken,
 } from '@/core';
 import type {
@@ -215,50 +216,74 @@ export function useMyCourse() {
 
         setProfile(currentProfile);
 
-        // Encontra a matriz correspondente
+        // Encontra a matriz correspondente:
+        // 1. Prioridade máxima: Matriz selecionada manualmente pelo discente
         let matched: CurriculumStructure | undefined;
 
-        if (currentProfile.curriculumCode) {
-          matched = curricula.find((c) => c.code === currentProfile.curriculumCode);
-        }
-
-        // Dentro do mesmo prefixo, a versão cuja CH total bate com o histórico oficial do
-        // SIGAA ganha da versão gravada por engano no perfil (ex.: 1741/3 vs 1741/1)
-        if (matched && currentProfile.chTotalCurriculo) {
-          const prefix = currentProfile.curriculumCode!.split('/')[0];
-          const byHours = curricula.find(
-            (c) => c.code.startsWith(`${prefix}/`) && c.totalHours === currentProfile.chTotalCurriculo,
+        if (currentProfile.userSelectedCurriculumCode) {
+          matched = curricula.find(
+            (c) =>
+              c.code === currentProfile.userSelectedCurriculumCode ||
+              (currentProfile.userSelectedCurriculumId && c.id === currentProfile.userSelectedCurriculumId)
           );
-          if (byHours && matched.totalHours !== currentProfile.chTotalCurriculo) {
-            matched = byHours;
-          }
         }
 
-        if (!matched && currentProfile.curriculumCode) {
-          const prefix = currentProfile.curriculumCode.split('/')[0];
-          if (currentProfile.chTotalCurriculo) {
-            matched = curricula.find((c) => c.code.startsWith(prefix) && c.totalHours === currentProfile.chTotalCurriculo);
+        // Se o usuário selecionou uma matriz explicitamente e ela existe no catálogo,
+        // sua escolha é soberana: pula inferências automáticas e o bloco byHours
+        if (!matched) {
+          // 2. Prioridade: Código exato do currículo extraído do histórico
+          if (currentProfile.curriculumCode) {
+            matched = curricula.find((c) => c.code === currentProfile.curriculumCode);
           }
-          if (!matched) {
-            matched =
-              curricula.find((c) => c.code.startsWith(`${prefix}/`) && c.status === 'Ativa') ||
-              curricula.find((c) => c.code.startsWith(prefix));
-          }
-        }
 
-        if (!matched && currentProfile.courseName) {
-          const normCourse = currentProfile.courseName.toUpperCase().trim();
-          // Mesmo nome pode ter matrizes de turnos distintos: as do turno do
-          // discente vêm primeiro no casamento por CH total e por status
-          const byName = preferShiftCompatible(
-            curricula.filter((c) => c.courseName.toUpperCase().includes(normCourse)),
-            shiftFamilyFromSigaaToken(currentProfile.shift)
-          );
-          if (currentProfile.chTotalCurriculo) {
-            matched = byName.find((c) => c.totalHours === currentProfile.chTotalCurriculo);
+          // Dentro do mesmo prefixo, desempata se bater CH total do currículo
+          if (matched && currentProfile.chTotalCurriculo) {
+            const prefix = currentProfile.curriculumCode!.split('/')[0];
+            const byHours = curricula.find(
+              (c) => c.code.startsWith(`${prefix}/`) && c.totalHours === currentProfile.chTotalCurriculo,
+            );
+            if (byHours && matched.totalHours !== currentProfile.chTotalCurriculo) {
+              matched = byHours;
+            }
           }
-          if (!matched) {
-            matched = byName.find((c) => c.status === 'Ativa') || byName[0];
+
+          if (!matched && currentProfile.curriculumCode) {
+            const prefix = currentProfile.curriculumCode.split('/')[0];
+            const candidates = preferShiftCompatible(
+              curricula.filter((c) => c.code.startsWith(`${prefix}/`) || c.code.startsWith(prefix)),
+              shiftFamilyFromSigaaToken(currentProfile.shift)
+            );
+
+            if (currentProfile.chTotalCurriculo) {
+              matched = candidates.find((c) => c.totalHours === currentProfile.chTotalCurriculo);
+            }
+
+            if (!matched && currentProfile.admissionYear) {
+              matched = resolveCurriculumByAdmissionYear(candidates, currentProfile.admissionYear);
+            }
+
+            if (!matched) {
+              matched =
+                candidates.find((c) => c.status === 'Ativa') ||
+                candidates[0];
+            }
+          }
+
+          if (!matched && currentProfile.courseName) {
+            const normCourse = currentProfile.courseName.toUpperCase().trim();
+            const byName = preferShiftCompatible(
+              curricula.filter((c) => c.courseName.toUpperCase().includes(normCourse)),
+              shiftFamilyFromSigaaToken(currentProfile.shift)
+            );
+            if (currentProfile.chTotalCurriculo) {
+              matched = byName.find((c) => c.totalHours === currentProfile.chTotalCurriculo);
+            }
+            if (!matched && currentProfile.admissionYear) {
+              matched = resolveCurriculumByAdmissionYear(byName, currentProfile.admissionYear);
+            }
+            if (!matched) {
+              matched = byName.find((c) => c.status === 'Ativa') || byName[0];
+            }
           }
         }
 

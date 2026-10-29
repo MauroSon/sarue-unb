@@ -3,6 +3,7 @@ import {
   ParseHistoricoUseCase,
   GetFlowchartUseCase,
   ManageAcademicProfileUseCase,
+  resolveCurriculumByAdmissionYear,
   type StudentAcademicProfile,
   type CurriculumStructure,
 } from '@/core';
@@ -837,6 +838,176 @@ Currículo: 1741/1
       // Como CIC0004 não está concluída, OPT0001 deve estar bloqueada
       expect(opt?.status).toBe('locked');
       expect(opt?.missingPrerequisites.length).toBeGreaterThan(0);
+    });
+  });
+
+  describe('Correções de Bugs - Resiliência e Matrizes Antigas', () => {
+    it('deve selecionar a matriz mais recente compatível com o ano de ingresso em vez de forçar a ativa mais nova', async () => {
+      const curriculaCatalog: CurriculumStructure[] = [
+        {
+          id: 'curr-2026',
+          courseId: '414610',
+          courseName: 'ENGENHARIA DE COMPUTAÇÃO',
+          code: '1741/3',
+          createdYear: '2026',
+          status: 'Ativa',
+          totalHours: 2610,
+          mandatoryDisciplines: [],
+          electiveDisciplines: [],
+          complementaryDisciplines: [],
+        },
+        {
+          id: 'curr-2024',
+          courseId: '414610',
+          courseName: 'ENGENHARIA DE COMPUTAÇÃO',
+          code: '1741/2',
+          createdYear: '2024',
+          status: 'Inativa',
+          totalHours: 2460,
+          mandatoryDisciplines: [],
+          electiveDisciplines: [],
+          complementaryDisciplines: [],
+        },
+        {
+          id: 'curr-2016',
+          courseId: '414610',
+          courseName: 'ENGENHARIA DE COMPUTAÇÃO',
+          code: '1741/1',
+          createdYear: '2016',
+          status: 'Inativa',
+          totalHours: 2760,
+          mandatoryDisciplines: [],
+          electiveDisciplines: [],
+          complementaryDisciplines: [],
+        },
+      ];
+
+      const parser = new ParseHistoricoUseCase();
+      // Discente ingressou em 2018 e tem código de matriz sem versão ou apenas prefixo "1741"
+      const res = await parser.execute({
+        rawText: `
+          Dados do Vínculo do(a) Discente
+          Curso: ENGENHARIA DE COMPUTAÇÃO - BACHARELADO - DIURNO
+          Estrutura Curricular: 1741
+          Ano / Período Letivo Inicial: 2018.1
+          Matrícula: 180000000
+        `,
+        curriculaCatalog,
+      });
+
+      // Deve casar com 1741/1 (2016), que era a matriz vigente no ingresso (2016 <= 2018 < 2024), e NÃO 1741/3 (Ativa 2026)
+      expect(res.matchedCurriculum?.code).toBe('1741/1');
+      expect(res.matchedCurriculum?.createdYear).toBe('2016');
+    });
+
+    it('syncWithSigaa não deve zerar disciplinas salvas se a emissão do PDF falhar ou retornar vazia', async () => {
+      const repo = new InMemoryAcademicProfileRepository();
+      // Perfil pré-existente válido
+      await repo.saveProfile({
+        matricula: '202000000',
+        courseName: 'ENGENHARIA DE COMPUTAÇÃO',
+        level: 'GRADUAÇÃO',
+        admissionYear: '2020.1',
+        curriculumCode: '1741/1',
+        completedDisciplines: [
+          { code: 'CIC0004', name: 'APC', isCompleted: true },
+          { code: 'MAT0025', name: 'CÁLCULO 1', isCompleted: true },
+        ],
+        manualCompletedCodes: [],
+        manualUncompletedCodes: [],
+        updatedAt: new Date().toISOString(),
+      });
+
+      // Mock repo onde fetchSigaaHistory retorna apenas metadados básicos sem PDF (falha de emissão no SIGAA)
+      repo.fetchSigaaHistory = async () => ({
+        matricula: '202000000',
+        nome: 'Discente Teste',
+        curso: 'ENGENHARIA DE COMPUTAÇÃO',
+        nivel: 'GRADUAÇÃO',
+        status: 'ATIVO',
+        entrada: '2020.1',
+        ira: 4.5,
+        pdfText: undefined,
+        pdfBase64: undefined,
+      });
+
+      const useCase = new ManageAcademicProfileUseCase(repo);
+      const result = await useCase.syncWithSigaa({ matricula: '202000000', senha: '123' });
+
+      // As disciplinas anteriores devem ter sido preservadas
+      expect(result.profile.completedDisciplines.length).toBe(2);
+      expect(result.profile.completedDisciplines.map((d) => d.code)).toEqual(['CIC0004', 'MAT0025']);
+      // E o IRA novo deve ter sido atualizado
+      expect(result.profile.ira).toBe(4.5);
+    });
+
+    it('syncWithSigaa deve respeitar a matriz selecionada manualmente pelo discente (userSelectedCurriculumCode)', async () => {
+      const repo = new InMemoryAcademicProfileRepository();
+      const curriculaCatalog: CurriculumStructure[] = [
+        {
+          id: 'curr-2026',
+          courseId: '414610',
+          courseName: 'ENGENHARIA DE COMPUTAÇÃO',
+          code: '1741/3',
+          createdYear: '2026',
+          status: 'Ativa',
+          mandatoryDisciplines: [],
+          electiveDisciplines: [],
+          complementaryDisciplines: [],
+        },
+        {
+          id: 'curr-2016',
+          courseId: '414610',
+          courseName: 'ENGENHARIA DE COMPUTAÇÃO',
+          code: '1741/1',
+          createdYear: '2016',
+          status: 'Inativa',
+          mandatoryDisciplines: [],
+          electiveDisciplines: [],
+          complementaryDisciplines: [],
+        },
+      ];
+      repo.getAllCurricula = async () => curriculaCatalog;
+      repo.getCurriculaForCourse = async () => curriculaCatalog;
+
+      // Discente selecionou manualmente a matriz antiga 1741/1
+      const useCase = new ManageAcademicProfileUseCase(repo);
+      await useCase.setCurriculum(curriculaCatalog[1]);
+
+      const profileBefore = await repo.getProfile();
+      expect(profileBefore?.userSelectedCurriculumCode).toBe('1741/1');
+
+      // Simula uma nova sincronização automática com o SIGAA
+      repo.fetchSigaaHistory = async () => ({
+        matricula: '202000000',
+        nome: 'Discente Teste',
+        curso: 'ENGENHARIA DE COMPUTAÇÃO',
+        nivel: 'GRADUAÇÃO',
+        status: 'ATIVO',
+        entrada: '2020.1',
+        pdfText: MOCK_HISTORICO_TEXT,
+      });
+
+      const syncResult = await useCase.syncWithSigaa({ matricula: '202000000', senha: '123' });
+
+      // Deve manter a matriz 1741/1 escolhida pelo usuário, e não sobrescrever para 1741/3
+      expect(syncResult.profile.userSelectedCurriculumCode).toBe('1741/1');
+      expect(syncResult.matchedCurriculum?.code).toBe('1741/1');
+    });
+
+    it('resolveCurriculumByAdmissionYear deve tolerar matrizes sem createdYear sem descartá-las', () => {
+      const candidates = [
+        { code: 'CUSTOM/1', createdYear: undefined },
+        { code: '1741/1', createdYear: '2016' },
+      ];
+      // Se tiver ano, casa com a compatível
+      const matched = resolveCurriculumByAdmissionYear(candidates, '2020.1');
+      expect(matched?.code).toBe('1741/1');
+
+      // Se só houver matriz sem createdYear, não descarta
+      const customOnly = [{ code: 'CUSTOM/1', createdYear: undefined }];
+      const matchedCustom = resolveCurriculumByAdmissionYear(customOnly, '2020.1');
+      expect(matchedCustom?.code).toBe('CUSTOM/1');
     });
   });
 });

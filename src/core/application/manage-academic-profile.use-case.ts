@@ -171,6 +171,8 @@ export class ManageAcademicProfileUseCase {
       courseName: curriculum.courseName,
       curriculumCode: curriculum.code,
       curriculumId: curriculum.id,
+      userSelectedCurriculumCode: curriculum.code,
+      userSelectedCurriculumId: curriculum.id,
       updatedAt: new Date().toISOString(),
     };
 
@@ -256,11 +258,46 @@ export class ManageAcademicProfileUseCase {
     }
 
     const currentProfile = await this.repo.getProfile();
-    // Preserva eventuais marcações manuais e matriz customizada anteriores
+    // Preserva integridade de dados anteriores contra scraping parcial ou falhas transitórias
     if (currentProfile) {
       parseResult.profile.manualCompletedCodes = currentProfile.manualCompletedCodes || [];
       parseResult.profile.manualUncompletedCodes = currentProfile.manualUncompletedCodes || [];
       parseResult.profile.customCurriculum = currentProfile.customCurriculum;
+
+      // Se a emissão do PDF não trouxe disciplinas mas já tínhamos histórico salvo,
+      // preservamos as disciplinas anteriores para não corromper o estado do discente
+      if (
+        (!parseResult.profile.completedDisciplines || parseResult.profile.completedDisciplines.length === 0) &&
+        (currentProfile.completedDisciplines?.length || 0) > 0
+      ) {
+        console.warn(
+          '[ManageAcademicProfile] Emissão de histórico sem disciplinas válidas; mantendo histórico escolar anterior.'
+        );
+        parseResult.profile.completedDisciplines = currentProfile.completedDisciplines;
+        parseResult.profile.trancadaEvents = currentProfile.trancadaEvents || [];
+        if (!parseResult.profile.curriculumCode && currentProfile.curriculumCode) {
+          parseResult.profile.curriculumCode = currentProfile.curriculumCode;
+          parseResult.profile.curriculumId = currentProfile.curriculumId;
+        }
+      }
+
+      // Se o discente escolheu manualmente uma matriz antiga ou específica,
+      // essa escolha é soberana e sobrepõe a inferência automática da sincronização
+      if (currentProfile.userSelectedCurriculumCode) {
+        parseResult.profile.userSelectedCurriculumCode = currentProfile.userSelectedCurriculumCode;
+        parseResult.profile.userSelectedCurriculumId = currentProfile.userSelectedCurriculumId;
+
+        const manualCurr = curriculaCatalog.find(
+          (c) =>
+            c.code === currentProfile.userSelectedCurriculumCode ||
+            (currentProfile.userSelectedCurriculumId && c.id === currentProfile.userSelectedCurriculumId)
+        );
+        if (manualCurr) {
+          parseResult.matchedCurriculum = manualCurr;
+          parseResult.profile.curriculumCode = manualCurr.code;
+          parseResult.profile.curriculumId = manualCurr.id;
+        }
+      }
     }
 
     // Se o usuário apagou os dados/credenciais enquanto o histórico era baixado, não regrava o perfil

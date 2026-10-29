@@ -9,12 +9,25 @@ export interface FlowchartStatsProps {
 }
 
 export const FlowchartStats: React.FC<FlowchartStatsProps> = ({ metrics, onOpenIraCalculator }) => {
-  const percentual = metrics.percentualIntegralizado ?? metrics.mandatoryProgressPercentage;
+  const rawPercentual = metrics.percentualIntegralizado ?? metrics.mandatoryProgressPercentage;
+  const percentual = Number.isFinite(rawPercentual) ? Math.max(0, Math.min(100, rawPercentual)) : 0;
   const totalCurriculo = metrics.chTotalCurriculo ?? metrics.totalHours;
-  // CH obrigatória da própria matriz (soma das disciplinas obrigatórias), não um número fixo
+  // CH obrigatória da própria matriz (soma das disciplinas obrigatórias)
   const obrigatoriaTotal = metrics.chObrigatoriaTotal;
   const obrigatoriaPendente = metrics.chObrigatoriaPendente;
   const optativaPendente = metrics.chOptativaPendente;
+
+  const chConcluidaObrigatoria =
+    obrigatoriaTotal && obrigatoriaTotal > 0 && obrigatoriaPendente != null
+      ? Math.max(0, obrigatoriaTotal - obrigatoriaPendente)
+      : Math.max(0, metrics.completedHours);
+
+  const chTotalObrigatoriaExibida =
+    obrigatoriaTotal && obrigatoriaTotal > 0
+      ? obrigatoriaTotal
+      : (metrics.chObrigatoriaTotal && metrics.chObrigatoriaTotal > 0
+          ? metrics.chObrigatoriaTotal
+          : (metrics.totalHours > 0 ? metrics.totalHours : undefined));
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
@@ -50,7 +63,7 @@ export const FlowchartStats: React.FC<FlowchartStatsProps> = ({ metrics, onOpenI
           >
             <div
               className="h-full bg-neo-green border border-ink rounded-full transition-[width] duration-500"
-              style={{ width: `${Math.min(100, Math.max(0, percentual))}%` }}
+              style={{ width: `${percentual}%` }}
             />
           </div>
         </div>
@@ -73,13 +86,13 @@ export const FlowchartStats: React.FC<FlowchartStatsProps> = ({ metrics, onOpenI
 
         <div className="flex items-baseline gap-2 mb-1">
           <span className="text-3xl font-black text-black">
-            {obrigatoriaPendente != null && obrigatoriaTotal != null
-              ? `${obrigatoriaTotal - obrigatoriaPendente}h`
-              : `${metrics.completedHours}h`}
+            {chConcluidaObrigatoria}h
           </span>
-          <span className="text-xs font-bold text-neutral-600">
-            de {obrigatoriaTotal ?? metrics.totalHours}h
-          </span>
+          {chTotalObrigatoriaExibida != null && (
+            <span className="text-xs font-bold text-neutral-600">
+              de {chTotalObrigatoriaExibida}h
+            </span>
+          )}
         </div>
 
         <p className="text-[11px] font-bold text-neutral-600 mt-2">
