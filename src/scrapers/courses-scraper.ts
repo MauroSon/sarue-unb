@@ -451,7 +451,7 @@ async function main() {
     return idx >= 0 && args[idx + 1] ? args[idx + 1] : def;
   };
 
-  const outDir = path.resolve(getArg('--out-dir', process.env.OUTPUT_DIR || './data'));
+  const outDir = path.resolve(getArg('--out-dir', process.env.OUTPUT_DIR || './public/data'));
   const limitStr = getArg('--limit', '');
   const limit = limitStr ? parseInt(limitStr, 10) : undefined;
   const shardStr = getArg('--shard', '');
@@ -540,7 +540,7 @@ async function main() {
     } catch {}
   }
 
-  await fs.writeFile(curriculaPath, JSON.stringify(finalCurricula, null, 2), 'utf-8');
+  await fs.writeFile(curriculaPath, JSON.stringify(finalCurricula), 'utf-8');
   console.log(`[CoursesScraper] Salvo: ${curriculaPath} (${finalCurricula.length} estruturas curriculares salvas)`);
 
   const metaPath = path.join(outDir, 'courses-meta.json');

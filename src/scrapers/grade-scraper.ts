@@ -762,7 +762,7 @@ async function main() {
   const year = getArg("--year", process.env.SCRAPER_YEAR || "2026");
   const period = getArg("--period", process.env.SCRAPER_PERIOD || "2");
   const outDir = path.resolve(
-    getArg("--out-dir", process.env.OUTPUT_DIR || "./data"),
+    getArg("--out-dir", process.env.OUTPUT_DIR || "./public/data"),
   );
   const targetDept = getArg("--dept", "");
   const limitStr = getArg("--limit", "");
@@ -870,7 +870,7 @@ async function main() {
   const classesPath = path.join(outDir, "classes.json");
   await fs.writeFile(
     classesPath,
-    JSON.stringify(allDisciplines, null, 2),
+    JSON.stringify(allDisciplines),
     "utf-8",
   );
   console.log(

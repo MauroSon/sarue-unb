@@ -284,7 +284,7 @@ export class CalendarScraper {
  */
 export async function main() {
   const args = process.argv.slice(2);
-  let outDir = path.resolve('data');
+  let outDir = path.resolve('public', 'data');
 
   for (let i = 0; i < args.length; i++) {
     if (args[i] === '--out-dir' && args[i + 1]) {
@@ -306,9 +306,9 @@ export async function main() {
     console.log(`[CalendarScraper] ${calendars.length} calendários coletados com sucesso.`);
   } catch (err) {
     console.warn(`[CalendarScraper] Falha ao raspar calendário ao vivo: ${err}. Usando fallback local.`);
-    // Se falhar a rede (ex.: sandbox), preserva ou lê o arquivo data/calendars.json existente
+    // Se falhar a rede (ex.: sandbox), preserva ou lê o arquivo public/data/calendars.json existente
     try {
-      const fallbackPath = path.resolve('data', 'calendars.json');
+      const fallbackPath = path.resolve('public', 'data', 'calendars.json');
       const content = await fs.readFile(fallbackPath, 'utf-8');
       calendars = JSON.parse(content);
     } catch {}

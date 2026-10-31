@@ -29,7 +29,7 @@ async function main() {
 
   const year = getArg('--year', process.env.SCRAPER_YEAR || '2026');
   const period = getArg('--period', process.env.SCRAPER_PERIOD || '2');
-  const outDir = path.resolve(getArg('--out-dir', process.env.OUTPUT_DIR || './data'));
+  const outDir = path.resolve(getArg('--out-dir', process.env.OUTPUT_DIR || './public/data'));
   const targetDept = getArg('--dept', '');
   const limitStr = getArg('--limit', '');
   const limit = limitStr ? parseInt(limitStr, 10) : undefined;

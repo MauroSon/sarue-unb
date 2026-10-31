@@ -78,11 +78,14 @@ jobs:
         with:
           path: ./downloaded-shards
 
-      - name: Unificar dados dos shards
+      - name: Unificar dados dos shards e dividir currículos por curso
         run: |
           node scripts/merge-courses-shards.mjs \
             --parent-dir ./downloaded-shards \
             --out-dir ./dist-data
+          node scripts/split-curricula.mjs \
+            --input ./dist-data/curricula.json \
+            --out-dir ./dist-data/curricula
 
       - name: Publicar dados estáticos na branch órfã gh-pages
         uses: peaceiris/actions-gh-pages@v4
