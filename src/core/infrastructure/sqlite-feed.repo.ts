@@ -65,73 +65,11 @@ export async function getDatabase(): Promise<Database | null> {
         const { SQLITE_DB_NAME } = await import('./db-config');
         const db = await Database.load(SQLITE_DB_NAME);
 
-        // Cria a tabela de disciplinas (courses)
-        await db.execute(`
-          CREATE TABLE IF NOT EXISTS courses (
-            id TEXT PRIMARY KEY,
-            code TEXT NOT NULL,
-            name TEXT NOT NULL,
-            semester TEXT NOT NULL,
-            platform TEXT NOT NULL,
-            professor TEXT,
-            classroom TEXT,
-            schedule TEXT,
-            turma TEXT,
-            unread_count INTEGER NOT NULL DEFAULT 0,
-            pending_assignments_count INTEGER NOT NULL DEFAULT 0,
-            url TEXT
-          );
-        `);
-
-        // Migração suave para bases pré-existentes sem a coluna url
-        try {
-          await db.execute('ALTER TABLE courses ADD COLUMN url TEXT;');
-        } catch {
-          // Ignora se a coluna já existir
-        }
-
-        // Migração suave para bases pré-existentes sem a coluna turma
-        try {
-          await db.execute('ALTER TABLE courses ADD COLUMN turma TEXT;');
-        } catch {
-          // Ignora se a coluna já existir
-        }
-
-        // Cria a tabela de avisos e tarefas (feed_items)
-        await db.execute(`
-          CREATE TABLE IF NOT EXISTS feed_items (
-            id TEXT PRIMARY KEY,
-            platform TEXT NOT NULL,
-            title TEXT NOT NULL,
-            content TEXT NOT NULL,
-            course_name TEXT NOT NULL,
-            course_code TEXT,
-            author TEXT,
-            item_type TEXT NOT NULL,
-            created_at TEXT NOT NULL,
-            due_date TEXT,
-            is_completed INTEGER NOT NULL DEFAULT 0,
-            is_hidden INTEGER NOT NULL DEFAULT 0,
-            external_url TEXT
-          );
-        `);
-
-        // Migração suave para bases pré-existentes sem a coluna is_hidden
-        try {
-          await db.execute('ALTER TABLE feed_items ADD COLUMN is_hidden INTEGER NOT NULL DEFAULT 0;');
-        } catch {
-          // Ignora se a coluna já existir
-        }
-
-        // Cria a tabela de associações de turmas entre Aprender 3 e SIGAA
-        await db.execute(`
-          CREATE TABLE IF NOT EXISTS course_associations (
-            aprender_course_id TEXT PRIMARY KEY,
-            sigaa_course_id TEXT,
-            is_ignored INTEGER NOT NULL DEFAULT 0,
-            updated_at TEXT NOT NULL
-          );
-        `);
+        // Garante compatibilidade transparente com bases locais legadas pré-migrações
+        try { await db.execute('ALTER TABLE courses ADD COLUMN url TEXT;'); } catch {}
+        try { await db.execute('ALTER TABLE courses ADD COLUMN turma TEXT;'); } catch {}
+        try { await db.execute('ALTER TABLE feed_items ADD COLUMN is_hidden INTEGER NOT NULL DEFAULT 0;'); } catch {}
+        try { await db.execute('ALTER TABLE feed_items ADD COLUMN external_url TEXT;'); } catch {}
 
         // Remove dados legados do MoodleMat (plataforma descontinuada)
         try {

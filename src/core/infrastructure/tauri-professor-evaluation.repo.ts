@@ -4,22 +4,6 @@ import type { IProfessorEvaluationRepository } from '../domain/interfaces/profes
 import { InMemoryProfessorEvaluationRepository } from './in-memory-professor-evaluation.repo';
 import { getDatabase } from './sqlite-feed.repo';
 
-let evaluationsTableCreated = false;
-async function ensureEvaluationsTable(
-  db: NonNullable<Awaited<ReturnType<typeof getDatabase>>>
-) {
-  if (!evaluationsTableCreated) {
-    await db.execute(`
-      CREATE TABLE IF NOT EXISTS professor_evaluations (
-        id TEXT PRIMARY KEY,
-        payload TEXT NOT NULL,
-        updated_at TEXT NOT NULL
-      );
-    `);
-    evaluationsTableCreated = true;
-  }
-}
-
 export class TauriProfessorEvaluationRepository
   implements IProfessorEvaluationRepository
 {
@@ -34,7 +18,6 @@ export class TauriProfessorEvaluationRepository
     const db = await getDatabase();
     if (!forceRefresh && db) {
       try {
-        await ensureEvaluationsTable(db);
         const rows = await db.select<{ payload: string }[]>(
           'SELECT payload FROM professor_evaluations WHERE id = $1 LIMIT 1;',
           ['raw_evaluations']
@@ -65,7 +48,6 @@ export class TauriProfessorEvaluationRepository
           this.cache = parsed;
           if (db) {
             try {
-              await ensureEvaluationsTable(db);
               await db.execute(
                 `INSERT INTO professor_evaluations (id, payload, updated_at) VALUES ($1, $2, $3)
                  ON CONFLICT(id) DO UPDATE SET payload = $2, updated_at = $3;`,
@@ -100,7 +82,6 @@ export class TauriProfessorEvaluationRepository
     const db = await getDatabase();
     if (db) {
       try {
-        await ensureEvaluationsTable(db);
         const rows = await db.select<{ payload: string }[]>(
           'SELECT payload FROM professor_evaluations WHERE id = $1 LIMIT 1;',
           ['enriched_evaluations']
@@ -127,7 +108,6 @@ export class TauriProfessorEvaluationRepository
     const db = await getDatabase();
     if (db) {
       try {
-        await ensureEvaluationsTable(db);
         await db.execute(
           `INSERT INTO professor_evaluations (id, payload, updated_at) VALUES ($1, $2, $3)
            ON CONFLICT(id) DO UPDATE SET payload = $2, updated_at = $3;`,
@@ -152,7 +132,6 @@ export class TauriProfessorEvaluationRepository
     const db = await getDatabase();
     if (db) {
       try {
-        await ensureEvaluationsTable(db);
         await db.execute(
           'DELETE FROM professor_evaluations WHERE id IN ($1, $2);',
           ['raw_evaluations', 'enriched_evaluations']

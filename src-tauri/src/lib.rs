@@ -82,8 +82,25 @@ pub fn run() {
             app.handle()
                 .plugin(tauri_plugin_stronghold::Builder::with_argon2(&salt_path).build())?;
 
-            app.handle()
-                .plugin(tauri_plugin_sql::Builder::default().build())?;
+            let migrations = vec![
+                tauri_plugin_sql::Migration {
+                    version: 1,
+                    description: "create_initial_schema",
+                    sql: include_str!("../migrations/01_initial_schema.sql"),
+                    kind: tauri_plugin_sql::MigrationKind::Up,
+                },
+                tauri_plugin_sql::Migration {
+                    version: 2,
+                    description: "create_app_settings",
+                    sql: include_str!("../migrations/02_app_settings.sql"),
+                    kind: tauri_plugin_sql::MigrationKind::Up,
+                },
+            ];
+            app.handle().plugin(
+                tauri_plugin_sql::Builder::default()
+                    .add_migrations("sqlite:sarue_unb.db", migrations)
+                    .build(),
+            )?;
 
             app.handle().plugin(tauri_plugin_notification::init())?;
 

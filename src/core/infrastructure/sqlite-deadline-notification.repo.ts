@@ -23,22 +23,10 @@ function keyToRow(key: string): { itemId: string; marco: string } {
 export class SqliteDeadlineNotificationRepository
   implements IDeadlineNotificationRepository
 {
-  private async ensureTable(db: NonNullable<Awaited<ReturnType<typeof getDatabase>>>) {
-    await db.execute(`
-      CREATE TABLE IF NOT EXISTS deadline_notifications (
-        item_id TEXT NOT NULL,
-        marco TEXT NOT NULL,
-        notified_at TEXT NOT NULL,
-        PRIMARY KEY (item_id, marco)
-      );
-    `);
-  }
-
   async getNotifiedKeys(): Promise<string[]> {
     const db = await getDatabase();
     if (db) {
       try {
-        await this.ensureTable(db);
         const rows: SqliteDeadlineRow[] = await db.select(
           'SELECT item_id, marco, notified_at FROM deadline_notifications',
         );
@@ -58,7 +46,6 @@ export class SqliteDeadlineNotificationRepository
     const db = await getDatabase();
     if (db) {
       try {
-        await this.ensureTable(db);
         const { itemId, marco } = keyToRow(key);
         await db.execute(
           'INSERT OR REPLACE INTO deadline_notifications (item_id, marco, notified_at) VALUES ($1, $2, $3)',
