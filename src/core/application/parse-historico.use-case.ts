@@ -5,7 +5,7 @@ import {
   preferShiftCompatible,
   resolveCurriculumByAdmissionYear,
   shiftFamilyFromSigaaToken,
-} from '../domain/course-shift';
+} from '../domain/utils/course-shift';
 
 export interface ParseHistoricoInput {
   pdfData?: Uint8Array;

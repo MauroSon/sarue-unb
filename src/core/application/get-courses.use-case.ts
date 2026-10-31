@@ -1,6 +1,6 @@
 import type { Course, CourseAssociation, CourseCatalogItem, Discipline } from '../domain/entities/course';
 import type { IFeedRepository } from '../domain/interfaces/feed-repo.interface';
-import { catalogShiftMatchesFamily, shiftFamilyFromSigaaToken } from '../domain/course-shift';
+import { catalogShiftMatchesFamily, shiftFamilyFromSigaaToken } from '../domain/utils/course-shift';
 
 export interface GetDisciplinesResult {
   disciplines: Discipline[];

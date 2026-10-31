@@ -136,7 +136,7 @@ describe('Clean Architecture Grade & Web Scraping Use Cases', () => {
   });
 
   it('deve gerar siglas automáticas ignorando preposições e tratando números/romanos', async () => {
-    const { generateAcronyms } = await import('../domain/grade-acronym');
+    const { generateAcronyms } = await import('../domain/utils/grade-acronym');
 
     expect(generateAcronyms('Cálculo 1')).toEqual({
       acronym: 'C1',
