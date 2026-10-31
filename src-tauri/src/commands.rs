@@ -31,20 +31,52 @@ pub fn get_or_create_vault_key(app: AppHandle) -> Result<String, String> {
     let _ = std::fs::create_dir_all(&data_dir);
     let key_file = data_dir.join("vault.key");
 
-    // 1. Verifica se já existe chave persistida no arquivo local seguro
+    // 1. Tenta recuperar do Chaveiro do Sistema Operacional (Keychain / Credential Manager)
+    #[cfg(not(any(target_os = "android", target_os = "ios")))]
+    let keyring_error = {
+        let mut err = None;
+        if let Ok(entry) = keyring::Entry::new(SERVICE, USER) {
+            match entry.get_password() {
+                Ok(password) => {
+                    let trimmed = password.trim().to_string();
+                    if is_valid_hex_key(&trimmed) {
+                        // Se o Keyring do SO já possui a chave válida, remove qualquer vault.key legado em texto puro
+                        if key_file.exists() {
+                            let _ = std::fs::remove_file(&key_file);
+                        }
+                        return Ok(trimmed);
+                    }
+                }
+                Err(keyring::Error::NoEntry) => {
+                    // Chaveiro acessível, porém chave ainda não foi cadastrada. Pode prosseguir para fallback/criação.
+                }
+                Err(e) => {
+                    log::error!(
+                        "[get_or_create_vault_key] Falha transitória ao acessar chaveiro do SO: {:?}",
+                        e
+                    );
+                    err = Some(e);
+                }
+            }
+        }
+        err
+    };
+
+    // 2. Migração/Fallback: Verifica se já existe chave persistida no arquivo local (legado ou fallback)
     if key_file.exists() {
         if let Ok(content) = std::fs::read_to_string(&key_file) {
             let trimmed = content.trim().to_string();
             if is_valid_hex_key(&trimmed) {
-                // Tenta sincronizar com o chaveiro do SO caso este esteja vazio
+                // Tenta migrar para o chaveiro do SO e remover o arquivo em texto puro
                 #[cfg(not(any(target_os = "android", target_os = "ios")))]
                 if let Ok(entry) = keyring::Entry::new(SERVICE, USER) {
-                    if entry
-                        .get_password()
-                        .map(|p| !is_valid_hex_key(&p))
-                        .unwrap_or(true)
+                    if entry.set_password(&trimmed).is_ok()
+                        && entry
+                            .get_password()
+                            .map(|p| p.trim() == trimmed)
+                            .unwrap_or(false)
                     {
-                        let _ = entry.set_password(&trimmed);
+                        let _ = std::fs::remove_file(&key_file);
                     }
                 }
                 return Ok(trimmed);
@@ -52,27 +84,14 @@ pub fn get_or_create_vault_key(app: AppHandle) -> Result<String, String> {
         }
     }
 
-    // 2. Tenta recuperar do Chaveiro do Sistema Operacional (Keychain / Credential Manager)
+    // Se o chaveiro do SO falhou com erro transitório (bloqueado, permissão negada, etc.) e NÃO temos arquivo local,
+    // JAMAIS devemos gerar uma chave nova silenciosamente, pois isso sobrescreveria e destruiria para sempre o acesso ao cofre!
     #[cfg(not(any(target_os = "android", target_os = "ios")))]
-    {
-        if let Ok(entry) = keyring::Entry::new(SERVICE, USER) {
-            if let Ok(password) = entry.get_password() {
-                let trimmed = password.trim().to_string();
-                if is_valid_hex_key(&trimmed) {
-                    // Garante espelhamento no arquivo de segurança local com permissão 0600
-                    let _ = std::fs::write(&key_file, &trimmed);
-                    #[cfg(unix)]
-                    {
-                        use std::os::unix::fs::PermissionsExt;
-                        let _ = std::fs::set_permissions(
-                            &key_file,
-                            std::fs::Permissions::from_mode(0o600),
-                        );
-                    }
-                    return Ok(trimmed);
-                }
-            }
-        }
+    if let Some(err) = keyring_error {
+        return Err(format!(
+            "Falha ao acessar o chaveiro do sistema ({:?}). Desbloqueie o chaveiro e tente novamente para não perder os dados do cofre.",
+            err
+        ));
     }
 
     // 3. Se nenhuma chave válida existia, gera uma chave criptográfica forte (256-bit / 64 hex chars)
@@ -83,20 +102,30 @@ pub fn get_or_create_vault_key(app: AppHandle) -> Result<String, String> {
         .map(|b| format!("{:02x}", b))
         .collect::<String>();
 
-    // Salva no Chaveiro do SO
+    // Tenta salvar no Chaveiro do SO primeiro
+    let mut saved_in_keyring = false;
     #[cfg(not(any(target_os = "android", target_os = "ios")))]
     if let Ok(entry) = keyring::Entry::new(SERVICE, USER) {
-        let _ = entry.set_password(&generated_key);
+        if entry.set_password(&generated_key).is_ok()
+            && entry
+                .get_password()
+                .map(|p| p.trim() == generated_key)
+                .unwrap_or(false)
+        {
+            saved_in_keyring = true;
+        }
     }
 
-    // Salva no arquivo local com 0600
-    std::fs::write(&key_file, &generated_key)
-        .map_err(|e| format!("Falha ao persistir chave do cofre no disco: {}", e))?;
+    // Apenas persiste em arquivo local (0600) como fallback quando o Chaveiro do SO não está disponível
+    if !saved_in_keyring {
+        std::fs::write(&key_file, &generated_key)
+            .map_err(|e| format!("Falha ao persistir chave do cofre no disco: {}", e))?;
 
-    #[cfg(unix)]
-    {
-        use std::os::unix::fs::PermissionsExt;
-        let _ = std::fs::set_permissions(&key_file, std::fs::Permissions::from_mode(0o600));
+        #[cfg(unix)]
+        {
+            use std::os::unix::fs::PermissionsExt;
+            let _ = std::fs::set_permissions(&key_file, std::fs::Permissions::from_mode(0o600));
+        }
     }
 
     Ok(generated_key)
