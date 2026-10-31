@@ -8,7 +8,7 @@ import {
   Button,
   EmptyState,
 } from '@/components/ui';
-import { MyCourseSkeleton } from '@/components/flowchart/MyCourseSkeleton';
+import { MyCourseSkeleton } from '@/components/course';
 import {
   IraResultPanel,
   IraSemesterCard,

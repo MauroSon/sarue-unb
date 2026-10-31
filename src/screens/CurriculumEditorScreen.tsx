@@ -832,11 +832,11 @@ export const CurriculumEditorScreen: React.FC<CurriculumEditorScreenProps> = ({
                 >
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className="font-mono text-xs font-black px-1.5 py-0.5 border border-ink rounded bg-paper text-black">
-                        {disc.code}
-                      </span>
-                      <span className="text-xs font-black text-black">
-                        {disc.name}
+                      <span
+                        className="text-xs font-black text-black"
+                        title={`${disc.code} - ${disc.name}`}
+                      >
+                        {disc.code} - {disc.name}
                       </span>
                       {nature !== "Obrigatória" && (
                         <Badge

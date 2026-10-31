@@ -27,6 +27,7 @@ import { UnmatchedCourseDialog } from "../components/UnmatchedCourseDialog";
 import { FeedList } from "../components/feed/FeedList";
 import { FeedToolbar } from "../components/feed/FeedToolbar";
 import { useFeedSelection } from "../hooks/useFeedSelection";
+import { getDefaultAcademicSemester } from "@/core";
 import type { Course, Discipline, FeedItemType, PlatformType } from "@/core";
 
 const PLATFORM_LABELS: Record<PlatformType, string> = {
@@ -653,19 +654,19 @@ export const CoursesScreen: React.FC = () => {
               <Card
                 key={oc.id}
                 onClick={() => {
-                  setSelectedDiscipline({
-                    id: oc.id,
-                    code: oc.code,
-                    name: oc.name,
-                    semester: oc.semester || "2026.1",
-                    professor: oc.professor,
-                    classroom: oc.classroom,
-                    teamsCourses: oc.platform === "teams" ? [oc] : [],
-                    aprenderCourses: oc.platform === "aprender3" ? [oc] : [],
-                    url: oc.url,
-                    unreadCount: oc.unreadCount,
-                    pendingAssignmentsCount: oc.pendingAssignmentsCount,
-                  });
+                    setSelectedDiscipline({
+                      id: oc.id,
+                      code: oc.code,
+                      name: oc.name,
+                      semester: oc.semester || getDefaultAcademicSemester().semester,
+                      professor: oc.professor,
+                      classroom: oc.classroom,
+                      teamsCourses: oc.platform === "teams" ? [oc] : [],
+                      aprenderCourses: oc.platform === "aprender3" ? [oc] : [],
+                      url: oc.url,
+                      unreadCount: oc.unreadCount,
+                      pendingAssignmentsCount: oc.pendingAssignmentsCount,
+                    });
                 }}
                 role="button"
                 tabIndex={0}
@@ -677,7 +678,7 @@ export const CoursesScreen: React.FC = () => {
                       id: oc.id,
                       code: oc.code,
                       name: oc.name,
-                      semester: oc.semester || "2026.1",
+                      semester: oc.semester || getDefaultAcademicSemester().semester,
                       professor: oc.professor,
                       classroom: oc.classroom,
                       teamsCourses: oc.platform === "teams" ? [oc] : [],
@@ -725,7 +726,7 @@ export const CoursesScreen: React.FC = () => {
                 </div>
 
                 <div className="flex flex-wrap items-center justify-between gap-2 pt-4 border-t-2 border-ink/10 mt-4 text-xs font-bold">
-                  <span className="text-neutral-500">{oc.semester || "2026.1"}</span>
+                  <span className="text-neutral-500">{oc.semester || getDefaultAcademicSemester().semester}</span>
                   <span className="text-neutral-800 text-[11px] underline decoration-2 group-hover:text-blue-ink font-extrabold">
                     Ver publicações →
                   </span>
