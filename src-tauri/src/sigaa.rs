@@ -1,5 +1,5 @@
 use crate::models::{
-    Course, DiscenteAcademicHistoryPayload, DiscenteProfile, FeedItem, FeedItemType, PlatformType,
+    AcademicHistoryPayload, Course, FeedItem, FeedItemType, PlatformType, StudentProfile,
 };
 use chrono::Datelike;
 use regex::Regex;
@@ -9,6 +9,23 @@ use std::collections::HashMap;
 const USER_AGENT_STR: &str = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36";
 const CAS_LOGIN_URL: &str = "https://autenticacao.unb.br/sso-server/login?service=https%3A%2F%2Fsig.unb.br%2Fsigaa%2Flogin%2Fcas";
 const DISCENTE_URL: &str = "https://sigaa.unb.br/sigaa/portais/discente/discente.jsf";
+const SESSION_TTL_SECS: u64 = 90;
+
+#[derive(Clone)]
+struct CachedSigaaPortal {
+    matricula: String,
+    senha_hash: u64,
+    client: reqwest::Client,
+    portal_html: String,
+    created_at: std::time::Instant,
+}
+
+static SIGAA_SESSION_CACHE: std::sync::OnceLock<tokio::sync::Mutex<Option<CachedSigaaPortal>>> =
+    std::sync::OnceLock::new();
+
+fn sigaa_session_cache() -> &'static tokio::sync::Mutex<Option<CachedSigaaPortal>> {
+    SIGAA_SESSION_CACHE.get_or_init(|| tokio::sync::Mutex::new(None))
+}
 
 pub struct SigaaClient {
     client: reqwest::Client,
@@ -36,11 +53,63 @@ impl SigaaClient {
         Self { client }
     }
 
-    /// Sincroniza o SIGAA realizando o login CAS SSO, avançando por telas de aviso (telaAvisoLogon.jsf)
-    /// e extraindo as disciplinas matriculadas, atividades e avisos do portal discente.
+    async fn get_authenticated_portal(
+        &self,
+        matricula: &str,
+        senha: &str,
+    ) -> Result<(reqwest::Client, String, Option<FeedItem>), String> {
+        let clean_matricula = matricula.trim();
+        let clean_senha = senha.trim();
+        let pwd_hash = fnv1a_hash(clean_senha);
+
+        {
+            let lock = sigaa_session_cache().lock().await;
+            if let Some(cached) = lock.as_ref() {
+                if cached.matricula == clean_matricula
+                    && cached.senha_hash == pwd_hash
+                    && cached.created_at.elapsed().as_secs() < SESSION_TTL_SECS
+                {
+                    log::info!(
+                        "[SigaaClient] Reutilizando sessão CAS recente em cache para matrícula {}.",
+                        clean_matricula
+                    );
+                    return Ok((cached.client.clone(), cached.portal_html.clone(), None));
+                }
+            }
+        }
+
+        let (page_html, aviso_item) = self
+            .login_to_portal_with_client(&self.client, matricula, senha)
+            .await?;
+
+        {
+            let mut lock = sigaa_session_cache().lock().await;
+            *lock = Some(CachedSigaaPortal {
+                matricula: clean_matricula.to_string(),
+                senha_hash: pwd_hash,
+                client: self.client.clone(),
+                portal_html: page_html.clone(),
+                created_at: std::time::Instant::now(),
+            });
+        }
+
+        Ok((self.client.clone(), page_html, aviso_item))
+    }
+
     /// Realiza a autenticação CAS SSO, contorna eventuais telas de aviso e garante que o portal discente esteja carregado
     pub async fn login_to_portal(
         &self,
+        matricula: &str,
+        senha: &str,
+    ) -> Result<(String, Option<FeedItem>), String> {
+        let (_client, page_html, aviso_item) =
+            self.get_authenticated_portal(matricula, senha).await?;
+        Ok((page_html, aviso_item))
+    }
+
+    async fn login_to_portal_with_client(
+        &self,
+        active_client: &reqwest::Client,
         matricula: &str,
         senha: &str,
     ) -> Result<(String, Option<FeedItem>), String> {
@@ -53,8 +122,7 @@ impl SigaaClient {
 
         // 1. Obter página inicial do CAS SSO
         log::info!("[SigaaClient] Obtendo formulário de login CAS SSO...");
-        let res_cas = self
-            .client
+        let res_cas = active_client
             .get(CAS_LOGIN_URL)
             .send()
             .await
@@ -92,8 +160,7 @@ impl SigaaClient {
         form_data.insert("_eventId", &event_id);
         form_data.insert("submit", "Submit");
 
-        let res_login = self
-            .client
+        let res_login = active_client
             .post(&action_url)
             .header(REFERER, CAS_LOGIN_URL)
             .header(CONTENT_TYPE, "application/x-www-form-urlencoded")
@@ -131,8 +198,7 @@ impl SigaaClient {
                     "[SigaaClient] Submetendo confirmação do aviso para {}",
                     action
                 );
-                let res_aviso = self
-                    .client
+                let res_aviso = active_client
                     .post(&action)
                     .header(REFERER, &landing_url)
                     .header(CONTENT_TYPE, "application/x-www-form-urlencoded")
@@ -155,8 +221,7 @@ impl SigaaClient {
                 "[SigaaClient] Navegando explicitamente para o portal discente: {}",
                 DISCENTE_URL
             );
-            let res_portal = self
-                .client
+            let res_portal = active_client
                 .get(DISCENTE_URL)
                 .send()
                 .await
@@ -220,7 +285,7 @@ impl SigaaClient {
 
     /// "Prof. Carla Rocha" -> "Carla Rocha" (o card da disciplina já prefixa)
     fn clean_teacher_name(name: &str) -> String {
-        let mut s = name.trim();
+        let s = name.trim();
         let lower = s.to_lowercase();
         for prefix in [
             "prof.ª",
@@ -232,8 +297,9 @@ impl SigaaClient {
             "professor ",
         ] {
             if lower.starts_with(prefix) {
-                s = s[prefix.len()..].trim_start();
-                break;
+                let prefix_chars = prefix.chars().count();
+                let remaining: String = s.chars().skip(prefix_chars).collect();
+                return remaining.trim_start().to_string();
             }
         }
         s.to_string()
@@ -246,7 +312,7 @@ impl SigaaClient {
     fn apply_offer_link(courses: &mut [Course], offer: &[crate::grade_scraper::ScrapedDiscipline]) {
         for course in courses.iter_mut() {
             // Já linkado em sync anterior: nada a fazer
-            if course.professor.is_some() && course.turma.is_some() {
+            if course.professor.is_some() && course.class_group.is_some() {
                 continue;
             }
 
@@ -299,8 +365,8 @@ impl SigaaClient {
             };
 
             course.code = code.to_string();
-            if course.turma.is_none() {
-                course.turma = Some(Self::turma_label_from_class_code(&class.class_code));
+            if course.class_group.is_none() {
+                course.class_group = Some(Self::turma_label_from_class_code(&class.class_code));
             }
             if course.professor.is_none() && !class.teachers.is_empty() {
                 course.professor = Some(
@@ -357,7 +423,7 @@ impl SigaaClient {
     }
 
     /// Realiza o parse das informações cadastrais do aluno da caixa institucional (agenda-docente)
-    pub fn parse_discente_profile(html: &str, default_matricula: &str) -> DiscenteProfile {
+    pub fn parse_discente_profile(html: &str, default_matricula: &str) -> StudentProfile {
         let clean_html = decode_html_entities(html);
 
         let nome_re = Regex::new(r#"class="nome_usuario"[^>]*>([^<]+)</span>"#).unwrap();
@@ -477,22 +543,22 @@ impl SigaaClient {
             s.parse::<f64>().ok()
         });
 
-        DiscenteProfile {
+        StudentProfile {
             matricula,
-            nome,
-            curso,
-            turno,
-            nivel,
+            name: nome,
+            course: curso,
+            shift: turno,
+            level: nivel,
             status,
-            entrada,
+            admission_semester: entrada,
             email,
             ira,
             mp,
-            ch_obrigatoria_pendente,
-            ch_optativa_pendente,
-            ch_total_curriculo,
-            ch_complementar_pendente,
-            percentual_integralizado,
+            pending_mandatory_hours: ch_obrigatoria_pendente,
+            pending_elective_hours: ch_optativa_pendente,
+            total_curriculum_hours: ch_total_curriculo,
+            pending_complementary_hours: ch_complementar_pendente,
+            completed_percentage: percentual_integralizado,
         }
     }
 
@@ -501,8 +567,8 @@ impl SigaaClient {
         &self,
         matricula: &str,
         senha: &str,
-    ) -> Result<DiscenteAcademicHistoryPayload, String> {
-        let (page_html, _) = self.login_to_portal(matricula, senha).await?;
+    ) -> Result<AcademicHistoryPayload, String> {
+        let (active_client, page_html, _) = self.get_authenticated_portal(matricula, senha).await?;
         let profile = Self::parse_discente_profile(&page_html, matricula);
 
         let vs_re = Regex::new(r#"id="javax\.faces\.ViewState"[^>]*value="([^"]+)""#)
@@ -532,8 +598,7 @@ impl SigaaClient {
         log::info!(
             "[SigaaClient] Submetendo requisição de emissão do Histórico Escolar oficial..."
         );
-        let res_hist = self
-            .client
+        let res_hist = active_client
             .post(DISCENTE_URL)
             .header(REFERER, DISCENTE_URL)
             .form(&form_data)
@@ -546,9 +611,15 @@ impl SigaaClient {
             .await
             .map_err(|e| format!("Falha ao baixar PDF do histórico: {}", e))?;
 
+        // Invalida o ViewState do cache após POST para evitar conflito em chamadas subsequentes
+        {
+            let mut lock = sigaa_session_cache().lock().await;
+            *lock = None;
+        }
+
         if !bytes.starts_with(b"%PDF") {
             log::warn!("[SigaaClient] Resposta do histórico não iniciou com %PDF.");
-            return Ok(DiscenteAcademicHistoryPayload {
+            return Ok(AcademicHistoryPayload {
                 profile,
                 pdf_base64: None,
                 pdf_text: None,
@@ -560,15 +631,21 @@ impl SigaaClient {
             bytes.len()
         );
 
-        // Extrai o texto aqui no Rust: o parse no webview derrubava o WebProcess.
-        let pdf_text = pdf_extract::extract_text_from_mem(&bytes)
-            .map_err(|e| {
-                log::warn!("[SigaaClient] Falha ao extrair texto do PDF: {}", e);
-                e
-            })
-            .ok();
+        let bytes_for_b64 = bytes.clone();
+        // Extrai o texto em thread bloqueante dedicada do Tokio para não travar o runtime async
+        let pdf_text =
+            tokio::task::spawn_blocking(move || pdf_extract::extract_text_from_mem(&bytes))
+                .await
+                .ok()
+                .and_then(|res| {
+                    res.map_err(|e| {
+                        log::warn!("[SigaaClient] Falha ao extrair texto do PDF: {}", e);
+                        e
+                    })
+                    .ok()
+                });
 
-        Ok(DiscenteAcademicHistoryPayload {
+        Ok(AcademicHistoryPayload {
             profile,
             // Base64 só como fallback quando a extração falhou: com texto
             // disponível, o payload IPC fica leve — vários MB de base64+texto
@@ -576,7 +653,7 @@ impl SigaaClient {
             pdf_base64: if pdf_text.is_some() {
                 None
             } else {
-                Some(base64_encode(&bytes))
+                Some(base64_encode(&bytes_for_b64))
             },
             pdf_text,
         })
@@ -787,7 +864,7 @@ impl SigaaClient {
                 professor: None,
                 classroom: Some(classroom),
                 schedule: Some(schedule),
-                turma: turma_label,
+                class_group: turma_label,
                 unread_count: Some(0),
                 pending_assignments_count: Some(0),
                 url: Some(DISCENTE_URL.into()),
@@ -1190,7 +1267,7 @@ mod tests {
             professor: None,
             classroom: Some("BSA S B1 34/10".into()),
             schedule: Some("35T45 (10/08/2026 - 14/12/2026)".into()),
-            turma: None,
+            class_group: None,
             unread_count: Some(0),
             pending_assignments_count: Some(0),
             url: None,
@@ -1200,7 +1277,7 @@ mod tests {
 
         // Nome sem acento casa com "FÍSICA 2"; mesma sala desambigua a turma
         assert_eq!(courses[0].code, "IFD0175");
-        assert_eq!(courses[0].turma.as_deref(), Some("Turma 2"));
+        assert_eq!(courses[0].class_group.as_deref(), Some("Turma 2"));
         assert_eq!(courses[0].professor.as_deref(), Some("Ricardo Jacobi"));
 
         // Sem candidato na oferta: nada muda
@@ -1213,14 +1290,14 @@ mod tests {
             professor: None,
             classroom: None,
             schedule: Some("35T45".into()),
-            turma: None,
+            class_group: None,
             unread_count: Some(0),
             pending_assignments_count: Some(0),
             url: None,
         }];
         SigaaClient::apply_offer_link(&mut other, &offer);
         assert!(other[0].professor.is_none());
-        assert!(other[0].turma.is_none());
+        assert!(other[0].class_group.is_none());
         assert_eq!(other[0].code, "X");
     }
 
@@ -1325,25 +1402,25 @@ mod tests {
 
         let profile = SigaaClient::parse_discente_profile(html, "202000000");
         assert_eq!(profile.matricula, "202000000");
-        assert_eq!(profile.curso, "ENGENHARIA DE COMPUTAÇÃO");
+        assert_eq!(profile.course, "ENGENHARIA DE COMPUTAÇÃO");
         // Turno anexado pelo SIGAA ao campo Curso (último segmento após " - ")
-        assert_eq!(profile.turno.as_deref(), Some("MT"));
-        assert_eq!(profile.nivel, "GRADUAÇÃO");
+        assert_eq!(profile.shift.as_deref(), Some("MT"));
+        assert_eq!(profile.level, "GRADUAÇÃO");
         assert_eq!(profile.status, "ATIVO");
-        assert_eq!(profile.entrada, "2022.1");
+        assert_eq!(profile.admission_semester, "2022.1");
         assert_eq!(profile.ira, Some(3.6238));
         assert_eq!(profile.mp, Some(3.5493));
-        assert_eq!(profile.ch_obrigatoria_pendente, Some(990));
-        assert_eq!(profile.ch_optativa_pendente, Some(240));
+        assert_eq!(profile.pending_mandatory_hours, Some(990));
+        assert_eq!(profile.pending_elective_hours, Some(240));
 
         // Suporta vírgula decimal pt-BR (ex: "3,6238")
         let html_comma = html.replace("3.6238", "3,6238").replace("3.5493", "3,5493");
         let profile_comma = SigaaClient::parse_discente_profile(&html_comma, "202000000");
         assert_eq!(profile_comma.ira, Some(3.6238));
         assert_eq!(profile_comma.mp, Some(3.5493));
-        assert_eq!(profile_comma.ch_total_curriculo, Some(3480));
-        assert_eq!(profile_comma.ch_complementar_pendente, Some(0));
-        assert_eq!(profile_comma.percentual_integralizado, Some(65.0));
+        assert_eq!(profile_comma.total_curriculum_hours, Some(3480));
+        assert_eq!(profile_comma.pending_complementary_hours, Some(0));
+        assert_eq!(profile_comma.completed_percentage, Some(65.0));
     }
 
     #[test]
@@ -1361,8 +1438,8 @@ mod tests {
             </div>
         "##;
         let profile = SigaaClient::parse_discente_profile(html_noturno, "202000000");
-        assert_eq!(profile.curso, "FARMÁCIA");
-        assert_eq!(profile.turno.as_deref(), Some("N"));
+        assert_eq!(profile.course, "FARMÁCIA");
+        assert_eq!(profile.shift.as_deref(), Some("N"));
 
         // Turno entre parênteses e curso sem turno nenhum
         let html_parenteses = r##"
@@ -1376,8 +1453,8 @@ mod tests {
             </div>
         "##;
         let profile = SigaaClient::parse_discente_profile(html_parenteses, "202000000");
-        assert_eq!(profile.curso, "ENFERMAGEM");
-        assert_eq!(profile.turno.as_deref(), Some("DIURNO"));
+        assert_eq!(profile.course, "ENFERMAGEM");
+        assert_eq!(profile.shift.as_deref(), Some("DIURNO"));
 
         let html_sem_turno = r##"
             <div id="agenda-docente">
@@ -1390,7 +1467,7 @@ mod tests {
             </div>
         "##;
         let profile = SigaaClient::parse_discente_profile(html_sem_turno, "202000000");
-        assert_eq!(profile.curso, "ADMINISTRAÇÃO");
-        assert_eq!(profile.turno, None);
+        assert_eq!(profile.course, "ADMINISTRAÇÃO");
+        assert_eq!(profile.shift, None);
     }
 }

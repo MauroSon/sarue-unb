@@ -29,15 +29,24 @@ impl MoodleClient {
         Self { _client: client }
     }
 
-    /// Sincronização direta via requisição HTTP para a API e scraping do Aprender 3 (Moodle UnB)
-    pub async fn sync_aprender3(
+    /// Autentica no Aprender 3 e obtém a lista de disciplinas matriculadas (rápido, ideal para validação de credenciais)
+    pub async fn validate_credentials(
         &self,
         cpf: &str,
         senha: &str,
-    ) -> Result<(Vec<FeedItem>, Vec<Course>), String> {
+    ) -> Result<Vec<Course>, String> {
+        let (_sesskey, _courses_url, courses) = self.login_and_fetch_courses(cpf, senha).await?;
+        Ok(courses)
+    }
+
+    async fn login_and_fetch_courses(
+        &self,
+        cpf: &str,
+        senha: &str,
+    ) -> Result<(String, String, Vec<Course>), String> {
         let clean_username = clean_cpf(cpf);
         if clean_username.is_empty() || senha.is_empty() {
-            return Err("Informe seu CPF e senha do Aprender 3 para sincronizar.".to_string());
+            return Err("Informe seu CPF e senha do Aprender 3 para continuar.".to_string());
         }
 
         let base_url = "https://aprender3.unb.br";
@@ -173,6 +182,18 @@ impl MoodleClient {
             }
         }
 
+        Ok((sesskey, courses_url, courses))
+    }
+
+    /// Sincronização direta via requisição HTTP para a API e scraping do Aprender 3 (Moodle UnB)
+    pub async fn sync_aprender3(
+        &self,
+        cpf: &str,
+        senha: &str,
+    ) -> Result<(Vec<FeedItem>, Vec<Course>), String> {
+        let base_url = "https://aprender3.unb.br";
+        let (sesskey, courses_url, mut courses) = self.login_and_fetch_courses(cpf, senha).await?;
+
         // 5. Coleta de eventos de ação do calendário Moodle (limite estrito de 50 pelo Moodle 4.5)
         let mut calendar_feed_items = Vec::new();
         let now_epoch = std::time::SystemTime::now()
@@ -243,41 +264,58 @@ impl MoodleClient {
             }
         }
 
-        // 6. Raspagem completa de todas as atividades diretamente das páginas das turmas (course/view.php)
-        // Isso descobre todas as tarefas, questionários, trabalhos e testes (passados e futuros),
-        // garantindo a inclusão das atividades que não geraram evento de ação no calendário do Moodle.
-        let mut course_module_items = Vec::new();
-        for course in &courses {
-            let cid = match course.id.strip_prefix("aprender-") {
-                Some(id) => id,
-                None => continue,
+        // 6. Raspagem concorrente (até 4 conexões simultâneas) de todas as atividades das turmas (course/view.php)
+        let semaphore = std::sync::Arc::new(tokio::sync::Semaphore::new(4));
+        let mut course_tasks = tokio::task::JoinSet::new();
+        for course in courses.iter().cloned() {
+            let Some(cid) = course.id.strip_prefix("aprender-").map(|s| s.to_string()) else {
+                continue;
             };
+            let client = self._client.clone();
+            let sem = semaphore.clone();
+            let referer = courses_url.clone();
             let c_url = format!("{}/course/view.php?id={}", base_url, cid);
-            if let Ok(c_res) = self
-                ._client
-                .get(&c_url)
-                .header("Referer", &courses_url)
-                .send()
-                .await
-            {
-                if let Ok(c_html) = c_res.text().await {
-                    let mut items = scrape_course_modules_html(&c_html, course, now_epoch);
-                    course_module_items.append(&mut items);
+            course_tasks.spawn(async move {
+                let _permit = sem.acquire().await.ok()?;
+                let c_res = client
+                    .get(&c_url)
+                    .header("Referer", &referer)
+                    .send()
+                    .await
+                    .ok()?;
+                let c_html = c_res.text().await.ok()?;
+                Some(scrape_course_modules_html(&c_html, &course, now_epoch))
+            });
+        }
+
+        let mut course_module_items = Vec::new();
+        while let Some(res) = course_tasks.join_next().await {
+            if let Ok(Some(mut items)) = res {
+                course_module_items.append(&mut items);
+            }
+        }
+
+        // 7. Para atividades com prazo futuro pendentes, verifica concorrentemente se já foram enviadas pelo aluno
+        let mut submission_tasks = tokio::task::JoinSet::new();
+        for (idx, item) in course_module_items.iter().enumerate() {
+            if item.is_completed == Some(false) {
+                if let Some(url) = item.external_url.clone() {
+                    let client = self._client.clone();
+                    let sem = semaphore.clone();
+                    submission_tasks.spawn(async move {
+                        let _permit = sem.acquire().await.ok()?;
+                        let res = client.get(&url).send().await.ok()?;
+                        let html = res.text().await.ok()?;
+                        Some((idx, is_activity_page_submitted(&html)))
+                    });
                 }
             }
         }
 
-        // 7. Para atividades com prazo futuro pendentes, verifica se já foram enviadas pelo aluno
-        for item in &mut course_module_items {
-            if item.is_completed == Some(false) {
-                if let Some(ref url) = item.external_url {
-                    if let Ok(res) = self._client.get(url).send().await {
-                        if let Ok(html) = res.text().await {
-                            if is_activity_page_submitted(&html) {
-                                item.is_completed = Some(true);
-                            }
-                        }
-                    }
+        while let Some(res) = submission_tasks.join_next().await {
+            if let Ok(Some((idx, true))) = res {
+                if let Some(item) = course_module_items.get_mut(idx) {
+                    item.is_completed = Some(true);
                 }
             }
         }
@@ -482,7 +520,7 @@ pub fn parse_moodle_courses_ws(json_val: &Value) -> Result<Vec<Course>, String> 
             professor: None,
             classroom: None,
             schedule: None,
-            turma: None,
+            class_group: None,
             unread_count: Some(0),
             pending_assignments_count: Some(0),
             url: Some(viewurl),
@@ -545,7 +583,7 @@ pub fn scrape_courses_html(html: &str) -> Vec<Course> {
             professor: None,
             classroom: None,
             schedule: None,
-            turma: None,
+            class_group: None,
             unread_count: Some(0),
             pending_assignments_count: Some(0),
             url: Some(viewurl),
@@ -1722,7 +1760,7 @@ mod tests {
             professor: None,
             classroom: None,
             schedule: None,
-            turma: None,
+            class_group: None,
             unread_count: None,
             pending_assignments_count: None,
             url: None,
