@@ -416,7 +416,7 @@ Extensão aprovada do mural, não um mundo novo: a mesma física neo-brutalista 
 
 **Display Font:** Plus Jakarta Sans (fallback system-ui, -apple-system, sans-serif)
 **Body Font:** Plus Jakarta Sans (fallback system-ui, -apple-system, sans-serif)
-**Mono Font:** stack mono nativa do Tailwind (font-mono) — exclusiva de códigos de disciplina (SIGAA) em pills e tooltips; nunca em texto corrido.
+**Mono Font:** stack mono nativa do Tailwind (font-mono) — códigos de disciplina (SIGAA) em pills, células da Grade e tooltips; nas listas do Fluxograma o código anda em texto corrido com o nome ("CIC0004 - Nome"), sem mono.
 
 **Character:** Geométrica e arredondada, com personalidade de app jovem — o peso extremo (800, teto real da família Plus Jakarta Sans, variable 200–800; usos `font-black` renderizam 800) dá voz de marcador grosso, enquanto 500/600 mantêm corpo de produto legível.
 
@@ -434,7 +434,7 @@ Extensão aprovada do mural, não um mundo novo: a mesma física neo-brutalista 
 
 **A Regra do Rótulo Gritado.** Rótulos estruturais (grupos, cabeçalhos de tabela, micro-cabeçalhos, labels de indicador) são uppercase, font-black ou font-bold, 11–12px, com tracking largo. Dá o tom de etiqueta de fichário.
 
-**A Regra do Código em Máquina.** Código de disciplina (ex. CIC0004) vive sempre em pill mono (font-mono, 11px, font-black, borda de 1px, fundo branco) — o código é carimbo de máquina, não título. O nome por extenso anda ao lado, em Plus Jakarta Sans.
+**A Regra do Código em Máquina.** Código de disciplina (ex. CIC0004) é carimbo de máquina, nunca título: onde vira etiqueta, é pill mono (font-mono, 11px, font-black, borda de 1px, fundo branco); nas listas do Fluxograma anda colado ao nome em texto corrido ("CIC0004 - Nome"), mesmo peso, sem mono — a lista lê como frase, não como tabela.
 
 ## Layout
 
@@ -455,7 +455,7 @@ Profundidade é **física e estrutural**: sombras são deslocamentos sólidos de
 - **Sombra tingida de perigo** (`4px 4px 0 0 #DC2626`): exclusiva do Card da Zona de Perigo em Settings — a única sombra colorida do sistema; no escuro vira `#450A0A` sobre placa `#7F1D1D`.
 - **Quase-afundado** (`1px 1px 0 0 #000`): estado hover — o elemento translada em snap inteiro o quanto a sombra encolheu (ação 2px: +1px e sombra 1px; card clicável 4px: +2px e sombra 2px).
 - **Pressionado** (`shadow-none` + translate do offset completo): estado active de qualquer elemento interativo — a superfície toca o papel.
-- **Divisores internos**: bordas de 2px pretas entre seções da sidebar; linhas internas de card em black/10–15%.
+- **Divisores internos**: bordas de 2px pretas entre seções da sidebar; linhas internas de card em black/10–15% — sempre com o token `black` (`--color-black`, que remapa pra giz no escuro), nunca `ink/N`: tinta é preto fixo e some sobre a placa noturna.
 
 ### Named Rules
 **A Regra da Sombra Dura.** Sombra é deslocamento sólido preto, nunca blur, nunca rgba difusa, nunca cor. Se precisar de menos profundidade, diminua o deslocamento — não amacie. Única exceção declarada: a Zona de Perigo usa a sombra na própria cor do risco (#DC2626) — perigo tinge a própria física, e nenhum outro elemento.
@@ -474,10 +474,10 @@ Profundidade é **física e estrutural**: sombras são deslocamentos sólidos de
 - **Adesivo de ação** (botões, tabs/chips, micro-ações): raio generoso **16px (rounded-2xl)** em md/lg, **12px (rounded-xl)** em sm, ícones e gatilhos flutuantes, **8px** em micro-ação (h-7 ou menor) + sombra leve de ação **2px 2px**. Redondo e leve — convite ao clique.
 - **Painel de pausa** (EmptyState, cards de métrica, minimapa do Fluxograma): raio **12px (rounded-xl)** — a página respira antes do número grande ou da pausa; sombra de card 4px (minimapa usa 2px).
 - **Campos** (inputs, selects, textareas, busca): raio médio **12px (rounded-xl)**, sem sombra em repouso — cavidade no papel, nem conteúdo nem ação.
-- **Checkbox** (seleção e conclusão): 20px, raio **6px (rounded-md)**, borda preta 2px, sombra micro **1px** — mini-adesivo de marcação; check em Lucide stroke 3. A lista do Fluxograma usa a versão grande de 24px com física de ação completa (sombra 2px, snap inteiro).
+- **Checkbox** (seleção e conclusão): 20px, raio **6px (rounded-md)**, borda preta 2px, sombra micro **1px** — mini-adesivo de marcação; check em Lucide stroke 3. A lista do Fluxograma usa o mesmo checkbox de 20px **sem sombra** (ghost: afunda 1px só no active).
 - **Diálogo modal**: folha de papel, raio de conteúdo **8px**, **sem sombra** — o véu de fundo faz a separação; o botão fechar dentro dele é adesivo de ação completo.
 - **Badges**: círculo completo (9999px), sem sombra — etiqueta de tinta, não adesivo; pills de resultado inline (fora do componente Badge) levam Micro-adesivo 1px. Badge de didática é a exceção retangular: raio 6px (catálogo) / 8px (bloco do relato), borda 2px, Micro-adesivo 1px.
-- **Pills de código mono**: raio 4–6px, borda de **1px** (não 2px) — carimbo menor que etiqueta.
+- **Pills de código mono**: raio 4–6px, borda de **1px** (não 2px) — carimbo menor que etiqueta. Nas listas do Fluxograma o código dispensa a pill: texto corrido "CÓDIGO - Nome", mesmo peso do nome.
 - **Micro-ações flutuantes de ferramenta** (aparecem no hover do grupo, ex. "Enviar para o Monte sua Grade"): raio 4–6px (rounded a rounded-md), borda de 1px, Micro-adesivo 1px — adesivo menor e mais leve; o que vive permanentemente na tela usa o adesivo de ação padrão (borda 2px, sombra 2px). Os controles de canvas do Fluxograma (zoom, enquadrar) são permanentes e usam o padrão de ação compacto: 28px, raio 12px, borda 2px, sombra 2px.
 - **Estado vazio** (EmptyState): painel contentor amplo, raio **12px (rounded-xl)**, p-8 — pausa de página, não bloco de leitura densa.
 
@@ -540,7 +540,7 @@ Segunda barra de ferramentas do sistema, mesma gramática da Toolbar do Feed com
 - **Cor por significado:** seleção veste **Azul Caneta Ação** com texto branco; conclusão veste **Verde Giz** com texto preto (A Regra da Cor por Significado).
 - **Física micro:** hover afunda 0.5px e a sombra some; active afunda 1px sem sombra — a exceção confirmada ao Snap Inteiro (sombra de 1px não tem meio inteiro).
 - **A11y:** `role="checkbox"` + `aria-checked`; ring de foco padrão via teclado.
-- **Versão grande (24px, lista do Fluxograma):** mesma anatomia com sombra de ação 2px e física de snap inteiro (hover +1px/sombra 1px, active +2px/sombra none); vazia mostra ponto interno de 8px com contorno preto em vez de vazio absoluto.
+- **Fluxograma:** a lista de disciplinas usa o mesmo checkbox de 20px sem sombra (ghost: afunda 1px só no active), sem ponto interno.
 
 ### Chips (tabs e filtros)
 - **Style:** pill retangular raio 12px, borda preta 2px, branco com texto preto; ativa vira **Azul Caneta Ação** com texto branco; contador em sub-pill (Micro, 11px, bold) com cores invertidas. Tabs-chip vivem hoje na Grade (lista de turmas selecionadas); o feed filtra por Filtro Select (Toolbar do Feed).
@@ -636,6 +636,13 @@ Segunda barra de ferramentas do sistema, mesma gramática da Toolbar do Feed com
 - **Popup:** fundo **Papel Quadriculado** (`bg-canvas`) — o mesmo papel dos tooltips e do popup do Select na Grade. Raio 8px, borda preta 2px, padding 4px, **sem sombra**: o contorno preto faz o destaque, não a elevação. Exceção declarada: o menu do nó do Fluxograma é branco com Adesivo de card 4px, com cabeçalho interno (código mono + nome) sob divisor black/10.
 - **Item:** raio 8px, texto preto; hover e teclado acendem **Azul Caneta Ação** com texto branco — mesmo tratamento do SelectItem, um azul só de seleção no app.
 
+### Select com Busca Interna (DepartmentSelect, CourseSelect)
+Seletor com busca para listas longas (departamentos, cursos da UnB) — Popover com listbox próprio, não o Select nativo.
+- **Gatilho:** SelectTrigger de 40px (cavidade branca/placa no escuro, borda 2px, raio 12px) com valor truncado e ChevronDown que gira 180° quando abre.
+- **Popup:** folha de **Papel Quadriculado** (A Regra do Popup de Papel), borda 2px, raio 8px, sem sombra; busca interna no topo sob divisor black/10 (input de 32px, raio 8px, ícone Search), `autoFocus` ao abrir; fechar limpa a query.
+- **Lista:** listbox com até 16rem de altura, itens de linha única (raio 8px, 12px/700) — hover e setas acendem **Azul Caneta Ação** com texto branco; selecionado carrega check à direita e font-extrabold; navegação ArrowUp/Down/Home/End com Enter, `scrollIntoView` acompanha o item ativo.
+- **Busca:** sem acento, sem caixa, sem pontuação ("computaçao" acha "Computação"); em cursos, também acha pelo código da matriz.
+
 ### Empty State (EmptyState)
 - **Character:** pausa com rosto — o mascote **Saruê em dúvida** (`sarue-doubt.png`, 144–176px) é a ilustração; não leva ícone de Lucide (props de ícone foram aposentadas).
 - **Style:** card branco (`bg-paper`) raio 12px (rounded-xl), borda 2px, sombra de card 4px, p-8 centrado; título 1rem/800, descrição Micro bold neutral-600 em máx. 28rem, ação abaixo com respiro de 20px.
@@ -669,16 +676,16 @@ O componente mais identitário: tabela de 7 colunas (Seg–Sáb) × 15 linhas de
 Segunda superfície assinatura: o curso como **mural de adesivos sobre papel** — grafo de pré-requisitos desenhado à caneta, em duas vistas (Segmented Control Lista | Mapa).
 
 - **Vocabulário de status (fechado, 5 estados):** concluída **Verde Giz** (texto preto, check stroke 3), cursando **Azul Caneta Ação** (texto branco, ícone CircleDotDashed), disponível **Amarelo Marca-Texto** (texto preto, cadeado aberto), bloqueada **Cinza Papel** (texto neutral-600, cadeado), optativa em **Lilás Caderno** (cheia quando disponível, **Lilás Pastel** quando bloqueada/concluída). O mesmo idioma vale no mapa, na lista e no minimapa.
-- **Nó-adesivo (mapa):** 212×78px, raio 8px, borda 2px, sombra de card 4px, física de card clicável (hover +2px/sombra 2px, active +4px/none); pill de código mono (borda 1px), pill de semestre ("3º"/"OPT"), badge "Optativa" pill lilás; nome em 11px/800 2 linhas, carga em 11px/700; esmaecimento por filtro = opacity 30%; tooltip rico explica status, nota, pré-requisitos que faltam.
+- **Nó-adesivo (mapa):** 212×78px, raio 8px, borda 2px, sombra de card 4px, física de card clicável (hover +2px/sombra 2px, active +4px/none); código em texto simples (11px/700, sem mono, cor do adesivo), pill de semestre ("3º"/"OPT"), badge "Optativa" pill lilás; nome em 11px/800 2 linhas, carga em 11px/700; esmaecimento por filtro = opacity 30%; tooltip rico explica status, nota, pré-requisitos que faltam.
 - **Aresta-caneta:** traço ortogonal de caneta (smooth-step, raio 12) preto de **2px**; no hover do nó, a cadeia ancestral inteira acende (aresta **3px**) e o resto esmaece a 25% — a caneta repassa o caminho.
 - **Papel do canvas:** grid de 32px (React Flow Background Lines, rgba(0,0,0,0.06)) que escala com o zoom; pan e zoom (0.1–1.6); nós não arrastam (layout dagre em faixas horizontais por cadeia, isoladas em grade compacta abaixo).
 - **Pinos:** handles pretos de 6px onde a caneta encosta no adesivo.
 - **Controles de canvas:** zoom−/zoom+/enquadrar como adesivos de ação compactos (28px, raio 12px, borda 2px, sombra 2px, física completa) no canto superior direito; chip **Amarelo Marca-Texto** "Mapa fora de vista — Reenquadrar" no topo central quando o watchdog detecta o grafo fora da tela.
 - **Minimapa:** desenhado à mão (não o da lib) — painel branco 168×112, borda 2px, raio 12px, sombra 2px, com mini-retângulos por status (borda 1px, raio 2px); clicável para navegar.
 - **Erro:** boundary própria — adesivo **Vermelho Pastel** (borda 2px, sombra 4px) com "Tentar de novo" outline; dados declarados intactos.
-- **Lista:** accordion de semestres dentro de card (busca + filtros no cabeçalho com divisor de borda cheia); linha de disciplina com check de 24px, pill de código mono, nome truncado (riscado quando concluída), asterisco de obrigatória **Vermelho Correção Forte**, pill "Pré-requisitos" (hover **Amarelo Pastel**) com tooltip rico, carga à direita; micro-ação de hover "Enviar para o Montar Grade" (borda 1px, **Amarelo Pastel** no hover, Micro-adesivo 1px); semestre todo concluído ganha Badge success no trigger.
-- **Cursando agora:** painel **Azul Pastel** (borda 2px, sombra 4px, `aria-live="polite"`) com grade de mini-cards brancos (min-h-28, pill de código + carga, nome 12px/800 2 linhas); itens fora da busca esmaecem a 40%.
-- **Troca de matriz (dialog):** linhas de opção com borda 2px e sombra de ação 2px; matriz atual em **Verde Pastel** com selo "Atual" (Verde Giz, check stroke 3); código em pill mono; status "Ativa" em Verde Giz / inativa em neutral-200.
+- **Lista:** accordion de semestres dentro de card (busca + filtros no cabeçalho com divisor de borda cheia); linha de disciplina com check de 20px sem sombra (ghost: afunda 1px só no active), código em texto corrido "CÓDIGO - Nome" (mesmo peso, sem mono, riscado quando concluída), asterisco de obrigatória **Vermelho Correção Forte**, pill "Pré-requisitos" (hover **Amarelo Pastel**) com tooltip rico, carga à direita; micro-ação de hover "Enviar para o Montar Grade" (borda 1px, **Amarelo Pastel** no hover, Micro-adesivo 1px); semestre todo concluído ganha Badge success no trigger.
+- **Cursando agora:** painel **Azul Pastel** (borda 2px, sombra 4px, `aria-live="polite"`) com grade de mini-cards brancos (min-h-28, código em texto simples 11px/700 + pill de carga, nome 12px/800 2 linhas); itens fora da busca esmaecem a 40%.
+- **Troca de matriz (dialog):** curso em seletor com busca interna (CourseSelect, receita do Select com Busca — o seletor nem aparece quando o perfil SIGAA anexa o curso); matrizes em linhas de select sem card (raio 8px, repouso transparente, hover Cinza Papel com contorno de tinta); matriz atual em **Verde Pastel** com selo "Atual" (pill Verde Giz, check stroke 3); código em pill mono truncada; status "Ativa" em Verde Giz / inativa em etiqueta neutra; turnos exibem "Diurno" para Matutino+Vespertino.
 
 ## Do's and Don'ts
 
@@ -692,7 +699,7 @@ Segunda superfície assinatura: o curso como **mural de adesivos sobre papel** �
 - **Do** usar link sublinhado para ação terciária de barra ("Limpar filtros", "Selecionar tudo") (A Regra do Link de Serviço).
 - **Do** vestir filtro engajado com a cor cheia da família (Filtro Select azul, filtros de Disciplinas com sua cor) e a cavidade de busca engajada com o pastel; ordenação nunca engaja.
 - **Do** construir hierarquia com peso de fonte (800/700/600/500) e usar pastéis como fundo, nunca como cor de ação.
-- **Do** usar Plus Jakarta Sans e ícones Lucide com stroke 2.5 (check de checkbox stroke 3); rótulos estruturais em uppercase bold 11–12px; códigos de disciplina em pills font-mono (A Regra do Código em Máquina).
+- **Do** usar Plus Jakarta Sans e ícones Lucide com stroke 2.5 (check de checkbox stroke 3); rótulos estruturais em uppercase bold 11–12px; códigos de disciplina em pill font-mono ou em texto corrido com o nome ("CIC0004 - Nome") nas listas do Fluxograma (A Regra do Código em Máquina).
 - **Do** usar as cores de plataforma como identidade fixa (Sigaa verde #3B8748, Aprender 3 azul UnB #468AFB, Teams roxo Fluent #5B5FC7) em badges e filtros — tokens que não remapam no escuro.
 - **Do** usar raio e sombra como affordance (A Regra dos Dois Adesivos): ação 12–16px + sombra 2px; conteúdo 8px + sombra 4px; painel de pausa/métrica 12px; campo 12px sem sombra.
 - **Do** usar Micro-adesivo 1px (`neo-xs`) em checkbox, blocos de ícone, pills inline, badge de didática e micro-ações flutuantes; badge fica sem sombra.

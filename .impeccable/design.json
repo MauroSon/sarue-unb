@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-10-27T21:30:00-03:00",
+  "generatedAt": "2026-10-31T15:10:03-03:00",
   "title": "Design System: Saruê UnB",
   "extensions": {
     "colorMeta": {
@@ -8,199 +8,524 @@
         "role": "primary",
         "displayName": "Azul Caneta Ação",
         "canonical": "#2563EB",
-        "tonalRamp": ["oklch(15% 0.06 262)", "oklch(25% 0.11 262)", "oklch(35% 0.16 262)", "oklch(45% 0.2 262)", "oklch(55% 0.22 262)", "oklch(70% 0.17 262)", "oklch(85% 0.09 262)", "oklch(95% 0.04 262)"]
+        "tonalRamp": [
+          "oklch(15% 0.06 262)",
+          "oklch(25% 0.11 262)",
+          "oklch(35% 0.16 262)",
+          "oklch(45% 0.2 262)",
+          "oklch(55% 0.22 262)",
+          "oklch(70% 0.17 262)",
+          "oklch(85% 0.09 262)",
+          "oklch(95% 0.04 262)"
+        ]
       },
       "pen-blue-deep": {
         "role": "primary",
         "displayName": "Azul Caneta Pressionado",
         "canonical": "#1D4ED8",
-        "tonalRamp": ["oklch(14% 0.06 265)", "oklch(23% 0.11 265)", "oklch(32% 0.16 265)", "oklch(41% 0.2 265)", "oklch(50% 0.22 265)", "oklch(65% 0.17 265)", "oklch(82% 0.09 265)", "oklch(94% 0.04 265)"]
+        "tonalRamp": [
+          "oklch(14% 0.06 265)",
+          "oklch(23% 0.11 265)",
+          "oklch(32% 0.16 265)",
+          "oklch(41% 0.2 265)",
+          "oklch(50% 0.22 265)",
+          "oklch(65% 0.17 265)",
+          "oklch(82% 0.09 265)",
+          "oklch(94% 0.04 265)"
+        ]
       },
       "pen-blue-brand": {
         "role": "brand",
         "displayName": "Azul UnB (marca)",
         "canonical": "#468AFB",
-        "tonalRamp": ["oklch(18% 0.06 258)", "oklch(30% 0.11 258)", "oklch(42% 0.15 258)", "oklch(54% 0.18 258)", "oklch(66% 0.19 258)", "oklch(78% 0.13 258)", "oklch(88% 0.07 258)", "oklch(96% 0.03 258)"]
+        "tonalRamp": [
+          "oklch(18% 0.06 258)",
+          "oklch(30% 0.11 258)",
+          "oklch(42% 0.15 258)",
+          "oklch(54% 0.18 258)",
+          "oklch(66% 0.19 258)",
+          "oklch(78% 0.13 258)",
+          "oklch(88% 0.07 258)",
+          "oklch(96% 0.03 258)"
+        ]
       },
       "highlighter-yellow": {
         "role": "secondary",
         "displayName": "Amarelo Marca-Texto",
         "canonical": "#FFE600",
-        "tonalRamp": ["oklch(20% 0.07 100)", "oklch(33% 0.12 100)", "oklch(46% 0.16 100)", "oklch(59% 0.19 100)", "oklch(72% 0.21 100)", "oklch(83% 0.18 100)", "oklch(91% 0.14 100)", "oklch(97% 0.08 100)"]
+        "tonalRamp": [
+          "oklch(20% 0.07 100)",
+          "oklch(33% 0.12 100)",
+          "oklch(46% 0.16 100)",
+          "oklch(59% 0.19 100)",
+          "oklch(72% 0.21 100)",
+          "oklch(83% 0.18 100)",
+          "oklch(91% 0.14 100)",
+          "oklch(97% 0.08 100)"
+        ]
       },
       "chalk-green": {
         "role": "secondary",
         "displayName": "Verde Giz",
         "canonical": "#46E297",
-        "tonalRamp": ["oklch(18% 0.05 155)", "oklch(30% 0.09 155)", "oklch(42% 0.13 155)", "oklch(54% 0.16 155)", "oklch(66% 0.18 155)", "oklch(78% 0.15 155)", "oklch(88% 0.1 155)", "oklch(96% 0.05 155)"]
+        "tonalRamp": [
+          "oklch(18% 0.05 155)",
+          "oklch(30% 0.09 155)",
+          "oklch(42% 0.13 155)",
+          "oklch(54% 0.16 155)",
+          "oklch(66% 0.18 155)",
+          "oklch(78% 0.15 155)",
+          "oklch(88% 0.1 155)",
+          "oklch(96% 0.05 155)"
+        ]
       },
       "correction-red": {
         "role": "secondary",
         "displayName": "Vermelho Correção",
         "canonical": "#FF6B6B",
-        "tonalRamp": ["oklch(20% 0.07 25)", "oklch(32% 0.12 25)", "oklch(44% 0.16 25)", "oklch(56% 0.19 25)", "oklch(68% 0.2 25)", "oklch(80% 0.15 25)", "oklch(90% 0.09 25)", "oklch(96% 0.04 25)"]
+        "tonalRamp": [
+          "oklch(20% 0.07 25)",
+          "oklch(32% 0.12 25)",
+          "oklch(44% 0.16 25)",
+          "oklch(56% 0.19 25)",
+          "oklch(68% 0.2 25)",
+          "oklch(80% 0.15 25)",
+          "oklch(90% 0.09 25)",
+          "oklch(96% 0.04 25)"
+        ]
       },
       "correction-red-strong": {
         "role": "secondary",
         "displayName": "Vermelho Correção Forte",
         "canonical": "#DC2626",
-        "tonalRamp": ["oklch(17% 0.07 27)", "oklch(28% 0.12 27)", "oklch(38% 0.16 27)", "oklch(49% 0.2 27)", "oklch(58% 0.22 27)", "oklch(72% 0.17 27)", "oklch(86% 0.1 27)", "oklch(95% 0.04 27)"]
+        "tonalRamp": [
+          "oklch(17% 0.07 27)",
+          "oklch(28% 0.12 27)",
+          "oklch(38% 0.16 27)",
+          "oklch(49% 0.2 27)",
+          "oklch(58% 0.22 27)",
+          "oklch(72% 0.17 27)",
+          "oklch(86% 0.1 27)",
+          "oklch(95% 0.04 27)"
+        ]
       },
       "notebook-purple": {
         "role": "tertiary",
         "displayName": "Lilás Caderno",
         "canonical": "#C084FC",
-        "tonalRamp": ["oklch(20% 0.06 300)", "oklch(32% 0.1 300)", "oklch(44% 0.14 300)", "oklch(56% 0.17 300)", "oklch(68% 0.18 300)", "oklch(80% 0.13 300)", "oklch(90% 0.08 300)", "oklch(96% 0.04 300)"]
+        "tonalRamp": [
+          "oklch(20% 0.06 300)",
+          "oklch(32% 0.1 300)",
+          "oklch(44% 0.14 300)",
+          "oklch(56% 0.17 300)",
+          "oklch(68% 0.18 300)",
+          "oklch(80% 0.13 300)",
+          "oklch(90% 0.08 300)",
+          "oklch(96% 0.04 300)"
+        ]
       },
       "pencil-orange": {
         "role": "tertiary",
         "displayName": "Lápis Laranja",
         "canonical": "#FB923C",
-        "tonalRamp": ["oklch(20% 0.06 55)", "oklch(33% 0.1 55)", "oklch(45% 0.14 55)", "oklch(57% 0.17 55)", "oklch(70% 0.18 55)", "oklch(82% 0.14 55)", "oklch(91% 0.08 55)", "oklch(96% 0.04 55)"]
+        "tonalRamp": [
+          "oklch(20% 0.06 55)",
+          "oklch(33% 0.1 55)",
+          "oklch(45% 0.14 55)",
+          "oklch(57% 0.17 55)",
+          "oklch(70% 0.18 55)",
+          "oklch(82% 0.14 55)",
+          "oklch(91% 0.08 55)",
+          "oklch(96% 0.04 55)"
+        ]
       },
       "institutional-green": {
         "role": "tertiary",
         "displayName": "Verde Institucional UnB",
         "canonical": "#006633",
-        "tonalRamp": ["oklch(15% 0.05 155)", "oklch(24% 0.08 155)", "oklch(33% 0.11 155)", "oklch(42% 0.13 155)", "oklch(51% 0.14 155)", "oklch(66% 0.11 155)", "oklch(82% 0.07 155)", "oklch(94% 0.03 155)"]
+        "tonalRamp": [
+          "oklch(15% 0.05 155)",
+          "oklch(24% 0.08 155)",
+          "oklch(33% 0.11 155)",
+          "oklch(42% 0.13 155)",
+          "oklch(51% 0.14 155)",
+          "oklch(66% 0.11 155)",
+          "oklch(82% 0.07 155)",
+          "oklch(94% 0.03 155)"
+        ]
       },
       "grid-paper": {
         "role": "neutral",
         "displayName": "Papel Quadriculado (canvas)",
         "canonical": "#E8EFF8",
-        "tonalRamp": ["oklch(18% 0.02 230)", "oklch(30% 0.02 230)", "oklch(45% 0.02 230)", "oklch(60% 0.02 230)", "oklch(75% 0.02 230)", "oklch(86% 0.02 230)", "oklch(93% 0.015 230)", "oklch(98% 0.008 230)"]
+        "tonalRamp": [
+          "oklch(18% 0.02 230)",
+          "oklch(30% 0.02 230)",
+          "oklch(45% 0.02 230)",
+          "oklch(60% 0.02 230)",
+          "oklch(75% 0.02 230)",
+          "oklch(86% 0.02 230)",
+          "oklch(93% 0.015 230)",
+          "oklch(98% 0.008 230)"
+        ]
       },
       "paper-cream": {
         "role": "neutral",
         "displayName": "Creme Papel",
         "canonical": "#FAF7EE",
-        "tonalRamp": ["oklch(20% 0.02 90)", "oklch(33% 0.02 90)", "oklch(47% 0.025 90)", "oklch(62% 0.03 90)", "oklch(76% 0.03 90)", "oklch(87% 0.025 90)", "oklch(94% 0.02 90)", "oklch(98% 0.01 90)"]
+        "tonalRamp": [
+          "oklch(20% 0.02 90)",
+          "oklch(33% 0.02 90)",
+          "oklch(47% 0.025 90)",
+          "oklch(62% 0.03 90)",
+          "oklch(76% 0.03 90)",
+          "oklch(87% 0.025 90)",
+          "oklch(94% 0.02 90)",
+          "oklch(98% 0.01 90)"
+        ]
       },
       "paper-gray": {
         "role": "neutral",
         "displayName": "Cinza Papel",
         "canonical": "#F5F5F5",
-        "tonalRamp": ["oklch(20% 0 0)", "oklch(33% 0 0)", "oklch(47% 0 0)", "oklch(62% 0 0)", "oklch(76% 0 0)", "oklch(87% 0 0)", "oklch(94% 0 0)", "oklch(98% 0 0)"]
+        "tonalRamp": [
+          "oklch(20% 0 0)",
+          "oklch(33% 0 0)",
+          "oklch(47% 0 0)",
+          "oklch(62% 0 0)",
+          "oklch(76% 0 0)",
+          "oklch(87% 0 0)",
+          "oklch(94% 0 0)",
+          "oklch(98% 0 0)"
+        ]
       },
       "success-ink": {
         "role": "neutral",
         "displayName": "Verde OK (texto)",
         "canonical": "#15803D",
-        "tonalRamp": ["oklch(17% 0.06 152)", "oklch(27% 0.1 152)", "oklch(37% 0.13 152)", "oklch(47% 0.16 152)", "oklch(57% 0.17 152)", "oklch(72% 0.14 152)", "oklch(87% 0.08 152)", "oklch(95% 0.04 152)"]
+        "tonalRamp": [
+          "oklch(17% 0.06 152)",
+          "oklch(27% 0.1 152)",
+          "oklch(37% 0.13 152)",
+          "oklch(47% 0.16 152)",
+          "oklch(57% 0.17 152)",
+          "oklch(72% 0.14 152)",
+          "oklch(87% 0.08 152)",
+          "oklch(95% 0.04 152)"
+        ]
       },
       "error-ink": {
         "role": "neutral",
         "displayName": "Vermelho Erro (texto)",
         "canonical": "#B91C1C",
-        "tonalRamp": ["oklch(16% 0.06 27)", "oklch(26% 0.11 27)", "oklch(36% 0.15 27)", "oklch(46% 0.19 27)", "oklch(55% 0.21 27)", "oklch(70% 0.16 27)", "oklch(85% 0.09 27)", "oklch(95% 0.04 27)"]
+        "tonalRamp": [
+          "oklch(16% 0.06 27)",
+          "oklch(26% 0.11 27)",
+          "oklch(36% 0.15 27)",
+          "oklch(46% 0.19 27)",
+          "oklch(55% 0.21 27)",
+          "oklch(70% 0.16 27)",
+          "oklch(85% 0.09 27)",
+          "oklch(95% 0.04 27)"
+        ]
       },
       "ink": {
         "role": "neutral",
         "displayName": "Tinta Preta (bordas, sombras, texto)",
         "canonical": "#000000",
-        "tonalRamp": ["oklch(10% 0 0)", "oklch(22% 0 0)", "oklch(36% 0 0)", "oklch(50% 0 0)", "oklch(64% 0 0)", "oklch(78% 0 0)", "oklch(90% 0 0)", "oklch(97% 0 0)"]
+        "tonalRamp": [
+          "oklch(10% 0 0)",
+          "oklch(22% 0 0)",
+          "oklch(36% 0 0)",
+          "oklch(50% 0 0)",
+          "oklch(64% 0 0)",
+          "oklch(78% 0 0)",
+          "oklch(90% 0 0)",
+          "oklch(97% 0 0)"
+        ]
       },
       "blue-ink": {
         "role": "neutral",
         "displayName": "Azul Caneta como Texto",
         "canonical": "#2563EB",
-        "tonalRamp": ["oklch(15% 0.06 262)", "oklch(25% 0.11 262)", "oklch(35% 0.16 262)", "oklch(45% 0.2 262)", "oklch(55% 0.22 262)", "oklch(70% 0.17 262)", "oklch(85% 0.09 262)", "oklch(95% 0.04 262)"]
+        "tonalRamp": [
+          "oklch(15% 0.06 262)",
+          "oklch(25% 0.11 262)",
+          "oklch(35% 0.16 262)",
+          "oklch(45% 0.2 262)",
+          "oklch(55% 0.22 262)",
+          "oklch(70% 0.17 262)",
+          "oklch(85% 0.09 262)",
+          "oklch(95% 0.04 262)"
+        ]
       },
       "platform-sigaa": {
         "role": "tertiary",
         "displayName": "Verde SIGAA",
         "canonical": "#3B8748",
-        "tonalRamp": ["oklch(17% 0.05 150)", "oklch(28% 0.08 150)", "oklch(39% 0.11 150)", "oklch(50% 0.13 150)", "oklch(61% 0.14 150)", "oklch(75% 0.11 150)", "oklch(88% 0.07 150)", "oklch(96% 0.03 150)"]
+        "tonalRamp": [
+          "oklch(17% 0.05 150)",
+          "oklch(28% 0.08 150)",
+          "oklch(39% 0.11 150)",
+          "oklch(50% 0.13 150)",
+          "oklch(61% 0.14 150)",
+          "oklch(75% 0.11 150)",
+          "oklch(88% 0.07 150)",
+          "oklch(96% 0.03 150)"
+        ]
       },
       "platform-aprender3": {
         "role": "brand",
         "displayName": "Azul UnB (Aprender 3)",
         "canonical": "#468AFB",
-        "tonalRamp": ["oklch(18% 0.06 258)", "oklch(30% 0.11 258)", "oklch(42% 0.15 258)", "oklch(54% 0.18 258)", "oklch(66% 0.19 258)", "oklch(78% 0.13 258)", "oklch(88% 0.07 258)", "oklch(96% 0.03 258)"]
+        "tonalRamp": [
+          "oklch(18% 0.06 258)",
+          "oklch(30% 0.11 258)",
+          "oklch(42% 0.15 258)",
+          "oklch(54% 0.18 258)",
+          "oklch(66% 0.19 258)",
+          "oklch(78% 0.13 258)",
+          "oklch(88% 0.07 258)",
+          "oklch(96% 0.03 258)"
+        ]
       },
       "platform-teams": {
         "role": "tertiary",
         "displayName": "Roxo Fluent (Teams)",
         "canonical": "#5B5FC7",
-        "tonalRamp": ["oklch(17% 0.06 280)", "oklch(28% 0.1 280)", "oklch(39% 0.14 280)", "oklch(50% 0.17 280)", "oklch(61% 0.18 280)", "oklch(75% 0.13 280)", "oklch(88% 0.07 280)", "oklch(96% 0.03 280)"]
+        "tonalRamp": [
+          "oklch(17% 0.06 280)",
+          "oklch(28% 0.1 280)",
+          "oklch(39% 0.14 280)",
+          "oklch(50% 0.17 280)",
+          "oklch(61% 0.18 280)",
+          "oklch(75% 0.13 280)",
+          "oklch(88% 0.07 280)",
+          "oklch(96% 0.03 280)"
+        ]
       },
       "sticker-blue": {
         "role": "accent",
         "displayName": "Azul-claro de Adesivo",
         "canonical": "#60A5FA",
-        "tonalRamp": ["oklch(20% 0.06 255)", "oklch(32% 0.1 255)", "oklch(44% 0.14 255)", "oklch(56% 0.17 255)", "oklch(68% 0.17 255)", "oklch(80% 0.12 255)", "oklch(90% 0.07 255)", "oklch(96% 0.03 255)"]
+        "tonalRamp": [
+          "oklch(20% 0.06 255)",
+          "oklch(32% 0.1 255)",
+          "oklch(44% 0.14 255)",
+          "oklch(56% 0.17 255)",
+          "oklch(68% 0.17 255)",
+          "oklch(80% 0.12 255)",
+          "oklch(90% 0.07 255)",
+          "oklch(96% 0.03 255)"
+        ]
       },
       "btn-raise": {
         "role": "neutral",
         "displayName": "Placa do Botão Outline (escuro)",
         "canonical": "#263044",
-        "tonalRamp": ["oklch(18% 0.03 255)", "oklch(26% 0.035 255)", "oklch(34% 0.04 255)", "oklch(42% 0.04 255)", "oklch(52% 0.035 255)", "oklch(66% 0.03 255)", "oklch(82% 0.02 255)", "oklch(94% 0.01 255)"]
+        "tonalRamp": [
+          "oklch(18% 0.03 255)",
+          "oklch(26% 0.035 255)",
+          "oklch(34% 0.04 255)",
+          "oklch(42% 0.04 255)",
+          "oklch(52% 0.035 255)",
+          "oklch(66% 0.03 255)",
+          "oklch(82% 0.02 255)",
+          "oklch(94% 0.01 255)"
+        ]
       },
       "ink-disc-blue": {
         "role": "accent",
         "displayName": "Tinta Azul (grade)",
         "canonical": "#2563EB",
-        "tonalRamp": ["oklch(15% 0.06 262)", "oklch(25% 0.11 262)", "oklch(35% 0.16 262)", "oklch(45% 0.2 262)", "oklch(55% 0.22 262)", "oklch(70% 0.17 262)", "oklch(85% 0.09 262)", "oklch(95% 0.04 262)"]
+        "tonalRamp": [
+          "oklch(15% 0.06 262)",
+          "oklch(25% 0.11 262)",
+          "oklch(35% 0.16 262)",
+          "oklch(45% 0.2 262)",
+          "oklch(55% 0.22 262)",
+          "oklch(70% 0.17 262)",
+          "oklch(85% 0.09 262)",
+          "oklch(95% 0.04 262)"
+        ]
       },
       "ink-disc-green": {
         "role": "accent",
         "displayName": "Tinta Verde (grade)",
         "canonical": "#15803D",
-        "tonalRamp": ["oklch(17% 0.06 152)", "oklch(27% 0.1 152)", "oklch(37% 0.13 152)", "oklch(47% 0.16 152)", "oklch(57% 0.17 152)", "oklch(72% 0.14 152)", "oklch(87% 0.08 152)", "oklch(95% 0.04 152)"]
+        "tonalRamp": [
+          "oklch(17% 0.06 152)",
+          "oklch(27% 0.1 152)",
+          "oklch(37% 0.13 152)",
+          "oklch(47% 0.16 152)",
+          "oklch(57% 0.17 152)",
+          "oklch(72% 0.14 152)",
+          "oklch(87% 0.08 152)",
+          "oklch(95% 0.04 152)"
+        ]
       },
       "ink-disc-yellow": {
         "role": "accent",
         "displayName": "Tinta Amarela (grade)",
         "canonical": "#A16207",
-        "tonalRamp": ["oklch(18% 0.06 80)", "oklch(29% 0.1 80)", "oklch(40% 0.13 80)", "oklch(51% 0.15 80)", "oklch(62% 0.16 80)", "oklch(76% 0.14 80)", "oklch(89% 0.1 80)", "oklch(96% 0.06 80)"]
+        "tonalRamp": [
+          "oklch(18% 0.06 80)",
+          "oklch(29% 0.1 80)",
+          "oklch(40% 0.13 80)",
+          "oklch(51% 0.15 80)",
+          "oklch(62% 0.16 80)",
+          "oklch(76% 0.14 80)",
+          "oklch(89% 0.1 80)",
+          "oklch(96% 0.06 80)"
+        ]
       },
       "ink-disc-purple": {
         "role": "accent",
         "displayName": "Tinta Roxa (grade)",
         "canonical": "#7E22CE",
-        "tonalRamp": ["oklch(18% 0.07 300)", "oklch(29% 0.11 300)", "oklch(40% 0.15 300)", "oklch(51% 0.18 300)", "oklch(62% 0.19 300)", "oklch(76% 0.14 300)", "oklch(89% 0.08 300)", "oklch(96% 0.04 300)"]
+        "tonalRamp": [
+          "oklch(18% 0.07 300)",
+          "oklch(29% 0.11 300)",
+          "oklch(40% 0.15 300)",
+          "oklch(51% 0.18 300)",
+          "oklch(62% 0.19 300)",
+          "oklch(76% 0.14 300)",
+          "oklch(89% 0.08 300)",
+          "oklch(96% 0.04 300)"
+        ]
       },
       "ink-disc-orange": {
         "role": "accent",
         "displayName": "Tinta Laranja (grade)",
         "canonical": "#C2410C",
-        "tonalRamp": ["oklch(18% 0.07 45)", "oklch(29% 0.11 45)", "oklch(40% 0.15 45)", "oklch(51% 0.18 45)", "oklch(62% 0.19 45)", "oklch(76% 0.15 45)", "oklch(89% 0.09 45)", "oklch(96% 0.04 45)"]
+        "tonalRamp": [
+          "oklch(18% 0.07 45)",
+          "oklch(29% 0.11 45)",
+          "oklch(40% 0.15 45)",
+          "oklch(51% 0.18 45)",
+          "oklch(62% 0.19 45)",
+          "oklch(76% 0.15 45)",
+          "oklch(89% 0.09 45)",
+          "oklch(96% 0.04 45)"
+        ]
       },
       "ink-disc-sky": {
         "role": "accent",
         "displayName": "Tinta Céu (grade)",
         "canonical": "#0369A1",
-        "tonalRamp": ["oklch(18% 0.05 240)", "oklch(29% 0.08 240)", "oklch(40% 0.11 240)", "oklch(51% 0.13 240)", "oklch(62% 0.14 240)", "oklch(76% 0.11 240)", "oklch(89% 0.07 240)", "oklch(96% 0.03 240)"]
+        "tonalRamp": [
+          "oklch(18% 0.05 240)",
+          "oklch(29% 0.08 240)",
+          "oklch(40% 0.11 240)",
+          "oklch(51% 0.13 240)",
+          "oklch(62% 0.14 240)",
+          "oklch(76% 0.11 240)",
+          "oklch(89% 0.07 240)",
+          "oklch(96% 0.03 240)"
+        ]
       }
     },
     "typographyMeta": {
-      "display": { "displayName": "Display", "purpose": "Título de boas-vindas no onboarding — único momento de hero." },
-      "title": { "displayName": "Title", "purpose": "Cabeçalho de página (PageHeader) e títulos de diálogo." },
-      "heading": { "displayName": "Heading", "purpose": "Título de card (CardTitle)." },
-      "stat": { "displayName": "Stat", "purpose": "Números de indicadores (IRA, métricas) — 800, tabular-nums quando comparável." },
-      "body": { "displayName": "Body", "purpose": "Conteúdo de cards, descrições, itens de lista." },
-      "label": { "displayName": "Label", "purpose": "Labels de input, badges, botões, tabs; versão uppercase para rótulos de grupo." },
-      "micro": { "displayName": "Micro", "purpose": "Contadores, badges sm, meta do feed, pills de código mono. 10px banido." },
-      "mono-code": { "displayName": "Mono (código)", "purpose": "Exclusiva de códigos de disciplina em pills e tooltips." }
+      "display": {
+        "displayName": "Display",
+        "purpose": "Título de boas-vindas no onboarding — único momento de hero."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Cabeçalho de página (PageHeader) e títulos de diálogo."
+      },
+      "heading": {
+        "displayName": "Heading",
+        "purpose": "Título de card (CardTitle)."
+      },
+      "stat": {
+        "displayName": "Stat",
+        "purpose": "Números de indicadores (IRA, métricas) — 800, tabular-nums quando comparável."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Conteúdo de cards, descrições, itens de lista."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Labels de input, badges, botões, tabs; versão uppercase para rótulos de grupo."
+      },
+      "micro": {
+        "displayName": "Micro",
+        "purpose": "Contadores, badges sm, meta do feed, pills de código mono. 10px banido."
+      },
+      "mono-code": {
+        "displayName": "Mono (código)",
+        "purpose": "Exclusiva de códigos de disciplina em pills e tooltips."
+      }
     },
     "shadows": [
-      { "name": "neo-xs", "value": "1px 1px 0px 0px var(--neo-shadow, #000)", "purpose": "Micro-adesivo: checkbox, blocos de ícone, pills inline, badge de didática." },
-      { "name": "neo-sm", "value": "2px 2px 0px 0px var(--neo-shadow, #000)", "purpose": "Adesivo de ação em repouso: botões, tabs/chips, gatilho do Feedback." },
-      { "name": "neo", "value": "4px 4px 0px 0px var(--neo-shadow, #000)", "purpose": "Adesivo de card: cards, alerts, painéis, toolbars, nó do Fluxograma." },
-      { "name": "neo-card-shadow", "value": "4px 4px 0px 0px #000000", "purpose": "Sombra de card via token; no escuro carrega o fio de luz interno (inset 0 1px 0 rgba(255,255,255,0.08))." },
-      { "name": "danger-tint", "value": "4px 4px 0px 0px #DC2626", "purpose": "Exclusiva da Zona de Perigo em Settings; no escuro #450A0A sobre placa #7F1D1D." },
-      { "name": "pressed", "value": "none", "purpose": "Estado active: translate do offset completo — a superfície toca o papel." }
+      {
+        "name": "neo-xs",
+        "value": "1px 1px 0px 0px var(--neo-shadow, #000)",
+        "purpose": "Micro-adesivo: checkbox, blocos de ícone, pills inline, badge de didática."
+      },
+      {
+        "name": "neo-sm",
+        "value": "2px 2px 0px 0px var(--neo-shadow, #000)",
+        "purpose": "Adesivo de ação em repouso: botões, tabs/chips, gatilho do Feedback."
+      },
+      {
+        "name": "neo",
+        "value": "4px 4px 0px 0px var(--neo-shadow, #000)",
+        "purpose": "Adesivo de card: cards, alerts, painéis, toolbars, nó do Fluxograma."
+      },
+      {
+        "name": "neo-card-shadow",
+        "value": "4px 4px 0px 0px #000000",
+        "purpose": "Sombra de card via token; no escuro carrega o fio de luz interno (inset 0 1px 0 rgba(255,255,255,0.08))."
+      },
+      {
+        "name": "danger-tint",
+        "value": "4px 4px 0px 0px #DC2626",
+        "purpose": "Exclusiva da Zona de Perigo em Settings; no escuro #450A0A sobre placa #7F1D1D."
+      },
+      {
+        "name": "pressed",
+        "value": "none",
+        "purpose": "Estado active: translate do offset completo — a superfície toca o papel."
+      }
     ],
     "motion": [
-      { "name": "transition-base", "value": "150ms ease-out", "purpose": "Ritmo padrão de todas as transições de estado (hover, active, cores)." },
-      { "name": "press-sink", "value": "translate 1px/2px inteiros na direção da sombra", "purpose": "Física de afundar: hover metade com snap inteiro, active offset completo com shadow-none." },
-      { "name": "toast-stack", "value": "transform 500ms cubic-bezier(0.22, 1, 0.36, 1)", "purpose": "Física da pilha de toasts (entra de baixo, sai por swipe), não a de adesivo." },
-      { "name": "reduced-motion", "value": "transition-duration: 1ms", "purpose": "prefers-reduced-motion e toggle \"Reduzir animações\": estados trocam instantâneo; spinner permanece." }
+      {
+        "name": "transition-base",
+        "value": "150ms ease-out",
+        "purpose": "Ritmo padrão de todas as transições de estado (hover, active, cores)."
+      },
+      {
+        "name": "press-sink",
+        "value": "translate 1px/2px inteiros na direção da sombra",
+        "purpose": "Física de afundar: hover metade com snap inteiro, active offset completo com shadow-none."
+      },
+      {
+        "name": "toast-stack",
+        "value": "transform 500ms cubic-bezier(0.22, 1, 0.36, 1)",
+        "purpose": "Física da pilha de toasts (entra de baixo, sai por swipe), não a de adesivo."
+      },
+      {
+        "name": "reduced-motion",
+        "value": "transition-duration: 1ms",
+        "purpose": "prefers-reduced-motion e toggle \"Reduzir animações\": estados trocam instantâneo; spinner permanece."
+      }
     ],
     "breakpoints": [
-      { "name": "sm", "value": "640px" },
-      { "name": "md", "value": "768px" },
-      { "name": "lg", "value": "1024px" }
+      {
+        "name": "sm",
+        "value": "640px"
+      },
+      {
+        "name": "md",
+        "value": "768px"
+      },
+      {
+        "name": "lg",
+        "value": "1024px"
+      }
     ]
   },
   "components": [
@@ -304,22 +629,86 @@
       "Tudo em 150ms ease-out"
     ],
     "rules": [
-      { "name": "A Regra do Risco Preto", "body": "Nenhuma superfície ou elemento interativo existe sem borda preta de 2px. A borda é o contorno do adesivo; sem ela o elemento cai fora do mundo. Exceção confirmada: pill de código de disciplina (font-mono) usa borda de 1px.", "section": "colors" },
-      { "name": "A Regra do Pastel como Papel", "body": "Cores de ação (caneta, giz, correção) marcam interação e identidade; as versões pastel servem de papel de fundo. Uma nunca faz o trabalho da outra: pastel nunca é botão, cor cheia nunca é fundo de seção inteira. Exceção confirmada: filtro engajado e segmento ativo vestem a cor cheia da família.", "section": "colors" },
-      { "name": "A Regra da Cor por Significado", "body": "Azul é de seleção e ação; Verde Giz é só de conclusão. O checkbox de selecionar é azul, o de concluir é verde, e nenhum contexto troca esse papel.", "section": "colors" },
-      { "name": "A Regra da Nota por Faixa", "body": "Nota de didática não tem escala contínua: três faixas de cor cheia (verde ≥ 8, amarelo ≥ 6, vermelho forte abaixo) + cinza sem nota. Verde aqui significa \"ótimo\", não \"concluído\".", "section": "colors" },
-      { "name": "A Regra da Física Intacta", "body": "No escuro troca-se a BASE, nunca a física: sombra continua preta sólida deslocada, borda continua tinta, adesivo continua cheio com tinta preta de texto. O que muda são os valores de superfície e a intensidade das tintas — nunca o gesto.", "section": "colors" },
-      { "name": "A Regra do Marcador Grosso", "body": "Hierarquia vem de peso (800 → 700 → 600 → 500), não de esmaecer cinza. Nunca enfraqueça texto baixando o peso para abaixo de 500 — baixe o tom (neutral-600) mantendo o peso.", "section": "typography" },
-      { "name": "A Regra do Rótulo Gritado", "body": "Rótulos estruturais (grupos, cabeçalhos de tabela, micro-cabeçalhos, labels de indicador) são uppercase, font-black ou font-bold, 11–12px, com tracking largo.", "section": "typography" },
-      { "name": "A Regra do Código em Máquina", "body": "Código de disciplina vive sempre em pill mono (font-mono, 11px, font-black, borda de 1px, fundo branco) — o código é carimbo de máquina, não título.", "section": "typography" },
-      { "name": "A Regra da Sombra Dura", "body": "Sombra é deslocamento sólido preto, nunca blur, nunca rgba difusa, nunca cor. Se precisar de menos profundidade, diminua o deslocamento — não amacie. Única exceção: a Zona de Perigo usa a sombra na própria cor do risco.", "section": "elevation" },
-      { "name": "A Regra do Afundar", "body": "Todo elemento interativo em repouso com sombra dura afunda em dois tempos: hover com snap inteiro, active afunda tudo (a superfície toca o papel). Ghost sem sombra mantém micro-afundar de 1px no active. Elemento que levanta no hover é bug físico.", "section": "elevation" },
-      { "name": "A Regra do Snap Inteiro", "body": "Todo translate de press em elemento de sombra 2px ou mais é número inteiro de pixels — nunca meia-pixel, que antialiasa a borda preta. Única exceção: o checkbox de 20px (0.5px/1px).", "section": "elevation" },
-      { "name": "A Regra do Popup de Papel", "body": "Popup de leitura ou seleção (Select, Dropdown, Tooltip, Toast, Dialog modal) é folha de Papel Quadriculado com contorno preto de 2px e sem sombra — o contorno faz o destaque, não a elevação.", "section": "elevation" },
-      { "name": "A Regra do Link de Serviço", "body": "Dentro de uma barra, ação que corrige ou auxilia (limpar, selecionar tudo) é texto sublinhado, não adesivo — se tudo é botão, nada é.", "section": "components" },
-      { "name": "A Regra do Clique Mecânico", "body": "O som é feedback de objeto, não enfeite: opt-in, desligado por padrão, sample de switch mecânico via Web Audio. A encadernação é muda: navegação da sidebar e logo-bloco não fazem barulho.", "section": "components" },
-      { "name": "A Regra do Bloco Sem Borda", "body": "Skeleton é conteúdo à espera de tinta: bloco neutro pulsante, nunca adesivo — borda e sombra pertencem ao Card que o contém.", "section": "components" },
-      { "name": "A Regra dos Dois Adesivos", "body": "Raio e sombra dizem o que o adesivo faz: adesivo de conteúdo (8px + sombra 4px) é papel de leitura; adesivo de ação (12–16px + sombra 2px) é convite ao clique. Informação nunca se veste de botão, e botão nunca se veste de informação.", "section": "components" }
+      {
+        "name": "A Regra do Risco Preto",
+        "body": "Nenhuma superfície ou elemento interativo existe sem borda preta de 2px. A borda é o contorno do adesivo; sem ela o elemento cai fora do mundo. Exceção confirmada: pill de código de disciplina (font-mono) usa borda de 1px.",
+        "section": "colors"
+      },
+      {
+        "name": "A Regra do Pastel como Papel",
+        "body": "Cores de ação (caneta, giz, correção) marcam interação e identidade; as versões pastel servem de papel de fundo. Uma nunca faz o trabalho da outra: pastel nunca é botão, cor cheia nunca é fundo de seção inteira. Exceção confirmada: filtro engajado e segmento ativo vestem a cor cheia da família.",
+        "section": "colors"
+      },
+      {
+        "name": "A Regra da Cor por Significado",
+        "body": "Azul é de seleção e ação; Verde Giz é só de conclusão. O checkbox de selecionar é azul, o de concluir é verde, e nenhum contexto troca esse papel.",
+        "section": "colors"
+      },
+      {
+        "name": "A Regra da Nota por Faixa",
+        "body": "Nota de didática não tem escala contínua: três faixas de cor cheia (verde ≥ 8, amarelo ≥ 6, vermelho forte abaixo) + cinza sem nota. Verde aqui significa \"ótimo\", não \"concluído\".",
+        "section": "colors"
+      },
+      {
+        "name": "A Regra da Física Intacta",
+        "body": "No escuro troca-se a BASE, nunca a física: sombra continua preta sólida deslocada, borda continua tinta, adesivo continua cheio com tinta preta de texto. O que muda são os valores de superfície e a intensidade das tintas — nunca o gesto.",
+        "section": "colors"
+      },
+      {
+        "name": "A Regra do Marcador Grosso",
+        "body": "Hierarquia vem de peso (800 → 700 → 600 → 500), não de esmaecer cinza. Nunca enfraqueça texto baixando o peso para abaixo de 500 — baixe o tom (neutral-600) mantendo o peso.",
+        "section": "typography"
+      },
+      {
+        "name": "A Regra do Rótulo Gritado",
+        "body": "Rótulos estruturais (grupos, cabeçalhos de tabela, micro-cabeçalhos, labels de indicador) são uppercase, font-black ou font-bold, 11–12px, com tracking largo.",
+        "section": "typography"
+      },
+      {
+        "name": "A Regra do Código em Máquina",
+        "body": "Código de disciplina é carimbo de máquina, nunca título: onde vira etiqueta, é pill mono (font-mono, 11px, font-black, borda de 1px, fundo branco); nas listas do Fluxograma anda colado ao nome em texto corrido (\"CIC0004 - Nome\"), mesmo peso, sem mono — a lista lê como frase, não como tabela.",
+        "section": "typography"
+      },
+      {
+        "name": "A Regra da Sombra Dura",
+        "body": "Sombra é deslocamento sólido preto, nunca blur, nunca rgba difusa, nunca cor. Se precisar de menos profundidade, diminua o deslocamento — não amacie. Única exceção: a Zona de Perigo usa a sombra na própria cor do risco.",
+        "section": "elevation"
+      },
+      {
+        "name": "A Regra do Afundar",
+        "body": "Todo elemento interativo em repouso com sombra dura afunda em dois tempos: hover com snap inteiro, active afunda tudo (a superfície toca o papel). Ghost sem sombra mantém micro-afundar de 1px no active. Elemento que levanta no hover é bug físico.",
+        "section": "elevation"
+      },
+      {
+        "name": "A Regra do Snap Inteiro",
+        "body": "Todo translate de press em elemento de sombra 2px ou mais é número inteiro de pixels — nunca meia-pixel, que antialiasa a borda preta. Única exceção: o checkbox de 20px (0.5px/1px).",
+        "section": "elevation"
+      },
+      {
+        "name": "A Regra do Popup de Papel",
+        "body": "Popup de leitura ou seleção (Select, Dropdown, Tooltip, Toast, Dialog modal) é folha de Papel Quadriculado com contorno preto de 2px e sem sombra — o contorno faz o destaque, não a elevação.",
+        "section": "elevation"
+      },
+      {
+        "name": "A Regra do Link de Serviço",
+        "body": "Dentro de uma barra, ação que corrige ou auxilia (limpar, selecionar tudo) é texto sublinhado, não adesivo — se tudo é botão, nada é.",
+        "section": "components"
+      },
+      {
+        "name": "A Regra do Clique Mecânico",
+        "body": "O som é feedback de objeto, não enfeite: opt-in, desligado por padrão, sample de switch mecânico via Web Audio. A encadernação é muda: navegação da sidebar e logo-bloco não fazem barulho.",
+        "section": "components"
+      },
+      {
+        "name": "A Regra do Bloco Sem Borda",
+        "body": "Skeleton é conteúdo à espera de tinta: bloco neutro pulsante, nunca adesivo — borda e sombra pertencem ao Card que o contém.",
+        "section": "components"
+      },
+      {
+        "name": "A Regra dos Dois Adesivos",
+        "body": "Raio e sombra dizem o que o adesivo faz: adesivo de conteúdo (8px + sombra 4px) é papel de leitura; adesivo de ação (12–16px + sombra 2px) é convite ao clique. Informação nunca se veste de botão, e botão nunca se veste de informação.",
+        "section": "components"
+      }
     ],
     "dos": [
       "Do dar borda preta de 2px a toda superfície e elemento interativo (A Regra do Risco Preto); pills de código mono usam borda de 1px.",
@@ -331,7 +720,7 @@
       "Do usar link sublinhado para ação terciária de barra (\"Limpar filtros\", \"Selecionar tudo\") (A Regra do Link de Serviço).",
       "Do vestir filtro engajado com a cor cheia da família (Filtro Select azul, filtros de Disciplinas com sua cor) e a cavidade de busca engajada com o pastel; ordenação nunca engaja.",
       "Do construir hierarquia com peso de fonte (800/700/600/500) e usar pastéis como fundo, nunca como cor de ação.",
-      "Do usar Plus Jakarta Sans e ícones Lucide com stroke 2.5 (check de checkbox stroke 3); rótulos estruturais em uppercase bold 11–12px; códigos de disciplina em pills font-mono (A Regra do Código em Máquina).",
+      "Do usar Plus Jakarta Sans e ícones Lucide com stroke 2.5 (check de checkbox stroke 3); rótulos estruturais em uppercase bold 11–12px; códigos de disciplina em pill font-mono ou em texto corrido com o nome (\"CIC0004 - Nome\") nas listas do Fluxograma (A Regra do Código em Máquina).",
       "Do usar as cores de plataforma como identidade fixa (Sigaa verde #3B8748, Aprender 3 azul UnB #468AFB, Teams roxo Fluent #5B5FC7) em badges e filtros — tokens que não remapam no escuro.",
       "Do usar raio e sombra como affordance (A Regra dos Dois Adesivos): ação 12–16px + sombra 2px; conteúdo 8px + sombra 4px; painel de pausa/métrica 12px; campo 12px sem sombra.",
       "Do usar Micro-adesivo 1px (neo-xs) em checkbox, blocos de ícone, pills inline, badge de didática e micro-ações flutuantes; badge fica sem sombra.",
