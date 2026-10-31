@@ -1,13 +1,19 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
-import { useContainer } from '../context/ContainerContext';
-import { subscribeToSyncComplete } from '../context/SyncContext';
+import {
+  useState,
+  useEffect,
+  useCallback,
+  useRef,
+  useDeferredValue,
+} from "react";
+import { useContainer } from "../context/ContainerContext";
+import { subscribeToSyncComplete } from "../context/SyncContext";
 import type {
   ProfessorSummary,
   DisciplineSummary,
   CampusName,
   DifficultyLevel,
   ProfessorEvaluationSortBy,
-} from '@/core';
+} from "@/core";
 
 export function useProfessorEvaluations() {
   const { useCases } = useContainer();
@@ -28,100 +34,108 @@ export function useProfessorEvaluations() {
   const hasLoadedOnceRef = useRef<boolean>(false);
   const [error, setError] = useState<boolean>(false);
 
-  // Filtros e parâmetros de busca
-  const [searchQuery, setSearchQuery] = useState<string>('');
-  const [selectedCampus, setSelectedCampus] = useState<CampusName | 'all'>(
-    'all'
+  const [searchQuery, setSearchQuery] = useState<string>("");
+  const debouncedQuery = useDeferredValue(searchQuery);
+  const [selectedCampus, setSelectedCampus] = useState<CampusName | "all">(
+    "all",
   );
   const [selectedDifficulty, setSelectedDifficulty] = useState<
-    DifficultyLevel | 'all'
-  >('all');
+    DifficultyLevel | "all"
+  >("all");
   const [sortBy, setSortBy] = useState<ProfessorEvaluationSortBy>(
-    'recommendation_desc'
+    "recommendation_desc",
   );
 
   const loadData = useCallback(
     async (forceRefresh = false) => {
-      if (forceRefresh || !hasLoadedOnceRef.current) {
+      const needsBaseLoad = forceRefresh || !hasLoadedOnceRef.current;
+      if (needsBaseLoad) {
         setIsLoading(true);
       }
 
       try {
         const filters = {
-          query: searchQuery,
+          query: debouncedQuery,
           campus: selectedCampus,
           difficulty: selectedDifficulty,
           sortBy,
         };
 
-        // As duas chamadas execute aquecem/renovam o cache do use-case; os
-        // resultados brutos não são consumidos pelo hook.
-        const [
-          ,
-          ,
-          summaryList,
-          disciplineSummaryList,
-          unfilteredSummaryList,
-          unfilteredDisciplineSummaryList,
-        ] = await Promise.all([
-          useCases.getProfessorEvaluations.execute(undefined, forceRefresh),
-          useCases.getProfessorEvaluations.execute(filters, false),
-          useCases.getProfessorEvaluations.getSummaries(filters, false),
-          useCases.getProfessorEvaluations.getDisciplineSummaries(
-            filters,
-            false
-          ),
-          useCases.getProfessorEvaluations.getSummaries(undefined, false),
-          useCases.getProfessorEvaluations.getDisciplineSummaries(
+        if (needsBaseLoad) {
+          // Aquece/atualiza a base enriquecida uma única vez antes de agregar
+          await useCases.getProfessorEvaluations.execute(
             undefined,
-            false
-          ),
-        ]);
+            forceRefresh,
+          );
+          const [
+            summaryList,
+            disciplineSummaryList,
+            unfilteredSummaryList,
+            unfilteredDisciplineSummaryList,
+          ] = await Promise.all([
+            useCases.getProfessorEvaluations.getSummaries(filters, false),
+            useCases.getProfessorEvaluations.getDisciplineSummaries(
+              filters,
+              false,
+            ),
+            useCases.getProfessorEvaluations.getSummaries(undefined, false),
+            useCases.getProfessorEvaluations.getDisciplineSummaries(
+              undefined,
+              false,
+            ),
+          ]);
+          setSummaries(summaryList);
+          setDisciplineSummaries(disciplineSummaryList);
+          setUnfilteredSummaries(unfilteredSummaryList);
+          setUnfilteredDisciplineSummaries(unfilteredDisciplineSummaryList);
+        } else {
+          // Em mudanças de filtro/busca, recalcula apenas os agregados filtrados
+          const [summaryList, disciplineSummaryList] = await Promise.all([
+            useCases.getProfessorEvaluations.getSummaries(filters, false),
+            useCases.getProfessorEvaluations.getDisciplineSummaries(
+              filters,
+              false,
+            ),
+          ]);
+          setSummaries(summaryList);
+          setDisciplineSummaries(disciplineSummaryList);
+        }
 
-        setSummaries(summaryList);
-        setDisciplineSummaries(disciplineSummaryList);
-        setUnfilteredSummaries(unfilteredSummaryList);
-        setUnfilteredDisciplineSummaries(unfilteredDisciplineSummaryList);
         hasLoadedOnceRef.current = true;
         setHasLoadedOnce(true);
         setError(false);
         return true;
       } catch (err) {
-        console.error('Erro ao carregar avaliações de professores:', err);
+        console.error("Erro ao carregar avaliações de professores:", err);
         setError(true);
         return false;
       } finally {
         setIsLoading(false);
       }
     },
-    [
-      useCases,
-      searchQuery,
-      selectedCampus,
-      selectedDifficulty,
-      sortBy,
-    ]
+    [useCases, debouncedQuery, selectedCampus, selectedDifficulty, sortBy],
   );
 
   useEffect(() => {
     void loadData(false);
     const unsubscribe = subscribeToSyncComplete(() => {
+      hasLoadedOnceRef.current = false;
       void loadData(false);
     });
     return unsubscribe;
   }, [loadData]);
 
   const clearFilters = useCallback(() => {
-    setSearchQuery('');
-    setSelectedCampus('all');
-    setSelectedDifficulty('all');
-    setSortBy('recommendation_desc');
+    setSearchQuery("");
+    setSelectedCampus("all");
+    setSelectedDifficulty("all");
+    setSortBy("recommendation_desc");
   }, []);
 
   const hasActiveFilters =
-    searchQuery.trim() !== '' ||
-    selectedCampus !== 'all' ||
-    selectedDifficulty !== 'all';
+    searchQuery.trim() !== "" ||
+    selectedCampus !== "all" ||
+    selectedDifficulty !== "all";
 
   return {
     summaries,

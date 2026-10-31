@@ -1,6 +1,12 @@
-import { useState, useEffect, useCallback } from 'react';
-import { useContainer } from '../context/ContainerContext';
-import type { FeedItem, Course, PlatformType, FeedItemType, Discipline } from '@/core';
+import { useState, useEffect, useCallback, useDeferredValue } from "react";
+import { useContainer } from "../context/ContainerContext";
+import type {
+  FeedItem,
+  Course,
+  PlatformType,
+  FeedItemType,
+  Discipline,
+} from "@/core";
 
 // Notificador global entre instâncias ativas do hook useFeed
 const feedListeners = new Set<() => void>();
@@ -30,44 +36,55 @@ export function useFeed() {
   const [hasLoadedOnce, setHasLoadedOnce] = useState<boolean>(false);
   const [isSyncing, setIsSyncing] = useState<boolean>(false);
   const [lastSyncedAt, setLastSyncedAt] = useState<string | null>(null);
-  const [syncErrors, setSyncErrors] = useState<Partial<Record<PlatformType, string>> | null>(null);
+  const [syncErrors, setSyncErrors] = useState<Partial<
+    Record<PlatformType, string>
+  > | null>(null);
 
-  // Filtros ativos
-  const [selectedPlatform, setSelectedPlatform] = useState<PlatformType | 'all'>('all');
-  const [selectedType, setSelectedType] = useState<FeedItemType | 'all'>('all');
-  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [selectedPlatform, setSelectedPlatform] = useState<
+    PlatformType | "all"
+  >("all");
+  const [selectedType, setSelectedType] = useState<FeedItemType | "all">("all");
+  const [searchQuery, setSearchQuery] = useState<string>("");
+  const debouncedSearchQuery = useDeferredValue(searchQuery);
   const [showArchived, setShowArchived] = useState<boolean>(false);
 
   const loadFeed = useCallback(async () => {
     setIsLoading(true);
     try {
-      const feedItems = await useCases.getFeed.execute({
-        platform: selectedPlatform,
-        itemType: selectedType,
-        searchQuery,
-        onlyArchived: showArchived ? true : undefined,
-      });
+      const [feedItems, absoluteItems, courseList, disciplinesResult] =
+        await Promise.all([
+          useCases.getFeed.execute({
+            platform: selectedPlatform,
+            itemType: selectedType,
+            searchQuery: debouncedSearchQuery,
+            onlyArchived: showArchived ? true : undefined,
+          }),
+          useCases.getFeed.execute({
+            onlyArchived: false,
+          }),
+          useCases.getCourses.execute(),
+          useCases.getCourses.getDisciplines(),
+        ]);
+
       setItems(feedItems);
       setHasLoadedOnce(true);
-
-      const absoluteItems = await useCases.getFeed.execute({
-        onlyArchived: false,
-      });
       setTotalItems(absoluteItems.length);
-
-      const courseList = await useCases.getCourses.execute();
       setCourses(courseList);
-
-      const disciplinesResult = await useCases.getCourses.getDisciplines();
       setDisciplines(disciplinesResult.disciplines);
       setUnmatchedCourses(disciplinesResult.unmatchedCourses);
       setOtherCourses(disciplinesResult.otherCourses);
     } catch (err) {
-      console.error('Erro ao carregar dados do feed e disciplinas:', err);
+      console.error("Erro ao carregar dados do feed e disciplinas:", err);
     } finally {
       setIsLoading(false);
     }
-  }, [useCases, selectedPlatform, selectedType, searchQuery, showArchived]);
+  }, [
+    useCases,
+    selectedPlatform,
+    selectedType,
+    debouncedSearchQuery,
+    showArchived,
+  ]);
 
   useEffect(() => {
     loadFeed();
@@ -104,7 +121,7 @@ export function useFeed() {
       notifyFeedListeners();
       return result;
     } catch (err) {
-      console.error('Erro durante a sincronização:', err);
+      console.error("Erro durante a sincronização:", err);
       throw err;
     } finally {
       setIsSyncing(false);
@@ -123,7 +140,7 @@ export function useFeed() {
       setLastSyncedAt(null);
       notifyFeedListeners();
     } catch (err) {
-      console.error('Erro ao limpar dados do feed e turmas:', err);
+      console.error("Erro ao limpar dados do feed e turmas:", err);
       throw err;
     } finally {
       setIsLoading(false);
@@ -134,7 +151,9 @@ export function useFeed() {
     const nextStatus = !currentStatus;
     await useCases.getFeed.markAsCompleted(id, nextStatus);
     setItems((prev) =>
-      prev.map((item) => (item.id === id ? { ...item, isCompleted: nextStatus } : item))
+      prev.map((item) =>
+        item.id === id ? { ...item, isCompleted: nextStatus } : item,
+      ),
     );
     // Conclusão muda prazos pendentes: o sino e o painel acompanham.
     notifyFeedListeners();
@@ -148,22 +167,21 @@ export function useFeed() {
       setItems((prev) => prev.filter((item) => item.id !== id));
     } else {
       setItems((prev) =>
-        prev.map((item) => (item.id === id ? { ...item, isArchived } : item))
+        prev.map((item) => (item.id === id ? { ...item, isArchived } : item)),
       );
     }
   };
 
-  // Ações em lote do modo Selecionar: SQLite local, laço sequencial basta.
-  // Estado e notificação global atualizam uma vez só, no fim.
+  // Ações em lote do modo Selecionar: executa em paralelo no SQLite local e notifica uma vez só no fim.
   const completeTasksBatch = async (ids: string[]) => {
     if (ids.length === 0) return;
-    for (const id of ids) {
-      await useCases.getFeed.markAsCompleted(id, true);
-    }
+    await Promise.all(
+      ids.map((id) => useCases.getFeed.markAsCompleted(id, true)),
+    );
     setItems((prev) =>
       prev.map((item) =>
-        ids.includes(item.id) ? { ...item, isCompleted: true } : item
-      )
+        ids.includes(item.id) ? { ...item, isCompleted: true } : item,
+      ),
     );
     // Conclusão muda prazos pendentes: o sino e o painel acompanham.
     notifyFeedListeners();
@@ -171,23 +189,31 @@ export function useFeed() {
 
   const archiveItemsBatch = async (ids: string[], isArchived: boolean) => {
     if (ids.length === 0) return;
-    for (const id of ids) {
-      await useCases.getFeed.archiveItem(id, isArchived);
-    }
+    await Promise.all(
+      ids.map((id) => useCases.getFeed.archiveItem(id, isArchived)),
+    );
     // Mesma regra do single: quando o modo atual esconde os itens movidos, saem da lista
     if (showArchived !== isArchived) {
       setItems((prev) => prev.filter((item) => !ids.includes(item.id)));
     } else {
       setItems((prev) =>
         prev.map((item) =>
-          ids.includes(item.id) ? { ...item, isArchived } : item
-        )
+          ids.includes(item.id) ? { ...item, isArchived } : item,
+        ),
       );
     }
   };
 
-  const associateCourse = async (aprenderCourseId: string, sigaaCourseId: string | null, isIgnored: boolean = false) => {
-    await useCases.getCourses.associateCourse(aprenderCourseId, sigaaCourseId, isIgnored);
+  const associateCourse = async (
+    aprenderCourseId: string,
+    sigaaCourseId: string | null,
+    isIgnored: boolean = false,
+  ) => {
+    await useCases.getCourses.associateCourse(
+      aprenderCourseId,
+      sigaaCourseId,
+      isIgnored,
+    );
     const disciplinesResult = await useCases.getCourses.getDisciplines();
     setDisciplines(disciplinesResult.disciplines);
     setUnmatchedCourses(disciplinesResult.unmatchedCourses);
@@ -225,4 +251,3 @@ export function useFeed() {
     associateCourse,
   };
 }
-
