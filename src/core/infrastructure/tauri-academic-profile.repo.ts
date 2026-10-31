@@ -7,82 +7,9 @@ import type {
 } from '../domain/interfaces/academic-profile-repo.interface';
 import { InMemoryAcademicProfileRepository } from './in-memory-academic-profile.repo';
 import { getDatabase } from './sqlite-feed.repo';
+import { mapCurriculaDtos } from './mappers/curriculum.mapper';
 
 const PROFILE_ROW_ID = 'current';
-
-interface CurriculumDisciplineDto {
-  code: string;
-  name: string;
-  workload_hours: number;
-  level?: number | null;
-  nature: string;
-  prerequisites_raw?: string | null;
-  prerequisites?: string[];
-  equivalences_raw?: string | null;
-  equivalences?: string[];
-}
-
-interface CurriculumStructureDto {
-  id: string;
-  course_id: string;
-  course_name: string;
-  code: string;
-  created_year?: string | null;
-  status: string;
-  shift?: string | null;
-  total_hours?: number | null;
-  mandatory_disciplines?: CurriculumDisciplineDto[];
-  elective_disciplines?: CurriculumDisciplineDto[];
-  complementary_disciplines?: CurriculumDisciplineDto[];
-}
-
-function mapCurriculaDto(dtos: CurriculumStructureDto[]): CurriculumStructure[] {
-  const mapDisc = (d: CurriculumDisciplineDto) => ({
-    code: d.code,
-    name: d.name,
-    workloadHours: d.workload_hours,
-    level: d.level ?? undefined,
-    nature: d.nature as 'Obrigatória' | 'Optativa' | 'Complementar',
-    prerequisitesRaw: d.prerequisites_raw ?? undefined,
-    prerequisites: d.prerequisites || [],
-    equivalencesRaw: d.equivalences_raw ?? undefined,
-    equivalences: d.equivalences || [],
-  });
-  return dtos.map((c) => ({
-    id: c.id,
-    courseId: c.course_id,
-    courseName: c.course_name,
-    code: c.code,
-    createdYear: c.created_year ?? undefined,
-    status: c.status,
-    shift: c.shift ?? undefined,
-    totalHours: c.total_hours ?? undefined,
-    mandatoryDisciplines: (c.mandatory_disciplines || []).map(mapDisc),
-    electiveDisciplines: (c.elective_disciplines || []).map(mapDisc),
-    complementaryDisciplines: (c.complementary_disciplines || []).map(mapDisc),
-  }));
-}
-
-let academicTableCreated = false;
-async function ensureAcademicTable(db: NonNullable<Awaited<ReturnType<typeof getDatabase>>>) {
-  if (!academicTableCreated) {
-    await db.execute(`
-      CREATE TABLE IF NOT EXISTS academic_profile (
-        id TEXT PRIMARY KEY,
-        payload TEXT NOT NULL,
-        updated_at TEXT NOT NULL
-      );
-    `);
-    await db.execute(`
-      CREATE TABLE IF NOT EXISTS curricula_cache (
-        course_id TEXT PRIMARY KEY,
-        payload TEXT NOT NULL,
-        updated_at TEXT NOT NULL
-      );
-    `);
-    academicTableCreated = true;
-  }
-}
 
 async function saveCurriculaToDb(
   db: NonNullable<Awaited<ReturnType<typeof getDatabase>>>,
@@ -90,7 +17,6 @@ async function saveCurriculaToDb(
   curricula: CurriculumStructure[]
 ): Promise<void> {
   try {
-    await ensureAcademicTable(db);
     await db.execute(
       `INSERT INTO curricula_cache (course_id, payload, updated_at) VALUES ($1, $2, $3)
        ON CONFLICT(course_id) DO UPDATE SET payload = $2, updated_at = $3;`,
@@ -108,7 +34,6 @@ export class TauriAcademicProfileRepository implements IAcademicProfileRepositor
     const db = await getDatabase();
     if (db) {
       try {
-        await ensureAcademicTable(db);
         const rows = await db.select<{ payload: string }[]>(
           'SELECT payload FROM academic_profile WHERE id = $1 LIMIT 1;',
           [PROFILE_ROW_ID]
@@ -131,7 +56,6 @@ export class TauriAcademicProfileRepository implements IAcademicProfileRepositor
     const db = await getDatabase();
     if (db) {
       try {
-        await ensureAcademicTable(db);
         await db.execute(
           `INSERT INTO academic_profile (id, payload, updated_at) VALUES ($1, $2, $3)
            ON CONFLICT(id) DO UPDATE SET payload = $2, updated_at = $3;`,
@@ -148,8 +72,8 @@ export class TauriAcademicProfileRepository implements IAcademicProfileRepositor
     const db = await getDatabase();
     if (db) {
       try {
-        await ensureAcademicTable(db);
         await db.execute('DELETE FROM academic_profile WHERE id = $1;', [PROFILE_ROW_ID]);
+        await db.execute('DELETE FROM curricula_cache;');
       } catch (e) {
         console.warn('[TauriAcademicProfileRepository] Falha ao limpar perfil no SQLite:', e);
       }
@@ -157,22 +81,17 @@ export class TauriAcademicProfileRepository implements IAcademicProfileRepositor
   }
 
   async getAllCurricula(): Promise<CurriculumStructure[]> {
-    const fromStaticAsset = await this.fallbackRepo.getAllCurricula();
-    if (fromStaticAsset.length > 0) {
-      return fromStaticAsset;
-    }
-
     try {
       const { commands } = await import('@/core/infrastructure/bindings');
       const response = await commands.getAllCurricula();
       if (response.status === 'ok' && response.data && response.data.length > 0) {
-        return mapCurriculaDto(response.data);
+        return mapCurriculaDtos(response.data);
       }
     } catch (e) {
       console.warn('[TauriAcademicProfileRepository] Erro ao buscar via bindings Tauri:', e);
     }
 
-    return [];
+    return this.fallbackRepo.getAllCurricula();
   }
 
   async getCurriculaForCourse(courseId: string): Promise<CurriculumStructure[]> {
@@ -183,7 +102,7 @@ export class TauriAcademicProfileRepository implements IAcademicProfileRepositor
       const { commands } = await import('@/core/infrastructure/bindings');
       const response = await commands.getCourseCurriculum(courseId);
       if (response.status === 'ok' && response.data && response.data.length > 0) {
-        const mapped = mapCurriculaDto(response.data);
+        const mapped = mapCurriculaDtos(response.data);
         if (db) await saveCurriculaToDb(db, courseId, mapped);
         return mapped;
       }
@@ -194,7 +113,6 @@ export class TauriAcademicProfileRepository implements IAcademicProfileRepositor
     // Cache offline SQLite
     if (db) {
       try {
-        await ensureAcademicTable(db);
         const rows = await db.select<{ payload: string }[]>(
           'SELECT payload FROM curricula_cache WHERE course_id = $1 LIMIT 1;',
           [courseId]
@@ -224,23 +142,25 @@ export class TauriAcademicProfileRepository implements IAcademicProfileRepositor
       const response = await commands.fetchSigaaAcademicHistory(creds.matricula, creds.senha);
       if (response.status === 'ok' && response.data) {
         const d = response.data;
+        const p = d.profile;
         return {
           pdfBase64: d.pdfBase64 ?? undefined,
           pdfText: d.pdfText ?? undefined,
-          matricula: d.profile.matricula,
-          nome: d.profile.nome ?? undefined,
-          curso: d.profile.curso,
-          nivel: d.profile.nivel,
-          status: d.profile.status,
-          entrada: d.profile.entrada,
-          email: d.profile.email ?? undefined,
-          ira: d.profile.ira ?? undefined,
-          mp: d.profile.mp ?? undefined,
-          chObrigatoriaPendente: d.profile.chObrigatoriaPendente ?? undefined,
-          chOptativaPendente: d.profile.chOptativaPendente ?? undefined,
-          chTotalCurriculo: d.profile.chTotalCurriculo ?? undefined,
-          chComplementarPendente: d.profile.chComplementarPendente ?? undefined,
-          percentualIntegralizado: d.profile.percentualIntegralizado ?? undefined,
+          matricula: p.matricula,
+          nome: p.name ?? undefined,
+          curso: p.course,
+          turno: p.shift ?? undefined,
+          nivel: p.level,
+          status: p.status,
+          entrada: p.admissionSemester,
+          email: p.email ?? undefined,
+          ira: p.ira ?? undefined,
+          mp: p.mp ?? undefined,
+          chObrigatoriaPendente: p.pendingMandatoryHours ?? undefined,
+          chOptativaPendente: p.pendingElectiveHours ?? undefined,
+          chTotalCurriculo: p.totalCurriculumHours ?? undefined,
+          chComplementarPendente: p.pendingComplementaryHours ?? undefined,
+          percentualIntegralizado: p.completedPercentage ?? undefined,
         };
       } else if (response.status === 'error') {
         throw new Error(response.error);

@@ -1,10 +1,17 @@
 import type { StudentAcademicProfile } from '../domain/entities/academic-profile';
-import type { CurriculumDiscipline, CurriculumStructure } from '../domain/entities/course';
+import type { CurriculumStructure } from '../domain/entities/course';
 import type { SigaaCredentials } from '../domain/entities/credential';
 import type {
   IAcademicProfileRepository,
   SigaaHistoryRawResponse,
 } from '../domain/interfaces/academic-profile-repo.interface';
+import {
+  mapCurriculumStructureDto,
+  sharedDisciplineNameMap,
+  type RawCurriculumStructureDto,
+} from './mappers/curriculum.mapper';
+
+export { sharedDisciplineNameMap };
 
 const STORAGE_KEY = 'sarue_academic_profile_v1';
 const LEGACY_STORAGE_KEY = 'unb_aggregator_academic_profile_v1';
@@ -16,65 +23,6 @@ function isTauriRuntime(): boolean {
   return typeof window !== 'undefined' && '__TAURI_INTERNALS__' in window;
 }
 let sharedCurriculaPromise: Promise<CurriculumStructure[]> | null = null;
-export const sharedDisciplineNameMap = new Map<string, string>();
-
-interface RawCurriculumDiscipline {
-  code: string;
-  name: string;
-  workload_hours: number;
-  level?: number | null;
-  nature: 'Obrigatória' | 'Optativa' | 'Complementar';
-  prerequisites_raw?: string | null;
-  prerequisites?: string[];
-  equivalences_raw?: string | null;
-  equivalences?: string[];
-}
-
-interface RawCurriculumStructure {
-  id: string;
-  course_id: string;
-  course_name: string;
-  code: string;
-  created_year?: string | null;
-  status: string;
-  shift?: string | null;
-  total_hours?: number | null;
-  mandatory_disciplines?: RawCurriculumDiscipline[];
-  elective_disciplines?: RawCurriculumDiscipline[];
-  complementary_disciplines?: RawCurriculumDiscipline[];
-}
-
-function mapCurriculumStructure(c: RawCurriculumStructure): CurriculumStructure {
-  const mapDisc = (d: RawCurriculumDiscipline): CurriculumDiscipline => {
-    if (d.code && d.name && !sharedDisciplineNameMap.has(d.code)) {
-      sharedDisciplineNameMap.set(d.code, d.name);
-    }
-    return {
-      code: d.code,
-      name: d.name,
-      workloadHours: d.workload_hours,
-      level: d.level ?? undefined,
-      nature: d.nature,
-      prerequisitesRaw: d.prerequisites_raw ?? undefined,
-      prerequisites: d.prerequisites || [],
-      equivalencesRaw: d.equivalences_raw ?? undefined,
-      equivalences: d.equivalences || [],
-    };
-  };
-  return {
-    id: c.id,
-    courseId: c.course_id,
-    courseName: c.course_name,
-    code: c.code,
-    createdYear: c.created_year ?? undefined,
-    status: c.status,
-    shift: c.shift ?? undefined,
-    totalHours: c.total_hours ?? undefined,
-    mandatoryDisciplines: (c.mandatory_disciplines || []).map(mapDisc),
-    electiveDisciplines: (c.elective_disciplines || []).map(mapDisc),
-    complementaryDisciplines: (c.complementary_disciplines || []).map(mapDisc),
-  };
-}
 
 // Cache por curso: course_id -> matrizes (evita re-baixar o arquivo do curso)
 const sharedCurriculaByCourse = new Map<string, Promise<CurriculumStructure[]>>();
@@ -144,87 +92,16 @@ export class InMemoryAcademicProfileRepository implements IAcademicProfileReposi
             const res = await fetch(url);
             if (!res.ok) continue;
 
-            const raw = (await res.json()) as Array<{
-              id: string;
-              course_id: string;
-              course_name: string;
-              code: string;
-              created_year?: string | null;
-              status: string;
-              shift?: string | null;
-              total_hours?: number | null;
-              mandatory_disciplines?: Array<{
-                code: string;
-                name: string;
-                workload_hours: number;
-                level?: number | null;
-                nature: 'Obrigatória' | 'Optativa' | 'Complementar';
-                prerequisites_raw?: string | null;
-                prerequisites?: string[];
-                equivalences_raw?: string | null;
-                equivalences?: string[];
-              }>;
-              elective_disciplines?: Array<{
-                code: string;
-                name: string;
-                workload_hours: number;
-                level?: number | null;
-                nature: 'Obrigatória' | 'Optativa' | 'Complementar';
-                prerequisites_raw?: string | null;
-                prerequisites?: string[];
-                equivalences_raw?: string | null;
-                equivalences?: string[];
-              }>;
-              complementary_disciplines?: Array<{
-                code: string;
-                name: string;
-                workload_hours: number;
-                level?: number | null;
-                nature: 'Obrigatória' | 'Optativa' | 'Complementar';
-                prerequisites_raw?: string | null;
-                prerequisites?: string[];
-                equivalences_raw?: string | null;
-                equivalences?: string[];
-              }>;
-            }>;
+            const raw = (await res.json()) as RawCurriculumStructureDto[];
 
             if (Array.isArray(raw) && raw.length > 0) {
-              const mapDisc = (d: RawCurriculumDiscipline) => {
-                if (d.code && d.name && !sharedDisciplineNameMap.has(d.code)) {
-                  sharedDisciplineNameMap.set(d.code, d.name);
-                }
-                return {
-                  code: d.code,
-                  name: d.name,
-                  workloadHours: d.workload_hours,
-                  level: d.level ?? undefined,
-                  nature: d.nature,
-                  prerequisitesRaw: d.prerequisites_raw ?? undefined,
-                  prerequisites: d.prerequisites || [],
-                  equivalencesRaw: d.equivalences_raw ?? undefined,
-                  equivalences: d.equivalences || [],
-                };
-              };
-
               const mapped: CurriculumStructure[] = [];
               const CHUNK_SIZE = 25;
 
               for (let i = 0; i < raw.length; i += CHUNK_SIZE) {
                 const slice = raw.slice(i, i + CHUNK_SIZE);
                 for (const c of slice) {
-                  mapped.push({
-                    id: c.id,
-                    courseId: c.course_id,
-                    courseName: c.course_name,
-                    code: c.code,
-                    createdYear: c.created_year ?? undefined,
-                    status: c.status,
-                    shift: c.shift ?? undefined,
-                    totalHours: c.total_hours ?? undefined,
-                    mandatoryDisciplines: (c.mandatory_disciplines || []).map(mapDisc),
-                    electiveDisciplines: (c.elective_disciplines || []).map(mapDisc),
-                    complementaryDisciplines: (c.complementary_disciplines || []).map(mapDisc),
-                  });
+                  mapped.push(mapCurriculumStructureDto(c));
                 }
                 if (i + CHUNK_SIZE < raw.length) {
                   await new Promise((resolve) => setTimeout(resolve, 0));
@@ -285,10 +162,11 @@ export class InMemoryAcademicProfileRepository implements IAcademicProfileReposi
           try {
             const res = await fetch(url);
             if (!res.ok) continue;
-            const raw = (await res.json()) as RawCurriculumStructure[];
+            const raw = (await res.json()) as RawCurriculumStructureDto[];
             if (Array.isArray(raw) && raw.length > 0) {
-              const mapped = raw.map(mapCurriculumStructure);
-              if (typeof localStorage !== 'undefined') {
+              const mapped = raw.map(mapCurriculumStructureDto);
+              // Evita estourar quota do localStorage quando rodando dentro do Tauri (que já usa SQLite)
+              if (!isTauriRuntime() && typeof localStorage !== 'undefined') {
                 try {
                   localStorage.setItem(storageKey, JSON.stringify(mapped));
                 } catch {}

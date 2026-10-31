@@ -8,11 +8,10 @@ import type {
   ScheduleSlot,
   SavedGrade,
 } from "../domain/entities/grade";
-import { generateAcronyms } from "../domain/grade-acronym";
+import { generateAcronyms } from "../domain/utils/grade-acronym";
 import type {
   CourseCatalogItem,
   CurriculumStructure,
-  CurriculumDiscipline,
 } from "../domain/entities/course";
 import type Database from "@tauri-apps/plugin-sql";
 import type {
@@ -22,32 +21,18 @@ import type {
 } from "./bindings";
 import type { IGradeRepository } from "../domain/interfaces/grade-repo.interface";
 import { InMemoryGradeRepository } from "./in-memory-grade.repo";
+import { getDatabase } from "./sqlite-feed.repo";
+import { mapCurriculaDtos } from "./mappers/curriculum.mapper";
 
 const inMemorySavedGrades = new Map<string, SavedGrade>();
 let inMemoryLatestGrade: SavedGrade | null = null;
-
 export class TauriGradeRepository implements IGradeRepository {
   private fallbackRepo = new InMemoryGradeRepository();
 
   private async getDb(): Promise<Database | null> {
-    try {
-      const { default: Database } = await import("@tauri-apps/plugin-sql");
-      const { SQLITE_DB_NAME } = await import("./db-config");
-      const db = await Database.load(SQLITE_DB_NAME);
-      await db.execute(`
-        CREATE TABLE IF NOT EXISTS saved_grades (
-          id TEXT PRIMARY KEY,
-          name TEXT NOT NULL,
-          semester TEXT NOT NULL,
-          data TEXT NOT NULL,
-          updated_at TEXT NOT NULL
-        );
-      `);
-      return db;
-    } catch (e) {
-      console.warn("[TauriGradeRepository] Falha ao carregar banco SQLite:", e);
-      return null;
-    }
+    const db = await getDatabase();
+    if (!db) return null;
+    return db;
   }
 
   async getDepartments(): Promise<Department[]> {
@@ -128,51 +113,7 @@ export class TauriGradeRepository implements IGradeRepository {
         throw new Error(response.error);
       }
       if (response.data && response.data.length > 0) {
-        return response.data.map((curr) => ({
-          id: curr.id,
-          courseId: curr.course_id,
-          courseName: curr.course_name,
-          code: curr.code,
-          createdYear: curr.created_year ?? undefined,
-          status: curr.status,
-          shift: curr.shift ?? undefined,
-          totalHours: curr.total_hours ?? undefined,
-          mandatoryDisciplines: (curr.mandatory_disciplines || []).map((d) => ({
-            code: d.code,
-            name: d.name,
-            workloadHours: d.workload_hours,
-            level: d.level ?? undefined,
-            nature: d.nature as CurriculumDiscipline["nature"],
-            prerequisitesRaw: d.prerequisites_raw ?? undefined,
-            prerequisites: d.prerequisites || [],
-            equivalencesRaw: d.equivalences_raw ?? undefined,
-            equivalences: d.equivalences || [],
-          })),
-          electiveDisciplines: (curr.elective_disciplines || []).map((d) => ({
-            code: d.code,
-            name: d.name,
-            workloadHours: d.workload_hours,
-            level: d.level ?? undefined,
-            nature: d.nature as CurriculumDiscipline["nature"],
-            prerequisitesRaw: d.prerequisites_raw ?? undefined,
-            prerequisites: d.prerequisites || [],
-            equivalencesRaw: d.equivalences_raw ?? undefined,
-            equivalences: d.equivalences || [],
-          })),
-          complementaryDisciplines: (curr.complementary_disciplines || []).map(
-            (d) => ({
-              code: d.code,
-              name: d.name,
-              workloadHours: d.workload_hours,
-              level: d.level ?? undefined,
-              nature: d.nature as CurriculumDiscipline["nature"],
-              prerequisitesRaw: d.prerequisites_raw ?? undefined,
-              prerequisites: d.prerequisites || [],
-              equivalencesRaw: d.equivalences_raw ?? undefined,
-              equivalences: d.equivalences || [],
-            }),
-          ),
-        }));
+        return mapCurriculaDtos(response.data);
       }
     } catch {
       // Fallback
@@ -271,26 +212,8 @@ export class TauriGradeRepository implements IGradeRepository {
       );
     }
 
-    // Fallback TS
-    const conflicts: string[] = [];
-    const slotMap = new Map<string, ScrapedClass>();
-
-    for (const c of classes) {
-      for (const slot of c.scheduleSlots) {
-        const key = `${slot.day}-${slot.globalSlotIndex}`;
-        const existing = slotMap.get(key);
-        if (existing) {
-          if (existing.disciplineCode !== c.disciplineCode) {
-            const desc = `Conflito na ${slot.dayName} (${slot.timeRange}) entre ${existing.disciplineCode} e ${c.disciplineCode}`;
-            if (!conflicts.includes(desc)) conflicts.push(desc);
-          }
-        } else {
-          slotMap.set(key, c);
-        }
-      }
-    }
-
-    return conflicts;
+    // Fallback TS delegado ao repositório em memória
+    return this.fallbackRepo.checkConflicts(classes);
   }
 
   async solveSchedules(
@@ -367,53 +290,7 @@ export class TauriGradeRepository implements IGradeRepository {
       );
     }
 
-    // Fallback TS solver
-    const byDiscipline = new Map<string, ScrapedClass[]>();
-    for (const c of classes) {
-      const list = byDiscipline.get(c.disciplineCode) || [];
-      list.push(c);
-      byDiscipline.set(c.disciplineCode, list);
-    }
-
-    const groups = Array.from(byDiscipline.values());
-    if (groups.length === 0) return [];
-
-    let combinations: ScrapedClass[][] = [[]];
-    for (const group of groups) {
-      const next: ScrapedClass[][] = [];
-      for (const curr of combinations) {
-        for (const opt of group) {
-          next.push([...curr, opt]);
-        }
-      }
-      combinations = next.slice(0, 100);
-    }
-
-    const validOptions: ScheduleOption[] = [];
-    for (let i = 0; i < combinations.length; i++) {
-      const comb = combinations[i];
-      const conflicts = await this.checkConflicts(comb);
-      if (conflicts.length === 0) {
-        let score = 100;
-        if (preferenceShift) {
-          for (const c of comb) {
-            for (const s of c.scheduleSlots) {
-              score += s.shift === preferenceShift ? 10 : -5;
-            }
-          }
-        }
-        validOptions.push({
-          id: `opt-${i + 1}`,
-          classes: comb,
-          hasConflict: false,
-          conflicts: [],
-          score,
-        });
-      }
-    }
-
-    validOptions.sort((a, b) => b.score - a.score);
-    return validOptions;
+    return this.fallbackRepo.solveSchedules(classes, preferenceShift);
   }
 
   async saveGrade(grade: SavedGrade): Promise<void> {
