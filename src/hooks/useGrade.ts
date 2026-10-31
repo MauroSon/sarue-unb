@@ -27,6 +27,12 @@ const disciplinesCache = new Map<string, ScrapedDiscipline[]>();
 // Cache da última grade salva para restauração instantânea ao revisitar a tela
 let savedGradeCache: SavedGrade | null = null;
 
+export function resetGradeCache() {
+  disciplinesCache.clear();
+  savedGradeCache = null;
+  notifyGradeUpdate();
+}
+
 // Busca sem sensibilidade a acentos, maiúsculas ou pontuação ("calculo" acha "Cálculo")
 const normalizeText = (text: string) =>
   text

@@ -20,6 +20,7 @@ import { useCredentials } from "../hooks/useCredentials";
 import { useFeed } from "../hooks/useFeed";
 import { useScrollRestore } from "../hooks/useScrollRestore";
 import { resetMyCourseCache } from "../hooks/useMyCourse";
+import { resetGradeCache } from "../hooks/useGrade";
 import { useContainer } from "../context/ContainerContext";
 import { useOptionalSync } from "../context/SyncContext";
 import {
@@ -42,6 +43,7 @@ import { useBackgroundRun } from "../hooks/useBackgroundRun";
 import { AppUpdaterCard } from "@/components/settings/AppUpdaterCard";
 import { PatchNotesView } from "@/components/settings/PatchNotesView";
 import { ContributorsDialog } from "@/components/settings/ContributorsDialog";
+import { STORAGE_KEYS } from "@/lib/storage-keys";
 import {
   isSoundEffectsEnabled,
   setSoundEffectsEnabled,
@@ -63,7 +65,7 @@ export interface SettingsScreenProps {
 export const SettingsScreen: React.FC<SettingsScreenProps> = ({
   onResetCredentials,
 }) => {
-  const { useCases } = useContainer();
+  const { useCases, repos } = useContainer();
   const { clearFeedData } = useFeed();
   const { clearAll, allCredentials } = useCredentials();
   const syncContext = useOptionalSync();
@@ -154,22 +156,44 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
       await clearFeedData();
       // 3. Apaga rascunhos de grade horária (SQLite + memória)
       await useCases.manageGrade.clear();
-      // 4. Apaga perfil acadêmico e histórico escolar (Meu Curso)
+      resetGradeCache();
+      // 4. Apaga cenários simulados de IRA e histórico de notificações de prazo (SQLite + memória)
+      await useCases.manageIraScenario.clear();
+      await repos.deadlineNotificationRepo.clear();
+      // 5. Apaga perfil acadêmico e histórico escolar (Meu Curso) + cache de avaliações
       await useCases.manageAcademicProfile.clearProfile();
       resetMyCourseCache();
       await useCases.getProfessorEvaluations.clearCache();
-      // 5. Limpa preferências auxiliares e perfil do localStorage
+      // 6. Limpa preferências auxiliares e caches dinâmicos do localStorage
       try {
-        localStorage.removeItem("unb_grade_deptId");
-        localStorage.removeItem("unb_grade_year");
-        localStorage.removeItem("unb_grade_period");
-        localStorage.removeItem("sarue_academic_profile_v1");
-        localStorage.removeItem("unb_aggregator_academic_profile_v1");
-        localStorage.removeItem("sarue_ira_scenario_v1");
-        localStorage.removeItem("unb_aggregator_ira_scenario_v1");
-        localStorage.removeItem("sarue_last_synced_at");
+        const targetKeys = new Set<string>([
+          STORAGE_KEYS.ACADEMIC_PROFILE,
+          STORAGE_KEYS.IRA_SCENARIO,
+          STORAGE_KEYS.LAST_SYNCED_AT,
+          STORAGE_KEYS.EVALUATIONS_ENRICHED,
+          STORAGE_KEYS.EVALUATIONS_FILTER_BY_COURSE,
+          STORAGE_KEYS.GRADE_YEAR,
+          STORAGE_KEYS.GRADE_PERIOD,
+          STORAGE_KEYS.FLOWCHART_OPEN_SEMESTERS,
+          STORAGE_KEYS.ONBOARDING_EXPLORED,
+          "unb_aggregator_academic_profile_v1",
+          "unb_aggregator_ira_scenario_v1",
+          "unb_grade_deptId",
+        ]);
+
+        const keysToRemove: string[] = [];
+        for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i);
+          if (
+            key &&
+            (key.startsWith("sarue_curricula_course_") || targetKeys.has(key))
+          ) {
+            keysToRemove.push(key);
+          }
+        }
+        keysToRemove.forEach((k) => localStorage.removeItem(k));
       } catch {}
-      // 6. Fecha o diálogo e redireciona imediatamente para o onboarding
+      // 7. Fecha o diálogo e redireciona imediatamente para o onboarding
       setIsConfirmDialogOpen(false);
       onResetCredentials();
     } catch (err) {
