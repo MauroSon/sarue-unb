@@ -2,6 +2,7 @@ import React, { useMemo } from "react";
 import {
   Badge,
   Button,
+  Checkbox,
   DropdownMenu,
   DropdownMenuTrigger,
   DropdownMenuContent,
@@ -14,7 +15,6 @@ import {
   ArchiveRestore,
   Circle,
   CheckCircle,
-  Check,
   ClipboardList,
   ExternalLink,
   FileText,
@@ -135,34 +135,24 @@ export const FeedList: React.FC<FeedListProps> = ({
           >
             {/* Checkbox de seleção (modo Selecionar): azul quando marcado — verde segue sendo só de conclusão */}
             {selectionMode && onToggleSelect ? (
-              <button
-                type="button"
-                role="checkbox"
-                aria-checked={isSelected}
+              <Checkbox
+                checked={isSelected}
                 aria-label={`Selecionar item: ${item.title}`}
                 title={`Selecionar item: ${item.title}`}
                 onClick={(e) => {
                   e.stopPropagation();
                   onToggleSelect(item.id, e.shiftKey);
                 }}
-                className={`w-5 h-5 rounded-md border-2 border-ink flex items-center justify-center shrink-0 cursor-pointer transition-[transform,box-shadow,background-color] duration-150 ease-out shadow-[1px_1px_0px_0px_var(--neo-shadow)] hover:translate-x-[0.5px] hover:translate-y-[0.5px] hover:shadow-none active:translate-x-[1px] active:translate-y-[1px] focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-neo-blue focus-visible:ring-offset-2 ${
-                  isSelected
-                    ? "bg-neo-blue text-white"
-                    : "bg-paper hover:bg-neutral-100"
-                }`}
-              >
-                {isSelected ? (
-                  <Check className="w-3.5 h-3.5 stroke-[3]" />
-                ) : null}
-              </button>
+                className="data-checked:bg-neo-blue data-checked:text-white hover:bg-neutral-100"
+              />
             ) : null}
 
             {/* Conclusão (tarefas) ou ícone de tipo (avisos). Em modo Selecionar
                 o slot some: só o checkbox de seleção ocupa a linha. */}
             {!selectionMode ? (
               isAssignment && onToggleComplete ? (
-                <button
-                  type="button"
+                <Checkbox
+                  checked={item.isCompleted}
                   onClick={(e) => {
                     e.stopPropagation();
                     onToggleComplete(item.id, item.isCompleted);
@@ -177,16 +167,8 @@ export const FeedList: React.FC<FeedListProps> = ({
                       ? "Marcar como não concluído"
                       : "Marcar como concluído"
                   }
-                  className={`w-5 h-5 rounded-md border-2 border-ink flex items-center justify-center shrink-0 cursor-pointer transition-[transform,box-shadow,background-color] duration-150 ease-out shadow-[1px_1px_0px_0px_var(--neo-shadow)] hover:translate-x-[0.5px] hover:translate-y-[0.5px] hover:shadow-none active:translate-x-[1px] active:translate-y-[1px] ${
-                    item.isCompleted
-                      ? "bg-neo-green text-ink"
-                      : "bg-paper hover:bg-neutral-100"
-                  }`}
-                >
-                  {item.isCompleted ? (
-                    <Check className="w-3.5 h-3.5 stroke-[3]" />
-                  ) : null}
-                </button>
+                  className="data-checked:bg-neo-green data-checked:text-ink hover:bg-neutral-100"
+                />
               ) : (
                 <TypeIcon
                   className="w-4 h-4 stroke-[2.5] shrink-0 text-neutral-700"
