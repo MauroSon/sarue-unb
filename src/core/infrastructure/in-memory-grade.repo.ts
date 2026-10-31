@@ -8,7 +8,7 @@ import type {
   ScheduleSlot,
   SavedGrade,
 } from "../domain/entities/grade";
-import { generateAcronyms } from "../domain/grade-acronym";
+import { generateAcronyms } from "../domain/utils/grade-acronym";
 import type {
   CourseCatalogItem,
   CurriculumStructure,
@@ -678,7 +678,7 @@ export class InMemoryGradeRepository implements IGradeRepository {
           next.push([...curr, opt]);
         }
       }
-      combinations = next.slice(0, 100);
+      combinations = next.slice(0, 500);
     }
 
     const validOptions: ScheduleOption[] = [];
@@ -687,11 +687,14 @@ export class InMemoryGradeRepository implements IGradeRepository {
       const conflicts = await this.checkConflicts(comb);
       if (conflicts.length === 0) {
         let score = 100;
-        if (preferenceShift) {
-          for (const c of comb) {
-            for (const s of c.scheduleSlots) {
-              score += s.shift === preferenceShift ? 10 : -5;
+        for (const c of comb) {
+          for (const s of c.scheduleSlots) {
+            if (preferenceShift) {
+              score += s.shift === preferenceShift ? 15 : -5;
             }
+            if (s.shift === "M") score += 10;
+            else if (s.shift === "T") score += 8;
+            else if (s.shift === "N") score += 6;
           }
         }
         validOptions.push({
