@@ -1,4 +1,4 @@
-import type { ScheduleSlot } from './entities/grade';
+import type { ScheduleSlot } from '../entities/grade';
 
 const STOPWORDS = new Set([
   'de', 'da', 'do', 'das', 'dos',

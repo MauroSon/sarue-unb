@@ -8,8 +8,11 @@ export * from './domain/entities/ira-scenario';
 export * from './domain/entities/academic-calendar';
 export * from './domain/entities/deadline-notification';
 export * from './domain/entities/professor-evaluation';
-export * from './domain/grade-acronym';
-export * from './domain/course-shift';
+// Domain Utils
+export * from './domain/utils/grade-acronym';
+export * from './domain/utils/course-shift';
+export * from './domain/utils/semester';
+export * from './domain/utils/profanity-filter';
 
 // Interfaces / Ports
 export * from './domain/interfaces/credentials-repo.interface';
