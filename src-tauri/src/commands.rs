@@ -206,7 +206,7 @@ pub async fn sync_platforms(
         match platform {
             PlatformType::Aprender3 => {
                 let (cpf, senha) = match &aprender3 {
-                    Some(c) => (c.cpf.trim(), c.senha.as_str()),
+                    Some(c) => (c.cpf.trim(), c.password.as_str()),
                     None => ("", ""),
                 };
                 if !cpf.is_empty() && !senha.is_empty() {
@@ -223,7 +223,7 @@ pub async fn sync_platforms(
             }
             PlatformType::Sigaa => {
                 let (matricula, senha) = match &sigaa {
-                    Some(c) => (c.matricula.trim(), c.senha.as_str()),
+                    Some(c) => (c.matricula.trim(), c.password.as_str()),
                     None => ("", ""),
                 };
                 if !matricula.is_empty() && !senha.is_empty() {
@@ -351,7 +351,7 @@ pub async fn get_all_curricula() -> Result<Vec<crate::grade_scraper::CurriculumS
 pub async fn fetch_sigaa_academic_history(
     matricula: String,
     senha: String,
-) -> Result<crate::models::DiscenteAcademicHistoryPayload, String> {
+) -> Result<crate::models::AcademicHistoryPayload, String> {
     let client = crate::sigaa::SigaaClient::new();
     client
         .fetch_discente_profile_and_historico(&matricula, &senha)
@@ -428,10 +428,10 @@ pub async fn validate_sigaa_credentials(
     let client = SigaaClient::new();
     let (html, _) = client.login_to_portal(clean_matricula, &senha).await?;
     let profile = SigaaClient::parse_discente_profile(&html, clean_matricula);
-    let discente_name = profile.nome.unwrap_or_else(|| "Discente".into());
+    let discente_name = profile.name.unwrap_or_else(|| "Discente".into());
     Ok(format!(
         "Conectado como {} ({})",
-        discente_name, profile.curso
+        discente_name, profile.course
     ))
 }
 
@@ -443,7 +443,7 @@ pub async fn validate_aprender3_credentials(cpf: String, senha: String) -> Resul
         return Err("Informe o CPF e senha do Aprender 3.".into());
     }
     let client = MoodleClient::new();
-    let (_items, courses) = client.sync_aprender3(&clean_cpf, &senha).await?;
+    let courses = client.validate_credentials(&clean_cpf, &senha).await?;
     Ok(format!(
         "Conectado ao Aprender 3 ({} turmas encontradas)",
         courses.len()

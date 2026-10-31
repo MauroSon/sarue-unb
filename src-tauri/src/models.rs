@@ -45,7 +45,7 @@ pub struct Course {
     pub classroom: Option<String>,
     pub schedule: Option<String>,
     #[serde(default)]
-    pub turma: Option<String>,
+    pub class_group: Option<String>,
     pub unread_count: Option<u32>,
     pub pending_assignments_count: Option<u32>,
     pub url: Option<String>,
@@ -60,19 +60,18 @@ pub struct SyncResult {
     pub errors: Option<HashMap<PlatformType, String>>,
 }
 
-// Modelos específicos de credenciais
 #[derive(Debug, Clone, Serialize, Deserialize, specta::Type)]
 #[serde(rename_all = "camelCase")]
 pub struct SigaaCreds {
     pub matricula: String,
-    pub senha: String,
+    pub password: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, specta::Type)]
 #[serde(rename_all = "camelCase")]
 pub struct Aprender3Creds {
     pub cpf: String,
-    pub senha: String,
+    pub password: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, specta::Type)]
@@ -101,31 +100,29 @@ pub struct VaultStatus {
 
 #[derive(Debug, Clone, Serialize, Deserialize, specta::Type)]
 #[serde(rename_all = "camelCase")]
-pub struct DiscenteProfile {
+pub struct StudentProfile {
     pub matricula: String,
-    pub nome: Option<String>,
-    pub curso: String,
-    /// Turno informado pelo SIGAA (ex.: "MT", "N", "DIURNO").
+    pub name: Option<String>,
+    pub course: String,
     #[serde(default)]
-    pub turno: Option<String>,
-    pub nivel: String,
+    pub shift: Option<String>,
+    pub level: String,
     pub status: String,
-    pub entrada: String,
+    pub admission_semester: String,
     pub email: Option<String>,
     pub ira: Option<f64>,
     pub mp: Option<f64>,
-    pub ch_obrigatoria_pendente: Option<u32>,
-    pub ch_optativa_pendente: Option<u32>,
-    pub ch_total_curriculo: Option<u32>,
-    pub ch_complementar_pendente: Option<u32>,
-    pub percentual_integralizado: Option<f64>,
+    pub pending_mandatory_hours: Option<u32>,
+    pub pending_elective_hours: Option<u32>,
+    pub total_curriculum_hours: Option<u32>,
+    pub pending_complementary_hours: Option<u32>,
+    pub completed_percentage: Option<f64>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, specta::Type)]
 #[serde(rename_all = "camelCase")]
-pub struct DiscenteAcademicHistoryPayload {
-    pub profile: DiscenteProfile,
+pub struct AcademicHistoryPayload {
+    pub profile: StudentProfile,
     pub pdf_base64: Option<String>,
-    /// Texto do PDF já extraído no backend para evitar overhead no webview.
     pub pdf_text: Option<String>,
 }

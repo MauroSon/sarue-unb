@@ -1,4 +1,5 @@
 import type { FeedItem, PlatformType } from '../domain/entities/feed-item';
+import type { Course } from '../domain/entities/course';
 import type { ISyncRepository, SyncResult } from '../domain/interfaces/sync-repo.interface';
 import type { ICredentialsRepository } from '../domain/interfaces/credentials-repo.interface';
 
@@ -36,8 +37,18 @@ export class TauriSyncRepository implements ISyncRepository {
 
       const response = await commands.syncPlatforms(
         activePlatforms,
-        allCreds.sigaa ?? null,
-        allCreds.aprender3 ?? null,
+        allCreds.sigaa
+          ? {
+              matricula: allCreds.sigaa.matricula,
+              password: allCreds.sigaa.senha,
+            }
+          : null,
+        allCreds.aprender3
+          ? {
+              cpf: allCreds.aprender3.cpf,
+              password: allCreds.aprender3.senha,
+            }
+          : null,
         allCreds.teams
           ? {
               isConnected: allCreds.teams.isConnected ?? null,
@@ -59,15 +70,46 @@ export class TauriSyncRepository implements ISyncRepository {
         return false;
       };
 
-      const filteredItems = (response.data.items || []).filter((item) => isStillActive(item.platform));
-      const filteredCourses = (response.data.courses || []).filter((course) => isStillActive(course.platform));
+      const filteredItems: FeedItem[] = (response.data.items || [])
+        .filter((item) => isStillActive(item.platform))
+        .map((item) => ({
+          id: item.id,
+          platform: item.platform,
+          title: item.title,
+          content: item.content,
+          courseName: item.courseName,
+          courseCode: item.courseCode ?? undefined,
+          author: item.author ?? undefined,
+          itemType: item.itemType,
+          createdAt: item.createdAt,
+          dueDate: item.dueDate ?? undefined,
+          isCompleted: item.isCompleted ?? undefined,
+          externalUrl: item.externalUrl ?? undefined,
+        }));
+
+      const filteredCourses: Course[] = (response.data.courses || [])
+        .filter((course) => isStillActive(course.platform))
+        .map((c) => ({
+          id: c.id,
+          code: c.code,
+          name: c.name,
+          semester: c.semester,
+          platform: c.platform,
+          professor: c.professor ?? undefined,
+          classroom: c.classroom ?? undefined,
+          schedule: c.schedule ?? undefined,
+          turma: c.classGroup ?? undefined,
+          unreadCount: c.unreadCount ?? undefined,
+          pendingAssignmentsCount: c.pendingAssignmentsCount ?? undefined,
+          url: c.url ?? undefined,
+        }));
 
       return {
-        ...response.data,
         items: filteredItems,
         courses: filteredCourses,
+        syncedAt: response.data.syncedAt,
         errors: response.data.errors ?? undefined,
-      } as SyncResult;
+      };
     } catch (error) {
       console.error('Erro no comando nativo Tauri de sincronização:', error);
       return {

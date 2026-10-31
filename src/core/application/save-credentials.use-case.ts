@@ -180,7 +180,7 @@ export class SaveCredentialsUseCase {
               professor: c.professor ?? undefined,
               classroom: c.classroom ?? undefined,
               schedule: c.schedule ?? undefined,
-              turma: c.turma ?? undefined,
+              turma: c.classGroup ?? undefined,
               unreadCount: c.unreadCount ?? undefined,
               pendingAssignmentsCount: c.pendingAssignmentsCount ?? undefined,
               url: c.url ?? undefined,

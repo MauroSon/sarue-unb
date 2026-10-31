@@ -6,10 +6,10 @@ import { invoke as __TAURI_INVOKE } from "@tauri-apps/api/core";
 export const commands = {
 	syncPlatforms: (platforms: PlatformType[], sigaa: {
 	matricula: string,
-	senha: string,
+	password: string,
 } | null, aprender3: {
 	cpf: string,
-	senha: string,
+	password: string,
 } | null, teams: {
 	isConnected: boolean | null,
 	email: string | null,
@@ -21,7 +21,7 @@ export const commands = {
 	getCoursesCatalog: () => typedError<CourseCatalogItem[], string>(__TAURI_INVOKE("get_courses_catalog")),
 	getCourseCurriculum: (courseId: string) => typedError<CurriculumStructure[], string>(__TAURI_INVOKE("get_course_curriculum", { courseId })),
 	getAllCurricula: () => typedError<CurriculumStructure[], string>(__TAURI_INVOKE("get_all_curricula")),
-	fetchSigaaAcademicHistory: (matricula: string, senha: string) => typedError<DiscenteAcademicHistoryPayload, string>(__TAURI_INVOKE("fetch_sigaa_academic_history", { matricula, senha })),
+	fetchSigaaAcademicHistory: (matricula: string, senha: string) => typedError<AcademicHistoryPayload, string>(__TAURI_INVOKE("fetch_sigaa_academic_history", { matricula, senha })),
 	solveSchedules: (candidateClasses: ScrapedClass[], preferenceShift: string | null) => typedError<ScheduleOption[], string>(__TAURI_INVOKE("solve_schedules", { candidateClasses, preferenceShift })),
 	checkScheduleConflicts: (classes: ScrapedClass[]) => typedError<string[], string>(__TAURI_INVOKE("check_schedule_conflicts", { classes })),
 	openExternalUrl: (url: string) => typedError<null, string>(__TAURI_INVOKE("open_external_url", { url })),
@@ -41,9 +41,15 @@ export const commands = {
 };
 
 /* Types */
+export type AcademicHistoryPayload = {
+	profile: StudentProfile,
+	pdfBase64: string | null,
+	pdfText: string | null,
+};
+
 export type Aprender3Creds = {
 	cpf: string,
-	senha: string,
+	password: string,
 };
 
 export type Course = {
@@ -55,7 +61,7 @@ export type Course = {
 	professor: string | null,
 	classroom: string | null,
 	schedule: string | null,
-	turma?: string | null,
+	classGroup?: string | null,
 	unreadCount: number | null,
 	pendingAssignmentsCount: number | null,
 	url: string | null,
@@ -101,32 +107,6 @@ export type CurriculumStructure = {
 export type Department = {
 	id: string,
 	name: string,
-};
-
-export type DiscenteAcademicHistoryPayload = {
-	profile: DiscenteProfile,
-	pdfBase64: string | null,
-	/**  Texto do PDF já extraído no backend para evitar overhead no webview. */
-	pdfText: string | null,
-};
-
-export type DiscenteProfile = {
-	matricula: string,
-	nome: string | null,
-	curso: string,
-	/**  Turno informado pelo SIGAA (ex.: "MT", "N", "DIURNO"). */
-	turno?: string | null,
-	nivel: string,
-	status: string,
-	entrada: string,
-	email: string | null,
-	ira: number | null,
-	mp: number | null,
-	chObrigatoriaPendente: number | null,
-	chOptativaPendente: number | null,
-	chTotalCurriculo: number | null,
-	chComplementarPendente: number | null,
-	percentualIntegralizado: number | null,
 };
 
 export type FeedItem = {
@@ -202,7 +182,25 @@ export type ScrapedProfessor = {
 
 export type SigaaCreds = {
 	matricula: string,
-	senha: string,
+	password: string,
+};
+
+export type StudentProfile = {
+	matricula: string,
+	name: string | null,
+	course: string,
+	shift?: string | null,
+	level: string,
+	status: string,
+	admissionSemester: string,
+	email: string | null,
+	ira: number | null,
+	mp: number | null,
+	pendingMandatoryHours: number | null,
+	pendingElectiveHours: number | null,
+	totalCurriculumHours: number | null,
+	pendingComplementaryHours: number | null,
+	completedPercentage: number | null,
 };
 
 export type SyncResult = {
