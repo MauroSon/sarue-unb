@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import type { FlowchartDiscipline, FlowchartSemester } from "@/core";
 import {
-  Check,
   CircleDotDashed,
   Lock,
   Unlock,
@@ -18,7 +17,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Badge } from "../ui";
+import { Badge, Checkbox } from "../ui";
 
 export interface FlowchartListProps {
   semesters: FlowchartSemester[];
@@ -131,10 +130,8 @@ const DisciplineRow: React.FC<{
         isCompleted ? "bg-neutral-50/70" : "bg-paper"
       }`}
     >
-      <button
-        type="button"
-        role="checkbox"
-        aria-checked={isCompleted}
+      <Checkbox
+        checked={isCompleted}
         aria-label={
           isCompleted
             ? `Desmarcar ${d.name} como concluída`
@@ -146,22 +143,8 @@ const DisciplineRow: React.FC<{
             ? "Desmarcar disciplina"
             : "Marcar como concluída manualmente"
         }
-        className={`cursor-pointer w-6 h-6 rounded-md border-2 border-ink flex items-center justify-center transition-[transform,box-shadow,background-color] duration-150 shadow-neo-sm focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-neo-blue focus-visible:ring-offset-2 hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-neo-xs active:translate-x-[2px] active:translate-y-[2px] active:shadow-none shrink-0 ${
-          isCompleted
-            ? "bg-neo-green text-ink"
-            : "bg-paper"
-        }`}
-      >
-        {isCompleted ? (
-          <Check className="w-3 h-3 stroke-[3]" />
-        ) : (
-          <div className="w-2 h-2 rounded-full border border-ink" />
-        )}
-      </button>
-
-      <span className="font-mono text-[11px] font-black px-1.5 py-0.5 border border-ink rounded-md shrink-0 bg-paper text-black dark:bg-neutral-300 dark:text-slate-50">
-        {d.code}
-      </span>
+        className="data-checked:bg-neo-green data-checked:text-ink hover:bg-neutral-100"
+      />
 
       <div className="flex-1 min-w-0 flex items-center gap-1.5">
         <span
@@ -170,9 +153,9 @@ const DisciplineRow: React.FC<{
               ? "text-neutral-500 line-through decoration-2"
               : "text-black"
           }`}
-          title={d.name}
+          title={`${d.code} - ${d.name}`}
         >
-          {d.name}
+          {d.code} - {d.name}
         </span>
         {isMandatory && (
           <span

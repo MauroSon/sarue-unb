@@ -155,7 +155,7 @@ function DisciplineNode({ data }: NodeProps<DisciplineFlowNode>) {
             }
           >
             <span className="flex items-center gap-1.5 w-full min-w-0">
-              <span className="font-mono text-[11px] font-black px-1 py-px bg-paper border border-ink rounded text-black shrink-0">
+              <span className={`text-[11px] font-bold shrink-0 ${textColor}`}>
                 {d.code}
               </span>
               {isOptativa && (
@@ -536,8 +536,10 @@ function AutoFit({
           bounds: b,
         });
       }
-      outRef.current = !visible;
-      setOutOfView(!visible);
+      if (outRef.current !== !visible) {
+        outRef.current = !visible;
+        setOutOfView(!visible);
+      }
     }, 1200);
     return () => clearInterval(id);
   }, [store, fitView, containerRef, getNodesBounds]);

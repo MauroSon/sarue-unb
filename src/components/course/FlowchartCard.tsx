@@ -12,7 +12,7 @@ export const FlowchartCard: React.FC<FlowchartCardProps> = React.memo(
     return (
       <div className="border-2 border-ink rounded-lg p-3 flex flex-col gap-2 bg-paper select-none min-h-28">
         <div className="flex items-center gap-1 min-w-0">
-          <span className="font-mono text-[11px] font-black px-1.5 py-0.5 bg-paper border border-ink rounded-md text-black truncate">
+          <span className="text-[11px] font-bold text-neutral-700 truncate">
             {discipline.code}
           </span>
           <span className="text-[11px] font-bold px-1.5 py-0.5 bg-paper/80 border border-ink rounded-md text-neutral-700">

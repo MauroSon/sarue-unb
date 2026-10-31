@@ -11,8 +11,11 @@ export interface FlowchartStatsProps {
 export const FlowchartStats: React.FC<FlowchartStatsProps> = ({ metrics, onOpenIraCalculator }) => {
   const rawPercentual = metrics.percentualIntegralizado ?? metrics.mandatoryProgressPercentage;
   const percentual = Number.isFinite(rawPercentual) ? Math.max(0, Math.min(100, rawPercentual)) : 0;
-  const totalCurriculo = metrics.chTotalCurriculo ?? metrics.totalHours;
   const obrigatoriaTotal = metrics.chObrigatoriaTotal;
+  const totalCurriculo = Math.max(
+    metrics.chTotalCurriculo ?? metrics.totalHours ?? 0,
+    obrigatoriaTotal ?? 0,
+  );
   const obrigatoriaPendente = metrics.chObrigatoriaPendente;
   const optativaPendente = metrics.chOptativaPendente;
 
@@ -33,10 +36,24 @@ export const FlowchartStats: React.FC<FlowchartStatsProps> = ({ metrics, onOpenI
       <div className="bg-paper border-2 border-ink rounded-xl p-4 shadow-neo flex flex-col justify-between">
         <div className="flex items-center justify-between mb-2">
           <span className="text-xs font-black uppercase tracking-wider text-neutral-600">
-            {metrics.isSimulated ? "Integralização" : "Integralização SIGAA"}
+            {metrics.isAlternativeCurriculum
+              ? "Simulação de Matriz"
+              : metrics.isSimulated
+              ? "Integralização"
+              : "Integralização SIGAA"}
           </span>
-          <div className="w-8 h-8 rounded-lg bg-pastel-green border-2 border-ink flex items-center justify-center text-ink dark:bg-neo-green shadow-neo-xs">
-            <Award className="w-4 h-4 stroke-[2.5]" />
+          <div
+            className={`w-8 h-8 rounded-lg border-2 border-ink flex items-center justify-center text-ink shadow-neo-xs ${
+              metrics.isAlternativeCurriculum
+                ? "bg-neo-yellow dark:bg-neo-yellow"
+                : "bg-pastel-green dark:bg-neo-green"
+            }`}
+          >
+            {metrics.isAlternativeCurriculum ? (
+              <Sparkles className="w-4 h-4 stroke-[2.5]" />
+            ) : (
+              <Award className="w-4 h-4 stroke-[2.5]" />
+            )}
           </div>
         </div>
 
@@ -46,7 +63,11 @@ export const FlowchartStats: React.FC<FlowchartStatsProps> = ({ metrics, onOpenI
               {percentual.toFixed(1).replace('.0', '')}%
             </span>
             <span className="text-xs font-bold text-neutral-600">
-              {metrics.isSimulated ? "projetado" : "integralizado"}
+              {metrics.isAlternativeCurriculum
+                ? "simulado"
+                : metrics.isSimulated
+                ? "projetado"
+                : "integralizado"}
             </span>
           </div>
 
