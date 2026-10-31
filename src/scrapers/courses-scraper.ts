@@ -40,6 +40,8 @@ export interface CurriculumStructure {
   status: string;
   shift?: string;
   total_hours?: number;
+  min_elective_hours?: number;
+  min_complementary_hours?: number;
   mandatory_disciplines: CurriculumDiscipline[];
   elective_disciplines: CurriculumDiscipline[];
   complementary_disciplines: CurriculumDiscipline[];
@@ -315,6 +317,18 @@ export class CoursesScraper {
       }
     }
 
+    // Extrai prazos e cargas horárias oficiais da Tabela 0 do SIGAA
+    const totalMinMatch = html.match(/Total\s*M[ií]nima:\s*<\/th>\s*<td[^>]*>\s*(\d+)\s*h/i);
+    const optativaMinMatch = html.match(/Carga\s*Hor[aá]ria\s*Optativa\s*M[ií]nima:\s*<\/th>\s*<td[^>]*>\s*(\d+)\s*h/i);
+    const complementarMinMatch = html.match(/Carga\s*Hor[aá]ria\s*Complementar\s*M[ií]nima:\s*<\/th>\s*<td[^>]*>\s*(\d+)\s*h/i);
+
+    const mandatoryHours = mandatory.reduce((acc, d) => acc + d.workload_hours, 0);
+    const minElective = optativaMinMatch ? parseInt(optativaMinMatch[1], 10) : undefined;
+    const minComplementary = complementarMinMatch ? parseInt(complementarMinMatch[1], 10) : undefined;
+    const totalHours = totalMinMatch
+      ? parseInt(totalMinMatch[1], 10)
+      : mandatoryHours + (minElective || 0) + (minComplementary || 0);
+
     return {
       id,
       course_id: courseId,
@@ -323,7 +337,9 @@ export class CoursesScraper {
       created_year: createdYear,
       status,
       shift,
-      total_hours: mandatory.reduce((acc, d) => acc + d.workload_hours, 0),
+      total_hours: totalHours > 0 ? totalHours : mandatoryHours,
+      min_elective_hours: minElective,
+      min_complementary_hours: minComplementary,
       mandatory_disciplines: mandatory,
       elective_disciplines: elective,
       complementary_disciplines: complementary,

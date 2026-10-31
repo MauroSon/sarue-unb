@@ -140,17 +140,18 @@ export class GetFlowchartUseCase {
     // 4. Classifica cada disciplina da grade (obrigatórias e optativas de interesse)
     const enrichedMandatory: FlowchartDiscipline[] = [];
     let completedMandatoryCount = 0;
-    let completedHours = 0;
-    let totalHours = 0;
+    let completedMandatoryHours = 0;
+    let completedElectiveHours = 0;
+    let chObrigatoriaTotal = 0;
     let availableCount = 0;
 
     // Avaliador de expressões lógicas de pré-requisitos
     for (const disc of gradeList) {
       const code = disc.code;
       const hours = disc.workloadHours || 60;
-      const isOptativa = disc.nature === 'Optativa';
+      const isOptativa = disc.nature === 'Optativa' || disc.nature === 'Complementar';
       if (!isOptativa) {
-        totalHours += hours;
+        chObrigatoriaTotal += hours;
       }
 
       const isCompleted = isCompletedOrEquivalent(code, disc.equivalences);
@@ -187,7 +188,9 @@ export class GetFlowchartUseCase {
         status = 'completed';
         if (!isOptativa) {
           completedMandatoryCount++;
-          completedHours += hours;
+          completedMandatoryHours += hours;
+        } else {
+          completedElectiveHours += hours;
         }
       } else if (isEnrolled) {
         status = 'in_progress';
@@ -300,16 +303,88 @@ export class GetFlowchartUseCase {
     // Ordenação alfabética estrita para o painel "Cursando agora"
     allInProgressDisciplines.sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'));
 
-    // 7. Métricas de integralização
-    const isNativeCurriculum =
-      !profile.curriculumCode || profile.curriculumCode === curriculum.code;
+    // 7. Disciplinas cursadas pelo aluno que são optativas / fora da grade obrigatória.
+    // Classificação contra a MATRIZ ATUAL: se o código é obrigatória aqui, já conta na
+    // grade (item 4); se é optativa/complementar, conta pra integralização com a carga
+    // real da matriz; se não é nenhum dos dois, aparece no bloco, mas NÃO conta.
+    const gradeCodeSet = new Set(gradeList.map((m) => m.code));
+    const electiveHoursByCode = new Map<string, number>();
+    for (const e of curriculum.electiveDisciplines || []) {
+      electiveHoursByCode.set(e.code, e.workloadHours || 60);
+    }
+    for (const c of curriculum.complementaryDisciplines || []) {
+      if (!electiveHoursByCode.has(c.code)) {
+        electiveHoursByCode.set(c.code, c.workloadHours || 60);
+      }
+    }
+
+    const electiveCompletedDisciplines = (profile.completedDisciplines || [])
+      .filter((d) => d.isCompleted && !gradeCodeSet.has(d.code))
+      .map((d) => {
+        if (d.name && d.name !== d.code) return d;
+        let resolvedName = d.name;
+        if (allCurricula) {
+          for (const curr of allCurricula) {
+            const found = [
+              ...(curr.mandatoryDisciplines || []),
+              ...(curr.electiveDisciplines || []),
+              ...(curr.complementaryDisciplines || []),
+            ].find((cd) => cd.code === d.code);
+            if (found?.name) {
+              resolvedName = found.name;
+              break;
+            }
+          }
+        }
+        return { ...d, name: resolvedName || d.code };
+      });
+
+    for (const d of electiveCompletedDisciplines) {
+      if (manualUncompleted.has(d.code)) continue;
+      const matrixHours = electiveHoursByCode.get(d.code);
+      if (matrixHours == null) continue; // nem optativa nem complementar na matriz atual: não conta
+      let hours = matrixHours;
+      if (matrixHours === 60 && (d.workloadHours && d.workloadHours !== 60)) {
+        // Matriz sem carga cadastrada: cai pra carga real vinda do histórico
+        hours = d.workloadHours;
+      }
+      completedElectiveHours += hours;
+    }
+
+    // 8. Métricas de integralização (incluindo obrigatórias, optativas e complementares)
+    const norm = (s?: string) =>
+      (s || "")
+        .toUpperCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .trim();
+
+    // Referência oficial do discente no SIGAA
+    const nativeCurriculumCode =
+      profile.nativeCurriculumCode ||
+      (profile.matricula ? profile.curriculumCode : undefined);
+    const nativeCourseName =
+      profile.nativeCourseName ||
+      (profile.matricula ? profile.courseName : undefined);
+
+    const isDifferentCode = Boolean(
+      nativeCurriculumCode && curriculum.code !== nativeCurriculumCode
+    );
+    const isDifferentCourse = Boolean(
+      nativeCourseName &&
+        curriculum.courseName &&
+        !norm(nativeCourseName).includes(norm(curriculum.courseName)) &&
+        !norm(curriculum.courseName).includes(norm(nativeCourseName))
+    );
+
+    const hasOfficialOrigin = Boolean(profile.matricula || profile.nativeCurriculumCode);
+    const isAlternativeCurriculum = Boolean(
+      hasOfficialOrigin && (isDifferentCode || isDifferentCourse)
+    );
+
+    const isNativeCurriculum = !isAlternativeCurriculum && Boolean(profile.matricula || profile.curriculumCode);
 
     const totalMandatory = gradeList.filter((m) => m.nature !== 'Optativa' && m.nature !== 'Complementar').length;
-    const progressPct = totalMandatory > 0
-      ? Math.round((completedMandatoryCount / totalMandatory) * 100)
-      : 0;
-
-    const officialTotalHours = isNativeCurriculum ? (profile.chTotalCurriculo ?? totalHours) : totalHours;
 
     // Detecta se o discente possui simulações (marcações manuais ativas)
     const hasManualOverrides =
@@ -345,36 +420,62 @@ export class GetFlowchartUseCase {
       }
     }
 
+    const hasExplicitCurriculumElectives =
+      curriculum.minElectiveHours != null && curriculum.minElectiveHours > 0;
+
+    const baseElectiveHours =
+      hasExplicitCurriculumElectives
+        ? curriculum.minElectiveHours!
+        : (curriculum.totalHours && curriculum.totalHours > chObrigatoriaTotal
+            ? curriculum.totalHours - chObrigatoriaTotal
+            : (curriculum.electiveDisciplines && curriculum.electiveDisciplines.length > 0
+                ? Math.max(360, Math.round((chObrigatoriaTotal * 0.2) / 30) * 30)
+                : 0));
+
+    // Se estiver em simulação de outra matriz/curso, usa a carga total da nova matriz
+    const officialTotalHours =
+      isNativeCurriculum && profile.chTotalCurriculo
+        ? profile.chTotalCurriculo
+        : (curriculum.totalHours && curriculum.totalHours > chObrigatoriaTotal
+            ? curriculum.totalHours
+            : (chObrigatoriaTotal + baseElectiveHours + (curriculum.minComplementaryHours || 0)));
+
+    const chOptativaTotal =
+      isNativeCurriculum && profile.chOptativaPendente != null
+        ? profile.chOptativaPendente
+        : (hasExplicitCurriculumElectives
+            ? curriculum.minElectiveHours!
+            : Math.max(0, officialTotalHours - chObrigatoriaTotal));
+
     const effectiveChObrigatoriaPendente =
-      profile.chObrigatoriaPendente != null
+      isNativeCurriculum && profile.chObrigatoriaPendente != null
         ? Math.max(0, profile.chObrigatoriaPendente - manualMandatoryDelta)
-        : Math.max(0, totalHours - completedHours);
+        : Math.max(0, chObrigatoriaTotal - completedMandatoryHours - manualMandatoryDelta);
 
     const effectiveChOptativaPendente =
-      profile.chOptativaPendente != null
+      isNativeCurriculum && profile.chOptativaPendente != null
         ? Math.max(0, profile.chOptativaPendente - manualOptativaDelta)
-        : undefined;
+        : Math.max(0, chOptativaTotal - completedElectiveHours - manualOptativaDelta);
+
+    const totalCompletedHours = completedMandatoryHours + completedElectiveHours;
 
     const effectiveRemainingHours =
       isNativeCurriculum && profile.chTotalCurriculo && profile.chObrigatoriaPendente != null && profile.chOptativaPendente != null
         ? effectiveChObrigatoriaPendente + (effectiveChOptativaPendente ?? 0) + (profile.chComplementarPendente || 0)
-        : Math.max(0, totalHours - completedHours);
+        : Math.max(0, officialTotalHours - totalCompletedHours);
 
     const effectiveCompletedHours =
       isNativeCurriculum && profile.chTotalCurriculo && profile.chObrigatoriaPendente != null && profile.chOptativaPendente != null
         ? Math.max(0, officialTotalHours - effectiveRemainingHours)
-        : completedHours;
+        : totalCompletedHours;
 
-    let effectiveProgressPercentage = progressPct;
-    if (isNativeCurriculum) {
-      if (hasManualOverrides && profile.chTotalCurriculo && profile.chTotalCurriculo > 0) {
-        effectiveProgressPercentage = Math.min(
-          100,
-          Math.max(0, Math.round(((officialTotalHours - effectiveRemainingHours) / officialTotalHours) * 1000) / 10),
-        );
-      } else if (profile.percentualIntegralizado != null) {
-        effectiveProgressPercentage = profile.percentualIntegralizado;
-      }
+    let effectiveProgressPercentage =
+      officialTotalHours > 0
+        ? Math.min(100, Math.max(0, Math.round((effectiveCompletedHours / officialTotalHours) * 1000) / 10))
+        : 0;
+
+    if (isNativeCurriculum && !hasManualOverrides && profile.percentualIntegralizado != null) {
+      effectiveProgressPercentage = profile.percentualIntegralizado;
     }
 
     const metrics: FlowchartMetrics = {
@@ -388,37 +489,17 @@ export class GetFlowchartUseCase {
       inProgressCount: allInProgressDisciplines.length,
       ira: profile.ira,
       mp: profile.mp,
-      chObrigatoriaTotal: totalHours,
+      chObrigatoriaTotal,
       chObrigatoriaPendente: effectiveChObrigatoriaPendente,
       chOptativaPendente: effectiveChOptativaPendente,
-      chTotalCurriculo: profile.chTotalCurriculo,
-      chComplementarPendente: profile.chComplementarPendente,
-      percentualIntegralizado: isNativeCurriculum ? effectiveProgressPercentage : undefined,
-      isSimulated: hasManualOverrides,
+      chTotalCurriculo: officialTotalHours,
+      chComplementarPendente: isNativeCurriculum ? profile.chComplementarPendente : (curriculum.minComplementaryHours || 0),
+      percentualIntegralizado: effectiveProgressPercentage,
+      isSimulated: hasManualOverrides || isAlternativeCurriculum || !profile.percentualIntegralizado,
+      isAlternativeCurriculum,
+      nativeCourseName,
+      nativeCurriculumCode,
     };
-
-    // 8. Disciplinas cursadas pelo aluno que são optativas / fora da grade obrigatória
-    const mandatoryCodeSet = new Set(gradeList.map((m) => m.code));
-    const electiveCompletedDisciplines = (profile.completedDisciplines || [])
-      .filter((d) => d.isCompleted && !mandatoryCodeSet.has(d.code))
-      .map((d) => {
-        if (d.name && d.name !== d.code) return d;
-        let resolvedName = d.name;
-        if (allCurricula) {
-          for (const curr of allCurricula) {
-            const found = [
-              ...(curr.mandatoryDisciplines || []),
-              ...(curr.electiveDisciplines || []),
-              ...(curr.complementaryDisciplines || []),
-            ].find((cd) => cd.code === d.code);
-            if (found?.name) {
-              resolvedName = found.name;
-              break;
-            }
-          }
-        }
-        return { ...d, name: resolvedName || d.code };
-      });
 
     return {
       profile,

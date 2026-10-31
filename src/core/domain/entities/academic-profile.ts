@@ -1,6 +1,7 @@
-import type { CurriculumStructure } from './course';
+import type { CurriculumStructure } from "./course";
 
-export type DisciplineFlowStatus = 'completed' | 'in_progress' | 'available' | 'locked';
+export type DisciplineFlowStatus =
+  "completed" | "in_progress" | "available" | "locked";
 
 export interface CompletedDiscipline {
   code: string;
@@ -31,10 +32,12 @@ export interface StudentAcademicProfile {
   admissionYear: string;
   curriculumCode?: string;
   curriculumId?: string;
-  /** Código da matriz curricular selecionada explicitamente pelo discente (sobrepõe inferência automática). */
+  nativeCourseName?: string;
+  nativeCurriculumCode?: string;
+  nativeCurriculumId?: string;
   userSelectedCurriculumCode?: string;
   userSelectedCurriculumId?: string;
-  /** Matriz customizada editada pelo discente (com matérias incluídas, equivalências e optativas de interesse) */
+  userSelectedCourseName?: string;
   customCurriculum?: CurriculumStructure;
   completedDisciplines: CompletedDiscipline[];
   manualCompletedCodes: string[];
@@ -54,7 +57,7 @@ export interface FlowchartDiscipline {
   name: string;
   workloadHours: number;
   level: number;
-  nature: 'Obrigatória' | 'Optativa' | 'Complementar';
+  nature: "Obrigatória" | "Optativa" | "Complementar";
   status: DisciplineFlowStatus;
   grade?: string;
   situation?: string;
@@ -88,8 +91,12 @@ export interface FlowchartMetrics {
   chTotalCurriculo?: number;
   chComplementarPendente?: number;
   percentualIntegralizado?: number;
-  /** Indica se as métricas refletem uma simulação com marcações manuais ativas */
+  /** Indica se as métricas refletem uma simulação com marcações manuais ativas ou matriz alternativa */
   isSimulated?: boolean;
+  /** Indica se a matriz em exibição é diferente da matriz/curso oficial do discente no SIGAA */
+  isAlternativeCurriculum?: boolean;
+  nativeCourseName?: string;
+  nativeCurriculumCode?: string;
 }
 
 export interface FlowchartData {

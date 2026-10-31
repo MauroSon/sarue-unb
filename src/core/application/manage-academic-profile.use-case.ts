@@ -166,13 +166,30 @@ export class ManageAcademicProfileUseCase {
       updatedAt: new Date().toISOString(),
     };
 
+    // Preserva dados nativos do curso oficial antes de registrar a matriz selecionada
+    const nativeCourseName =
+      current.nativeCourseName ||
+      (current.matricula ? current.courseName : undefined);
+    const nativeCurriculumCode =
+      current.nativeCurriculumCode ||
+      (current.matricula ? current.curriculumCode : undefined);
+    const nativeCurriculumId =
+      current.nativeCurriculumId ||
+      (current.matricula ? current.curriculumId : undefined);
+
     const updated: StudentAcademicProfile = {
       ...current,
+      nativeCourseName,
+      nativeCurriculumCode,
+      nativeCurriculumId,
+      userSelectedCurriculumCode: curriculum.code,
+      userSelectedCurriculumId: curriculum.id,
+      userSelectedCourseName: curriculum.courseName,
       courseName: curriculum.courseName,
       curriculumCode: curriculum.code,
       curriculumId: curriculum.id,
-      userSelectedCurriculumCode: curriculum.code,
-      userSelectedCurriculumId: curriculum.id,
+      customCurriculum: undefined,
+      shift: current.shift || curriculum.shift,
       updatedAt: new Date().toISOString(),
     };
 
@@ -251,8 +268,18 @@ export class ManageAcademicProfileUseCase {
       }
     }
 
+    parseResult.profile.nativeCourseName = parseResult.profile.courseName;
+    parseResult.profile.nativeCurriculumCode = parseResult.profile.curriculumCode;
+    parseResult.profile.nativeCurriculumId = parseResult.profile.curriculumId;
+
     const currentProfile = await this.repo.getProfile();
     if (currentProfile) {
+      if (currentProfile.nativeCourseName) {
+        parseResult.profile.nativeCourseName = currentProfile.nativeCourseName;
+        parseResult.profile.nativeCurriculumCode = currentProfile.nativeCurriculumCode;
+        parseResult.profile.nativeCurriculumId = currentProfile.nativeCurriculumId;
+      }
+
       parseResult.profile.manualCompletedCodes = currentProfile.manualCompletedCodes || [];
       parseResult.profile.manualUncompletedCodes = currentProfile.manualUncompletedCodes || [];
       parseResult.profile.customCurriculum = currentProfile.customCurriculum;
@@ -277,6 +304,7 @@ export class ManageAcademicProfileUseCase {
       if (currentProfile.userSelectedCurriculumCode) {
         parseResult.profile.userSelectedCurriculumCode = currentProfile.userSelectedCurriculumCode;
         parseResult.profile.userSelectedCurriculumId = currentProfile.userSelectedCurriculumId;
+        parseResult.profile.userSelectedCourseName = currentProfile.userSelectedCourseName;
 
         const manualCurr = curriculaCatalog.find(
           (c) =>
@@ -287,6 +315,7 @@ export class ManageAcademicProfileUseCase {
           parseResult.matchedCurriculum = manualCurr;
           parseResult.profile.curriculumCode = manualCurr.code;
           parseResult.profile.curriculumId = manualCurr.id;
+          parseResult.profile.courseName = manualCurr.courseName;
         }
       }
     }

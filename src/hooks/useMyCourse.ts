@@ -110,8 +110,19 @@ export function useMyCourse() {
       setAllCurricula(curricula);
 
       if (currentProfile && curricula.length > 0) {
-        // Recupera nomes oficiais para disciplinas sem nome
         let healed = false;
+
+        // Auto-migração: garante nativeCurriculumCode para perfis oficiais sincronizados
+        if (currentProfile.matricula && !currentProfile.nativeCurriculumCode) {
+          if (!currentProfile.userSelectedCurriculumCode) {
+            currentProfile.nativeCurriculumCode = currentProfile.curriculumCode;
+            currentProfile.nativeCourseName = currentProfile.courseName;
+            currentProfile.nativeCurriculumId = currentProfile.curriculumId;
+            healed = true;
+          }
+        }
+
+        // Recupera nomes oficiais para disciplinas sem nome
         const missingNameItems = currentProfile.completedDisciplines.filter(
           (cd) => !cd.name || cd.name === cd.code,
         );
@@ -269,10 +280,8 @@ export function useMyCourse() {
         setSelectedCurriculum(cachedSelectedCurriculum);
       } else {
         setProfile(currentProfile);
-        if (curricula.length > 0) {
-          cachedSelectedCurriculum = curricula[0];
-          setSelectedCurriculum(cachedSelectedCurriculum);
-        }
+        cachedSelectedCurriculum = null;
+        setSelectedCurriculum(null);
       }
     } catch (e) {
       console.error('[useMyCourse] Erro ao carregar dados:', e);
@@ -482,6 +491,69 @@ export function useMyCourse() {
     }
   }, [useCases]);
 
+  const loadAllCurricula = useCallback(async (): Promise<CurriculumStructure[]> => {
+    try {
+      const all = await useCases.manageAcademicProfile.getAllCurricula();
+      if (all.length > 0) {
+        cachedCurricula = all;
+        cachedCurriculaScope = 'ALL';
+        setAllCurricula(all);
+        return all;
+      }
+    } catch (e) {
+      console.warn('[useMyCourse] Falha ao carregar catálogo completo de matrizes:', e);
+    }
+    return allCurricula;
+  }, [useCases, allCurricula]);
+
+  const resetToNativeCurriculum = useCallback(async () => {
+    const nativeCode = profile?.nativeCurriculumCode || profile?.curriculumCode;
+    const nativeCourse = profile?.nativeCourseName || profile?.courseName;
+    if (!nativeCode) return;
+    try {
+      let native = allCurricula.find((c) => c.code === nativeCode);
+      if (!native && nativeCourse) {
+        const norm = (s: string) =>
+          s.toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+        const normCourse = norm(nativeCourse);
+        native = allCurricula.find(
+          (c) =>
+            norm(c.courseName) === normCourse &&
+            c.code.startsWith(nativeCode.split('/')[0])
+        );
+      }
+      const updated: StudentAcademicProfile = {
+        ...profile!,
+        courseName: nativeCourse || profile!.courseName,
+        curriculumCode: nativeCode,
+        curriculumId: native?.id || profile!.nativeCurriculumId || profile!.curriculumId,
+        userSelectedCurriculumCode: undefined,
+        userSelectedCurriculumId: undefined,
+        userSelectedCourseName: undefined,
+        customCurriculum: undefined,
+        updatedAt: new Date().toISOString(),
+      };
+      await useCases.manageAcademicProfile.saveProfile(updated);
+      cachedProfile = updated;
+      setProfile(updated);
+      if (native) {
+        cachedSelectedCurriculum = native;
+        setSelectedCurriculum(native);
+      }
+      notifyMyCourseListeners();
+      toast.add({
+        title: 'Matriz oficial restaurada',
+        description: nativeCode,
+        type: 'success',
+      });
+    } catch {
+      toast.add({
+        title: 'Erro ao restaurar matriz oficial',
+        type: 'error',
+      });
+    }
+  }, [profile, allCurricula, useCases]);
+
   const hoverRelations = useMemo(() => {
     if (!hoveredCode || !flowchartData) {
       return { prereqs: new Set<string>(), postreqs: new Set<string>() };
@@ -518,6 +590,9 @@ export function useMyCourse() {
     resetCustomCurriculum,
     syncSigaa,
     selectCurriculum,
+    resetToNativeCurriculum,
+    isAlternativeCurriculum: Boolean(flowchartData?.metrics.isAlternativeCurriculum),
+    loadAllCurricula,
     reload: loadData,
   };
 }

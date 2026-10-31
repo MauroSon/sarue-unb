@@ -1000,5 +1000,98 @@ Currículo: 1741/1
       const matchedCustom = resolveCurriculumByAdmissionYear(customOnly, '2020.1');
       expect(matchedCustom?.code).toBe('CUSTOM/1');
     });
+
+    it('GetFlowchartUseCase deve recalcular métricas reais ao simular uma matriz alternativa', async () => {
+      const getFlowchart = new GetFlowchartUseCase();
+      const nativeCurriculum: CurriculumStructure = {
+        id: 'curr-native',
+        courseId: '414610',
+        courseName: 'ENGENHARIA DE COMPUTAÇÃO',
+        code: '1741/1',
+        status: 'Inativa',
+        totalHours: 3480,
+        minElectiveHours: 720,
+        mandatoryDisciplines: [
+          { code: 'MAT0025', name: 'CÁLCULO 1', workloadHours: 90, level: 1, nature: 'Obrigatória', prerequisites: [], equivalences: [] },
+          { code: 'CIC0004', name: 'APC', workloadHours: 90, level: 1, nature: 'Obrigatória', prerequisites: [], equivalences: [] },
+          { code: 'OLD0001', name: 'MATÉRIA ANTIGA DESCONTINUADA', workloadHours: 60, level: 2, nature: 'Obrigatória', prerequisites: [], equivalences: [] },
+        ],
+        electiveDisciplines: [],
+        complementaryDisciplines: [],
+      };
+
+      const alternativeCurriculum: CurriculumStructure = {
+        id: 'curr-alt',
+        courseId: '414610',
+        courseName: 'ENGENHARIA DE COMPUTAÇÃO',
+        code: '1741/3',
+        status: 'Ativa',
+        totalHours: 3210,
+        minElectiveHours: 600,
+        mandatoryDisciplines: [
+          { code: 'MAT0025', name: 'CÁLCULO 1', workloadHours: 90, level: 1, nature: 'Obrigatória', prerequisites: [], equivalences: [] },
+          { code: 'CIC0004', name: 'APC', workloadHours: 90, level: 1, nature: 'Obrigatória', prerequisites: [], equivalences: [] },
+          { code: 'NEW0001', name: 'NOVA MATÉRIA OBRIGATÓRIA', workloadHours: 60, level: 2, nature: 'Obrigatória', prerequisites: [], equivalences: [] },
+        ],
+        electiveDisciplines: [
+          { code: 'OLD0001', name: 'MATÉRIA ANTIGA DESCONTINUADA', workloadHours: 60, level: 1, nature: 'Optativa', prerequisites: [], equivalences: [] },
+        ],
+        complementaryDisciplines: [],
+      };
+
+      const profile: StudentAcademicProfile = {
+        matricula: '202000000',
+        courseName: 'ENGENHARIA DE COMPUTAÇÃO',
+        curriculumCode: '1741/1',
+        level: 'Graduação',
+        admissionYear: '2020.1',
+        chTotalCurriculo: 3480,
+        chObrigatoriaPendente: 1200,
+        chOptativaPendente: 300,
+        percentualIntegralizado: 56.8,
+        completedDisciplines: [
+          { code: 'MAT0025', name: 'CÁLCULO 1', workloadHours: 90, period: '2020.1', grade: 'MS', situation: 'AP', isCompleted: true },
+          { code: 'CIC0004', name: 'APC', workloadHours: 90, period: '2020.1', grade: 'SS', situation: 'AP', isCompleted: true },
+          { code: 'OLD0001', name: 'MATÉRIA ANTIGA DESCONTINUADA', workloadHours: 60, period: '2020.2', grade: 'MM', situation: 'AP', isCompleted: true },
+        ],
+        manualCompletedCodes: [],
+        manualUncompletedCodes: [],
+        updatedAt: new Date().toISOString(),
+      };
+
+      // 1. Verificação na matriz nativa (oficial do SIGAA)
+      const nativeFlow = getFlowchart.execute(nativeCurriculum, profile);
+      expect(nativeFlow.metrics.isAlternativeCurriculum).toBe(false);
+      expect(nativeFlow.metrics.percentualIntegralizado).toBe(56.8); // usa o oficial do SIGAA
+      expect(nativeFlow.metrics.chObrigatoriaPendente).toBe(1200);
+
+      // 2. Verificação na matriz alternativa (simulação de troca)
+      const altFlow = getFlowchart.execute(alternativeCurriculum, profile);
+      expect(altFlow.metrics.isAlternativeCurriculum).toBe(true);
+      expect(altFlow.metrics.isSimulated).toBe(true);
+      expect(altFlow.metrics.totalHours).toBe(3210); // meta da nova matriz
+      // Na nova matriz, MAT0025 e CIC0004 são obrigatórias (180h). NEW0001 falta (60h pendente).
+      // OLD0001 não é obrigatória na nova matriz, portanto vira optativa cumprida (60h).
+      expect(altFlow.metrics.chObrigatoriaTotal).toBe(240); // 90 + 90 + 60
+      expect(altFlow.metrics.chObrigatoriaPendente).toBe(60); // 240 - 180 = 60h pendentes
+      expect(altFlow.metrics.chOptativaPendente).toBe(540); // 600 minElective - 60h = 540h
+      // Integralização projetada: (180 obrigatórias + 60 optativas) / 3210 total = 240 / 3210 = 7.5%
+      expect(altFlow.metrics.percentualIntegralizado).toBe(7.5);
+
+      // 3. Verificação com perfil persistido via setCurriculum (fluxo real do aplicativo)
+      const testRepo = new InMemoryAcademicProfileRepository();
+      await testRepo.saveProfile(profile);
+      const manageUseCase = new ManageAcademicProfileUseCase(testRepo);
+      const updatedProfile = await manageUseCase.setCurriculum(alternativeCurriculum);
+
+      expect(updatedProfile.nativeCurriculumCode).toBe('1741/1');
+      expect(updatedProfile.nativeCourseName).toBe('ENGENHARIA DE COMPUTAÇÃO');
+      expect(updatedProfile.userSelectedCurriculumCode).toBe('1741/3');
+
+      const simulatedFlow = getFlowchart.execute(alternativeCurriculum, updatedProfile);
+      expect(simulatedFlow.metrics.isAlternativeCurriculum).toBe(true);
+      // Confirma que a porcentagem recalculou para 7.5% e NÃO ficou travada nos 56.8% do SIGAA:
+      expect(simulatedFlow.metrics.percentualIntegralizado).toBe(7.5);
+    });
   });
 });

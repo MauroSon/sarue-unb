@@ -71,6 +71,8 @@ export interface CurriculumStructure {
   status: string;
   shift?: string;
   totalHours?: number;
+  minElectiveHours?: number;
+  minComplementaryHours?: number;
   mandatoryDisciplines: CurriculumDiscipline[];
   electiveDisciplines: CurriculumDiscipline[];
   complementaryDisciplines: CurriculumDiscipline[];

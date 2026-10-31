@@ -1,13 +1,15 @@
 import React, { useState, useMemo } from "react";
 import { useMyCourse } from "../hooks/useMyCourse";
-import { FlowchartStats } from "../components/flowchart/FlowchartStats";
+import {
+  FlowchartStats,
+  FlowchartList,
+  FlowchartDiagram,
+  CurrentlyEnrolledPanel,
+  CurriculumSelectorDialog,
+  MyCourseSkeleton,
+} from "../components/course";
 import { IraCalculatorScreen } from "./IraCalculatorScreen";
 import { CurriculumEditorScreen } from "./CurriculumEditorScreen";
-import { FlowchartList } from "../components/flowchart/FlowchartList";
-import { FlowchartDiagram } from "../components/flowchart/FlowchartDiagram";
-import { CurrentlyEnrolledPanel } from "../components/flowchart/CurrentlyEnrolledPanel";
-import { CurriculumSelectorDialog } from "../components/flowchart/CurriculumSelectorDialog";
-import { MyCourseSkeleton } from "../components/flowchart/MyCourseSkeleton";
 import { useContainer } from "../context/ContainerContext";
 import { sendDisciplineToGradeAction } from "../hooks/useGrade";
 import {
@@ -17,6 +19,8 @@ import {
   Input,
   EmptyState,
   ErrorBoundary,
+  Badge,
+  Alert,
 } from "@/components/ui";
 import {
   GraduationCap,
@@ -50,6 +54,9 @@ export const MyCourseScreen: React.FC = () => {
     toggleDiscipline,
     resetOverrides,
     selectCurriculum,
+    resetToNativeCurriculum,
+    isAlternativeCurriculum,
+    loadAllCurricula,
     reload,
   } = useMyCourse();
 
@@ -115,19 +122,6 @@ export const MyCourseScreen: React.FC = () => {
     );
   }, [flowchartData]);
 
-  const courseCurricula = useMemo(() => {
-    const norm = (v: string) =>
-      v
-        .toUpperCase()
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "");
-    const course = norm(profile?.courseName || "");
-    if (!course) return allCurricula;
-    const matched = allCurricula.filter((c) =>
-      norm(c.courseName || "").includes(course),
-    );
-    return matched.length > 0 ? matched : allCurricula;
-  }, [allCurricula, profile?.courseName]);
 
   if (view === "ira-calculator") {
     return (
@@ -179,27 +173,27 @@ export const MyCourseScreen: React.FC = () => {
             )}
 
             {profile && (
-              <>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setView("curriculum-editor")}
-                  title="Editar disciplinas, inserir optativas ou customizar o currículo"
-                >
-                  <BookOpen className="w-4 h-4 stroke-[2.5]" />
-                  Gerenciar Currículo
-                </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setView("curriculum-editor")}
+                title="Editar disciplinas, inserir optativas ou customizar o currículo"
+              >
+                <BookOpen className="w-4 h-4 stroke-[2.5]" />
+                Gerenciar Currículo
+              </Button>
+            )}
 
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setIsCurriculumDialogOpen(true)}
-                  title="Trocar ou explorar outra matriz curricular da UnB"
-                >
-                  <SlidersHorizontal className="w-4 h-4 stroke-[2.5]" />
-                  Trocar Matriz
-                </Button>
-              </>
+            {profile && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsCurriculumDialogOpen(true)}
+                title="Trocar ou simular outra matriz ou curso da UnB"
+              >
+                <SlidersHorizontal className="w-4 h-4 stroke-[2.5]" />
+                Trocar Matriz / Curso
+              </Button>
             )}
           </div>
         }
@@ -217,22 +211,78 @@ export const MyCourseScreen: React.FC = () => {
             description={
               <>
                 Sincronize com o SIGAA na aba <strong>Configurações</strong> para
-                carregar seu curso, disciplinas cursadas, IRA e acompanhar seu
-                progresso no fluxograma.
+                carregar seu histórico automaticamente, ou escolha manualmente um
+                curso da UnB abaixo para explorar o fluxograma offline.
               </>
+            }
+            action={
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={() => setIsCurriculumDialogOpen(true)}
+              >
+                <SlidersHorizontal className="w-4 h-4 stroke-[2.5]" />
+                Escolher Curso Manualmente
+              </Button>
             }
             className="mb-6"
           />
         ) : (
           <>
+            {isAlternativeCurriculum && flowchartData && (
+              <Alert
+                variant="yellow"
+                title={`Simulando: ${curriculum?.courseName} (${curriculum?.code})`}
+                description={
+                  <>
+                    Seu curso oficial no SIGAA é{" "}
+                    <strong>
+                      {flowchartData.metrics.nativeCourseName ||
+                        profile?.courseName}
+                    </strong>{" "}
+                    (
+                    {flowchartData.metrics.nativeCurriculumCode ||
+                      profile?.curriculumCode}
+                    ). Os índices abaixo refletem o aproveitamento estimado
+                    nesta grade.
+                  </>
+                }
+                aside={
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={resetToNativeCurriculum}
+                    title="Restaurar visualização da matriz oficial registrada no SIGAA"
+                    className="dark:bg-neo-yellow dark:text-ink dark:hover:bg-neo-yellowHover"
+                  >
+                    <RotateCcw className="w-3.5 h-3.5 stroke-[2.5]" />
+                    Restaurar Curso Oficial (
+                    {flowchartData.metrics.nativeCurriculumCode ||
+                      profile?.curriculumCode}
+                    )
+                  </Button>
+                }
+                className="mb-6"
+              />
+            )}
+
             <div className="bg-paper border-2 border-ink rounded-lg p-5 mb-6 shadow-neo">
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div className="flex items-center flex-wrap">
+                <div className="flex items-center flex-wrap gap-2">
                   <span className="text-lg font-black text-black tracking-tight">
-                    {profile.courseName ||
-                      curriculum?.courseName ||
+                    {curriculum?.courseName ||
+                      profile.courseName ||
                       "Curso de Graduação"}
                   </span>
+                  {curriculum?.code && (
+                    <Badge
+                      variant="neutral"
+                      size="sm"
+                      title={`Matriz ${curriculum.code}`}
+                    >
+                      {curriculum.code}
+                    </Badge>
+                  )}
                 </div>
               </div>
             </div>
@@ -495,11 +545,12 @@ export const MyCourseScreen: React.FC = () => {
       <CurriculumSelectorDialog
         isOpen={isCurriculumDialogOpen}
         onClose={() => setIsCurriculumDialogOpen(false)}
-        curricula={courseCurricula}
+        curricula={allCurricula}
         currentCurriculumId={curriculum?.id}
         currentCurriculumCode={curriculum?.code || profile?.curriculumCode}
-        initialCourseName={profile?.courseName}
+        initialCourseName={curriculum?.courseName || profile?.courseName}
         onSelect={selectCurriculum}
+        onLoadAllCurricula={loadAllCurricula}
       />
     </PageContainer>
   );
