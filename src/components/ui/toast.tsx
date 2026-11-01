@@ -5,7 +5,6 @@ import {
   Loader2Icon,
   OctagonXIcon,
   TriangleAlertIcon,
-  XIcon,
 } from "lucide-react"
 
 import * as React from "react"
@@ -122,34 +121,6 @@ function ToastAction({
   )
 }
 
-function ToastClose({
-  className,
-  children,
-  render = (
-    <Button
-      variant="ghost"
-      size="icon"
-      className="size-7 border-0 shadow-none! hover:translate-x-0! hover:translate-y-0!"
-    />
-  ),
-  ...props
-}: ToastPrimitive.Close.Props) {
-  return (
-    <ToastPrimitive.Close
-      data-slot="toast-close"
-      aria-label="Fechar notificação"
-      render={render}
-      className={cn(
-        "relative shrink-0 text-oklch(0.145 0 0) after:absolute after:-inset-2 after:content-[''] hover:opacity-70 dark:text-oklch(0.985 0 0)",
-        className,
-      )}
-      {...props}
-    >
-      {children ?? <XIcon aria-hidden="true" />}
-    </ToastPrimitive.Close>
-  )
-}
-
 function ToastIcon({ type }: { type: string | undefined }) {
   let icon: React.ReactNode = null
 
@@ -188,10 +159,14 @@ function ToastIcon({ type }: { type: string | undefined }) {
 }
 
 function ToastList() {
-  const { toasts } = ToastPrimitive.useToastManager()
+  const { toasts, close } = ToastPrimitive.useToastManager()
 
   return toasts.map((toastItem) => (
-    <Toast key={toastItem.id} toast={toastItem}>
+    <Toast
+      key={toastItem.id}
+      toast={toastItem}
+      onClick={() => close(toastItem.id)}
+    >
       <ToastContent>
         <ToastIcon type={toastItem.type} />
         <div className="flex min-w-0 flex-1 flex-col gap-1">
@@ -199,7 +174,6 @@ function ToastList() {
           <ToastDescription />
         </div>
         <ToastAction />
-        <ToastClose />
       </ToastContent>
     </Toast>
   ))
@@ -229,7 +203,6 @@ export {
   Toaster,
   Toast,
   ToastAction,
-  ToastClose,
   ToastContent,
   ToastDescription,
   ToastPortal,
