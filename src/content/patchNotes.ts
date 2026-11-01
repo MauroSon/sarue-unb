@@ -22,6 +22,18 @@ export interface PatchNotesEntry {
 
 export const PATCH_NOTES: PatchNotesEntry[] = [
   {
+    version: "0.3.2",
+    date: "31/10/2026",
+    title: "Otimização de Espaço, Performance e Sincronização",
+    items: [
+      "Aplicativo 45% mais leve: download mais rápido e menos espaço ocupado no computador.",
+      "Sincronização mais rápida: scraping otimizado com cache de sessão no SIGAA e paralelização no Aprender3.",
+      "Meu Curso: cálculo dinâmico da porcentagem de integralização mais realista, simulação de matrizes e outros cursos.",
+      "Banco de dados: migrações nativas no SQLite.",
+      "Agora é possível acessar Meu Curso sem login escolhendo curso e matriz manualmente",
+    ],
+  },
+  {
     version: "0.3.1",
     date: "29/10/2026",
     title: "Correções na Tela Meu Curso e no Scraping de Cursos",
