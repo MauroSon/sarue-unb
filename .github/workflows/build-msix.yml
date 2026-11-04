@@ -1,0 +1,152 @@
+name: "Build Windows MSIX Package"
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Versão sem o v (ex: 0.3.3) — deixe vazio para ler de package.json'
+        required: false
+        default: ''
+
+permissions:
+  contents: write
+
+jobs:
+  build-msix:
+    name: "Build MSIX (Windows x64)"
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.14.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-pc-windows-msvc
+
+      - name: Rust Cache
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: './src-tauri -> target'
+
+      - name: Install frontend dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Resolve Version
+        shell: pwsh
+        run: |
+          $inputVersion = "${{ github.event.inputs.version }}"
+          if ($inputVersion) {
+            $semver = $inputVersion.TrimStart('v')
+          } elseif ($env:GITHUB_REF_NAME -like "v*") {
+            $semver = $env:GITHUB_REF_NAME.TrimStart('v')
+          } else {
+            $pkg = Get-Content package.json | ConvertFrom-Json
+            $semver = $pkg.version
+          }
+
+          $parts = $semver.Split('.')
+          while ($parts.Count -lt 4) {
+            $parts += "0"
+          }
+          $quadVersion = ($parts[0..3] -join '.')
+
+          echo "SEMVER=$semver" >> $env:GITHUB_ENV
+          echo "QUAD_VERSION=$quadVersion" >> $env:GITHUB_ENV
+          Write-Host "SemVer: $semver | MSIX Quad Version: $quadVersion"
+
+      - name: Build frontend for Store
+        run: pnpm run build:store
+
+      - name: Build Tauri Rust executable
+        run: cargo build --manifest-path src-tauri/Cargo.toml --release
+
+      - name: Package MSIX
+        shell: pwsh
+        env:
+          MS_PACKAGE_NAME: ${{ secrets.MS_PACKAGE_NAME }}
+          MS_PUBLISHER_ID: ${{ secrets.MS_PUBLISHER_ID }}
+          MS_PUBLISHER_DISPLAY_NAME: ${{ secrets.MS_PUBLISHER_DISPLAY_NAME }}
+        run: |
+          if ([string]::IsNullOrWhiteSpace($env:MS_PACKAGE_NAME) -or [string]::IsNullOrWhiteSpace($env:MS_PUBLISHER_ID)) {
+            Write-Error "Secrets MS_PACKAGE_NAME ou MS_PUBLISHER_ID não estão configurados! Acesse Settings > Secrets and variables > Actions e adicione-os."
+            exit 1
+          }
+
+          $sdkBin = (Get-ChildItem -Path "C:\Program Files (x86)\Windows Kits\10\bin" -Filter "makeappx.exe" -Recurse | Where-Object { $_.FullName -like "*x64*" } | Select-Object -First 1).DirectoryName
+          if (-not $sdkBin) {
+            Write-Error "makeappx.exe não encontrado no Windows SDK do runner."
+            exit 1
+          }
+          $makeAppx = Join-Path $sdkBin "makeappx.exe"
+          $makePri = Join-Path $sdkBin "makepri.exe"
+          Write-Host "Ferramentas do Windows SDK encontradas em: $sdkBin"
+
+          # 1. Cria diretório de staging
+          $staging = "dist_msix"
+          $assetsDir = Join-Path $staging "Assets"
+          New-Item -ItemType Directory -Force -Path $assetsDir | Out-Null
+
+          # 2. Copia o executável do Saruê
+          Copy-Item "src-tauri\target\release\sarue_unb.exe" -Destination (Join-Path $staging "sarue_unb.exe") -Force
+
+          # 3. Copia os ícones obrigatórios
+          Copy-Item "src-tauri\icons\Square44x44Logo.png" -Destination $assetsDir -Force
+          Copy-Item "src-tauri\icons\Square150x150Logo.png" -Destination $assetsDir -Force
+          Copy-Item "src-tauri\icons\Square310x310Logo.png" -Destination $assetsDir -Force
+          Copy-Item "src-tauri\icons\StoreLogo.png" -Destination $assetsDir -Force
+
+          # 4. Gera AppxManifest.xml a partir do template substituindo as variáveis de ambiente
+          $template = Get-Content "src-tauri\windows\AppxManifest.xml.template" -Raw
+          $manifest = $template `
+            -replace '\{\{MS_PACKAGE_NAME\}\}', $env:MS_PACKAGE_NAME `
+            -replace '\{\{MS_PUBLISHER_ID\}\}', $env:MS_PUBLISHER_ID `
+            -replace '\{\{MS_PUBLISHER_DISPLAY_NAME\}\}', $env:MS_PUBLISHER_DISPLAY_NAME `
+            -replace '\{\{APP_VERSION\}\}', $env:QUAD_VERSION
+
+          Set-Content -Path (Join-Path $staging "AppxManifest.xml") -Value $manifest -Encoding UTF8
+
+          # 5. Gera arquivo de recursos indexados (resources.pri)
+          Push-Location $staging
+          & $makePri createconfig /cf priconfig.xml /dq pt-BR /pv 10.0.0 /o
+          & $makePri new /pr . /cf priconfig.xml /of resources.pri /o
+          Remove-Item "priconfig.xml" -ErrorAction SilentlyContinue
+          Pop-Location
+
+          # 6. Empacota o MSIX final
+          $msixFilename = "Sarue.UnB_$($env:SEMVER)_x64.msix"
+          & $makeAppx pack /d $staging /p $msixFilename /nv
+          Write-Host "MSIX gerado com sucesso: $msixFilename"
+
+      - name: Upload MSIX Artifact to Workflow
+        uses: actions/upload-artifact@v4
+        with:
+          name: sarue-unb-msix
+          path: "*.msix"
+
+      - name: Attach MSIX to GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        shell: pwsh
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          $msix = Get-ChildItem -Filter "*.msix" | Select-Object -First 1
+          if ($msix) {
+            Write-Host "Anexando $($msix.Name) à release ${{ github.ref_name }}..."
+            gh release upload "${{ github.ref_name }}" $msix.FullName --clobber
+          }
