@@ -1,12 +1,13 @@
 {
   "name": "sarue-unb",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "private": true,
   "type": "module",
   "packageManager": "pnpm@10.14.0",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
+    "build:store": "tsc && vite build --mode store",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
     "lint": "eslint src",
@@ -20,6 +21,7 @@
     "format:rust": "cargo fmt --manifest-path src-tauri/Cargo.toml",
     "tauri": "node scripts/tauri-cli.mjs",
     "tauri:dev": "node scripts/tauri-cli.mjs dev",
+    "tauri:store": "node scripts/tauri-cli.mjs build --config src-tauri/tauri.microsoftstore.conf.json",
     "dev:app": "node scripts/tauri-cli.mjs dev",
     "scrape:grade": "node --experimental-strip-types src/scrapers/grade-scraper.ts",
     "scrape:courses": "node --experimental-strip-types src/scrapers/courses-scraper.ts",

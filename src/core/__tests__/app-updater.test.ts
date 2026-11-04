@@ -84,4 +84,17 @@ describe('App Updater & Sidebar Indicator', () => {
     });
     expect(true).toBe(true);
   });
+
+  it('retorna null imediatamente sem consultar o Tauri quando VITE_TARGET_STORE for microsoft', async () => {
+    const originalEnv = import.meta.env.VITE_TARGET_STORE;
+    (import.meta.env as Record<string, string>).VITE_TARGET_STORE = 'microsoft';
+
+    try {
+      const result = await checkForUpdates(false);
+      expect(result).toBeNull();
+      expect(updaterPlugin.check).not.toHaveBeenCalled();
+    } finally {
+      (import.meta.env as Record<string, string>).VITE_TARGET_STORE = originalEnv;
+    }
+  });
 });

@@ -5,40 +5,49 @@ import path from 'path';
 
 const host = process.env.TAURI_DEV_HOST;
 
-export default defineConfig({
-  plugins: [react(), tailwindcss()],
-  // Pacotes Tauri pré-empacotados no startup: o primeiro import deles acontece
-  // dentro de um import() dinâmico no clique de login (bindings), e a descoberta
-  // tardia do vite derruba o módulo no WKWebView ("Importing a module script failed").
-  optimizeDeps: {
-    include: [
-      '@tauri-apps/api',
-      '@tauri-apps/api/core',
-      '@tauri-apps/plugin-stronghold',
-      '@tauri-apps/plugin-sql',
-      '@tauri-apps/plugin-notification',
-      '@tauri-apps/plugin-window-state',
-    ],
-  },
-  clearScreen: false,
-  server: {
-    port: 1420,
-    strictPort: true,
-    host: host || false,
-    hmr: host
-      ? {
-          protocol: 'ws',
-          host,
-          port: 1421,
-        }
-      : undefined,
-    watch: {
-      ignored: ['**/src-tauri/**'],
+export default defineConfig(({ mode }) => {
+  const isStore = mode === 'store';
+
+  return {
+    define: {
+      'import.meta.env.VITE_TARGET_STORE': JSON.stringify(
+        isStore ? 'microsoft' : (process.env.VITE_TARGET_STORE || '')
+      ),
     },
-  },
-  resolve: {
-    alias: {
-      '@': path.resolve(__dirname, './src'),
+    plugins: [react(), tailwindcss()],
+    // Pacotes Tauri pré-empacotados no startup: o primeiro import deles acontece
+    // dentro de um import() dinâmico no clique de login (bindings), e a descoberta
+    // tardia do vite derruba o módulo no WKWebView ("Importing a module script failed").
+    optimizeDeps: {
+      include: [
+        '@tauri-apps/api',
+        '@tauri-apps/api/core',
+        '@tauri-apps/plugin-stronghold',
+        '@tauri-apps/plugin-sql',
+        '@tauri-apps/plugin-notification',
+        '@tauri-apps/plugin-window-state',
+      ],
     },
-  },
+    clearScreen: false,
+    server: {
+      port: 1420,
+      strictPort: true,
+      host: host || false,
+      hmr: host
+        ? {
+            protocol: 'ws',
+            host,
+            port: 1421,
+          }
+        : undefined,
+      watch: {
+        ignored: ['**/src-tauri/**'],
+      },
+    },
+    resolve: {
+      alias: {
+        '@': path.resolve(__dirname, './src'),
+      },
+    },
+  };
 });

@@ -797,7 +797,7 @@ pub async fn fetch_professor_evaluations_csv(force_refresh: bool) -> Result<Stri
 
     let client = reqwest::Client::builder()
         .timeout(std::time::Duration::from_secs(15))
-        .user_agent("Sarue-UnB/0.3.2 (Desktop App; Tauri)")
+        .user_agent("Sarue-UnB/0.3.3 (Desktop App; Tauri)")
         .build()
         .map_err(|e| format!("Falha ao inicializar cliente HTTP: {}", e))?;
 

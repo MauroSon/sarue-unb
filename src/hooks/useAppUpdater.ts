@@ -38,7 +38,7 @@ let store: UpdaterStore = {
   updateInfo: null,
   progress: null,
   errorMessage: null,
-  currentVersion: '0.3.2',
+  currentVersion: '0.3.3',
 };
 
 let pendingUpdate: Update | null = null;
@@ -93,6 +93,12 @@ if (typeof window !== 'undefined' && '__TAURI_INTERNALS__' in window) {
  * Se silent=true, executa em segundo plano sem alterar status de erro na interface.
  */
 export async function checkForUpdates(silent = false): Promise<Update | null> {
+  // Em compilações distribuídas pela Microsoft Store, atualizações são gerenciadas
+  // exclusivamente pela própria loja (Política 10.2 / 10.8 da Microsoft Store).
+  if (import.meta.env.VITE_TARGET_STORE === 'microsoft') {
+    return null;
+  }
+
   if (typeof window === 'undefined' || !('__TAURI_INTERNALS__' in window)) {
     return null;
   }

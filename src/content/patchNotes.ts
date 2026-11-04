@@ -22,6 +22,16 @@ export interface PatchNotesEntry {
 
 export const PATCH_NOTES: PatchNotesEntry[] = [
   {
+    version: "0.3.3",
+    date: "03/11/2026",
+    title: "Compatibilidade com a Microsoft Store e Privacidade",
+    items: [
+      "Suporte à distribuição pela Microsoft Store.",
+      "Publicação da Política de Privacidade oficial detalhando a arquitetura local-first e cofre criptográfico.",
+      "Melhorias e ajustes no fluxo de compilação e empacotamento para Windows.",
+    ],
+  },
+  {
     version: "0.3.2",
     date: "31/10/2026",
     title: "Otimização de Espaço, Performance e Sincronização",

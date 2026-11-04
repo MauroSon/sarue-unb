@@ -34,6 +34,26 @@ export const AppUpdaterCard: React.FC = () => {
   const isDownloading = updater.status === "downloading";
   const isChecking = updater.status === "checking";
 
+  const isStoreBuild = import.meta.env.VITE_TARGET_STORE === "microsoft";
+
+  // Na versão distribuída pela Microsoft Store, a entrega e atualização são gerenciadas pelo SO
+  if (isStoreBuild) {
+    return (
+      <SettingsSection icon={Sparkles} label="Atualizações do aplicativo">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+          <p className="text-xs font-semibold text-neutral-600">
+            As atualizações deste aplicativo são gerenciadas automaticamente pela Microsoft Store.
+          </p>
+          <div className="flex items-center gap-2 shrink-0">
+            <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">
+              Microsoft Store
+            </span>
+          </div>
+        </div>
+      </SettingsSection>
+    );
+  }
+
   return (
     // Mesma seção padrão das demais (ícone w-4 + rótulo gritado): a tela
     // inteira compartilha uma anatomia só de cabeçalho.
