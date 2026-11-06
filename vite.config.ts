@@ -22,6 +22,7 @@ export default defineConfig(({ mode }) => {
       include: [
         '@tauri-apps/api',
         '@tauri-apps/api/core',
+        '@tauri-apps/api/image',
         '@tauri-apps/plugin-stronghold',
         '@tauri-apps/plugin-sql',
         '@tauri-apps/plugin-notification',

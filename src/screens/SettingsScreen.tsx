@@ -160,6 +160,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
       // 4. Apaga cenários simulados de IRA e histórico de notificações de prazo (SQLite + memória)
       await useCases.manageIraScenario.clear();
       await repos.deadlineNotificationRepo.clear();
+      await repos.osNotifier.setBadgeCount(0);
       // 5. Apaga perfil acadêmico e histórico escolar (Meu Curso) + cache de avaliações
       await useCases.manageAcademicProfile.clearProfile();
       resetMyCourseCache();

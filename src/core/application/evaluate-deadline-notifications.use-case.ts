@@ -149,6 +149,8 @@ export class EvaluateDeadlineNotificationsUseCase {
     // do sino bater com o que a lista mostra ao abrir.
     const badgeCount = entries.length;
 
+    await this.notifier.setBadgeCount(badgeCount);
+
     return { entries, badgeCount, newPings };
   }
 }

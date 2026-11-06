@@ -10,11 +10,19 @@ const HOUR_MS = 60 * 60 * 1000;
 
 function makeNotifier(allowed = true) {
   const calls: OSNotificationPayload[] = [];
-  const notifier: IOSNotifier & { calls: OSNotificationPayload[] } = {
+  const badgeCalls: (number | null | undefined)[] = [];
+  const notifier: IOSNotifier & {
+    calls: OSNotificationPayload[];
+    badgeCalls: (number | null | undefined)[];
+  } = {
     calls,
+    badgeCalls,
     ensurePermission: async () => allowed,
     notify: async (payload) => {
       calls.push(payload);
+    },
+    setBadgeCount: async (count) => {
+      badgeCalls.push(count);
     },
   };
   return notifier;
@@ -81,6 +89,7 @@ describe('EvaluateDeadlineNotificationsUseCase', () => {
 
     // Badge: todas as pendências da janela do painel (inclui atrasada e semana)
     expect(result.badgeCount).toBe(4);
+    expect(notifier.badgeCalls).toEqual([4]);
 
     // Um ping por tarefa, no marco mais urgente entrado agora
     expect(notifier.calls).toHaveLength(3);
@@ -171,5 +180,31 @@ describe('EvaluateDeadlineNotificationsUseCase', () => {
 
     await container.useCases.getFeed.clear();
     expect(await container.repos.deadlineNotificationRepo.getNotifiedKeys()).toEqual([]);
+  });
+
+  it('atualiza o contador do ícone (Dock badge) e remove ao zerar pendências', async () => {
+    const notifier = makeNotifier();
+    const container = createContainer({
+      repos: {
+        feedRepo,
+        deadlineNotificationRepo: new InMemoryDeadlineNotificationRepository(),
+        osNotifier: notifier,
+      },
+    });
+
+    await feedRepo.saveItems([
+      assignment('pendente1', 10),
+      assignment('pendente2', 20),
+    ]);
+    await container.useCases.evaluateDeadlines.execute(NOW);
+    expect(notifier.badgeCalls).toEqual([2]);
+
+    await container.useCases.getFeed.markAsCompleted('pendente1', true);
+    await container.useCases.evaluateDeadlines.execute(NOW);
+    expect(notifier.badgeCalls).toEqual([2, 1]);
+
+    await container.useCases.getFeed.markAsCompleted('pendente2', true);
+    await container.useCases.evaluateDeadlines.execute(NOW);
+    expect(notifier.badgeCalls).toEqual([2, 1, 0]);
   });
 });
