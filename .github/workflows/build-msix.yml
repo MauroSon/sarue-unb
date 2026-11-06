@@ -70,11 +70,8 @@ jobs:
           echo "QUAD_VERSION=$quadVersion" >> $env:GITHUB_ENV
           Write-Host "SemVer: $semver | MSIX Quad Version: $quadVersion"
 
-      - name: Build frontend for Store
-        run: pnpm run build:store
-
-      - name: Build Tauri Rust executable
-        run: cargo build --manifest-path src-tauri/Cargo.toml --release
+      - name: Build Tauri executable (production with embedded assets)
+        run: pnpm tauri build --no-bundle --config src-tauri/tauri.microsoftstore.conf.json
 
       - name: Package MSIX
         shell: pwsh
