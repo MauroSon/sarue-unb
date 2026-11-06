@@ -11,6 +11,7 @@ use tauri::Manager;
 use tauri_specta::{collect_commands, Builder};
 
 pub struct BackgroundRunState(pub std::sync::atomic::AtomicBool);
+pub struct IsQuitting(pub std::sync::atomic::AtomicBool);
 
 /// Fonte única da superfície IPC: os commands registrados aqui geram os
 /// bindings TypeScript em `src/lib/bindings.ts` (via `cargo test export_bindings`).
@@ -41,6 +42,8 @@ pub fn builder() -> Builder<tauri::Wry> {
         commands::is_background_run_enabled,
         commands::set_tray_sync_state,
         commands::show_main_window,
+        commands::prepare_for_update,
+        commands::cancel_prepare_for_update,
     ])
 }
 
@@ -58,6 +61,7 @@ pub fn run() {
 
     tauri::Builder::default()
         .manage(BackgroundRunState(std::sync::atomic::AtomicBool::new(true)))
+        .manage(IsQuitting(std::sync::atomic::AtomicBool::new(false)))
         .plugin(
             tauri_plugin_window_state::Builder::new()
                 .with_filter(|label| label == "main")
@@ -148,6 +152,12 @@ pub fn run() {
             if let tauri::WindowEvent::CloseRequested { api, .. } = event {
                 if window.label() == "main" {
                     let app = window.app_handle();
+                    if let Some(quitting) = app.try_state::<IsQuitting>() {
+                        if quitting.0.load(std::sync::atomic::Ordering::Relaxed) {
+                            // Encerramento/atualização em andamento: permite o fechamento padrão da janela (não previne)
+                            return;
+                        }
+                    }
                     if let Some(state) = app.try_state::<BackgroundRunState>() {
                         if state.0.load(std::sync::atomic::Ordering::Relaxed) {
                             api.prevent_close();

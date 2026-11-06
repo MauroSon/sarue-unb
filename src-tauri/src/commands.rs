@@ -864,3 +864,27 @@ pub async fn show_main_window(app: AppHandle) -> Result<(), String> {
     }
     Ok(())
 }
+
+#[command]
+#[specta::specta]
+pub async fn prepare_for_update(app: AppHandle) -> Result<(), String> {
+    use tauri::Manager;
+    if let Some(quitting) = app.try_state::<crate::IsQuitting>() {
+        quitting.0.store(true, std::sync::atomic::Ordering::Relaxed);
+    }
+    log::info!("Aplicativo preparado para atualização: fechamento de janela liberado.");
+    Ok(())
+}
+
+#[command]
+#[specta::specta]
+pub async fn cancel_prepare_for_update(app: AppHandle) -> Result<(), String> {
+    use tauri::Manager;
+    if let Some(quitting) = app.try_state::<crate::IsQuitting>() {
+        quitting
+            .0
+            .store(false, std::sync::atomic::Ordering::Relaxed);
+    }
+    log::info!("Atualização cancelada ou com erro: fechamento de janela restaurado.");
+    Ok(())
+}

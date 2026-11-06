@@ -1,5 +1,5 @@
 import { useSyncExternalStore, useEffect } from 'react';
-import { check, type Update } from '@tauri-apps/plugin-updater';
+import { check, type Update, type DownloadEvent } from '@tauri-apps/plugin-updater';
 import { relaunch } from '@tauri-apps/plugin-process';
 import { getVersion } from '@tauri-apps/api/app';
 
@@ -153,9 +153,9 @@ export async function checkForUpdates(silent = false): Promise<Update | null> {
 }
 
 /**
- * Baixa e aplica a atualização encontrada.
+ * Baixa os arquivos da atualização encontrada (sem disparar instalação imediata).
  */
-export async function downloadAndInstall(): Promise<void> {
+export async function downloadUpdate(): Promise<void> {
   const update = pendingUpdate;
   if (!update) {
     setStore({
@@ -176,7 +176,7 @@ export async function downloadAndInstall(): Promise<void> {
     let totalBytes = 0;
     let lastPercent = -1;
 
-    await update.downloadAndInstall((event) => {
+    const handleProgress = (event: DownloadEvent) => {
       switch (event.event) {
         case 'Started':
           totalBytes = event.data.contentLength ?? 0;
@@ -209,7 +209,11 @@ export async function downloadAndInstall(): Promise<void> {
           });
           break;
       }
-    });
+    };
+
+    // No Tauri v2, update.download() isola o download dos bytes sem disparar
+    // imediatamente o instalador do SO nem encerrar abruptamente a aplicação.
+    await update.download(handleProgress);
 
     setStore({ status: 'ready-to-restart' });
   } catch (err) {
@@ -220,13 +224,47 @@ export async function downloadAndInstall(): Promise<void> {
 }
 
 /**
+ * Alias para downloadUpdate (mantém retrocompatibilidade).
+ */
+export const downloadAndInstall = downloadUpdate;
+
+/**
  * Reinicia o aplicativo para concluir a instalação da nova versão.
  */
 export async function relaunchApp(): Promise<void> {
+  const update = pendingUpdate;
   try {
+    // 1. Prepara o app em Rust: desativa BackgroundRunState e marca IsQuitting
+    // para que nada intercepte o fechamento gracioso do aplicativo.
+    if (typeof window !== 'undefined' && '__TAURI_INTERNALS__' in window) {
+      try {
+        const { commands } = await import('../core/infrastructure/bindings');
+        await commands.prepareForUpdate();
+      } catch (err) {
+        console.warn('Não foi possível sinalizar prepareForUpdate:', err);
+      }
+    }
+
+    // 2. Se os bytes foram baixados previamente via update.download(), executa
+    // o instalador. No Windows, install() inicia o setup e encerra o processo pai.
+    if (update && 'install' in update && typeof update.install === 'function') {
+      await update.install();
+    }
+
+    // 3. Em macOS e Linux, install() aplica as alterações in-place,
+    // sendo necessário invocar relaunch() para carregar o novo executável.
     await relaunch();
   } catch (err) {
     console.error('Falha ao reiniciar o aplicativo:', err);
+    // Rollback de segurança: restaura flags do app caso install ou relaunch falhem
+    if (typeof window !== 'undefined' && '__TAURI_INTERNALS__' in window) {
+      try {
+        const { commands } = await import('../core/infrastructure/bindings');
+        await commands.cancelPrepareForUpdate();
+      } catch (cancelErr) {
+        console.warn('Não foi possível restaurar estado via cancelPrepareForUpdate:', cancelErr);
+      }
+    }
     const msg = err instanceof Error ? err.message : String(err);
     setStore({ status: 'error', errorMessage: msg });
   }
@@ -267,6 +305,7 @@ export function useAppUpdater() {
     ...state,
     hasUpdateAvailable,
     checkForUpdates,
+    downloadUpdate,
     downloadAndInstall,
     relaunchApp,
   };
@@ -283,4 +322,8 @@ export function __setUpdaterStoreForTesting(
     pendingUpdate = mockPendingUpdate;
   }
   setStore(patch);
+}
+
+export function __getUpdaterStoreForTesting(): UpdaterStore {
+  return store;
 }

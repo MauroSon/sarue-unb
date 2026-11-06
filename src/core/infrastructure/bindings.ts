@@ -38,6 +38,8 @@ export const commands = {
 	isBackgroundRunEnabled: () => typedError<boolean, string>(__TAURI_INVOKE("is_background_run_enabled")),
 	setTraySyncState: (syncing: boolean) => typedError<null, string>(__TAURI_INVOKE("set_tray_sync_state", { syncing })),
 	showMainWindow: () => typedError<null, string>(__TAURI_INVOKE("show_main_window")),
+	prepareForUpdate: () => typedError<null, string>(__TAURI_INVOKE("prepare_for_update")),
+	cancelPrepareForUpdate: () => typedError<null, string>(__TAURI_INVOKE("cancel_prepare_for_update")),
 };
 
 /* Types */

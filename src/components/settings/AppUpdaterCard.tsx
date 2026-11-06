@@ -80,11 +80,11 @@ export const AppUpdaterCard: React.FC = () => {
               variant="primary"
               size="md"
               isLoading={isDownloading}
-              onClick={() => updater.downloadAndInstall()}
+              onClick={() => updater.downloadUpdate()}
             >
               <Download className="w-4 h-4 stroke-[2.5]" />
               <span>
-                {isDownloading ? `Baixando ${downloadPct}%` : "Baixar e Atualizar"}
+                {isDownloading ? `Baixando ${downloadPct}%` : "Baixar Atualização"}
               </span>
             </Button>
           ) : (

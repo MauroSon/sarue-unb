@@ -1,13 +1,22 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import * as updaterPlugin from '@tauri-apps/plugin-updater';
+import * as processPlugin from '@tauri-apps/plugin-process';
 
 vi.mock('@tauri-apps/plugin-updater', () => ({
   check: vi.fn(),
 }));
 
+vi.mock('@tauri-apps/plugin-process', () => ({
+  relaunch: vi.fn(),
+}));
+
 import {
   checkForUpdates,
+  downloadUpdate,
+  downloadAndInstall,
+  relaunchApp,
   __setUpdaterStoreForTesting,
+  __getUpdaterStoreForTesting,
 } from '../../hooks/useAppUpdater';
 
 describe('App Updater & Sidebar Indicator', () => {
@@ -96,5 +105,75 @@ describe('App Updater & Sidebar Indicator', () => {
     } finally {
       (import.meta.env as Record<string, string>).VITE_TARGET_STORE = originalEnv;
     }
+  });
+
+  it('baixa os arquivos da atualização via update.download() e transiciona para ready-to-restart', async () => {
+    const mockDownload = vi.fn().mockImplementation(async (onProgress) => {
+      onProgress({ event: 'Started', data: { contentLength: 1000 } });
+      onProgress({ event: 'Progress', data: { chunkLength: 500 } });
+      onProgress({ event: 'Finished' });
+    });
+    const mockInstall = vi.fn();
+
+    const mockUpdate = {
+      available: true,
+      version: '0.3.5',
+      currentVersion: '0.3.4',
+      download: mockDownload,
+      install: mockInstall,
+    } as unknown as updaterPlugin.Update;
+
+    __setUpdaterStoreForTesting(
+      { status: 'available', updateInfo: { version: '0.3.5', currentVersion: '0.3.4' } },
+      mockUpdate,
+    );
+
+    await downloadUpdate();
+
+    expect(mockDownload).toHaveBeenCalled();
+    expect(mockInstall).not.toHaveBeenCalled();
+    expect(__getUpdaterStoreForTesting().status).toBe('ready-to-restart');
+    expect(downloadAndInstall).toBe(downloadUpdate);
+  });
+
+  it('relaunchApp executa install e relaunch', async () => {
+    const mockInstall = vi.fn().mockResolvedValue(undefined);
+    const mockUpdate = {
+      available: true,
+      version: '0.3.5',
+      currentVersion: '0.3.4',
+      install: mockInstall,
+    } as unknown as updaterPlugin.Update;
+
+    __setUpdaterStoreForTesting(
+      { status: 'ready-to-restart', updateInfo: { version: '0.3.5', currentVersion: '0.3.4' } },
+      mockUpdate,
+    );
+
+    await relaunchApp();
+
+    expect(mockInstall).toHaveBeenCalled();
+    expect(processPlugin.relaunch).toHaveBeenCalled();
+  });
+
+  it('relaunchApp trata erro e define status como error caso install lance exceção', async () => {
+    const mockInstall = vi.fn().mockRejectedValue(new Error('Signature mismatch'));
+    const mockUpdate = {
+      available: true,
+      version: '0.3.5',
+      currentVersion: '0.3.4',
+      install: mockInstall,
+    } as unknown as updaterPlugin.Update;
+
+    __setUpdaterStoreForTesting(
+      { status: 'ready-to-restart', updateInfo: { version: '0.3.5', currentVersion: '0.3.4' } },
+      mockUpdate,
+    );
+
+    await relaunchApp();
+
+    expect(mockInstall).toHaveBeenCalled();
+    expect(__getUpdaterStoreForTesting().status).toBe('error');
+    expect(__getUpdaterStoreForTesting().errorMessage).toBe('Signature mismatch');
   });
 });
