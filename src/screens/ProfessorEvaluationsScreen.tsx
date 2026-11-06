@@ -14,7 +14,7 @@ import {
   Pagination,
   Skeleton,
 } from "@/components/ui";
-import { Star, RefreshCw, ExternalLink } from "lucide-react";
+import { MessageSquareQuote, RefreshCw, ExternalLink } from "lucide-react";
 import { openExternalUrl } from "../lib/utils";
 import {
   professorKeyOf,
@@ -265,7 +265,7 @@ export const ProfessorEvaluationsScreen: React.FC = () => {
   if (isLoading && !hasLoadedOnce) {
     return (
       <PageContainer>
-        <PageHeader icon={Star} title="Avaliação de Professores" />
+        <PageHeader icon={MessageSquareQuote} title="Avaliação de Professores" />
         <div role="status" aria-busy="true">
           <span className="sr-only">
             Carregando avaliações de professores...
@@ -297,7 +297,7 @@ export const ProfessorEvaluationsScreen: React.FC = () => {
   if (error && !hasLoadedOnce) {
     return (
       <PageContainer>
-        <PageHeader icon={Star} title="Avaliação de Professores" />
+        <PageHeader icon={MessageSquareQuote} title="Avaliação de Professores" />
         <EmptyState
           title="Não conseguimos carregar os relatos"
           description="Ocorreu um problema ao buscar as avaliações da comunidade. Verifique sua conexão e tente de novo."
@@ -316,7 +316,7 @@ export const ProfessorEvaluationsScreen: React.FC = () => {
   if (selectedProfessor) {
     return (
       <EvaluationDrillDown
-        icon={Star}
+        icon={MessageSquareQuote}
         title={selectedProfessor.professorName}
         relatedLabel="Disciplinas Avaliadas"
         relatedItems={selectedProfessor.disciplines}
@@ -405,7 +405,7 @@ export const ProfessorEvaluationsScreen: React.FC = () => {
   return (
     <PageContainer>
       <PageHeader
-        icon={Star}
+        icon={MessageSquareQuote}
         title={
           <>
             Avaliação de Professores{" "}

@@ -24,8 +24,9 @@ export const PATCH_NOTES: PatchNotesEntry[] = [
   {
     version: "0.3.4",
     date: "05/11/2026",
-    title: "Hotfix: Inicialização de Interface no Windows",
+    title: "Redesenho de Avaliações e Correções no Windows",
     items: [
+      "Catálogo de Docentes mais neutra: foco nos relatos da comunidade e taxa de recomendação, evitando enviesar por notas numéricas isoladas.",
       "Correção no empacotamento Windows para resolução de falha de conexão.",
     ],
   },

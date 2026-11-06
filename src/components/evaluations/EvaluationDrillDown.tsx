@@ -10,7 +10,6 @@ import {
 import {
   ArrowLeft,
   MapPin,
-  Star,
   ThumbsUp,
   CheckCircle2,
   HelpCircle,
@@ -127,7 +126,6 @@ export const EvaluationDrillDown: React.FC<EvaluationDrillDownProps> = ({
               Didática Média
             </span>
             <span className="flex items-center justify-center gap-1 text-2xl font-black text-black">
-              <Star className="w-4 h-4 stroke-[2.5] fill-current shrink-0" />
               {avgDisplay}
               {summary.averageDidatica !== null && (
                 <span className="text-sm font-bold text-neutral-600">/10</span>

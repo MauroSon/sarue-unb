@@ -9,7 +9,7 @@ import {
 import {
   ArrowLeft,
   MapPin,
-  Star,
+  MessageSquareQuote,
   ThumbsUp,
   CheckCircle2,
   HelpCircle,
@@ -83,7 +83,7 @@ export const DisciplineDrillDown: React.FC<DisciplineDrillDownProps> = ({
   return (
     <PageContainer>
       <PageHeader
-        icon={Star}
+        icon={MessageSquareQuote}
         title={summary.disciplineName}
         actions={
           <Button
@@ -130,7 +130,6 @@ export const DisciplineDrillDown: React.FC<DisciplineDrillDownProps> = ({
               Didática Média
             </span>
             <span className="flex items-center justify-center gap-1 text-2xl font-black text-black">
-              <Star className="w-4 h-4 stroke-[2.5] fill-current shrink-0" />
               {mediaStr}
               {mediaDidatica !== null && (
                 <span className="text-sm font-bold text-neutral-600">/10</span>

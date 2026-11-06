@@ -269,30 +269,6 @@ components:
     textColor: "#000000"
     rounded: "{rounded.sm}"
     padding: "24px"
-  didatica-badge-high:
-    backgroundColor: "{colors.chalk-green}"
-    textColor: "#000000"
-    typography: "{typography.micro}"
-    rounded: "{rounded.xs}"
-    padding: "2px 10px"
-  didatica-badge-mid:
-    backgroundColor: "{colors.highlighter-yellow}"
-    textColor: "#000000"
-    typography: "{typography.micro}"
-    rounded: "{rounded.xs}"
-    padding: "2px 10px"
-  didatica-badge-low:
-    backgroundColor: "{colors.correction-red-strong}"
-    textColor: "#ffffff"
-    typography: "{typography.micro}"
-    rounded: "{rounded.xs}"
-    padding: "2px 10px"
-  didatica-badge-none:
-    backgroundColor: "{colors.paper-gray}"
-    textColor: "{colors.ink-soft}"
-    typography: "{typography.micro}"
-    rounded: "{rounded.xs}"
-    padding: "2px 10px"
   stat-card:
     backgroundColor: "#ffffff"
     textColor: "#000000"

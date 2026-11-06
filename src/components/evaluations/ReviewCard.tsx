@@ -3,7 +3,6 @@ import { Card, Badge } from '@/components/ui';
 import {
   BookOpen,
   Building2,
-  Star,
   MessageSquareQuote,
   ClipboardCheck,
   ChevronDown,
@@ -14,7 +13,6 @@ import {
   type ProfessorEvaluation,
   type RecommendationType,
 } from '@/core';
-import { getDidaticaCardStyle } from './types';
 
 export function getRecommendationBadge(rec: RecommendationType): React.ReactNode {
   if (rec === 'sim') {
@@ -80,6 +78,9 @@ export const ReviewCard: React.FC<ReviewCardProps> = ({
 
   // Parâmetros em linha, com rótulos onde o valor não é autoexplicativo.
   const parameters = [
+    evaluation.didaticaScore !== null
+      ? { label: 'Didática:', value: `${scoreDisplay}/10` }
+      : null,
     evaluation.difficulty
       ? { label: 'Dificuldade:', value: evaluation.difficulty }
       : null,
@@ -131,24 +132,6 @@ export const ReviewCard: React.FC<ReviewCardProps> = ({
               </>
             )}
           </div>
-        </div>
-
-        {/* Bloco Adesivo de Nota da Didática: cor única por faixa */}
-        <div
-          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border-2 border-ink shadow-neo-xs shrink-0 ${getDidaticaCardStyle(
-            evaluation.didaticaScore,
-          )}`}
-        >
-          <span className="text-[11px] font-black uppercase tracking-wider opacity-80">
-            Didática
-          </span>
-          <span className="inline-flex items-center gap-1 text-base font-black">
-            <Star className="w-3.5 h-3.5 stroke-[2.5] fill-current shrink-0" />
-            {scoreDisplay}
-            {evaluation.didaticaScore !== null && (
-              <span className="text-[11px] font-bold opacity-80">/10</span>
-            )}
-          </span>
         </div>
       </div>
 

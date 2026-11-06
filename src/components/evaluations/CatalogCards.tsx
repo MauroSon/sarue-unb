@@ -1,7 +1,6 @@
 import React from 'react';
 import { Card, Badge } from '@/components/ui';
 import {
-  Star,
   BookOpen,
   Users,
   Building2,
@@ -10,7 +9,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { CampusName, ProfessorSummary, DisciplineSummary } from '@/core';
-import { getDidaticaBadgeStyle, hasConsensusSeal } from './types';
+import { hasConsensusSeal } from './types';
 import { ConsensusSeal } from './ConsensusSeal';
 
 /** Card clicável do catálogo (@DESIGN.md "Card clicável"): sombra token
@@ -45,7 +44,7 @@ export interface CatalogSummaryCardProps {
   title: string;
   campuses: CampusName[];
   hasConsensus: boolean;
-  averageDidatica: number | null;
+  averageDidatica?: number | null;
   evaluationsCount: number;
   recommendationRate: number;
   departments: string[];
@@ -59,7 +58,6 @@ export const CatalogSummaryCard: React.FC<CatalogSummaryCardProps> = ({
   title,
   campuses,
   hasConsensus,
-  averageDidatica,
   evaluationsCount,
   recommendationRate,
   departments,
@@ -67,13 +65,6 @@ export const CatalogSummaryCard: React.FC<CatalogSummaryCardProps> = ({
   secondaryItems,
   onClick,
 }) => {
-  const avgStr =
-    averageDidatica !== null
-      ? averageDidatica.toLocaleString('pt-BR', {
-          maximumFractionDigits: 1,
-        })
-      : 'N/A';
-
   return (
     <ClickableCard
       onClick={onClick}
@@ -81,24 +72,13 @@ export const CatalogSummaryCard: React.FC<CatalogSummaryCardProps> = ({
       className="p-6 flex flex-col justify-between"
     >
       <div>
-        <div className="flex items-start justify-between gap-3 mb-2.5">
-          <div className="flex flex-wrap items-center gap-1.5">
-            {campuses.map((c) => (
-              <Badge key={c} variant="outline" size="sm">
-                {c}
-              </Badge>
-            ))}
-            {hasConsensus && <ConsensusSeal count={evaluationsCount} />}
-          </div>
-
-          <span
-            className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md border-2 text-xs font-black shrink-0 ${getDidaticaBadgeStyle(
-              averageDidatica
-            )}`}
-          >
-            <Star className="w-3.5 h-3.5 stroke-[2.5] fill-current shrink-0" />
-            {avgStr}
-          </span>
+        <div className="flex flex-wrap items-center gap-1.5 mb-2.5">
+          {campuses.map((c) => (
+            <Badge key={c} variant="outline" size="sm">
+              {c}
+            </Badge>
+          ))}
+          {hasConsensus && <ConsensusSeal count={evaluationsCount} />}
         </div>
 
         <h3 className="text-sm md:text-base font-black text-black leading-snug mb-2 group-hover:text-blue-ink transition-colors">
@@ -183,13 +163,6 @@ export const DisciplineProfessorCard: React.FC<{
   prof: ProfessorSummary;
   onOpen: (prof: ProfessorSummary) => void;
 }> = ({ prof, onOpen }) => {
-  const avgStr =
-    prof.averageDidatica !== null
-      ? prof.averageDidatica.toLocaleString('pt-BR', {
-          maximumFractionDigits: 1,
-        })
-      : 'N/A';
-
   return (
     <ClickableCard
       onClick={() => onOpen(prof)}
@@ -213,14 +186,6 @@ export const DisciplineProfessorCard: React.FC<{
           {prof.evaluationsCount === 1 ? 'relato' : 'relatos'}
         </span>
       </div>
-      <span
-        className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md border-2 text-xs font-black shrink-0 ${getDidaticaBadgeStyle(
-          prof.averageDidatica
-        )}`}
-      >
-        <Star className="w-3.5 h-3.5 stroke-[2.5] fill-current shrink-0" />
-        {avgStr}
-      </span>
     </ClickableCard>
   );
 };

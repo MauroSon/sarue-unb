@@ -10,33 +10,6 @@ export const FILTER_BY_COURSE_STORAGE_KEY = "unb_evaluations_filter_by_course";
 
 export const PAGE_SIZE = 20;
 
-export function getDidaticaBadgeStyle(score: number | null): string {
-  if (score === null) {
-    return "bg-neutral-100 text-neutral-700 border-ink";
-  }
-  if (score >= 8) {
-    return "bg-neo-green text-ink border-ink";
-  }
-  if (score >= 6) {
-    return "bg-neo-yellow text-ink border-ink";
-  }
-  return "bg-neo-danger text-white border-ink";
-}
-
-/** Cor do card de didática inteiro, por faixa de nota. */
-export function getDidaticaCardStyle(score: number | null): string {
-  if (score === null) {
-    return "bg-neutral-100 text-neutral-700";
-  }
-  if (score >= 8) {
-    return "bg-neo-green text-ink";
-  }
-  if (score >= 6) {
-    return "bg-neo-yellow text-ink";
-  }
-  return "bg-neo-danger text-white";
-}
-
 export const DIFFICULTY_FILTER_OPTIONS: { value: string; label: string }[] = [
   { value: "all", label: "Todas as dificuldades" },
   { value: "muito_facil", label: "Muito fácil" },

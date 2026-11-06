@@ -8,7 +8,7 @@ import {
   PanelLeftOpen,
   RefreshCw,
   GraduationCap,
-  Star,
+  MessageSquareQuote,
 } from "lucide-react";
 import { Popover as PopoverPrimitive } from "@base-ui/react/popover";
 import { SyncStatusTooltip } from "./SyncStatusTooltip";
@@ -123,7 +123,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     { id: "home" as NavTab, label: "Home", icon: Home },
     { id: "courses" as NavTab, label: "Disciplinas", icon: BookOpen },
     { id: "grade" as NavTab, label: "Montar Grade", icon: CalendarDays },
-    { id: "evaluations" as NavTab, label: "Avaliar Professor", icon: Star },
+    { id: "evaluations" as NavTab, label: "Avaliar Professor", icon: MessageSquareQuote },
     { id: "my-course" as NavTab, label: "Meu Curso", icon: GraduationCap },
     { id: "settings" as NavTab, label: "Configurações", icon: Settings },
   ];
