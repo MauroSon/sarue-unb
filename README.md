@@ -1,5 +1,5 @@
 <h1 align="center">
-<strong>Saruê UnB 0.3</strong>
+<strong>Saruê UnB</strong>
 </h1>
 
 <p align="center">
@@ -29,178 +29,17 @@ Saruê UnB é o **agregador acadêmico definitivo e moderno** para estudantes da
 
 ---
 
-## 🔧 Pré-requisitos: Rust, Node.js & pnpm
+## 🤝 Contribuindo & Desenvolvimento
 
-### 1. Node.js & pnpm
+O Saruê UnB é um projeto de código aberto feito por e para estudantes da UnB. Toda contribuição é bem-vinda: código, design, documentação e relatos de bugs.
 
-> [!TIP]
-> O projeto utiliza **pnpm v10+** e **Node.js v20+** com recursos modernos (como suporte nativo a strip de tipos TypeScript no runtime).
+O guia completo para configurar o ambiente local (Node.js, pnpm, Rust e dependências nativas do Tauri 2), rodar o aplicativo nos modos navegador e desktop, popular o banco de dados de desenvolvimento, executar os scrapers do SIGAA e abrir Pull Requests está em [CONTRIBUTING.md](CONTRIBUTING.md).
 
-Instale o `pnpm` globalmente caso ainda não o possua:
+Documentação complementar do projeto:
 
-```bash
-# macOS / Linux (via Homebrew ou npm)
-brew install pnpm
-# ou
-npm install -g pnpm@latest
-```
-
-### 2. Rust & Ferramentas de Compilação
-
-O Saruê UnB utiliza o ecossistema **Tauri 2**, cujo backend de I/O, cofre criptográfico e solver de horários é escrito em **Rust**:
-
-```bash
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-```
-
-#### macOS
-
-Certifique-se de ter as ferramentas de linha de comando do Xcode instaladas:
-
-```bash
-xcode-select --install
-```
-
-#### Linux
-
-No Linux, instale as dependências nativas necessárias para o WebKitGTK e compilação do Tauri:
-
-- **Debian / Ubuntu / Pop!\_OS / Linux Mint**:
-
-  ```bash
-  sudo apt update
-  sudo apt install -y libwebkit2gtk-4.1-dev build-essential curl wget file libxdo-dev libssl-dev libayatana-appindicator3-dev librsvg2-dev
-  ```
-
-- **Arch Linux / Manjaro**:
-
-  ```bash
-  sudo pacman -S --needed webkit2gtk-4.1 base-devel curl wget openssl librsvg libappindicator-gtk3
-  ```
-
-- **Fedora / RHEL**:
-
-  ```bash
-  sudo dnf install webkit2gtk4.1-devel openssl-devel curl wget
-  ```
-
-### 3. Tipografia
-
-O Saruê UnB utiliza a fonte **Plus Jakarta Sans** para compor uma identidade visual acolhedora com tema de material escolar e adesivos, com fallbacks nativos para a pilha de fontes do sistema (`sans-serif`).
-
----
-
-## 🚀 Instalação & Desenvolvimento
-
-### Clonar o Repositório
-
-```bash
-git clone git@github.com:kalebhenrique/sarue-unb.git
-cd sarue-unb
-```
-
-### Instalar Dependências
-
-```bash
-pnpm install
-```
-
----
-
-### Executando o Aplicativo
-
-#### Modo Desktop (Tauri + Vite)
-
-Para rodar a aplicação desktop completa com o backend Rust, banco SQLite e cofre Stronghold ativo:
-
-```bash
-pnpm tauri dev
-```
-
-#### Modo Navegador (Preview do Frontend)
-
-Para iterar com velocidade na interface e componentes visuais sem compilar o backend Rust, utilizando adapters em memória e dados mockados:
-
-```bash
-pnpm dev
-```
-
----
-
-### 🌱 Banco de Dados Local & Seeds de Desenvolvimento
-
-O Saruê UnB adota uma política de **isolamento estrito entre desenvolvimento e produção**:
-
-```bash
-# Popula o SQLite de dev com turmas, feed de avisos/tarefas, histórico escolar e simulação de IRA
-pnpm seeds
-
-# Caso queira resetar o banco de dev antes de reinserir os dados
-pnpm seeds --clean
-```
-
----
-
-### 📡 Execução dos Scrapers (Standalone)
-
-Os scrapers de extração pública do SIGAA podem ser executados isoladamente via Node.js:
-
-```bash
-# Executa todos os scrapers de turmas, cursos e calendário
-pnpm run scrape:all
-
-# Ou execute individualmente:
-pnpm run scrape:grade     # Departamentos e turmas ofertadas
-pnpm run scrape:courses   # Catálogo de 150+ cursos e matrizes curriculares
-pnpm run scrape:calendar  # Calendário acadêmico
-```
-
----
-
-### 🧪 Verificação & Testes
-
-Execute localmente os testes e linters (TypeScript e Rust) que também são validados automaticamente via GitHub Actions ao abrir Pull Requests:
-
-```bash
-# Executa todos os testes (TypeScript via Vitest + Rust via Cargo)
-pnpm test:all
-
-# Executa todos os linters (TypeScript typecheck + ESLint + Rust fmt & Clippy)
-pnpm lint:all
-
-# Executa TUDO de uma vez (todos os linters + todos os testes) — recomendado antes de abrir PRs
-pnpm check:all # ou apenas: pnpm check
-
-# --- Comandos específicos / individuais ---
-
-# Testes unitários do frontend e use cases (Vitest)
-pnpm test
-
-# Testes unitários do backend em Rust
-pnpm test:rust
-
-# Checagem estática de tipos (TypeScript)
-pnpm typecheck
-
-# Linting do frontend e regras de fronteira arquitetural (ESLint)
-pnpm lint
-
-# Linter e verificação de formatação em Rust (Clippy com -D warnings + rustfmt check)
-pnpm lint:rust
-
-# Formata o código Rust automaticamente
-pnpm format:rust
-```
-
----
-
-### 📦 Compilação de Produção (Build)
-
-Para gerar os instaladores e binários executáveis otimizados para o seu sistema operacional (`.dmg` no macOS, `.deb`/`.AppImage` no Linux, `.msi` no Windows):
-
-```bash
-pnpm tauri build
-```
+- [ARCHITECTURE.md](ARCHITECTURE.md) — princípios de Clean Architecture e regras de fronteira checadas pelo linter
+- [DESIGN.md](DESIGN.md) — identidade visual neobrutalista com tema de material escolar e adesivos, tipografia **Plus Jakarta Sans**
+- [PRIVACY.md](PRIVACY.md) — política de privacidade
 
 ---
 

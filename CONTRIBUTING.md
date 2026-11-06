@@ -21,9 +21,33 @@ Antes de começar, por favor leia nosso [Código de Conduta](CODE_OF_CONDUCT.md)
 1. **Node.js & pnpm**:
    - **Node.js**: v20+ (recomendado v22 LTS)
    - **pnpm**: v10+ (`npm install -g pnpm@latest` ou `brew install pnpm`)
-2. **Rust & Ferramentas do Tauri 2** _(necessário para rodar o app desktop)_:
+2. **Rust & Ferramentas do Tauri 2** _(necessários para rodar o app desktop)_:
    - Toolchain Rust estável: `curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh`
-   - Dependências nativas de compilação da sua plataforma (consulte a seção de pré-requisitos no [README.md](README.md#2-rust--ferramentas-de-compilação)).
+   - Dependências nativas de compilação da sua plataforma:
+     - **macOS**: ferramentas de linha de comando do Xcode:
+
+       ```bash
+       xcode-select --install
+       ```
+
+     - **Debian / Ubuntu / Pop!\_OS / Linux Mint** (dependências do WebKitGTK e compilação do Tauri):
+
+       ```bash
+       sudo apt update
+       sudo apt install -y libwebkit2gtk-4.1-dev build-essential curl wget file libxdo-dev libssl-dev libayatana-appindicator3-dev librsvg2-dev
+       ```
+
+     - **Arch Linux / Manjaro**:
+
+       ```bash
+       sudo pacman -S --needed webkit2gtk-4.1 base-devel curl wget openssl librsvg libappindicator-gtk3
+       ```
+
+     - **Fedora / RHEL**:
+
+       ```bash
+       sudo dnf install webkit2gtk4.1-devel openssl-devel curl wget
+       ```
 
 ### Passo a Passo (Fork & Clone)
 
@@ -68,11 +92,68 @@ O Saruê UnB oferece dois modos principais de desenvolvimento:
   ```
 
 - **Popular Banco de Dados de Desenvolvimento**:
-  Para preencher turmas, feed e histórico acadêmico fictício no SQLite de desenvolvimento:
+  O projeto adota uma política de **isolamento estrito entre desenvolvimento e produção**. Para preencher turmas, feed de avisos/tarefas, histórico escolar e simulação de IRA fictícios no SQLite de desenvolvimento:
 
   ```bash
   pnpm seeds
+
+  # Caso queira resetar o banco de dev antes de reinserir os dados
+  pnpm seeds --clean
   ```
+
+---
+
+## 📡 Scrapers do SIGAA (Standalone)
+
+Os scrapers de extração pública do SIGAA podem ser executados isoladamente via Node.js, sem depender do app desktop:
+
+```bash
+# Executa todos os scrapers de turmas, cursos e calendário
+pnpm run scrape:all
+
+# Ou execute individualmente:
+pnpm run scrape:grade       # Departamentos e turmas ofertadas
+pnpm run scrape:courses     # Catálogo de 150+ cursos e matrizes curriculares
+pnpm run scrape:calendar    # Calendário acadêmico
+pnpm run scrape:professors  # Catálogo de docentes (roda trimestralmente via CI/CD)
+```
+
+---
+
+## 🧪 Verificação & Testes
+
+Execute localmente os testes e linters (TypeScript e Rust) que também são validados automaticamente via GitHub Actions ao abrir Pull Requests:
+
+```bash
+# Executa TUDO de uma vez (todos os linters + todos os testes) — recomendado antes de abrir PRs
+pnpm check:all # ou apenas: pnpm check
+
+# --- Ou, separadamente ---
+
+# Todos os testes (TypeScript via Vitest + Rust via Cargo)
+pnpm test:all
+
+# Todos os linters (TypeScript typecheck + ESLint + Rust fmt & Clippy)
+pnpm lint:all
+
+# --- Comandos específicos / individuais ---
+pnpm test          # Testes unitários do frontend e use cases (Vitest)
+pnpm test:rust     # Testes unitários do backend em Rust
+pnpm typecheck     # Checagem estática de tipos (TypeScript)
+pnpm lint          # Linting do frontend e regras de fronteira arquitetural (ESLint)
+pnpm lint:rust     # Linter e verificação de formatação em Rust (Clippy com -D warnings + rustfmt check)
+pnpm format:rust   # Formata o código Rust automaticamente
+```
+
+---
+
+## 📦 Compilação de Produção (Build)
+
+Para gerar os instaladores e binários executáveis otimizados para o seu sistema operacional (`.dmg` no macOS, `.deb`/`.AppImage` no Linux, `.msi` no Windows):
+
+```bash
+pnpm tauri build
+```
 
 ---
 
@@ -107,7 +188,7 @@ O Saruê UnB oferece dois modos principais de desenvolvimento:
    pnpm check:all
    ```
 
-   _(Ou execute `pnpm test:all` e `pnpm lint:all` separadamente)._
+   _(Detalhes de cada comando na seção [Verificação & Testes](#-verificação--testes))._
 5. Envie a branch para o seu fork:
 
    ```bash
