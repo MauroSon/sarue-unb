@@ -22,6 +22,14 @@ export interface PatchNotesEntry {
 
 export const PATCH_NOTES: PatchNotesEntry[] = [
   {
+    version: "0.3.4",
+    date: "05/11/2026",
+    title: "Hotfix: Inicialização de Interface no Windows",
+    items: [
+      "Correção no empacotamento Windows para resolução de falha de conexão.",
+    ],
+  },
+  {
     version: "0.3.3",
     date: "03/11/2026",
     title: "Compatibilidade com a Microsoft Store e Privacidade",

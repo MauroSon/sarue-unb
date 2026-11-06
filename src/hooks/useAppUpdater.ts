@@ -38,7 +38,7 @@ let store: UpdaterStore = {
   updateInfo: null,
   progress: null,
   errorMessage: null,
-  currentVersion: '0.3.3',
+  currentVersion: '0.3.4',
 };
 
 let pendingUpdate: Update | null = null;
