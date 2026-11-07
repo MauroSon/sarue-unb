@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { Popover as PopoverPrimitive } from '@base-ui/react/popover';
-import { Bell, BellOff, Check, ExternalLink } from 'lucide-react';
-import { Badge, Button } from '@/components/ui';
+import { Bell, BellOff, ExternalLink } from 'lucide-react';
+import { Badge, Button, Checkbox } from '@/components/ui';
 import { useDeadlines } from '@/context/DeadlineContext';
 import { useSync } from '@/context/SyncContext';
 import { useContainer } from '@/context/ContainerContext';
@@ -59,20 +59,17 @@ const DeadlineRow: React.FC<{
           : 'hover:bg-neutral-200/60',
       )}
     >
-      <button
-        type="button"
-        onClick={() => onComplete(item.id)}
+      <Checkbox
+        checked={isDone}
+        onCheckedChange={(checked) => {
+          if (checked && !isDone) {
+            onComplete(item.id);
+          }
+        }}
         title={isDone ? 'Concluído' : 'Marcar como concluído'}
         aria-label={isDone ? `Concluído: ${item.title}` : `Concluir: ${item.title}`}
-        className={cn(
-          'w-5 h-5 mt-0.5 rounded-md border-2 border-ink flex items-center justify-center shrink-0 cursor-pointer transition-[transform,box-shadow,background-color] duration-150 ease-out shadow-[1px_1px_0px_0px_var(--neo-shadow)] hover:translate-x-[0.5px] hover:translate-y-[0.5px] hover:shadow-none active:translate-x-[1px] active:translate-y-[1px]',
-          isDone
-            ? 'bg-neo-green text-ink'
-            : 'bg-paper text-neutral-400 hover:bg-neutral-100',
-        )}
-      >
-        {isDone ? <Check className="w-3.5 h-3.5 stroke-[3]" /> : null}
-      </button>
+        className="mt-0.5 data-checked:bg-neo-green data-checked:text-ink hover:bg-neutral-100"
+      />
 
       <div className="min-w-0 flex-1">
         <span
