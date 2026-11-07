@@ -8,9 +8,22 @@ use std::collections::HashMap;
 use tauri::{command, AppHandle, Manager};
 
 fn is_valid_vault_filename(filename: &str) -> bool {
+    // Defesa em profundidade contra path traversal via argumentos do frontend
+    if filename.contains('/') || filename.contains('\\') || filename.contains("..") {
+        return false;
+    }
+
     matches!(
         filename,
-        "unb_vault.hold" | "unb_vault_dev.hold" | "unb_vault.hold.bak" | "unb_vault_dev.hold.bak"
+        "unb_vault.hold"
+            | "unb_vault_dev.hold"
+            | "unb_vault.hold.bak"
+            | "unb_vault_dev.hold.bak"
+            | "unb_vault.hold.corrupted.bak"
+            | "unb_vault_dev.hold.corrupted.bak"
+    ) || (
+        (filename.starts_with("unb_vault.hold.") || filename.starts_with("unb_vault_dev.hold."))
+            && filename.ends_with(".bak")
     )
 }
 
@@ -18,83 +31,155 @@ fn is_valid_hex_key(key: &str) -> bool {
     key.len() == 64 && key.chars().all(|c| c.is_ascii_hexdigit())
 }
 
+fn write_vault_key_file(path: &std::path::Path, key: &str) -> Result<(), String> {
+    #[cfg(unix)]
+    {
+        use std::io::Write;
+        use std::os::unix::fs::OpenOptionsExt;
+        let mut file = std::fs::OpenOptions::new()
+            .write(true)
+            .create(true)
+            .truncate(true)
+            .mode(0o600)
+            .open(path)
+            .map_err(|e| format!("Falha ao abrir arquivo de chave do cofre com modo 0600: {}", e))?;
+        file.write_all(key.as_bytes())
+            .map_err(|e| format!("Falha ao persistir chave do cofre no disco: {}", e))?;
+    }
+    #[cfg(not(unix))]
+    {
+        std::fs::write(path, key)
+            .map_err(|e| format!("Falha ao persistir chave do cofre no disco: {}", e))?;
+    }
+    Ok(())
+}
+
 #[command]
 #[specta::specta]
 pub fn get_or_create_vault_key(app: AppHandle) -> Result<String, String> {
-    const SERVICE: &str = "org.unb.sarue";
-    const USER: &str = "vault_master_key";
+    // Tupla única de perfil de ambiente para eliminar duplicação e alocações
+    let (service, user, key_file_name) = if cfg!(debug_assertions) {
+        ("br.unb.sarue.dev", "vault_master_key_dev", "vault_dev.key")
+    } else {
+        ("br.unb.sarue", "vault_master_key", "vault.key")
+    };
 
     let data_dir = app
         .path()
         .app_local_data_dir()
         .map_err(|e| format!("Falha ao resolver diretório local de dados: {}", e))?;
     let _ = std::fs::create_dir_all(&data_dir);
-    let key_file = data_dir.join("vault.key");
+    let key_file = data_dir.join(key_file_name);
 
-    // 1. Tenta recuperar do Chaveiro do Sistema Operacional (Keychain / Credential Manager)
-    #[cfg(not(any(target_os = "android", target_os = "ios")))]
-    let keyring_error = {
-        let mut err = None;
-        if let Ok(entry) = keyring::Entry::new(SERVICE, USER) {
-            match entry.get_password() {
-                Ok(password) => {
-                    let trimmed = password.trim().to_string();
-                    if is_valid_hex_key(&trimmed) {
-                        // Se o Keyring do SO já possui a chave válida, remove qualquer vault.key legado em texto puro
-                        if key_file.exists() {
-                            let _ = std::fs::remove_file(&key_file);
-                        }
-                        return Ok(trimmed);
-                    }
-                }
-                Err(keyring::Error::NoEntry) => {
-                    // Chaveiro acessível, porém chave ainda não foi cadastrada. Pode prosseguir para fallback/criação.
-                }
-                Err(e) => {
-                    log::error!(
-                        "[get_or_create_vault_key] Falha transitória ao acessar chaveiro do SO: {:?}",
-                        e
-                    );
-                    err = Some(e);
-                }
-            }
-        }
-        err
-    };
-
-    // 2. Migração/Fallback: Verifica se já existe chave persistida no arquivo local (legado ou fallback)
+    // 1. Prioridade Máxima: Arquivo local seguro de chave (vault.key / vault_dev.key)
+    // No macOS, atualizações de apps ad-hoc mudam o cdhash do binário, fazendo o Keychain
+    // bloquear o acesso com erro de ACL. O arquivo local (0600) é a âncora de persistência
+    // imune a trocas de binário e NUNCA deve ser apagado.
     if key_file.exists() {
         if let Ok(content) = std::fs::read_to_string(&key_file) {
             let trimmed = content.trim().to_string();
             if is_valid_hex_key(&trimmed) {
-                // Tenta migrar para o chaveiro do SO e remover o arquivo em texto puro
+                // Tenta espelhar no Chaveiro do SO em segundo plano (best-effort)
                 #[cfg(not(any(target_os = "android", target_os = "ios")))]
-                if let Ok(entry) = keyring::Entry::new(SERVICE, USER) {
-                    if entry.set_password(&trimmed).is_ok()
-                        && entry
-                            .get_password()
-                            .map(|p| p.trim() == trimmed)
-                            .unwrap_or(false)
-                    {
-                        let _ = std::fs::remove_file(&key_file);
-                    }
+                if let Ok(entry) = keyring::Entry::new(service, user) {
+                    let _ = entry.set_password(&trimmed);
                 }
                 return Ok(trimmed);
             }
         }
     }
 
-    // Se o chaveiro do SO falhou com erro transitório (bloqueado, permissão negada, etc.) e NÃO temos arquivo local,
-    // JAMAIS devemos gerar uma chave nova silenciosamente, pois isso sobrescreveria e destruiria para sempre o acesso ao cofre!
-    #[cfg(not(any(target_os = "android", target_os = "ios")))]
-    if let Some(err) = keyring_error {
-        return Err(format!(
-            "Falha ao acessar o chaveiro do sistema ({:?}). Desbloqueie o chaveiro e tente novamente para não perder os dados do cofre.",
-            err
-        ));
+    // 1.5 Fallback para compilações de desenvolvimento antigas (migração de vault.key legado)
+    if cfg!(debug_assertions) {
+        let legacy_dev_key = data_dir.join("vault.key");
+        if legacy_dev_key.exists() {
+            if let Ok(content) = std::fs::read_to_string(&legacy_dev_key) {
+                let trimmed = content.trim().to_string();
+                if is_valid_hex_key(&trimmed) {
+                    let _ = write_vault_key_file(&key_file, &trimmed);
+                    return Ok(trimmed);
+                }
+            }
+        }
     }
 
-    // 3. Se nenhuma chave válida existia, gera uma chave criptográfica forte (256-bit / 64 hex chars)
+    // 2. Se o arquivo local ainda não existe, tenta recuperar do Chaveiro do SO
+    #[cfg(not(any(target_os = "android", target_os = "ios")))]
+    let (recovered_key, keyring_error) = {
+        let mut key = None;
+        let mut err = None;
+
+        if let Ok(entry) = keyring::Entry::new(service, user) {
+            match entry.get_password() {
+                Ok(pwd) => {
+                    let trimmed = pwd.trim().to_string();
+                    if is_valid_hex_key(&trimmed) {
+                        key = Some(trimmed);
+                    }
+                }
+                Err(keyring::Error::NoEntry) => {}
+                Err(e) => {
+                    log::warn!("[get_or_create_vault_key] Falha transitória ao acessar chaveiro do SO: {:?}", e);
+                    err = Some(e);
+                }
+            }
+        }
+
+        // Tenta também chaveiros legados caso ainda não tenha no serviço atual
+        if key.is_none() {
+            let legacy_services = if cfg!(debug_assertions) {
+                vec!["br.unb.sarue", "org.unb.sarue"]
+            } else {
+                vec!["org.unb.sarue"]
+            };
+
+            for leg_svc in legacy_services {
+                if let Ok(legacy_entry) = keyring::Entry::new(leg_svc, "vault_master_key") {
+                    if let Ok(password) = legacy_entry.get_password() {
+                        let trimmed = password.trim().to_string();
+                        if is_valid_hex_key(&trimmed) {
+                            key = Some(trimmed);
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        (key, err)
+    };
+
+    #[cfg(not(any(target_os = "android", target_os = "ios")))]
+    if let Some(key) = recovered_key {
+        // Salva imediatamente no arquivo local com 0600 para que futuras atualizações não dependam do Keychain
+        if let Err(e) = write_vault_key_file(&key_file, &key) {
+            log::warn!("[get_or_create_vault_key] Falha ao gravar chave recuperada no disco: {}", e);
+        }
+        // Espelha no novo serviço se veio de legado
+        if let Ok(entry) = keyring::Entry::new(service, user) {
+            let _ = entry.set_password(&key);
+        }
+        return Ok(key);
+    }
+
+    // 2.5 Guarda contra rotação acidental: se já existe um cofre ativo no disco e o chaveiro falhou
+    // com erro transitório (bloqueado/permissão, que NÃO seja NoEntry), não gere uma chave nova silenciosamente!
+    let vault_filename = if cfg!(debug_assertions) {
+        "unb_vault_dev.hold"
+    } else {
+        "unb_vault.hold"
+    };
+    if data_dir.join(vault_filename).exists() {
+        #[cfg(not(any(target_os = "android", target_os = "ios")))]
+        if let Some(err) = keyring_error {
+            return Err(format!(
+                "Falha ao acessar o chaveiro do sistema ({:?}). Desbloqueie o chaveiro e tente novamente para não perder o acesso ao cofre.",
+                err
+            ));
+        }
+    }
+
+    // 3. Se nenhuma chave válida existia (primeira execução), gera uma chave criptográfica forte (256-bit / 64 hex chars)
     let mut key_bytes = [0u8; 32];
     rand::RngCore::fill_bytes(&mut rand::thread_rng(), &mut key_bytes);
     let generated_key = key_bytes
@@ -102,30 +187,13 @@ pub fn get_or_create_vault_key(app: AppHandle) -> Result<String, String> {
         .map(|b| format!("{:02x}", b))
         .collect::<String>();
 
-    // Tenta salvar no Chaveiro do SO primeiro
-    let mut saved_in_keyring = false;
+    // Grava no arquivo local com modo 0600 atômico (âncora confiável)
+    write_vault_key_file(&key_file, &generated_key)?;
+
+    // Tenta salvar também no Chaveiro do SO (best-effort)
     #[cfg(not(any(target_os = "android", target_os = "ios")))]
-    if let Ok(entry) = keyring::Entry::new(SERVICE, USER) {
-        if entry.set_password(&generated_key).is_ok()
-            && entry
-                .get_password()
-                .map(|p| p.trim() == generated_key)
-                .unwrap_or(false)
-        {
-            saved_in_keyring = true;
-        }
-    }
-
-    // Apenas persiste em arquivo local (0600) como fallback quando o Chaveiro do SO não está disponível
-    if !saved_in_keyring {
-        std::fs::write(&key_file, &generated_key)
-            .map_err(|e| format!("Falha ao persistir chave do cofre no disco: {}", e))?;
-
-        #[cfg(unix)]
-        {
-            use std::os::unix::fs::PermissionsExt;
-            let _ = std::fs::set_permissions(&key_file, std::fs::Permissions::from_mode(0o600));
-        }
+    if let Ok(entry) = keyring::Entry::new(service, user) {
+        let _ = entry.set_password(&generated_key);
     }
 
     Ok(generated_key)
@@ -159,7 +227,11 @@ pub fn backup_vault_file(app: AppHandle, filename: String) -> Result<String, Str
         .app_local_data_dir()
         .map_err(|e| format!("Falha ao resolver diretório local de dados: {}", e))?;
     let src = data_dir.join(&filename);
-    let bak_filename = format!("{}.bak", filename);
+    let timestamp = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .map(|d| d.as_secs())
+        .unwrap_or(0);
+    let bak_filename = format!("{}.{}.bak", filename, timestamp);
     let dst = data_dir.join(&bak_filename);
     if src.exists() {
         std::fs::rename(&src, &dst)
@@ -887,4 +959,64 @@ pub async fn cancel_prepare_for_update(app: AppHandle) -> Result<(), String> {
     }
     log::info!("Atualização cancelada ou com erro: fechamento de janela restaurado.");
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_is_valid_vault_filename() {
+        assert!(is_valid_vault_filename("unb_vault.hold"));
+        assert!(is_valid_vault_filename("unb_vault_dev.hold"));
+        assert!(is_valid_vault_filename("unb_vault.hold.bak"));
+        assert!(is_valid_vault_filename("unb_vault_dev.hold.bak"));
+        assert!(is_valid_vault_filename("unb_vault.hold.corrupted.bak"));
+        assert!(is_valid_vault_filename("unb_vault_dev.hold.corrupted.bak"));
+        assert!(is_valid_vault_filename("unb_vault.hold.1730987654.bak"));
+        assert!(is_valid_vault_filename("unb_vault_dev.hold.1730987654.bak"));
+
+        // Bloqueio de path traversal
+        assert!(!is_valid_vault_filename("unb_vault.hold.foo/../../etc/passwd.bak"));
+        assert!(!is_valid_vault_filename("unb_vault.hold.\\..\\test.bak"));
+        assert!(!is_valid_vault_filename("unb_vault.hold/bad.bak"));
+        assert!(!is_valid_vault_filename("../unb_vault.hold"));
+        assert!(!is_valid_vault_filename("random.hold"));
+        assert!(!is_valid_vault_filename("unb_vault.key"));
+    }
+
+    #[test]
+    fn test_is_valid_hex_key() {
+        let valid = "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef";
+        assert!(is_valid_hex_key(valid));
+
+        // Tamanho incorreto
+        assert!(!is_valid_hex_key("0123456789abcdef"));
+        // Caractere não-hexadecimal
+        let invalid = "g123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef";
+        assert!(!is_valid_hex_key(invalid));
+    }
+
+    #[test]
+    fn test_write_and_read_vault_key_file() {
+        let temp_dir = std::env::temp_dir().join(format!("sarue_test_{}", rand::random::<u32>()));
+        std::fs::create_dir_all(&temp_dir).unwrap();
+        let key_path = temp_dir.join("vault.key");
+
+        let test_key = "a1b2c3d4e5f60123456789abcdef0123456789abcdef0123456789abcdef0123";
+        write_vault_key_file(&key_path, test_key).expect("Falha ao escrever chave");
+
+        let read_back = std::fs::read_to_string(&key_path).unwrap();
+        assert_eq!(read_back, test_key);
+
+        #[cfg(unix)]
+        {
+            use std::os::unix::fs::PermissionsExt;
+            let meta = std::fs::metadata(&key_path).unwrap();
+            let mode = meta.permissions().mode() & 0o777;
+            assert_eq!(mode, 0o600, "Permissões devem ser restritas 0600");
+        }
+
+        let _ = std::fs::remove_dir_all(&temp_dir);
+    }
 }

@@ -23,6 +23,15 @@ let sharedStoreInitPromise: Promise<{
 let hasHydratedFromVault = false;
 let sharedHydratePromise: Promise<void> | null = null;
 
+export function __resetVaultCacheForTesting() {
+  sharedCachedStronghold = null;
+  sharedCachedClient = null;
+  sharedStoreInitPromise = null;
+  sharedInMemoryStore = {};
+  hasHydratedFromVault = false;
+  sharedHydratePromise = null;
+}
+
 export const VAULT_CREDENTIAL_KEYS = [
   'sigaa_matricula',
   'sigaa_senha',
@@ -38,7 +47,7 @@ export class StrongholdCredentialsRepository implements ICredentialsRepository {
   private vaultPassword = 'sarue-unb-internal-vault-key';
   private legacyVaultPassword = 'unb-aggregator-internal-vault-key';
 
-  private async getStore() {
+  private async getStore(options?: { allowAutoHealing?: boolean }) {
     if (!isTauriEnvironment()) return null;
 
     if (sharedCachedClient && sharedCachedStronghold) {
@@ -155,9 +164,36 @@ export class StrongholdCredentialsRepository implements ICredentialsRepository {
                   await commands.deleteVaultFile(`${VAULT_FILE_NAME}.bak`);
                 } catch {}
               }
+            } else if (options?.allowAutoHealing) {
+              console.warn('[Stronghold] Cofre indecifrável em disco e gravação solicitada. Ativando auto-healing seguro...');
+              let backedUp = false;
+              try {
+                const bakRes = await commands.backupVaultFile(VAULT_FILE_NAME);
+                backedUp = bakRes.status === 'ok';
+              } catch (bakErr) {
+                console.warn('[Stronghold] Aviso ao arquivar cofre órfão:', bakErr);
+              }
+
+              if (backedUp) {
+                try {
+                  stronghold = await Stronghold.load(vaultPath, securePassword);
+                  client = await stronghold.createClient('unb_credentials');
+                  await stronghold.save();
+                  sharedCachedClient = client;
+                  sharedCachedStronghold = stronghold;
+                  console.info('[Stronghold] Auto-healing concluído: novo cofre saudável criado e persistido no disco.');
+                } catch (healErr) {
+                  console.error('[Stronghold] Falha crítica no auto-healing do cofre:', healErr);
+                  stronghold = null;
+                  client = null;
+                }
+              } else {
+                console.error('[Stronghold] Auto-healing abortado: não foi possível mover o arquivo órfão com segurança.');
+                stronghold = null;
+                client = null;
+              }
             } else {
               // Nem a chave principal nem as legadas conseguiram abrir o arquivo.
-              // NUNCA apagar o arquivo em disco automaticamente!
               console.warn('[Stronghold] Não foi possível descriptografar o cofre em disco com as chaves conhecidas. Mantendo sessão em memória.');
             }
           }
@@ -340,7 +376,7 @@ export class StrongholdCredentialsRepository implements ICredentialsRepository {
     this.markPlatformSaved('sigaa');
     sharedInMemoryStore.sigaa = { ...credentials };
 
-    const vault = await this.getStore();
+    const vault = await this.getStore({ allowAutoHealing: true });
     if (!vault) {
       console.warn(
         '[Stronghold] Cofre seguro indisponível no momento. Credenciais mantidas em memória para esta sessão.'
@@ -370,7 +406,7 @@ export class StrongholdCredentialsRepository implements ICredentialsRepository {
     this.markPlatformSaved('aprender3');
     sharedInMemoryStore.aprender3 = { ...credentials };
 
-    const vault = await this.getStore();
+    const vault = await this.getStore({ allowAutoHealing: true });
     if (!vault) {
       console.warn(
         '[Stronghold] Cofre seguro indisponível no momento. Credenciais mantidas em memória para esta sessão.'
@@ -404,7 +440,7 @@ export class StrongholdCredentialsRepository implements ICredentialsRepository {
     }
     sharedInMemoryStore.teams = { ...credentials };
 
-    const vault = await this.getStore();
+    const vault = await this.getStore({ allowAutoHealing: true });
     if (!vault) {
       console.warn(
         '[Stronghold] Cofre seguro indisponível no momento. Credenciais mantidas em memória para esta sessão.'
