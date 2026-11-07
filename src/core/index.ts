@@ -12,6 +12,7 @@ export * from './domain/entities/user-calendar-event';
 // Domain Utils
 export * from './domain/utils/grade-acronym';
 export * from './domain/utils/course-shift';
+export * from './domain/utils/absence-calculator';
 export * from './domain/utils/semester';
 export * from './domain/utils/profanity-filter';
 

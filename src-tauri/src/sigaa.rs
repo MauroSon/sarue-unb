@@ -9,6 +9,7 @@ use std::collections::HashMap;
 const USER_AGENT_STR: &str = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36";
 const CAS_LOGIN_URL: &str = "https://autenticacao.unb.br/sso-server/login?service=https%3A%2F%2Fsig.unb.br%2Fsigaa%2Flogin%2Fcas";
 const DISCENTE_URL: &str = "https://sigaa.unb.br/sigaa/portais/discente/discente.jsf";
+const AVA_URL: &str = "https://sigaa.unb.br/sigaa/ava/index.jsf";
 const SESSION_TTL_SECS: u64 = 90;
 
 #[derive(Clone)]
@@ -439,14 +440,194 @@ impl SigaaClient {
         courses
     }
 
+    /// Extrai o total de faltas do HTML da Turma Virtual (https://sigaa.unb.br/sigaa/ava/index.jsf).
+    pub fn extract_absences_from_ava_html(html: &str) -> Option<u32> {
+        let clean = decode_html_entities(html);
+
+        // 1. Padrões expressos: "Total de Faltas: X" ou "Número de Faltas: X"
+        let total_re = Regex::new(
+            r#"(?i)(?:Total|N[úu]mero|N[ºo])\s+de\s+[Ff]altas(?:\s*\(h\))?\s*:?(?:[^<0-9]*<[^>]+>)*\s*(\d+)"#,
+        )
+        .ok()?;
+        if let Some(cap) = total_re.captures(&clean) {
+            if let Some(m) = cap.get(1) {
+                if let Ok(val) = m.as_str().parse::<u32>() {
+                    return Some(val);
+                }
+            }
+        }
+
+        // 2. Rótulo direto "Faltas: X"
+        let faltas_label_re = Regex::new(
+            r#"(?i)\b[Ff]altas\s*:(?:[^<0-9]*<[^>]+>)*\s*(\d+)"#,
+        )
+        .ok()?;
+        if let Some(cap) = faltas_label_re.captures(&clean) {
+            if let Some(m) = cap.get(1) {
+                if let Ok(val) = m.as_str().parse::<u32>() {
+                    return Some(val);
+                }
+            }
+        }
+
+        // 3. Coluna tabular em tabelas de diário ou resumo: <td>Faltas</td><td>X</td>
+        let td_re = Regex::new(
+            r#"(?i)<td[^>]*>[^<]*[Ff]altas?[^<]*</td>\s*<td[^>]*>\s*(\d+)\s*</td>"#,
+        )
+        .ok()?;
+        if let Some(cap) = td_re.captures(&clean) {
+            if let Some(m) = cap.get(1) {
+                if let Ok(val) = m.as_str().parse::<u32>() {
+                    return Some(val);
+                }
+            }
+        }
+
+        // 4. Classes CSS que empacotam o contador de faltas
+        let class_re = Regex::new(
+            r#"(?i)class="[^"]*(?:falta|frequencia)[^"]*"[^>]*>(?:[^0-9]*\b[Ff]altas?\b[^0-9]*)?\s*(\d+)"#,
+        )
+        .ok()?;
+        if let Some(cap) = class_re.captures(&clean) {
+            if let Some(m) = cap.get(1) {
+                if let Ok(val) = m.as_str().parse::<u32>() {
+                    return Some(val);
+                }
+            }
+        }
+
+        None
+    }
+
+    /// Acessa a Turma Virtual (AVA) de uma disciplina no SIGAA (https://sigaa.unb.br/sigaa/ava/index.jsf)
+    /// e captura as faltas registradas do aluno para o semestre.
+    pub async fn fetch_course_absences_from_ava(
+        client: &reqwest::Client,
+        turma_id: &str,
+        portal_html: &str,
+    ) -> Option<u32> {
+        // Tentativa 1: Acesso direto com query param de identificação da turma no AVA
+        let direct_url = format!("{}?idTurma={}", AVA_URL, turma_id);
+        if let Ok(res) = client
+            .get(&direct_url)
+            .header(REFERER, DISCENTE_URL)
+            .send()
+            .await
+        {
+            if let Ok(html) = res.text().await {
+                if html.contains("ava")
+                    || html.contains("Turma Virtual")
+                    || html.contains("form_menu_discente")
+                {
+                    if let Some(abs) = Self::extract_absences_from_ava_html(&html) {
+                        log::info!(
+                            "[SigaaClient] Faltas capturadas via GET AVA para turma {}: {}",
+                            turma_id,
+                            abs
+                        );
+                        return Some(abs);
+                    }
+                }
+            }
+        }
+
+        // Tentativa 2: Submeter formulário JSF 'form_acessarTurmaVirtual' a partir do portal discente
+        let vs_re = Regex::new(r#"id="javax\.faces\.ViewState"[^>]*value="([^"]+)""#).ok()?;
+        let vs = vs_re
+            .captures(portal_html)
+            .map(|c| c.get(1).unwrap().as_str().to_string())
+            .unwrap_or_else(|| "j_id1".into());
+
+        let mut form_data = HashMap::new();
+        form_data.insert("form_acessarTurmaVirtual", "form_acessarTurmaVirtual");
+        form_data.insert("form_acessarTurmaVirtual:frontEndIdTurma", turma_id);
+        form_data.insert("frontEndIdTurma", turma_id);
+        form_data.insert("idTurma", turma_id);
+        form_data.insert("id", turma_id);
+        form_data.insert("javax.faces.ViewState", &vs);
+
+        if let Ok(res) = client
+            .post(DISCENTE_URL)
+            .header(REFERER, DISCENTE_URL)
+            .form(&form_data)
+            .send()
+            .await
+        {
+            if let Ok(html) = res.text().await {
+                if let Some(abs) = Self::extract_absences_from_ava_html(&html) {
+                    log::info!(
+                        "[SigaaClient] Faltas capturadas via POST AVA para turma {}: {}",
+                        turma_id,
+                        abs
+                    );
+                    return Some(abs);
+                }
+
+                // Se houver link relativo de relatório de frequência dentro da Turma Virtual:
+                if let Ok(freq_re) =
+                    Regex::new(r#"(?i)href="([^"]*(?:frequencia|Frequencia)[^"]*)""#)
+                {
+                    if let Some(cap) = freq_re.captures(&html) {
+                        let rel_url = cap.get(1).unwrap().as_str();
+                        let target_url = if rel_url.starts_with("http") {
+                            rel_url.to_string()
+                        } else if rel_url.starts_with('/') {
+                            format!("https://sigaa.unb.br{}", rel_url)
+                        } else {
+                            format!("https://sigaa.unb.br/sigaa/ava/{}", rel_url)
+                        };
+
+                        if let Ok(res_freq) = client
+                            .get(&target_url)
+                            .header(REFERER, AVA_URL)
+                            .send()
+                            .await
+                        {
+                            if let Ok(html_freq) = res_freq.text().await {
+                                if let Some(abs) =
+                                    Self::extract_absences_from_ava_html(&html_freq)
+                                {
+                                    log::info!(
+                                        "[SigaaClient] Faltas capturadas via relatório de frequência para turma {}: {}",
+                                        turma_id,
+                                        abs
+                                    );
+                                    return Some(abs);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        None
+    }
+
     pub async fn sync_sigaa(
         &self,
         matricula: &str,
         senha: &str,
     ) -> Result<(Vec<FeedItem>, Vec<Course>), String> {
-        let (page_html, _aviso_item) = self.login_to_portal(matricula, senha).await?;
+        let (active_client, page_html, _aviso_item) =
+            self.get_authenticated_portal(matricula, senha).await?;
         // O aviso institucional de logon ("Aviso Geral UnB") é intencionalmente ignorado no feed
-        let (feed_items, courses) = Self::parse_discente_html(&page_html)?;
+        let (feed_items, mut courses) = Self::parse_discente_html(&page_html)?;
+
+        // Captura as faltas da Turma Virtual (https://sigaa.unb.br/sigaa/ava/index.jsf) de cada disciplina
+        for course in courses.iter_mut() {
+            let turma_id = course.id.trim_start_matches("sigaa-");
+            if !turma_id.is_empty() {
+                if let Some(abs) =
+                    Self::fetch_course_absences_from_ava(&active_client, turma_id, &page_html).await
+                {
+                    course.absences = Some(abs);
+                } else if course.absences.is_none() {
+                    course.absences = Some(0);
+                }
+            }
+        }
+
         // Linka código/turma/docente com a oferta de turmas (dataset estático),
         // sem precisar abrir a aba Participantes de cada disciplina
         let courses = Self::enrich_courses_with_offer(courses).await;
@@ -1522,5 +1703,38 @@ mod tests {
         let profile = SigaaClient::parse_discente_profile(html_sem_turno, "202000000");
         assert_eq!(profile.course, "ADMINISTRAÇÃO");
         assert_eq!(profile.shift, None);
+    }
+
+    #[test]
+    fn test_extract_absences_from_ava_html() {
+        let html_label = r#"
+            <div id="dados-turma">
+                <table>
+                    <tr><td>Docente:</td><td>Prof. Fulano</td></tr>
+                    <tr><td>Total de Faltas (h):</td><td>4</td></tr>
+                </table>
+            </div>
+        "#;
+        assert_eq!(SigaaClient::extract_absences_from_ava_html(html_label), Some(4));
+
+        let html_span = r#"
+            <div class="info-frequencia">
+                <span>Faltas:</span> <span>2</span>
+            </div>
+        "#;
+        assert_eq!(SigaaClient::extract_absences_from_ava_html(html_span), Some(2));
+
+        let html_numero = r#"
+            <div>Número de Faltas: <strong>6</strong></div>
+        "#;
+        assert_eq!(SigaaClient::extract_absences_from_ava_html(html_numero), Some(6));
+
+        let html_zero = r#"
+            <tr><td>Total de Faltas:</td><td>0</td></tr>
+        "#;
+        assert_eq!(SigaaClient::extract_absences_from_ava_html(html_zero), Some(0));
+
+        let html_vazio = r#"<div>Nenhum dado encontrado</div>"#;
+        assert_eq!(SigaaClient::extract_absences_from_ava_html(html_vazio), None);
     }
 }
