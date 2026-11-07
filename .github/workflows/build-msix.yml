@@ -143,7 +143,23 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           $msix = Get-ChildItem -Filter "*.msix" | Select-Object -First 1
-          if ($msix) {
-            Write-Host "Anexando $($msix.Name) à release ${{ github.ref_name }}..."
-            gh release upload "${{ github.ref_name }}" $msix.FullName --clobber
+          if (-not $msix) { exit 0 }
+
+          # A release é criada pelo workflow "Publish Release" (tauri-action), que
+          # dispara no mesmo push da tag e pode terminar depois deste build.
+          $tag = "${{ github.ref_name }}"
+          $deadline = (Get-Date).AddMinutes(25)
+          while ((Get-Date) -lt $deadline) {
+            gh release view $tag --json name > $null 2>&1
+            if ($LASTEXITCODE -eq 0) { break }
+            Write-Host "Release $tag ainda não existe. Aguardando 30s..."
+            Start-Sleep -Seconds 30
           }
+
+          if ($LASTEXITCODE -ne 0) {
+            Write-Error "Release $tag não ficou disponível em 25 minutos."
+            exit 1
+          }
+
+          Write-Host "Anexando $($msix.Name) à release $tag..."
+          gh release upload $tag $msix.FullName --clobber
