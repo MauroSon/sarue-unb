@@ -4,6 +4,7 @@ import {
   Badge,
   Button,
   Input,
+  NumberInput,
 } from "@/components/ui";
 import {
   Calculator,
@@ -86,19 +87,15 @@ export const GradeFormulaSection: React.FC<GradeFormulaSectionProps> = ({
     return calculateApprovalRequirements(formula, grades);
   }, [formula, grades, validation.isValid]);
 
-  const handleGradeChange = (variable: string, rawVal: string) => {
-    const cleanStr = rawVal.replace(",", ".");
-    if (cleanStr === "") {
+  const handleGradeChange = (variable: string, val: number | null) => {
+    if (val === null || val === undefined || isNaN(val)) {
       setGrades((prev) => ({ ...prev, [variable]: null }));
       return;
     }
 
-    const num = parseFloat(cleanStr);
-    if (!isNaN(num)) {
-      // Limita de 0 a 10
-      const clamped = Math.max(0, Math.min(10, num));
-      setGrades((prev) => ({ ...prev, [variable]: clamped }));
-    }
+    // Limita de 0 a 10 com arredondamento em 2 casas decimais
+    const clamped = Math.max(0, Math.min(10, Math.round(val * 100) / 100));
+    setGrades((prev) => ({ ...prev, [variable]: clamped }));
   };
 
   const handleResetGrades = () => {
@@ -336,16 +333,16 @@ export const GradeFormulaSection: React.FC<GradeFormulaSectionProps> = ({
                         )}
                       </div>
 
-                      <Input
-                        type="number"
-                        min="0"
-                        max="10"
-                        step="0.1"
+                      <NumberInput
+                        min={0}
+                        max={10}
+                        step={0.5}
+                        smallStep={0.1}
                         placeholder="Pendente"
-                        value={hasValue ? val : ""}
-                        onChange={(e) => handleGradeChange(variable, e.target.value)}
-                        className="text-center font-mono font-bold h-9 px-2"
+                        value={hasValue ? val : null}
+                        onValueChange={(newVal) => handleGradeChange(variable, newVal)}
                         aria-label={`Nota da avaliação ${variable}`}
+                        controls="stacked"
                       />
                     </div>
                   );
