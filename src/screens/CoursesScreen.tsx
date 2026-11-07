@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useFeed } from "../hooks/useFeed";
+import { useContainer } from "../context/ContainerContext";
 import {
   Card,
   Badge,
@@ -20,6 +21,7 @@ import {
   MessageSquare,
   ArrowLeft,
   AlertCircle,
+  AlertTriangle,
   Link2,
   Folder,
 } from "lucide-react";
@@ -27,7 +29,7 @@ import { UnmatchedCourseDialog } from "../components/UnmatchedCourseDialog";
 import { FeedList } from "../components/feed/FeedList";
 import { FeedToolbar } from "../components/feed/FeedToolbar";
 import { useFeedSelection } from "../hooks/useFeedSelection";
-import { getDefaultAcademicSemester } from "@/core";
+import { getDefaultAcademicSemester, calculateAbsenceRisk } from "@/core";
 import type { Course, Discipline, FeedItemType, PlatformType } from "@/core";
 
 const PLATFORM_LABELS: Record<PlatformType, string> = {
@@ -52,6 +54,8 @@ export const CoursesScreen: React.FC = () => {
     completeTasksBatch,
     archiveItemsBatch,
   } = useFeed();
+
+  const { repos } = useContainer();
 
   const [selectedDiscipline, setSelectedDiscipline] =
     useState<Discipline | null>(null);
@@ -108,6 +112,61 @@ export const CoursesScreen: React.FC = () => {
     ],
     [drillPlatforms],
   );
+
+  // Avaliação do risco de faltas (regra de 25% da UnB)
+  const atRiskDisciplines = useMemo(() => {
+    return disciplines
+      .map((d) => {
+        const abs = d.absences ?? d.sigaaCourse?.absences;
+        if (abs === undefined && !d.sigaaCourse) return null;
+        const status = calculateAbsenceRisk({
+          absences: abs ?? 0,
+          maxAbsences: d.maxAbsences ?? d.sigaaCourse?.maxAbsences,
+          schedule: d.schedule || d.sigaaCourse?.schedule,
+        });
+        return { discipline: d, status };
+      })
+      .filter(
+        (
+          item,
+        ): item is {
+          discipline: Discipline;
+          status: ReturnType<typeof calculateAbsenceRisk>;
+        } => Boolean(item && (item.status.isAtRisk || item.status.isExceeded)),
+      );
+  }, [disciplines]);
+
+  // Notificação do Sistema Operacional quando estiver prestes a atingir o limite de faltas (ou tiver excedido)
+  useEffect(() => {
+    if (!disciplines || disciplines.length === 0) return;
+
+    const checkAbsenceNotifications = async () => {
+      for (const item of atRiskDisciplines) {
+        const { discipline, status } = item;
+        const notifKey = `sarue:absence_notif:${discipline.id}:${status.absences}`;
+        if (!localStorage.getItem(notifKey)) {
+          localStorage.setItem(notifKey, new Date().toISOString());
+          await repos.osNotifier.ensurePermission();
+
+          const title = status.isExceeded
+            ? `Limite de faltas excedido: ${discipline.name}`
+            : status.isCritical
+            ? `Alerta Crítico de Faltas: ${discipline.name}`
+            : `Atenção ao limite de faltas: ${discipline.name}`;
+
+          const body = status.isExceeded
+            ? `Você possui ${status.absences}/${status.maxAbsences} faltas e ultrapassou os 25% permitidos na UnB.`
+            : status.isCritical
+            ? `Resta apenas 1 aula (${status.hoursPerClass}h) para reprovação por faltas na UnB!`
+            : `Restam 2 aulas (${status.hoursPerClass}h cada) para atingir o limite de 25% de faltas na UnB.`;
+
+          await repos.osNotifier.notify({ title, body });
+        }
+      }
+    };
+
+    checkAbsenceNotifications();
+  }, [atRiskDisciplines, disciplines, repos.osNotifier]);
 
   // Feed da disciplina (drill-down): filtragem e paginação calculadas no topo,
   // antes dos retornos antecipados, para os hooks do modo Selecionar manterem
@@ -320,6 +379,17 @@ export const CoursesScreen: React.FC = () => {
       selectedDiscipline.maxAbsences ??
       selectedDiscipline.sigaaCourse?.maxAbsences;
 
+    const drillAbsenceStatus =
+      absencesCount !== undefined || selectedDiscipline.sigaaCourse
+        ? calculateAbsenceRisk({
+            absences: absencesCount,
+            maxAbsences,
+            schedule:
+              selectedDiscipline.schedule ||
+              selectedDiscipline.sigaaCourse?.schedule,
+          })
+        : null;
+
     // Meta SIGAA da disciplina: turma, professor, sala, horário e semestre —
     // itens sem dado não entram na linha
     const metaItems = [
@@ -368,7 +438,7 @@ export const CoursesScreen: React.FC = () => {
           }
         />
 
-        {/* Card de detalhes da disciplina: badges de plataforma + meta SIGAA */}
+        {/* Card de detalhes da disciplina: badges de plataforma + meta SIGAA + Faltas UnB */}
         <Card className="p-4">
           <div className="flex flex-wrap items-center gap-x-2 gap-y-1.5">
             <div className="flex flex-wrap items-center gap-1.5">
@@ -388,26 +458,25 @@ export const CoursesScreen: React.FC = () => {
                   Teams
                 </Badge>
               ) : null}
-              {absencesCount !== undefined ? (
+              {drillAbsenceStatus ? (
                 <Badge
                   variant={
-                    absencesCount === 0
-                      ? "success"
-                      : maxAbsences && absencesCount >= maxAbsences
+                    drillAbsenceStatus.isExceeded || drillAbsenceStatus.isCritical
                       ? "urgent"
+                      : drillAbsenceStatus.isAtRisk
+                      ? "yellow"
+                      : drillAbsenceStatus.absences === 0
+                      ? "success"
                       : "yellow"
                   }
                   size="sm"
                   title={
-                    maxAbsences
-                      ? `Faltas registradas no SIGAA: ${absencesCount} de no máximo ${maxAbsences} permitidas (limite de 25% da carga horária na UnB).`
-                      : `Faltas registradas no SIGAA: ${absencesCount}.`
+                    drillAbsenceStatus.warningMessage ||
+                    `Faltas registradas no SIGAA: ${drillAbsenceStatus.absences} de ${drillAbsenceStatus.maxAbsences}h permitidas (limite de 25% da carga horária na UnB).`
                   }
                   className="font-black"
                 >
-                  {maxAbsences
-                    ? `${absencesCount}/${maxAbsences} faltas`
-                    : `${absencesCount} ${absencesCount === 1 ? "falta" : "faltas"}`}
+                  {drillAbsenceStatus.absences}/{drillAbsenceStatus.maxAbsences} faltas
                 </Badge>
               ) : null}
             </div>
@@ -424,6 +493,55 @@ export const CoursesScreen: React.FC = () => {
               </>
             ) : null}
           </div>
+
+          {drillAbsenceStatus && (
+            <div className="w-full mt-3 pt-3 border-t-2 border-ink/10 space-y-1.5">
+              <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="font-black text-black">Frequência SIGAA:</span>
+                  <span
+                    className={`font-black px-2 py-0.5 rounded-md border border-ink text-xs ${
+                      drillAbsenceStatus.isExceeded || drillAbsenceStatus.isCritical
+                        ? "bg-pastel-red text-ink-urgent"
+                        : drillAbsenceStatus.isAtRisk
+                        ? "bg-pastel-yellow text-amber-900"
+                        : "bg-pastel-green text-black"
+                    }`}
+                  >
+                    {drillAbsenceStatus.absences} de máx. {drillAbsenceStatus.maxAbsences} horas-falta (limite 25% UnB)
+                  </span>
+                </div>
+
+                <span className="font-mono text-xs font-bold text-neutral-600">
+                  {drillAbsenceStatus.percentageUsed}% do limite consumido
+                </span>
+              </div>
+
+              <div className="text-xs font-bold pt-0.5">
+                {drillAbsenceStatus.isExceeded ? (
+                  <p className="text-ink-urgent flex items-center gap-1.5">
+                    <AlertTriangle className="w-4 h-4 stroke-[2.5] shrink-0" />
+                    <span>Limite de 25% de faltas ultrapassado ({drillAbsenceStatus.absences}/{drillAbsenceStatus.maxAbsences}h). Conforme o regimento da UnB, o aluno é reprovado por faltas.</span>
+                  </p>
+                ) : drillAbsenceStatus.isCritical ? (
+                  <p className="text-ink-urgent flex items-center gap-1.5">
+                    <AlertTriangle className="w-4 h-4 stroke-[2.5] shrink-0" />
+                    <span>Alerta Crítico: Resta apenas 1 aula de {drillAbsenceStatus.hoursPerClass}h para reprovação por faltas na UnB!</span>
+                  </p>
+                ) : drillAbsenceStatus.isAtRisk ? (
+                  <p className="text-amber-600 dark:text-amber-400 flex items-center gap-1.5">
+                    <AlertTriangle className="w-4 h-4 stroke-[2.5] shrink-0" />
+                    <span>Atenção: Restam apenas 2 aulas ({drillAbsenceStatus.hoursPerClass}h cada) antes de atingir o limite de reprovação.</span>
+                  </p>
+                ) : (
+                  <p className="text-neutral-600">
+                    Situação regular: Você ainda pode faltar até {drillAbsenceStatus.safeClassesToMiss}{" "}
+                    {drillAbsenceStatus.safeClassesToMiss === 1 ? "aula" : "aulas"} ({drillAbsenceStatus.hoursPerClass}h cada) com segurança na UnB.
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
         </Card>
 
         {/* Barra de Filtros e Busca da Disciplina (expande para baixo no modo Selecionar) */}
@@ -523,6 +641,27 @@ export const CoursesScreen: React.FC = () => {
       {/* Título Padronizado da Página com Ícone da Sidebar */}
       <PageHeader icon={GraduationCap} title="Disciplinas do Semestre" />
 
+      {/* Alerta caso haja disciplinas próximas do limite de faltas ou reprovadas */}
+      {atRiskDisciplines.length > 0 ? (
+        <div className="bg-pastel-red/30 border-2 border-ink rounded-lg p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-(--neo-card-shadow)">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-lg bg-pastel-red border-2 border-ink flex items-center justify-center shrink-0 shadow-[2px_2px_0px_0px_var(--neo-shadow)]">
+              <AlertTriangle className="w-4 h-4 stroke-[2.5] text-ink-urgent" />
+            </div>
+            <div>
+              <p className="text-xs font-black text-black">
+                {atRiskDisciplines.length === 1
+                  ? "1 disciplina em situação crítica de faltas (regra 25% UnB)"
+                  : `${atRiskDisciplines.length} disciplinas em situação crítica de faltas (regra 25% UnB)`}
+              </p>
+              <p className="text-[11px] font-medium text-neutral-700">
+                Acompanhe a estimativa de aulas restantes para reprovação nos cards abaixo para não perder matérias por infrequência.
+              </p>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
       {/* Alerta caso haja turmas do Aprender 3 ou Teams não associadas */}
       {unmatchedCourses.length > 0 ? (
         <div className="bg-neo-yellow/20 border-2 border-ink rounded-lg p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-(--neo-card-shadow)">
@@ -564,127 +703,194 @@ export const CoursesScreen: React.FC = () => {
         />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {disciplines.map((discipline) => (
-          <Card
-            key={discipline.id}
-            onClick={() => setSelectedDiscipline(discipline)}
-            role="button"
-            tabIndex={0}
-            aria-label={`Ver feed da disciplina ${discipline.name}`}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" || e.key === " ") {
-                e.preventDefault();
-                setSelectedDiscipline(discipline);
-              }
-            }}
-            className="cursor-pointer bg-paper rounded-lg p-5 shadow-(--neo-card-shadow) hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_var(--neo-shadow)] active:translate-x-[4px] active:translate-y-[4px] active:shadow-none transition-[transform,box-shadow,background-color,border-color] duration-150 ease-out flex flex-col justify-between group"
-          >
-            <div>
-              {/* Topo do card com plataformas integradas alinhadas à esquerda */}
-              <div className="flex items-center gap-1.5 mb-2.5">
-                {discipline.sigaaCourse ? (
-                  <Badge variant="sigaa">SIGAA</Badge>
-                ) : null}
-                {discipline.aprenderCourses.length > 0 ? (
-                  <Badge variant="aprender3">
-                    Aprender 3
-                    {discipline.aprenderCourses.length > 1
-                      ? ` (${discipline.aprenderCourses.length})`
-                      : ""}
-                  </Badge>
-                ) : null}
-                {discipline.teamsCourses && discipline.teamsCourses.length > 0 ? (
-                  <Badge variant="teams">
-                    Teams
-                    {discipline.teamsCourses.length > 1
-                      ? ` (${discipline.teamsCourses.length})`
-                      : ""}
-                  </Badge>
-                ) : null}
-                {discipline.absences !== undefined || discipline.sigaaCourse ? (
-                  <Badge
-                    variant={
-                      (discipline.absences ?? 0) === 0
-                        ? "success"
-                        : discipline.maxAbsences &&
-                          (discipline.absences ?? 0) >= discipline.maxAbsences
-                        ? "urgent"
-                        : "yellow"
-                    }
-                    title={
-                      discipline.maxAbsences
-                        ? `Faltas registradas no SIGAA: ${discipline.absences ?? 0} de no máximo ${discipline.maxAbsences} permitidas.`
-                        : `Faltas registradas no SIGAA: ${discipline.absences ?? 0}.`
-                    }
-                    className="font-black"
-                  >
-                    {discipline.maxAbsences
-                      ? `${discipline.absences ?? 0}/${discipline.maxAbsences} faltas`
-                      : `${discipline.absences ?? 0} ${(discipline.absences ?? 0) === 1 ? "falta" : "faltas"}`}
-                  </Badge>
-                ) : null}
-              </div>
+          {disciplines.map((discipline) => {
+            const hasAttendance =
+              discipline.absences !== undefined || Boolean(discipline.sigaaCourse);
+            const absenceStatus = hasAttendance
+              ? calculateAbsenceRisk({
+                  absences:
+                    discipline.absences ??
+                    discipline.sigaaCourse?.absences ??
+                    (discipline.sigaaCourse ? 0 : undefined),
+                  maxAbsences:
+                    discipline.maxAbsences ?? discipline.sigaaCourse?.maxAbsences,
+                  schedule:
+                    discipline.schedule || discipline.sigaaCourse?.schedule,
+                })
+              : null;
 
-              {/* Nome da disciplina */}
-              <h3 className="text-base font-black text-black leading-snug mb-3 group-hover:text-blue-ink transition-colors">
-                {discipline.code && !discipline.name.startsWith(discipline.code)
-                  ? `${discipline.code} - ${discipline.name}`
-                  : discipline.name}
-              </h3>
+            return (
+              <Card
+                key={discipline.id}
+                onClick={() => setSelectedDiscipline(discipline)}
+                role="button"
+                tabIndex={0}
+                aria-label={`Ver feed da disciplina ${discipline.name}`}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    setSelectedDiscipline(discipline);
+                  }
+                }}
+                className="cursor-pointer bg-paper rounded-lg p-5 shadow-(--neo-card-shadow) hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_var(--neo-shadow)] active:translate-x-[4px] active:translate-y-[4px] active:shadow-none transition-[transform,box-shadow,background-color,border-color] duration-150 ease-out flex flex-col justify-between group"
+              >
+                <div>
+                  {/* Topo do card com plataformas integradas alinhadas à esquerda */}
+                  <div className="flex items-center gap-1.5 mb-2.5 flex-wrap">
+                    {discipline.sigaaCourse ? (
+                      <Badge variant="sigaa">SIGAA</Badge>
+                    ) : null}
+                    {discipline.aprenderCourses.length > 0 ? (
+                      <Badge variant="aprender3">
+                        Aprender 3
+                        {discipline.aprenderCourses.length > 1
+                          ? ` (${discipline.aprenderCourses.length})`
+                          : ""}
+                      </Badge>
+                    ) : null}
+                    {discipline.teamsCourses &&
+                    discipline.teamsCourses.length > 0 ? (
+                      <Badge variant="teams">
+                        Teams
+                        {discipline.teamsCourses.length > 1
+                          ? ` (${discipline.teamsCourses.length})`
+                          : ""}
+                      </Badge>
+                    ) : null}
+                    {absenceStatus ? (
+                      <Badge
+                        variant={
+                          absenceStatus.isExceeded || absenceStatus.isCritical
+                            ? "urgent"
+                            : absenceStatus.isAtRisk
+                            ? "yellow"
+                            : absenceStatus.absences === 0
+                            ? "success"
+                            : "yellow"
+                        }
+                        title={
+                          absenceStatus.warningMessage ||
+                          `Faltas registradas no SIGAA: ${absenceStatus.absences} de no máximo ${absenceStatus.maxAbsences} permitidas.`
+                        }
+                        className="font-black"
+                      >
+                        {absenceStatus.absences}/{absenceStatus.maxAbsences} faltas
+                      </Badge>
+                    ) : null}
+                  </div>
 
-              {/* Informações detalhadas */}
-              <div className="space-y-1.5 text-xs font-medium text-neutral-700">
-                {discipline.professor ? (
+                  {/* Nome da disciplina */}
+                  <h3 className="text-base font-black text-black leading-snug mb-3 group-hover:text-blue-ink transition-colors">
+                    {discipline.code &&
+                    !discipline.name.startsWith(discipline.code)
+                      ? `${discipline.code} - ${discipline.name}`
+                      : discipline.name}
+                  </h3>
+
+                  {/* Informações detalhadas */}
+                  <div className="space-y-1.5 text-xs font-medium text-neutral-700">
+                    {discipline.professor ? (
+                      <div className="flex items-center gap-2">
+                        <User className="w-3.5 h-3.5 text-neutral-500 stroke-[2.5]" />
+                        <span className="truncate">{discipline.professor}</span>
+                      </div>
+                    ) : null}
+
+                    {discipline.classroom ? (
+                      <div className="flex items-center gap-2">
+                        <MapPin className="w-3.5 h-3.5 text-neutral-500 stroke-[2.5]" />
+                        <span className="truncate">{discipline.classroom}</span>
+                      </div>
+                    ) : null}
+
+                    {discipline.schedule ? (
+                      <div className="flex items-center gap-2">
+                        <Clock className="w-3.5 h-3.5 text-neutral-500 stroke-[2.5]" />
+                        <span className="truncate">{discipline.schedule}</span>
+                      </div>
+                    ) : null}
+                  </div>
+
+                  {/* Seção de Frequência & Estimativa de Reprovação (UnB 25%) */}
+                  {absenceStatus && (
+                    <div className="mt-3 pt-3 border-t-2 border-ink/10 space-y-1.5">
+                      <div className="flex items-center justify-between text-xs">
+                        <div className="flex items-center gap-1.5 font-bold">
+                          <span className="text-neutral-700">Frequência UnB (25%):</span>
+                          <span
+                            className={`font-black ${
+                              absenceStatus.isExceeded || absenceStatus.isCritical
+                                ? "text-ink-urgent"
+                                : absenceStatus.isAtRisk
+                                ? "text-amber-600 dark:text-amber-400"
+                                : "text-neutral-900"
+                            }`}
+                          >
+                            {absenceStatus.absences}/{absenceStatus.maxAbsences}h
+                          </span>
+                        </div>
+                        <span className="font-mono text-[10px] font-bold text-neutral-500">
+                          {absenceStatus.percentageUsed}% consumido
+                        </span>
+                      </div>
+
+                      {/* Estimativa de aulas até reprovação */}
+                      <div className="text-[11px] leading-tight">
+                        {absenceStatus.isExceeded ? (
+                          <span className="font-black text-ink-urgent flex items-center gap-1">
+                            <AlertTriangle className="w-3.5 h-3.5 stroke-[2.5] shrink-0" />
+                            <span>Limite excedido — Reprovado por falta</span>
+                          </span>
+                        ) : absenceStatus.isCritical ? (
+                          <span className="font-black text-ink-urgent flex items-center gap-1">
+                            <AlertTriangle className="w-3.5 h-3.5 stroke-[2.5] shrink-0" />
+                            <span>Resta apenas 1 aula ({absenceStatus.hoursPerClass}h) para reprovação!</span>
+                          </span>
+                        ) : absenceStatus.isAtRisk ? (
+                          <span className="font-bold text-amber-600 dark:text-amber-400 flex items-center gap-1">
+                            <AlertTriangle className="w-3.5 h-3.5 stroke-[2.5] shrink-0" />
+                            <span>Restam 2 aulas ({absenceStatus.hoursPerClass}h) para reprovação</span>
+                          </span>
+                        ) : (
+                          <span className="font-medium text-neutral-600">
+                            Pode faltar até {absenceStatus.safeClassesToMiss}{" "}
+                            {absenceStatus.safeClassesToMiss === 1 ? "aula" : "aulas"} ({absenceStatus.hoursPerClass}h) com segurança
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Rodapé com indicadores e atalho */}
+                <div className="flex flex-wrap items-center justify-between gap-2 pt-4 border-t-2 border-ink/10 mt-4 text-xs font-bold">
+                  <span className="text-neutral-500">{discipline.semester}</span>
+
                   <div className="flex items-center gap-2">
-                    <User className="w-3.5 h-3.5 text-neutral-500 stroke-[2.5]" />
-                    <span className="truncate">{discipline.professor}</span>
+                    {discipline.pendingAssignmentsCount !== undefined &&
+                    discipline.pendingAssignmentsCount > 0 ? (
+                      <div className="flex items-center gap-1 text-ink-success bg-pastel-green px-2 py-0.5 border border-ink/20 rounded-md">
+                        <CheckSquare className="w-3.5 h-3.5 stroke-[2.5]" />
+                        <span>{discipline.pendingAssignmentsCount} entregas</span>
+                      </div>
+                    ) : null}
+
+                    {discipline.unreadCount !== undefined &&
+                    discipline.unreadCount > 0 ? (
+                      <div className="flex items-center gap-1 text-blue-ink bg-pastel-blue px-2 py-0.5 border border-ink/20 rounded-md">
+                        <MessageSquare className="w-3.5 h-3.5 stroke-[2.5]" />
+                        <span>{discipline.unreadCount} novos</span>
+                      </div>
+                    ) : null}
+
+                    <span className="text-neutral-800 text-[11px] underline decoration-2 group-hover:text-blue-ink font-extrabold ml-1">
+                      Ver feed →
+                    </span>
                   </div>
-                ) : null}
-
-                {discipline.classroom ? (
-                  <div className="flex items-center gap-2">
-                    <MapPin className="w-3.5 h-3.5 text-neutral-500 stroke-[2.5]" />
-                    <span className="truncate">{discipline.classroom}</span>
-                  </div>
-                ) : null}
-
-                {discipline.schedule ? (
-                  <div className="flex items-center gap-2">
-                    <Clock className="w-3.5 h-3.5 text-neutral-500 stroke-[2.5]" />
-                    <span className="truncate">{discipline.schedule}</span>
-                  </div>
-                ) : null}
-              </div>
-            </div>
-
-            {/* Rodapé com indicadores e atalho */}
-            <div className="flex flex-wrap items-center justify-between gap-2 pt-4 border-t-2 border-ink/10 mt-4 text-xs font-bold">
-              <span className="text-neutral-500">{discipline.semester}</span>
-
-              <div className="flex items-center gap-2">
-                {discipline.pendingAssignmentsCount !== undefined &&
-                discipline.pendingAssignmentsCount > 0 ? (
-                  <div className="flex items-center gap-1 text-ink-success bg-pastel-green px-2 py-0.5 border border-ink/20 rounded-md">
-                    <CheckSquare className="w-3.5 h-3.5 stroke-[2.5]" />
-                    <span>{discipline.pendingAssignmentsCount} entregas</span>
-                  </div>
-                ) : null}
-
-                {discipline.unreadCount !== undefined &&
-                discipline.unreadCount > 0 ? (
-                  <div className="flex items-center gap-1 text-blue-ink bg-pastel-blue px-2 py-0.5 border border-ink/20 rounded-md">
-                    <MessageSquare className="w-3.5 h-3.5 stroke-[2.5]" />
-                    <span>{discipline.unreadCount} novos</span>
-                  </div>
-                ) : null}
-
-                <span className="text-neutral-800 text-[11px] underline decoration-2 group-hover:text-blue-ink font-extrabold ml-1">
-                  Ver feed →
-                </span>
-              </div>
-            </div>
-          </Card>
-          ))}
+                </div>
+              </Card>
+            );
+          })}
         </div>
       )}
 
