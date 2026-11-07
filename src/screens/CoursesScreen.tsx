@@ -312,6 +312,14 @@ export const CoursesScreen: React.FC = () => {
 
   // Se o usuário selecionou uma disciplina para ver o feed exclusivo (Drill-Down)
   if (selectedDiscipline) {
+    const absencesCount =
+      selectedDiscipline.absences ??
+      selectedDiscipline.sigaaCourse?.absences ??
+      (selectedDiscipline.sigaaCourse ? 0 : undefined);
+    const maxAbsences =
+      selectedDiscipline.maxAbsences ??
+      selectedDiscipline.sigaaCourse?.maxAbsences;
+
     // Meta SIGAA da disciplina: turma, professor, sala, horário e semestre —
     // itens sem dado não entram na linha
     const metaItems = [
@@ -378,6 +386,28 @@ export const CoursesScreen: React.FC = () => {
               selectedDiscipline.teamsCourses.length > 0 ? (
                 <Badge variant="teams" size="sm">
                   Teams
+                </Badge>
+              ) : null}
+              {absencesCount !== undefined ? (
+                <Badge
+                  variant={
+                    absencesCount === 0
+                      ? "success"
+                      : maxAbsences && absencesCount >= maxAbsences
+                      ? "urgent"
+                      : "yellow"
+                  }
+                  size="sm"
+                  title={
+                    maxAbsences
+                      ? `Faltas registradas no SIGAA: ${absencesCount} de no máximo ${maxAbsences} permitidas (limite de 25% da carga horária na UnB).`
+                      : `Faltas registradas no SIGAA: ${absencesCount}.`
+                  }
+                  className="font-black"
+                >
+                  {maxAbsences
+                    ? `${absencesCount}/${maxAbsences} faltas`
+                    : `${absencesCount} ${absencesCount === 1 ? "falta" : "faltas"}`}
                 </Badge>
               ) : null}
             </div>
@@ -569,6 +599,28 @@ export const CoursesScreen: React.FC = () => {
                     {discipline.teamsCourses.length > 1
                       ? ` (${discipline.teamsCourses.length})`
                       : ""}
+                  </Badge>
+                ) : null}
+                {discipline.absences !== undefined || discipline.sigaaCourse ? (
+                  <Badge
+                    variant={
+                      (discipline.absences ?? 0) === 0
+                        ? "success"
+                        : discipline.maxAbsences &&
+                          (discipline.absences ?? 0) >= discipline.maxAbsences
+                        ? "urgent"
+                        : "yellow"
+                    }
+                    title={
+                      discipline.maxAbsences
+                        ? `Faltas registradas no SIGAA: ${discipline.absences ?? 0} de no máximo ${discipline.maxAbsences} permitidas.`
+                        : `Faltas registradas no SIGAA: ${discipline.absences ?? 0}.`
+                    }
+                    className="font-black"
+                  >
+                    {discipline.maxAbsences
+                      ? `${discipline.absences ?? 0}/${discipline.maxAbsences} faltas`
+                      : `${discipline.absences ?? 0} ${(discipline.absences ?? 0) === 1 ? "falta" : "faltas"}`}
                   </Badge>
                 ) : null}
               </div>

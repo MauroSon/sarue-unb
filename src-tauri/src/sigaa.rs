@@ -378,6 +378,44 @@ impl SigaaClient {
                         .join(", "),
                 );
             }
+
+            let slots = if !class.schedule_slots.is_empty() {
+                class.schedule_slots.len() as u32
+            } else {
+                Self::estimate_slots_from_schedule(&class.schedule_code)
+            };
+            let total_hours = if slots > 0 { slots * 15 } else { 60 };
+            course.max_absences = Some((total_hours * 25) / 100);
+        }
+
+        for course in courses.iter_mut() {
+            if course.max_absences.is_none() {
+                let slots = course
+                    .schedule
+                    .as_deref()
+                    .map(Self::estimate_slots_from_schedule)
+                    .unwrap_or(4);
+                let total_hours = if slots > 0 { slots * 15 } else { 60 };
+                course.max_absences = Some((total_hours * 25) / 100);
+            }
+        }
+    }
+
+    /// Estima a quantidade de créditos/slots semanais a partir do código de horário SIGAA (ex: 24M34, 35T45).
+    fn estimate_slots_from_schedule(code: &str) -> u32 {
+        let Ok(re) = Regex::new(r"([2-7]+)[MTN]([1-6]+)") else {
+            return 4;
+        };
+        let mut total = 0;
+        for cap in re.captures_iter(code) {
+            let days = cap.get(1).map(|m| m.as_str().len() as u32).unwrap_or(0);
+            let periods = cap.get(2).map(|m| m.as_str().len() as u32).unwrap_or(0);
+            total += days * periods;
+        }
+        if total > 0 {
+            total
+        } else {
+            4
         }
     }
 
@@ -828,21 +866,29 @@ impl SigaaClient {
 
         // 2. Extração das turmas matriculadas
         let course_row_re = Regex::new(
-            r#"(?s)<form id="form_acessarTurmaVirtual[^"]*"[^>]*>.*?<a [^>]*onclick="[^"]*frontEndIdTurma[^"]*">([^<]+)</a>.*?<td class="info"[^>]*style="text-align:left">([^<]+)</td>\s*<td class="info"><center>([^<]+).*?<td colspan="5" id="linha_(\d+)""#,
+            r#"(?s)<form id="form_acessarTurmaVirtual[^"]*"[^>]*>.*?<a [^>]*onclick="[^"]*frontEndIdTurma[^"]*">([^<]+)</a>.*?<td class="info"[^>]*style="text-align:left">([^<]+)</td>\s*<td class="info"><center>([^<]+?)</center></td>(.*?)(?:<td colspan="5" id="linha_(\d+)")"#,
         )
         .unwrap();
         let turma_explicit_re = Regex::new(r"(?i)TURMA\s*[-–]?\s*([0-9]{1,3})").unwrap();
         let turma_short_re = Regex::new(r"(?i)\bT[-\s]?([0-9]{1,2})\s*$").unwrap();
+        let absences_cell_re = Regex::new(r#"(?i)<td[^>]*>(?:\s*<center>)?\s*(\d+)\s*(?:</center>)?\s*</td>"#).unwrap();
 
         for cap in course_row_re.captures_iter(html) {
             let raw_name = cap.get(1).map(|m| m.as_str()).unwrap_or("").trim();
             let raw_local = cap.get(2).map(|m| m.as_str()).unwrap_or("").trim();
             let raw_horario = cap.get(3).map(|m| m.as_str()).unwrap_or("").trim();
-            let turma_id = cap.get(4).map(|m| m.as_str()).unwrap_or("").trim();
+            let row_tail = cap.get(4).map(|m| m.as_str()).unwrap_or("");
+            let turma_id = cap.get(5).map(|m| m.as_str()).unwrap_or("").trim();
 
             let course_name = decode_html_entities(raw_name);
             let classroom = decode_html_entities(raw_local);
             let schedule = decode_html_entities(raw_horario);
+
+            let absences = absences_cell_re
+                .captures(row_tail)
+                .and_then(|c| c.get(1))
+                .and_then(|m| m.as_str().parse::<u32>().ok())
+                .or(Some(0));
 
             // Número da turma SIGAA (ex.: "CÁLCULO 2 - TURMA 3" ou sufixo "T3")
             let turma_label = if let Some(c) = turma_explicit_re.captures(raw_name) {
@@ -868,6 +914,8 @@ impl SigaaClient {
                 unread_count: Some(0),
                 pending_assignments_count: Some(0),
                 url: Some(DISCENTE_URL.into()),
+                absences,
+                max_absences: None,
             });
         }
 
@@ -1271,6 +1319,8 @@ mod tests {
             unread_count: Some(0),
             pending_assignments_count: Some(0),
             url: None,
+            absences: Some(0),
+            max_absences: None,
         }];
 
         SigaaClient::apply_offer_link(&mut courses, &offer);
@@ -1279,6 +1329,7 @@ mod tests {
         assert_eq!(courses[0].code, "IFD0175");
         assert_eq!(courses[0].class_group.as_deref(), Some("Turma 2"));
         assert_eq!(courses[0].professor.as_deref(), Some("Ricardo Jacobi"));
+        assert_eq!(courses[0].max_absences, Some(15));
 
         // Sem candidato na oferta: nada muda
         let mut other = vec![Course {
@@ -1294,6 +1345,8 @@ mod tests {
             unread_count: Some(0),
             pending_assignments_count: Some(0),
             url: None,
+            absences: Some(0),
+            max_absences: None,
         }];
         SigaaClient::apply_offer_link(&mut other, &offer);
         assert!(other[0].professor.is_none());
