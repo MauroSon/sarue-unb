@@ -441,12 +441,13 @@ impl SigaaClient {
     }
 
     /// Extrai parâmetros passados para jsfcljs({...}) em atributos onclick do JSF.
-    fn extract_jsf_params_from_onclick(onclick_str: &str) -> HashMap<String, String> {
+    pub fn extract_jsf_params_from_onclick(onclick_str: &str) -> HashMap<String, String> {
         let mut map = HashMap::new();
-        let Ok(params_re) = Regex::new(r#"jsfcljs\([^,]+,\{([^}]+)\}"#) else {
+        let decoded = decode_html_entities(onclick_str);
+        let Ok(params_re) = Regex::new(r#"jsfcljs\([^,]+,\s*\{([^}]+)\}"#) else {
             return map;
         };
-        let Some(cap) = params_re.captures(onclick_str) else {
+        let Some(cap) = params_re.captures(&decoded) else {
             return map;
         };
         let inner = cap.get(1).unwrap().as_str();
@@ -461,6 +462,87 @@ impl SigaaClient {
         map
     }
 
+    /// Extrai os parâmetros necessários para submeter o formulário de acesso à Turma Virtual
+    /// a partir do HTML do portal discente (discente.jsf).
+    pub fn extract_course_access_form_params(
+        portal_html: &str,
+        turma_id: &str,
+        course_name: &str,
+    ) -> HashMap<String, String> {
+        let mut form_data = HashMap::new();
+        let form_name = "form_acessarTurmaVirtual";
+        form_data.insert(form_name.to_string(), form_name.to_string());
+
+        // Extrai ViewState
+        let vs_re = Regex::new(r#"(?:id|name)="javax\.faces\.ViewState"[^>]*value="([^"]+)""#)
+            .or_else(|_| Regex::new(r#"value="([^"]+)"[^>]*(?:id|name)="javax\.faces\.ViewState""#));
+        let vs = vs_re
+            .ok()
+            .and_then(|re| re.captures(portal_html))
+            .and_then(|c| c.get(1))
+            .map(|m| m.as_str().to_string())
+            .unwrap_or_else(|| "j_id1".to_string());
+        form_data.insert("javax.faces.ViewState".to_string(), vs);
+
+        // Fallbacks padrão de parâmetros conhecidos do SIGAA
+        form_data.insert("form_acessarTurmaVirtual:frontEndIdTurma".to_string(), turma_id.to_string());
+        form_data.insert("frontEndIdTurma".to_string(), turma_id.to_string());
+        form_data.insert("idTurma".to_string(), turma_id.to_string());
+        form_data.insert("id".to_string(), turma_id.to_string());
+
+        // Estratégia 1: Link que contém o nome da disciplina (mais específico e direto)
+        if !course_name.is_empty() {
+            let name_pattern = format!(
+                r#"(?s)<a\s+[^>]*onclick="([^"]*frontEndIdTurma[^"]*)"[^>]*>(?:<[^>]+>)*\s*{}\s*(?:<[^>]+>)*</a>"#,
+                regex::escape(course_name)
+            );
+            if let Ok(re) = Regex::new(&name_pattern) {
+                if let Some(cap) = re.captures(portal_html) {
+                    if let Some(onclick) = cap.get(1) {
+                        for (k, v) in Self::extract_jsf_params_from_onclick(onclick.as_str()) {
+                            form_data.insert(k, v);
+                        }
+                        return form_data;
+                    }
+                }
+            }
+        }
+
+        // Estratégia 2: Bloco TR imediatamente anterior a id="linha_{turma_id}" (delimitado por </tr>)
+        let row_pattern = format!(
+            r#"(?s)<tr[^>]*>(?:(?!</tr>).)*?<a\s+[^>]*onclick="([^"]*frontEndIdTurma[^"]*)".*?</tr>\s*<tr[^>]*>\s*<td[^>]*id="linha_{}""#,
+            regex::escape(turma_id)
+        );
+        if let Ok(re) = Regex::new(&row_pattern) {
+            if let Some(cap) = re.captures(portal_html) {
+                if let Some(onclick) = cap.get(1) {
+                    for (k, v) in Self::extract_jsf_params_from_onclick(onclick.as_str()) {
+                        form_data.insert(k, v);
+                    }
+                    return form_data;
+                }
+            }
+        }
+
+        // Estratégia 3: Link onde o próprio onclick contém turma_id
+        let direct_id_pattern = format!(
+            r#"(?s)<a\s+[^>]*onclick="([^"]*{}[^"]*)"[^>]*>"#,
+            regex::escape(turma_id)
+        );
+        if let Ok(re) = Regex::new(&direct_id_pattern) {
+            if let Some(cap) = re.captures(portal_html) {
+                if let Some(onclick) = cap.get(1) {
+                    for (k, v) in Self::extract_jsf_params_from_onclick(onclick.as_str()) {
+                        form_data.insert(k, v);
+                    }
+                    return form_data;
+                }
+            }
+        }
+
+        form_data
+    }
+
     /// Extrai o total de faltas do HTML da Turma Virtual (https://sigaa.unb.br/sigaa/ava/index.jsf)
     /// ou de seu relatório/extrato de frequência.
     pub fn extract_absences_from_ava_html(html: &str) -> Option<u32> {
@@ -468,7 +550,7 @@ impl SigaaClient {
 
         // 1. Padrões expressos: "Total de Faltas: X" ou "Número de Faltas: X" ou "Total de Faltas (h): X"
         let total_re = Regex::new(
-            r#"(?i)(?:Total|N[úu]mero|N[ºo])\s+de\s+[Ff]altas(?:\s*\(h\))?\s*:?(?:[^<0-9]*<[^>]+>)*\s*(\d+)"#,
+            r#"(?i)(?:Total|N[úu]mero|N[ºo]|Carga\s+Hor[áa]ria)\s+de\s+[Ff]altas(?:\s*\(h\))?\s*:?(?:[^<0-9]*<[^>]+>)*\s*(\d+)"#,
         )
         .ok()?;
         if let Some(cap) = total_re.captures(&clean) {
@@ -496,9 +578,23 @@ impl SigaaClient {
             }
         }
 
-        // Faltas não numeradas: <td>Falta(s)</td> ou <td>Falta</td>
+        // Padrão: Falta(s): 2 ou Falta (2)
+        let row_falta_colon_re = Regex::new(
+            r#"(?i)\bFalta(?:\(s\)|s)?\s*[:(]\s*(\d+)\s*\)?"#,
+        )
+        .ok()?;
+        for cap in row_falta_colon_re.captures_iter(&clean) {
+            if let Some(m) = cap.get(1) {
+                if let Ok(num) = m.as_str().parse::<u32>() {
+                    total_from_rows += num;
+                    found_any_falta = true;
+                }
+            }
+        }
+
+        // Faltas não numeradas: <td>Falta(s)</td> ou <td>Falta</td> (suportando tags aninhadas como <span> ou <font>)
         let row_just_falta_re = Regex::new(
-            r#"(?i)<td[^>]*>\s*Falta(?:\(s\)|s)?\s*</td>"#,
+            r#"(?i)<td[^>]*>(?:<[^>]+>)*\s*Falta(?:\(s\)|s)?\s*(?:<[^>]+>)*</td>"#,
         )
         .ok()?;
         for _ in row_just_falta_re.find_iter(&clean) {
@@ -564,37 +660,10 @@ impl SigaaClient {
     pub async fn fetch_course_absences_from_ava(
         client: &reqwest::Client,
         turma_id: &str,
+        course_name: &str,
         portal_html: &str,
     ) -> Option<u32> {
-        let vs_re = Regex::new(r#"id="javax\.faces\.ViewState"[^>]*value="([^"]+)""#).ok()?;
-        let vs = vs_re
-            .captures(portal_html)
-            .map(|c| c.get(1).unwrap().as_str().to_string())
-            .unwrap_or_else(|| "j_id1".into());
-
-        // Monta os parâmetros para submeter form_acessarTurmaVirtual a partir de discente.jsf
-        let mut form_data = HashMap::new();
-        form_data.insert("form_acessarTurmaVirtual".into(), "form_acessarTurmaVirtual".into());
-        form_data.insert("form_acessarTurmaVirtual:frontEndIdTurma".into(), turma_id.to_string());
-        form_data.insert("frontEndIdTurma".into(), turma_id.to_string());
-        form_data.insert("idTurma".into(), turma_id.to_string());
-        form_data.insert("id".into(), turma_id.to_string());
-        form_data.insert("javax.faces.ViewState".into(), vs.clone());
-
-        // Busca o link da turma em portal_html para extrair os parâmetros exatos do jsfcljs
-        let course_link_pattern = format!(
-            r#"(?s)<a\s+[^>]*onclick="([^"]*{}[^"]*)"[^>]*>"#,
-            regex::escape(turma_id)
-        );
-        if let Ok(link_re) = Regex::new(&course_link_pattern) {
-            if let Some(cap) = link_re.captures(portal_html) {
-                if let Some(onclick) = cap.get(1) {
-                    for (k, v) in Self::extract_jsf_params_from_onclick(onclick.as_str()) {
-                        form_data.insert(k, v);
-                    }
-                }
-            }
-        }
+        let form_data = Self::extract_course_access_form_params(portal_html, turma_id, course_name);
 
         // Submete POST para entrar na Turma Virtual
         let res_ava = client
@@ -620,21 +689,35 @@ impl SigaaClient {
         }
 
         // Navegação para a aba/menu de Frequência da Turma Virtual
+        let vs_re = Regex::new(r#"(?:id|name)="javax\.faces\.ViewState"[^>]*value="([^"]+)""#).ok()?;
         let vs_ava = vs_re
             .captures(&ava_html)
             .map(|c| c.get(1).unwrap().as_str().to_string())
-            .unwrap_or_else(|| vs.clone());
+            .unwrap_or_else(|| form_data.get("javax.faces.ViewState").cloned().unwrap_or_else(|| "j_id1".into()));
 
         // Procura link ou item de menu que contenha Frequência / Frequencia
-        if let Ok(freq_link_re) = Regex::new(r#"(?is)<a\s+([^>]*?)>(?:(?!</a>).)*?\bFrequ[êe]ncia\b.*?</a>"#) {
-            if let Some(cap) = freq_link_re.captures(&ava_html) {
+        // Considera possíveis entidades HTML como &ecirc; ou &#234;
+        let freq_link_re = Regex::new(
+            r#"(?is)<(?:a|div|span|tr|td|button)\s+([^>]*?(?:onclick="[^"]*jsfcljs[^"]*"|href="[^"]*")[^>]*?)>(?:(?!</(?:a|div|span|tr|td|button)>).)*?\bFrequ(?:[êe]|&ecirc;|&#234;)ncia\b"#
+        ).or_else(|_| Regex::new(r#"(?is)<a\s+([^>]*?)>(?:(?!</a>).)*?\bFrequ[êe]ncia\b.*?</a>"#));
+
+        if let Ok(re) = freq_link_re {
+            if let Some(cap) = re.captures(&ava_html) {
                 let attrs = cap.get(1).unwrap().as_str();
 
                 // Caso A: Ação JSF via jsfcljs
-                if let Ok(jsf_re) = Regex::new(r#"jsfcljs\((?:document\.getElementById\('([^']+)'\)|this)[^,]*,\{([^}]+)\}"#) {
-                    if let Some(jsf_cap) = jsf_re.captures(attrs) {
-                        let form_id = jsf_cap.get(1).map(|m| m.as_str()).unwrap_or("form_menu");
-                        let params_str = jsf_cap.get(2).unwrap().as_str();
+                let jsf_re = Regex::new(
+                    r#"jsfcljs\((?:document\.getElementById\(['"]([^'"]+)['"]\)|(?:document\.)?forms\??\[['"]([^'"]+)['"]\]|this(?:\.form)?)[^,]*,\s*\{([^}]+)\}"#
+                ).or_else(|_| Regex::new(r#"jsfcljs\([^,]+,\s*\{([^}]+)\}"#));
+
+                if let Ok(jsf) = jsf_re {
+                    if let Some(jsf_cap) = jsf.captures(attrs) {
+                        let form_id = jsf_cap.get(1)
+                            .or_else(|| jsf_cap.get(2))
+                            .map(|m| m.as_str())
+                            .unwrap_or("form_menu");
+                        let params_str = jsf_cap.get(jsf_cap.len() - 1).unwrap().as_str();
+
                         let mut menu_data = HashMap::new();
                         menu_data.insert(form_id.to_string(), form_id.to_string());
                         menu_data.insert("javax.faces.ViewState".to_string(), vs_ava.clone());
@@ -700,9 +783,14 @@ impl SigaaClient {
         // Tentativas em URLs padrão de frequência do AVA
         for candidate_path in &[
             "/sigaa/ava/relatorioFrequencia.jsf",
+            "/sigaa/ava/extratoFrequencia.jsf",
             "/sigaa/ava/frequencia.jsf",
             "/sigaa/ava/consultarFrequencia.jsf",
             "/sigaa/ava/relatorios/frequencia.jsf",
+            "/sigaa/ava/relatorioExtratoFrequencia.jsf",
+            "/sigaa/ava/frequencia/relatorio.jsf",
+            "/sigaa/ava/frequencia/extrato.jsf",
+            "/sigaa/ava/relatorio_frequencia.jsf",
         ] {
             let candidate_url = format!("https://sigaa.unb.br{}", candidate_path);
             if let Ok(res_cand) = client.get(&candidate_url).header(REFERER, AVA_URL).send().await {
@@ -739,7 +827,7 @@ impl SigaaClient {
             let turma_id = course.id.trim_start_matches("sigaa-");
             if !turma_id.is_empty() {
                 if let Some(abs) =
-                    Self::fetch_course_absences_from_ava(&active_client, turma_id, &current_portal_html).await
+                    Self::fetch_course_absences_from_ava(&active_client, turma_id, &course.name, &current_portal_html).await
                 {
                     course.absences = Some(abs);
                 }
@@ -1917,5 +2005,67 @@ mod tests {
             </table>
         "#;
         assert_eq!(SigaaClient::extract_absences_from_ava_html(html_tabela_presente), Some(0));
+
+        // Teste com faltas não-numeradas contendo tags internas (ex: <font> ou <span>)
+        let html_tabela_tags = r#"
+            <table>
+                <tr><th>Data</th><th>Situação</th></tr>
+                <tr><td>10/08/2026</td><td><span class="destaque">Falta</span></td></tr>
+                <tr><td>13/08/2026</td><td><font color="red">Falta(s)</font></td></tr>
+            </table>
+        "#;
+        assert_eq!(SigaaClient::extract_absences_from_ava_html(html_tabela_tags), Some(2));
+
+        // Teste com padrão "Falta: 2" ou "Falta (2)"
+        let html_parenteses = r#"
+            <table>
+                <tr><td>01/10/2026</td><td>Falta (2)</td></tr>
+                <tr><td>15/10/2026</td><td>Falta: 2</td></tr>
+            </table>
+        "#;
+        assert_eq!(SigaaClient::extract_absences_from_ava_html(html_parenteses), Some(4));
+    }
+
+    #[test]
+    fn test_extract_jsf_params_from_onclick_whitespace() {
+        // Testa jsfcljs com espaços após a vírgula (padrão de JSF em navegadores)
+        let onclick_com_espacos = "if(typeof jsfcljs == 'function'){jsfcljs(document.getElementById('form_acessarTurmaVirtual'), {'form_acessarTurmaVirtual:j_id1': 'form_acessarTurmaVirtual:j_id1', 'frontEndIdTurma': 'ABC123'}, '');}return false";
+        let params = SigaaClient::extract_jsf_params_from_onclick(onclick_com_espacos);
+        assert_eq!(params.get("frontEndIdTurma").map(|s| s.as_str()), Some("ABC123"));
+        assert_eq!(params.get("form_acessarTurmaVirtual:j_id1").map(|s| s.as_str()), Some("form_acessarTurmaVirtual:j_id1"));
+    }
+
+    #[test]
+    fn test_extract_course_access_form_params_proximity() {
+        let portal_html = r##"
+            <form id="form_acessarTurmaVirtual" name="form_acessarTurmaVirtual" method="post" action="/sigaa/portais/discente/discente.jsf">
+                <input type="hidden" name="javax.faces.ViewState" id="javax.faces.ViewState" value="vs_test_123"/>
+                <table>
+                    <tr class="odd">
+                        <td>
+                            <a href="#" onclick="jsfcljs(document.getElementById('form_acessarTurmaVirtual'), {'form_link_0': 'form_link_0', 'frontEndIdTurma': 'PARAM_TURMA_A'}, '');">CALCULO 1</a>
+                        </td>
+                    </tr>
+                    <tr><td colspan="5" id="linha_999888" style="display: none;"></td></tr>
+                    <tr class="even">
+                        <td>
+                            <a href="#" onclick="jsfcljs(document.getElementById('form_acessarTurmaVirtual'), {'form_link_1': 'form_link_1', 'frontEndIdTurma': 'PARAM_TURMA_B'}, '');">FISICA 1</a>
+                        </td>
+                    </tr>
+                    <tr><td colspan="5" id="linha_111222" style="display: none;"></td></tr>
+                </table>
+            </form>
+        "##;
+
+        // Deve extrair PARAM_TURMA_A para linha 999888 mesmo que o onclick não contenha 999888
+        let params_a = SigaaClient::extract_course_access_form_params(portal_html, "999888", "CALCULO 1");
+        assert_eq!(params_a.get("frontEndIdTurma").map(|s| s.as_str()), Some("PARAM_TURMA_A"));
+        assert_eq!(params_a.get("form_link_0").map(|s| s.as_str()), Some("form_link_0"));
+        assert_eq!(params_a.get("javax.faces.ViewState").map(|s| s.as_str()), Some("vs_test_123"));
+
+        // Deve extrair PARAM_TURMA_B para linha 111222
+        let params_b = SigaaClient::extract_course_access_form_params(portal_html, "111222", "FISICA 1");
+        assert_eq!(params_b.get("frontEndIdTurma").map(|s| s.as_str()), Some("PARAM_TURMA_B"));
+        assert_eq!(params_b.get("form_link_1").map(|s| s.as_str()), Some("form_link_1"));
     }
 }
