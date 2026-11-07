@@ -22,6 +22,16 @@ export interface PatchNotesEntry {
 
 export const PATCH_NOTES: PatchNotesEntry[] = [
   {
+    version: "0.3.5",
+    date: "06/11/2026",
+    title: "Badges no Ícone e Atualizador",
+    items: [
+      "Notificações no ícone: contador de pendências no ícone do aplicativo (Dock e barra de tarefas) enquanto estiver aberto.",
+      "Correção no processo de atualização e reinicialização automática no Windows e macOS.",
+      "Documentação e guias de contribuição aprimorados.",
+    ],
+  },
+  {
     version: "0.3.4",
     date: "05/11/2026",
     title: "Redesenho de Avaliações e Correções no Windows",

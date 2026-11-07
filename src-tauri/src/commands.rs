@@ -21,10 +21,8 @@ fn is_valid_vault_filename(filename: &str) -> bool {
             | "unb_vault_dev.hold.bak"
             | "unb_vault.hold.corrupted.bak"
             | "unb_vault_dev.hold.corrupted.bak"
-    ) || (
-        (filename.starts_with("unb_vault.hold.") || filename.starts_with("unb_vault_dev.hold."))
-            && filename.ends_with(".bak")
-    )
+    ) || ((filename.starts_with("unb_vault.hold.") || filename.starts_with("unb_vault_dev.hold."))
+        && filename.ends_with(".bak"))
 }
 
 fn is_valid_hex_key(key: &str) -> bool {
@@ -42,7 +40,12 @@ fn write_vault_key_file(path: &std::path::Path, key: &str) -> Result<(), String>
             .truncate(true)
             .mode(0o600)
             .open(path)
-            .map_err(|e| format!("Falha ao abrir arquivo de chave do cofre com modo 0600: {}", e))?;
+            .map_err(|e| {
+                format!(
+                    "Falha ao abrir arquivo de chave do cofre com modo 0600: {}",
+                    e
+                )
+            })?;
         file.write_all(key.as_bytes())
             .map_err(|e| format!("Falha ao persistir chave do cofre no disco: {}", e))?;
     }
@@ -153,7 +156,10 @@ pub fn get_or_create_vault_key(app: AppHandle) -> Result<String, String> {
     if let Some(key) = recovered_key {
         // Salva imediatamente no arquivo local com 0600 para que futuras atualizações não dependam do Keychain
         if let Err(e) = write_vault_key_file(&key_file, &key) {
-            log::warn!("[get_or_create_vault_key] Falha ao gravar chave recuperada no disco: {}", e);
+            log::warn!(
+                "[get_or_create_vault_key] Falha ao gravar chave recuperada no disco: {}",
+                e
+            );
         }
         // Espelha no novo serviço se veio de legado
         if let Ok(entry) = keyring::Entry::new(service, user) {
@@ -869,7 +875,7 @@ pub async fn fetch_professor_evaluations_csv(force_refresh: bool) -> Result<Stri
 
     let client = reqwest::Client::builder()
         .timeout(std::time::Duration::from_secs(15))
-        .user_agent("Sarue-UnB/0.3.4 (Desktop App; Tauri)")
+        .user_agent("Sarue-UnB/0.3.5 (Desktop App; Tauri)")
         .build()
         .map_err(|e| format!("Falha ao inicializar cliente HTTP: {}", e))?;
 
@@ -977,7 +983,9 @@ mod tests {
         assert!(is_valid_vault_filename("unb_vault_dev.hold.1730987654.bak"));
 
         // Bloqueio de path traversal
-        assert!(!is_valid_vault_filename("unb_vault.hold.foo/../../etc/passwd.bak"));
+        assert!(!is_valid_vault_filename(
+            "unb_vault.hold.foo/../../etc/passwd.bak"
+        ));
         assert!(!is_valid_vault_filename("unb_vault.hold.\\..\\test.bak"));
         assert!(!is_valid_vault_filename("unb_vault.hold/bad.bak"));
         assert!(!is_valid_vault_filename("../unb_vault.hold"));
