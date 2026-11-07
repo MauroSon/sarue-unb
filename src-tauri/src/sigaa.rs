@@ -9,6 +9,7 @@ use std::collections::HashMap;
 const USER_AGENT_STR: &str = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36";
 const CAS_LOGIN_URL: &str = "https://autenticacao.unb.br/sso-server/login?service=https%3A%2F%2Fsig.unb.br%2Fsigaa%2Flogin%2Fcas";
 const DISCENTE_URL: &str = "https://sigaa.unb.br/sigaa/portais/discente/discente.jsf";
+#[allow(dead_code)]
 const AVA_URL: &str = "https://sigaa.unb.br/sigaa/ava/index.jsf";
 const SESSION_TTL_SECS: u64 = 90;
 
@@ -490,6 +491,24 @@ impl SigaaClient {
         form_data.insert("idTurma".to_string(), turma_id.to_string());
         form_data.insert("id".to_string(), turma_id.to_string());
 
+        // Estratégia 0: Mapeamento direto de links vinculados a id="linha_{turma_id}"
+        let access_map = Self::extract_courses_access_map(portal_html);
+        if let Some((_form_id, params)) = access_map.get(turma_id) {
+            for (k, v) in params {
+                form_data.insert(k.clone(), v.clone());
+            }
+            return form_data;
+        }
+        let norm_course = Self::normalize_discipline_name(course_name);
+        if !norm_course.is_empty() {
+            if let Some((_form_id, params)) = access_map.get(&norm_course) {
+                for (k, v) in params {
+                    form_data.insert(k.clone(), v.clone());
+                }
+                return form_data;
+            }
+        }
+
         // Estratégia 1: Link que contém o nome da disciplina (mais específico e direto)
         if !course_name.is_empty() {
             let name_pattern = format!(
@@ -541,6 +560,59 @@ impl SigaaClient {
         }
 
         form_data
+    }
+
+    /// Mapeia todas as turmas presentes no portal discente para seus respectivos parâmetros JSF de acesso,
+    /// associando cada link de turma com o seu respectivo id="linha_XYZ"
+    pub fn extract_courses_access_map(
+        portal_html: &str,
+    ) -> HashMap<String, (String, HashMap<String, String>)> {
+        let mut map = HashMap::new();
+        let vs_re = Regex::new(r#"(?:id|name)="javax\.faces\.ViewState"[^>]*value="([^"]+)""#)
+            .or_else(|_| Regex::new(r#"value="([^"]+)"[^>]*(?:id|name)="javax\.faces\.ViewState""#));
+        let vs = vs_re
+            .ok()
+            .and_then(|re| re.captures(portal_html))
+            .and_then(|c| c.get(1))
+            .map(|m| m.as_str().to_string())
+            .unwrap_or_else(|| "j_id1".to_string());
+
+        let mut links: Vec<(usize, String, String)> = Vec::new();
+        if let Ok(link_re) = Regex::new(r#"(?s)<a\s+[^>]*?onclick="([^"]*frontEndIdTurma[^"]*)"[^>]*>([^<]+)</a>"#) {
+            for cap in link_re.captures_iter(portal_html) {
+                let pos = cap.get(0).unwrap().start();
+                let onclick = cap.get(1).map(|m| m.as_str()).unwrap_or("").to_string();
+                let raw_name = cap.get(2).map(|m| m.as_str()).unwrap_or("").trim().to_string();
+                links.push((pos, onclick, raw_name));
+            }
+        }
+
+        let mut linhas: Vec<(usize, String)> = Vec::new();
+        if let Ok(linha_re) = Regex::new(r#"id="linha_(\d+)""#) {
+            for cap in linha_re.captures_iter(portal_html) {
+                let pos = cap.get(0).unwrap().start();
+                let turma_id = cap.get(1).map(|m| m.as_str()).unwrap_or("").to_string();
+                linhas.push((pos, turma_id));
+            }
+        }
+
+        for (linha_pos, turma_id) in &linhas {
+            if let Some((_, onclick, raw_name)) = links.iter().filter(|(link_pos, _, _)| *link_pos < *linha_pos).last() {
+                let mut params = Self::extract_jsf_params_from_onclick(onclick);
+                params.insert("javax.faces.ViewState".to_string(), vs.clone());
+
+                let norm_name = Self::normalize_discipline_name(&decode_html_entities(raw_name));
+
+                if !turma_id.is_empty() {
+                    map.insert(turma_id.to_string(), ("form_acessarTurmaVirtual".to_string(), params.clone()));
+                }
+                if !norm_name.is_empty() {
+                    map.insert(norm_name, ("form_acessarTurmaVirtual".to_string(), params));
+                }
+            }
+        }
+
+        map
     }
 
     /// Extrai o total de faltas do HTML da Turma Virtual (https://sigaa.unb.br/sigaa/ava/index.jsf)
@@ -657,6 +729,184 @@ impl SigaaClient {
 
     /// Acessa a Turma Virtual (AVA) de uma disciplina no SIGAA (https://sigaa.unb.br/sigaa/ava/index.jsf)
     /// e captura as faltas registradas do aluno para o semestre.
+    /// Realiza o parse da tabela do relatório oficial "Consultar Minhas Notas" (Boletim)
+    /// extraindo o total de faltas consolidado por componente curricular / código.
+    pub fn parse_minhas_notas_html(html: &str) -> HashMap<String, u32> {
+        let clean = decode_html_entities(html);
+        let mut results = HashMap::new();
+
+        let table_re = Regex::new(r#"(?is)<table\b[^>]*>(.*?)</table>"#).unwrap();
+        let tr_re = Regex::new(r#"(?is)<tr\b[^>]*>(.*?)</tr>"#).unwrap();
+        let th_re = Regex::new(r#"(?is)<th\b[^>]*>(.*?)</th>"#).unwrap();
+        let td_re = Regex::new(r#"(?is)<td\b[^>]*>(.*?)</td>"#).unwrap();
+        let tag_strip_re = Regex::new(r#"<[^>]+>"#).unwrap();
+
+        for table_cap in table_re.captures_iter(&clean) {
+            let table_content = table_cap.get(1).unwrap().as_str();
+
+            if !table_content.to_lowercase().contains("falta") {
+                continue;
+            }
+
+            let mut header_falta_idx: Option<usize> = None;
+            let mut header_name_idx: Option<usize> = None;
+            let mut header_code_idx: Option<usize> = None;
+
+            let mut rows = Vec::new();
+
+            for tr_cap in tr_re.captures_iter(table_content) {
+                let row_content = tr_cap.get(1).unwrap().as_str();
+
+                let ths: Vec<String> = th_re
+                    .captures_iter(row_content)
+                    .map(|c| tag_strip_re.replace_all(c.get(1).unwrap().as_str(), "").trim().to_string())
+                    .collect();
+
+                if !ths.is_empty() && header_falta_idx.is_none() {
+                    for (idx, th) in ths.iter().enumerate() {
+                        let lower = th.to_lowercase();
+                        if lower.contains("falta") {
+                            header_falta_idx = Some(idx);
+                        } else if lower.contains("componente") || lower.contains("disciplina") || lower.contains("matéria") || lower.contains("materia") {
+                            header_name_idx = Some(idx);
+                        } else if lower.contains("código") || lower.contains("codigo") {
+                            header_code_idx = Some(idx);
+                        }
+                    }
+                    continue;
+                }
+
+                let tds: Vec<String> = td_re
+                    .captures_iter(row_content)
+                    .map(|c| tag_strip_re.replace_all(c.get(1).unwrap().as_str(), "").trim().to_string())
+                    .collect();
+
+                if !tds.is_empty() {
+                    if header_falta_idx.is_none() && tds.iter().any(|t| t.to_lowercase().contains("falta")) {
+                        for (idx, td) in tds.iter().enumerate() {
+                            let lower = td.to_lowercase();
+                            if lower.contains("falta") {
+                                header_falta_idx = Some(idx);
+                            } else if lower.contains("componente") || lower.contains("disciplina") || lower.contains("matéria") || lower.contains("materia") {
+                                header_name_idx = Some(idx);
+                            } else if lower.contains("código") || lower.contains("codigo") {
+                                header_code_idx = Some(idx);
+                            }
+                        }
+                        continue;
+                    }
+                    rows.push(tds);
+                }
+            }
+
+            if let Some(falta_idx) = header_falta_idx {
+                for cells in &rows {
+                    if falta_idx < cells.len() {
+                        let falta_str = &cells[falta_idx];
+                        let absences = falta_str
+                            .chars()
+                            .filter(|c| c.is_ascii_digit())
+                            .collect::<String>()
+                            .parse::<u32>()
+                            .ok();
+
+                        if let Some(abs) = absences {
+                            if let Some(name_idx) = header_name_idx {
+                                if name_idx < cells.len() {
+                                    let raw_name = &cells[name_idx];
+                                    let norm = Self::normalize_discipline_name(raw_name);
+                                    if !norm.is_empty() {
+                                        results.insert(norm, abs);
+                                    }
+                                    for sep in &['-', '–', '—'] {
+                                        if let Some((code_part, name_part)) = raw_name.split_once(*sep) {
+                                            let norm_code = Self::normalize_discipline_name(code_part);
+                                            let norm_subname = Self::normalize_discipline_name(name_part);
+                                            if !norm_code.is_empty() { results.insert(norm_code, abs); }
+                                            if !norm_subname.is_empty() { results.insert(norm_subname, abs); }
+                                        }
+                                    }
+                                }
+                            }
+                            if let Some(code_idx) = header_code_idx {
+                                if code_idx < cells.len() {
+                                    let norm_code = Self::normalize_discipline_name(&cells[code_idx]);
+                                    if !norm_code.is_empty() {
+                                        results.insert(norm_code, abs);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        results
+    }
+
+    /// Consulta as notas e faltas consolidadas do semestre através do menu
+    /// "Consultar Minhas Notas" (Boletim) do Portal Discente
+    pub async fn fetch_absences_from_minhas_notas(
+        client: &reqwest::Client,
+        portal_html: &str,
+    ) -> HashMap<String, u32> {
+        let vs_re = Regex::new(r#"(?:id|name)="javax\.faces\.ViewState"[^>]*value="([^"]+)""#)
+            .or_else(|_| Regex::new(r#"value="([^"]+)"[^>]*(?:id|name)="javax\.faces\.ViewState""#));
+        let vs = vs_re
+            .ok()
+            .and_then(|re| re.captures(portal_html))
+            .and_then(|c| c.get(1))
+            .map(|m| m.as_str().to_string())
+            .unwrap_or_else(|| "j_id1".to_string());
+
+        let id_re = Regex::new(r#"<input type="hidden" name="id" value="([^"]+)""#);
+        let id_val = id_re
+            .ok()
+            .and_then(|re| re.captures(portal_html))
+            .and_then(|c| c.get(1))
+            .map(|m| m.as_str().to_string())
+            .unwrap_or_default();
+
+        let jscook_re = Regex::new(
+            r#"(menu_form_menu_discente_discente_menu:A\]#\{[^}]*(?:consultarNotas|notas|boletim)[^}]*\})"#,
+        );
+        let action = jscook_re
+            .ok()
+            .and_then(|re| re.captures(portal_html))
+            .and_then(|c| c.get(1))
+            .map(|m| m.as_str().to_string())
+            .unwrap_or_else(|| "menu_form_menu_discente_discente_menu:A]#{ portalDiscente.consultarNotas }".to_string());
+
+        let mut form_data = HashMap::new();
+        form_data.insert("menu:form_menu_discente", "menu:form_menu_discente".to_string());
+        form_data.insert("id", id_val);
+        form_data.insert("jscook_action", action);
+        form_data.insert("javax.faces.ViewState", vs);
+
+        log::info!("[SigaaClient] Submetendo requisição para Consultar Minhas Notas...");
+        let res_notas = client
+            .post(DISCENTE_URL)
+            .header(REFERER, DISCENTE_URL)
+            .form(&form_data)
+            .send()
+            .await;
+
+        let notas_html = match res_notas {
+            Ok(res) => res.text().await.unwrap_or_default(),
+            Err(e) => {
+                log::warn!("[SigaaClient] Erro ao consultar Minhas Notas: {}", e);
+                return HashMap::new();
+            }
+        };
+
+        let map = Self::parse_minhas_notas_html(&notas_html);
+        log::info!("[SigaaClient] Minhas Notas retornou {} disciplinas com faltas mapeadas.", map.len());
+        map
+    }
+
+    /// Acessa a Turma Virtual (AVA) de uma disciplina no SIGAA (https://sigaa.unb.br/sigaa/ava/index.jsf)
+    /// e captura as faltas registradas do aluno para o semestre.
     pub async fn fetch_course_absences_from_ava(
         client: &reqwest::Client,
         turma_id: &str,
@@ -673,10 +923,13 @@ impl SigaaClient {
             .send()
             .await;
 
-        let ava_html = match res_ava {
-            Ok(res) => res.text().await.unwrap_or_default(),
+        let ava_res = match res_ava {
+            Ok(res) => res,
             Err(_) => return None,
         };
+
+        let current_ava_url = ava_res.url().to_string();
+        let ava_html = ava_res.text().await.unwrap_or_default();
 
         // Se a página inicial da Turma Virtual já trouxer as faltas:
         if let Some(abs) = Self::extract_absences_from_ava_html(&ava_html) {
@@ -730,9 +983,26 @@ impl SigaaClient {
                             }
                         }
 
+                        let form_action_re = Regex::new(&format!(r#"(?is)<form\s+[^>]*?id="{}"[^>]*?action="([^"]*)""#, regex::escape(form_id)));
+                        let target_url = form_action_re
+                            .ok()
+                            .and_then(|re| re.captures(&ava_html))
+                            .and_then(|c| c.get(1))
+                            .map(|m| {
+                                let a = m.as_str();
+                                if a.starts_with("http") {
+                                    a.to_string()
+                                } else if a.starts_with('/') {
+                                    format!("https://sigaa.unb.br{}", a)
+                                } else {
+                                    format!("https://sigaa.unb.br/sigaa/ava/{}", a)
+                                }
+                            })
+                            .unwrap_or_else(|| current_ava_url.clone());
+
                         if let Ok(res_menu) = client
-                            .post(AVA_URL)
-                            .header(REFERER, AVA_URL)
+                            .post(&target_url)
+                            .header(REFERER, &current_ava_url)
                             .form(&menu_data)
                             .send()
                             .await
@@ -763,7 +1033,7 @@ impl SigaaClient {
                             format!("https://sigaa.unb.br/sigaa/ava/{}", rel)
                         };
 
-                        if let Ok(res_get) = client.get(&url).header(REFERER, AVA_URL).send().await {
+                        if let Ok(res_get) = client.get(&url).header(REFERER, &current_ava_url).send().await {
                             if let Ok(freq_html) = res_get.text().await {
                                 if let Some(abs) = Self::extract_absences_from_ava_html(&freq_html) {
                                     log::info!(
@@ -793,7 +1063,7 @@ impl SigaaClient {
             "/sigaa/ava/relatorio_frequencia.jsf",
         ] {
             let candidate_url = format!("https://sigaa.unb.br{}", candidate_path);
-            if let Ok(res_cand) = client.get(&candidate_url).header(REFERER, AVA_URL).send().await {
+            if let Ok(res_cand) = client.get(&candidate_url).header(REFERER, &current_ava_url).send().await {
                 if let Ok(cand_html) = res_cand.text().await {
                     if let Some(abs) = Self::extract_absences_from_ava_html(&cand_html) {
                         log::info!(
@@ -821,22 +1091,52 @@ impl SigaaClient {
         // O aviso institucional de logon ("Aviso Geral UnB") é intencionalmente ignorado no feed
         let (feed_items, mut courses) = Self::parse_discente_html(&page_html)?;
 
-        // Captura as faltas da Turma Virtual (https://sigaa.unb.br/sigaa/ava/index.jsf) de cada disciplina
-        let mut current_portal_html = page_html.clone();
+        // 1. Consulta consolidada de faltas via "Consultar Minhas Notas" (Boletim Oficial)
+        let consolidated_absences = Self::fetch_absences_from_minhas_notas(&active_client, &page_html).await;
         for course in courses.iter_mut() {
-            let turma_id = course.id.trim_start_matches("sigaa-");
-            if !turma_id.is_empty() {
-                if let Some(abs) =
-                    Self::fetch_course_absences_from_ava(&active_client, turma_id, &course.name, &current_portal_html).await
-                {
-                    course.absences = Some(abs);
-                }
+            let norm_name = Self::normalize_discipline_name(&course.name);
+            let norm_code = Self::normalize_discipline_name(&course.code);
 
-                // Recarrega o portal discente para garantir que o próximo acesso de turma tenha um ViewState atualizado
-                if let Ok(res_portal) = active_client.get(DISCENTE_URL).header(REFERER, DISCENTE_URL).send().await {
-                    if let Ok(refreshed_html) = res_portal.text().await {
-                        if refreshed_html.contains("form_acessarTurmaVirtual") {
-                            current_portal_html = refreshed_html;
+            if let Some(&abs) = consolidated_absences.get(&norm_code).or_else(|| consolidated_absences.get(&norm_name)) {
+                course.absences = Some(abs);
+                log::info!("[SigaaClient] Faltas vinculadas via Minhas Notas para {}: {}", course.name, abs);
+            } else {
+                for (key, &abs) in consolidated_absences.iter() {
+                    if !key.is_empty() && (norm_name == *key || (key.len() >= 4 && (norm_name.contains(key) || key.contains(&norm_name)))) {
+                        course.absences = Some(abs);
+                        log::info!("[SigaaClient] Faltas vinculadas via match parcial para {}: {}", course.name, abs);
+                        break;
+                    }
+                }
+            }
+        }
+
+        // 2. Para qualquer turma que ainda não tenha faltas obtidas, tenta acessar a Turma Virtual individualmente
+        let has_missing_absences = courses.iter().any(|c| c.absences.is_none());
+        if has_missing_absences {
+            let mut current_portal_html = match active_client.get(DISCENTE_URL).header(REFERER, DISCENTE_URL).send().await {
+                Ok(res) => res.text().await.unwrap_or_else(|_| page_html.clone()),
+                Err(_) => page_html.clone(),
+            };
+
+            for course in courses.iter_mut() {
+                if course.absences.is_some() {
+                    continue;
+                }
+                let turma_id = course.id.trim_start_matches("sigaa-");
+                if !turma_id.is_empty() {
+                    if let Some(abs) =
+                        Self::fetch_course_absences_from_ava(&active_client, turma_id, &course.name, &current_portal_html).await
+                    {
+                        course.absences = Some(abs);
+                    }
+
+                    // Recarrega o portal discente para garantir que o próximo acesso de turma tenha um ViewState atualizado
+                    if let Ok(res_portal) = active_client.get(DISCENTE_URL).header(REFERER, DISCENTE_URL).send().await {
+                        if let Ok(refreshed_html) = res_portal.text().await {
+                            if refreshed_html.contains("form_acessarTurmaVirtual") {
+                                current_portal_html = refreshed_html;
+                            }
                         }
                     }
                 }
@@ -846,6 +1146,12 @@ impl SigaaClient {
         // Linka código/turma/docente com a oferta de turmas (dataset estático),
         // sem precisar abrir a aba Participantes de cada disciplina
         let courses = Self::enrich_courses_with_offer(courses).await;
+
+        // Invalida o ViewState do cache após requisições POST para evitar conflito na próxima sincronização
+        {
+            let mut lock = sigaa_session_cache().lock().await;
+            *lock = None;
+        }
 
         log::info!(
             "[SigaaClient] Sincronização concluída com sucesso: {} turmas e {} itens de feed.",
@@ -2067,5 +2373,139 @@ mod tests {
         let params_b = SigaaClient::extract_course_access_form_params(portal_html, "111222", "FISICA 1");
         assert_eq!(params_b.get("frontEndIdTurma").map(|s| s.as_str()), Some("PARAM_TURMA_B"));
         assert_eq!(params_b.get("form_link_1").map(|s| s.as_str()), Some("form_link_1"));
+    }
+
+    #[test]
+    fn test_parse_minhas_notas_html_standard() {
+        let html_boletim = r##"
+            <table class="listagem">
+                <thead>
+                    <tr>
+                        <th>Código</th>
+                        <th>Componente Curricular</th>
+                        <th>Turma</th>
+                        <th>CH</th>
+                        <th>Faltas</th>
+                        <th>Situação</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="linhaPar">
+                        <td>MAT0027</td>
+                        <td>CÁLCULO 3</td>
+                        <td>01</td>
+                        <td>60h</td>
+                        <td>6</td>
+                        <td>MATRICULADO</td>
+                    </tr>
+                    <tr class="linhaImpar">
+                        <td>ENE0066</td>
+                        <td>INTRODUÇÃO AOS CIRCUITOS ELÉTRICOS</td>
+                        <td>01</td>
+                        <td>60h</td>
+                        <td>0</td>
+                        <td>MATRICULADO</td>
+                    </tr>
+                    <tr class="linhaPar">
+                        <td>EPR0068</td>
+                        <td>ORGANIZAÇÃO INDUSTRIAL</td>
+                        <td>01</td>
+                        <td>60h</td>
+                        <td>2</td>
+                        <td>MATRICULADO</td>
+                    </tr>
+                </tbody>
+            </table>
+        "##;
+
+        let map = SigaaClient::parse_minhas_notas_html(html_boletim);
+        assert_eq!(map.get("CALCULO 3"), Some(&6));
+        assert_eq!(map.get("MAT0027"), Some(&6));
+        assert_eq!(map.get("INTRODUCAO AOS CIRCUITOS ELETRICOS"), Some(&0));
+        assert_eq!(map.get("ENE0066"), Some(&0));
+        assert_eq!(map.get("ORGANIZACAO INDUSTRIAL"), Some(&2));
+        assert_eq!(map.get("EPR0068"), Some(&2));
+    }
+
+    #[test]
+    fn test_parse_minhas_notas_html_nested_and_combined_code() {
+        let html_boletim_nested = r##"
+            <table class="tabelaRelatorio">
+                <thead>
+                    <tr class="header">
+                        <th><b>Componente Curricular</b></th>
+                        <th><b>Turma</b></th>
+                        <th><b>Total de Faltas</b></th>
+                        <th><b>Situação</b></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><a href="#">MAT0027 - CÁLCULO 3</a></td>
+                        <td><center>01</center></td>
+                        <td><center><font color="red">6</font></center></td>
+                        <td>MATRICULADO</td>
+                    </tr>
+                    <tr>
+                        <td><a href="#">ENE0066 – INTRODUÇÃO AOS CIRCUITOS ELÉTRICOS</a></td>
+                        <td><center>01</center></td>
+                        <td><center>0</center></td>
+                        <td>MATRICULADO</td>
+                    </tr>
+                </tbody>
+            </table>
+        "##;
+
+        let map = SigaaClient::parse_minhas_notas_html(html_boletim_nested);
+        assert_eq!(map.get("CALCULO 3"), Some(&6));
+        assert_eq!(map.get("MAT0027"), Some(&6));
+        assert_eq!(map.get("INTRODUCAO AOS CIRCUITOS ELETRICOS"), Some(&0));
+        assert_eq!(map.get("ENE0066"), Some(&0));
+    }
+
+    #[test]
+    fn test_extract_courses_access_map_multi() {
+        let portal_html = r##"
+            <form id="form_acessarTurmaVirtual" name="form_acessarTurmaVirtual" method="post" action="/sigaa/portais/discente/discente.jsf">
+                <input type="hidden" name="javax.faces.ViewState" id="javax.faces.ViewState" value="vs_global_456"/>
+                <table>
+                    <tr>
+                        <td>
+                            <a href="#" onclick="jsfcljs(document.getElementById('form_acessarTurmaVirtual'), {'link_calc': 'link_calc', 'frontEndIdTurma': 'ID_CALC_3'}, '');">CÁLCULO 3</a>
+                        </td>
+                    </tr>
+                    <tr><td colspan="5" id="linha_1001" style="display: none;"></td></tr>
+                    <tr>
+                        <td>
+                            <a href="#" onclick="jsfcljs(document.getElementById('form_acessarTurmaVirtual'), {'link_circ': 'link_circ', 'frontEndIdTurma': 'ID_CIRC'}, '');">ENE0066 - INTRODUÇÃO AOS CIRCUITOS ELÉTRICOS</a>
+                        </td>
+                    </tr>
+                    <tr><td colspan="5" id="linha_1002" style="display: none;"></td></tr>
+                    <tr>
+                        <td>
+                            <a href="#" onclick="jsfcljs(document.getElementById('form_acessarTurmaVirtual'), {'link_org': 'link_org', 'frontEndIdTurma': 'ID_ORG'}, '');">EPR0068 - ORGANIZAÇÃO INDUSTRIAL</a>
+                        </td>
+                    </tr>
+                    <tr><td colspan="5" id="linha_1003" style="display: none;"></td></tr>
+                </table>
+            </form>
+        "##;
+
+        let map = SigaaClient::extract_courses_access_map(portal_html);
+
+        // Deve indexar por turma_id
+        let params_1001 = map.get("1001").unwrap();
+        assert_eq!(params_1001.1.get("frontEndIdTurma").map(|s| s.as_str()), Some("ID_CALC_3"));
+        assert_eq!(params_1001.1.get("link_calc").map(|s| s.as_str()), Some("link_calc"));
+        assert_eq!(params_1001.1.get("javax.faces.ViewState").map(|s| s.as_str()), Some("vs_global_456"));
+
+        let params_1002 = map.get("1002").unwrap();
+        assert_eq!(params_1002.1.get("frontEndIdTurma").map(|s| s.as_str()), Some("ID_CIRC"));
+
+        let params_1003 = map.get("1003").unwrap();
+        assert_eq!(params_1003.1.get("frontEndIdTurma").map(|s| s.as_str()), Some("ID_ORG"));
+
+        // Deve indexar também por nome normalizado da disciplina
+        assert!(map.contains_key("CALCULO 3"));
     }
 }
