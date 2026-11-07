@@ -26,6 +26,7 @@ import {
   Folder,
 } from "lucide-react";
 import { UnmatchedCourseDialog } from "../components/UnmatchedCourseDialog";
+import { GradeFormulaSection } from "../components/course";
 import { FeedList } from "../components/feed/FeedList";
 import { FeedToolbar } from "../components/feed/FeedToolbar";
 import { useFeedSelection } from "../hooks/useFeedSelection";
@@ -494,55 +495,30 @@ export const CoursesScreen: React.FC = () => {
             ) : null}
           </div>
 
-          {drillAbsenceStatus && (
-            <div className="w-full mt-3 pt-3 border-t-2 border-ink/10 space-y-1.5">
-              <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="font-black text-black">Frequência SIGAA:</span>
-                  <span
-                    className={`font-black px-2 py-0.5 rounded-md border border-ink text-xs ${
-                      drillAbsenceStatus.isExceeded || drillAbsenceStatus.isCritical
-                        ? "bg-pastel-red text-ink-urgent"
-                        : drillAbsenceStatus.isAtRisk
-                        ? "bg-pastel-yellow text-amber-900"
-                        : "bg-pastel-green text-black"
-                    }`}
-                  >
-                    {drillAbsenceStatus.absences} de máx. {drillAbsenceStatus.maxAbsences} horas-falta (limite 25% UnB)
-                  </span>
-                </div>
-
-                <span className="font-mono text-xs font-bold text-neutral-600">
-                  {drillAbsenceStatus.percentageUsed}% do limite consumido
-                </span>
-              </div>
-
-              <div className="text-xs font-bold pt-0.5">
-                {drillAbsenceStatus.isExceeded ? (
-                  <p className="text-ink-urgent flex items-center gap-1.5">
-                    <AlertTriangle className="w-4 h-4 stroke-[2.5] shrink-0" />
-                    <span>Limite de 25% de faltas ultrapassado ({drillAbsenceStatus.absences}/{drillAbsenceStatus.maxAbsences}h). Conforme o regimento da UnB, o aluno é reprovado por faltas.</span>
-                  </p>
-                ) : drillAbsenceStatus.isCritical ? (
-                  <p className="text-ink-urgent flex items-center gap-1.5">
-                    <AlertTriangle className="w-4 h-4 stroke-[2.5] shrink-0" />
-                    <span>Alerta Crítico: Resta apenas 1 aula de {drillAbsenceStatus.hoursPerClass}h para reprovação por faltas na UnB!</span>
-                  </p>
-                ) : drillAbsenceStatus.isAtRisk ? (
-                  <p className="text-amber-600 dark:text-amber-400 flex items-center gap-1.5">
-                    <AlertTriangle className="w-4 h-4 stroke-[2.5] shrink-0" />
-                    <span>Atenção: Restam apenas 2 aulas ({drillAbsenceStatus.hoursPerClass}h cada) antes de atingir o limite de reprovação.</span>
-                  </p>
-                ) : (
-                  <p className="text-neutral-600">
-                    Situação regular: Você ainda pode faltar até {drillAbsenceStatus.safeClassesToMiss}{" "}
-                    {drillAbsenceStatus.safeClassesToMiss === 1 ? "aula" : "aulas"} ({drillAbsenceStatus.hoursPerClass}h cada) com segurança na UnB.
-                  </p>
-                )}
-              </div>
+          {drillAbsenceStatus && (drillAbsenceStatus.isAtRisk || drillAbsenceStatus.isExceeded) && (
+            <div className="w-full mt-3 pt-3 border-t-2 border-ink/10 text-xs font-bold">
+              {drillAbsenceStatus.isExceeded ? (
+                <p className="text-ink-urgent flex items-center gap-1.5">
+                  <AlertTriangle className="w-4 h-4 stroke-[2.5] shrink-0" />
+                  <span>Limite de 25% de faltas ultrapassado ({drillAbsenceStatus.absences}/{drillAbsenceStatus.maxAbsences}h). Conforme o regimento da UnB, o aluno é reprovado por faltas.</span>
+                </p>
+              ) : drillAbsenceStatus.isCritical ? (
+                <p className="text-ink-urgent flex items-center gap-1.5">
+                  <AlertTriangle className="w-4 h-4 stroke-[2.5] shrink-0" />
+                  <span>Alerta Crítico: Resta apenas 1 aula de {drillAbsenceStatus.hoursPerClass}h para reprovação por faltas na UnB!</span>
+                </p>
+              ) : (
+                <p className="text-amber-600 dark:text-amber-400 flex items-center gap-1.5">
+                  <AlertTriangle className="w-4 h-4 stroke-[2.5] shrink-0" />
+                  <span>Atenção: Restam apenas 2 aulas ({drillAbsenceStatus.hoursPerClass}h cada) antes de atingir o limite de reprovação.</span>
+                </p>
+              )}
             </div>
           )}
         </Card>
+
+        {/* Seção de Cálculo de Notas, Fórmula e Estimativa de Aprovação */}
+        <GradeFormulaSection discipline={selectedDiscipline} />
 
         {/* Barra de Filtros e Busca da Disciplina (expande para baixo no modo Selecionar) */}
         <FeedToolbar
@@ -810,56 +786,6 @@ export const CoursesScreen: React.FC = () => {
                       </div>
                     ) : null}
                   </div>
-
-                  {/* Seção de Frequência & Estimativa de Reprovação (UnB 25%) */}
-                  {absenceStatus && (
-                    <div className="mt-3 pt-3 border-t-2 border-ink/10 space-y-1.5">
-                      <div className="flex items-center justify-between text-xs">
-                        <div className="flex items-center gap-1.5 font-bold">
-                          <span className="text-neutral-700">Frequência UnB (25%):</span>
-                          <span
-                            className={`font-black ${
-                              absenceStatus.isExceeded || absenceStatus.isCritical
-                                ? "text-ink-urgent"
-                                : absenceStatus.isAtRisk
-                                ? "text-amber-600 dark:text-amber-400"
-                                : "text-neutral-900"
-                            }`}
-                          >
-                            {absenceStatus.absences}/{absenceStatus.maxAbsences}h
-                          </span>
-                        </div>
-                        <span className="font-mono text-[10px] font-bold text-neutral-500">
-                          {absenceStatus.percentageUsed}% consumido
-                        </span>
-                      </div>
-
-                      {/* Estimativa de aulas até reprovação */}
-                      <div className="text-[11px] leading-tight">
-                        {absenceStatus.isExceeded ? (
-                          <span className="font-black text-ink-urgent flex items-center gap-1">
-                            <AlertTriangle className="w-3.5 h-3.5 stroke-[2.5] shrink-0" />
-                            <span>Limite excedido — Reprovado por falta</span>
-                          </span>
-                        ) : absenceStatus.isCritical ? (
-                          <span className="font-black text-ink-urgent flex items-center gap-1">
-                            <AlertTriangle className="w-3.5 h-3.5 stroke-[2.5] shrink-0" />
-                            <span>Resta apenas 1 aula ({absenceStatus.hoursPerClass}h) para reprovação!</span>
-                          </span>
-                        ) : absenceStatus.isAtRisk ? (
-                          <span className="font-bold text-amber-600 dark:text-amber-400 flex items-center gap-1">
-                            <AlertTriangle className="w-3.5 h-3.5 stroke-[2.5] shrink-0" />
-                            <span>Restam 2 aulas ({absenceStatus.hoursPerClass}h) para reprovação</span>
-                          </span>
-                        ) : (
-                          <span className="font-medium text-neutral-600">
-                            Pode faltar até {absenceStatus.safeClassesToMiss}{" "}
-                            {absenceStatus.safeClassesToMiss === 1 ? "aula" : "aulas"} ({absenceStatus.hoursPerClass}h) com segurança
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  )}
                 </div>
 
                 {/* Rodapé com indicadores e atalho */}

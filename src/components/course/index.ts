@@ -4,4 +4,5 @@ export * from './FlowchartCard';
 export * from './FlowchartDiagram';
 export * from './FlowchartList';
 export * from './FlowchartStats';
+export * from './GradeFormulaSection';
 export * from './MyCourseSkeleton';
