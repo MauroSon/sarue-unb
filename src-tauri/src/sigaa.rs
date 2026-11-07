@@ -862,28 +862,8 @@ impl SigaaClient {
         course_name: &str,
         portal_html: &str,
     ) -> Option<u32> {
-        // 1. Tenta acesso direto parametrizado caso o SIGAA permita carregar pelo id da turma
-        let direct_urls = [
-            format!("{}?idTurma={}", MAPA_FREQUENCIA_URL, turma_id),
-            format!("{}?id={}", MAPA_FREQUENCIA_URL, turma_id),
-        ];
-        for url in &direct_urls {
-            if let Ok(res) = client.get(url).header(REFERER, DISCENTE_URL).send().await {
-                if let Ok(html) = res.text().await {
-                    if let Some(abs) = Self::extract_absences_from_ava_html(&html) {
-                        log::info!(
-                            "[SigaaClient] Faltas capturadas via mapa direto ({}) para turma {}: {}",
-                            url,
-                            turma_id,
-                            abs
-                        );
-                        return Some(abs);
-                    }
-                }
-            }
-        }
-
-        // 2. Submete o formulário de entrada na Turma Virtual a partir do portal discente
+        // 1. Submete o formulário de entrada na Turma Virtual a partir do portal discente
+        // Isso define esta disciplina específica como a turma ativa na sessão do SIGAA
         let form_data = Self::extract_course_access_form_params(portal_html, turma_id, course_name);
         let res_ava = client
             .post(DISCENTE_URL)
@@ -910,29 +890,21 @@ impl SigaaClient {
             return Some(abs);
         }
 
-        // 3. Estando dentro da Turma Virtual selecionada, acessa o mapa de frequência oficial
-        let mapa_urls = [
-            MAPA_FREQUENCIA_URL.to_string(),
-            format!("{}?idTurma={}", MAPA_FREQUENCIA_URL, turma_id),
-        ];
-
-        for url in &mapa_urls {
-            if let Ok(res_mapa) = client
-                .get(url)
-                .header(REFERER, &current_ava_url)
-                .send()
-                .await
-            {
-                if let Ok(mapa_html) = res_mapa.text().await {
-                    if let Some(abs) = Self::extract_absences_from_ava_html(&mapa_html) {
-                        log::info!(
-                            "[SigaaClient] Faltas capturadas via mapa.jsf ({}) para turma {}: {}",
-                            url,
-                            turma_id,
-                            abs
-                        );
-                        return Some(abs);
-                    }
+        // 2. Com a disciplina ativa na sessão, navega para o mapa de frequência oficial
+        if let Ok(res_mapa) = client
+            .get(MAPA_FREQUENCIA_URL)
+            .header(REFERER, &current_ava_url)
+            .send()
+            .await
+        {
+            if let Ok(mapa_html) = res_mapa.text().await {
+                if let Some(abs) = Self::extract_absences_from_ava_html(&mapa_html) {
+                    log::info!(
+                        "[SigaaClient] Faltas capturadas via mapa.jsf para turma {}: {}",
+                        turma_id,
+                        abs
+                    );
+                    return Some(abs);
                 }
             }
         }
