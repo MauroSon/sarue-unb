@@ -1492,6 +1492,7 @@ impl SigaaClient {
         matricula: &str,
         senha: &str,
     ) -> Result<(Vec<FeedItem>, Vec<Course>), String> {
+        let sync_start = std::time::Instant::now();
         let (active_client, page_html, _aviso_item) =
             self.get_authenticated_portal(matricula, senha).await?;
         // O aviso institucional de logon ("Aviso Geral UnB") é intencionalmente ignorado no feed
@@ -1511,6 +1512,8 @@ impl SigaaClient {
             let norm_name = Self::normalize_discipline_name(&course.name);
             let norm_code = Self::normalize_discipline_name(&course.code);
 
+            // Match estrito: primeiro por código de disciplina, depois por nome exato normalizado.
+            // Evita match parcial frouxo por substring que poderia cruzar faltas entre matérias afins (ex: Cálculo 1 vs Cálculo 2).
             if let Some(&abs) = consolidated_absences
                 .get(&norm_code)
                 .or_else(|| consolidated_absences.get(&norm_name))
@@ -1521,19 +1524,6 @@ impl SigaaClient {
                     course.name,
                     abs
                 );
-            } else {
-                for (key, &abs) in consolidated_absences.iter() {
-                    if !key.is_empty()
-                        && (norm_name == *key
-                            || norm_code == *key
-                            || (key.len() >= 4
-                                && (norm_name.contains(key) || key.contains(&norm_name))))
-                    {
-                        course.absences = Some(abs);
-                        log::info!("[SigaaClient] Faltas vinculadas via match parcial no Boletim para {}: {}", course.name, abs);
-                        break;
-                    }
-                }
             }
         }
 
@@ -1576,14 +1566,7 @@ impl SigaaClient {
             }
         }
 
-        // 5. Garante que todas as turmas tenham faltas definidas (default 0 para turmas sem lançamento)
-        for course in courses.iter_mut() {
-            if course.absences.is_none() {
-                course.absences = Some(0);
-            }
-        }
-
-        // 6. Garante que todas as turmas tenham max_absences calculado pela regra da UnB: créditos * 2 - 1
+        // 4. Garante que todas as turmas tenham max_absences calculado pela regra da UnB: créditos * 2 - 1
         for course in courses.iter_mut() {
             if course.max_absences.is_none() {
                 let credits = course
@@ -1602,7 +1585,8 @@ impl SigaaClient {
         }
 
         log::info!(
-            "[SigaaClient] Sincronização concluída com sucesso: {} turmas e {} itens de feed.",
+            "[SigaaClient] Sincronização concluída com sucesso em {:?}: {} turmas e {} itens de feed.",
+            sync_start.elapsed(),
             courses.len(),
             feed_items.len()
         );
