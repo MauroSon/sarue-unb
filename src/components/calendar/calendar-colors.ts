@@ -1,12 +1,12 @@
 import type { UnifiedCalendarEvent, CalendarEventCategory } from '@/core';
+import type { BadgeTypeVariant } from '@/components/ui/badge';
 
 export interface CalendarEventColorStyle {
   bg: string;
   border: string;
   text: string;
   accentText: string;
-  badgeBg: string;
-  badgeText: string;
+  badgeVariant: BadgeTypeVariant;
   hex: string;
   label: string;
 }
@@ -17,18 +17,17 @@ export function getCalendarEventColors(evt: {
   isDeadline?: boolean;
 }): CalendarEventColorStyle {
   // Cores por tipo primário de evento:
-  // academic (Oficial UnB) -> Azul
-  // manual (Meu Evento) -> Verde
-  // feed_task (Tarefas Scrapeadas) -> Amarelo / Âmbar
+  // academic (Oficial UnB) -> Azul Caneta Ação (texto branco permitido) ou Azul Marca
+  // manual (Meu Evento) -> Verde Giz (texto preto tinta)
+  // feed_task (Tarefas do Feed) -> Amarelo Marca-Texto (texto preto tinta)
   switch (evt.type) {
     case 'academic':
       return {
         bg: 'bg-pastel-blue',
         border: 'border-[#468AFB]',
-        text: 'text-[#1e40af] dark:text-[#BFDBFE]',
-        accentText: 'text-[#2563EB] dark:text-[#60A5FA]',
-        badgeBg: 'bg-[#468AFB] text-white',
-        badgeText: 'text-white',
+        text: 'text-ink-disc-blue',
+        accentText: 'text-blue-ink',
+        badgeVariant: 'primary',
         hex: '#468AFB',
         label: 'UnB Oficial',
       };
@@ -36,22 +35,20 @@ export function getCalendarEventColors(evt: {
       return {
         bg: 'bg-pastel-yellow',
         border: 'border-[#EAB308]',
-        text: 'text-[#854d0e] dark:text-[#FEF08A]',
-        accentText: 'text-[#A16207] dark:text-[#FACC15]',
-        badgeBg: 'bg-[#EAB308] text-black',
-        badgeText: 'text-black',
+        text: 'text-ink-disc-yellow',
+        accentText: 'text-ink-disc-yellow',
+        badgeVariant: 'yellow',
         hex: '#EAB308',
-        label: 'Scrapeado',
+        label: 'Tarefa do Feed',
       };
     case 'manual':
     default:
       return {
         bg: 'bg-pastel-green',
         border: 'border-[#16A34A]',
-        text: 'text-[#15803d] dark:text-[#BBF7D0]',
-        accentText: 'text-[#16A34A] dark:text-[#4ADE80]',
-        badgeBg: 'bg-[#16A34A] text-white dark:text-black',
-        badgeText: 'text-white dark:text-black',
+        text: 'text-ink-disc-green',
+        accentText: 'text-ink-disc-green',
+        badgeVariant: 'success',
         hex: '#16A34A',
         label: 'Meu Evento',
       };
