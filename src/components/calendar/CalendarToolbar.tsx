@@ -6,18 +6,13 @@ import {
   ListFilter,
   GraduationCap,
   CheckSquare,
-  BookOpen,
 } from 'lucide-react';
 import {
   Button,
   SegmentedControl,
-  Select,
-  SelectTrigger,
-  SelectValue,
-  SelectContent,
-  SelectItem,
   type SegmentedOption,
 } from '@/components/ui';
+import { FilterSelect } from '@/components/ui/filter-select';
 import type { CalendarViewMode } from '@/hooks/useCalendar';
 import type { Course } from '@/core';
 
@@ -38,6 +33,7 @@ interface CalendarToolbarProps {
   selectedCourse: string;
   onCourseChange: (course: string) => void;
   onOpenCreateDialog?: () => void;
+  onResetFilters?: () => void;
 }
 
 const VIEW_OPTIONS: ReadonlyArray<SegmentedOption<CalendarViewMode>> = [
@@ -77,6 +73,7 @@ export const CalendarToolbar: React.FC<CalendarToolbarProps> = ({
   selectedCourse,
   onCourseChange,
   onOpenCreateDialog: _onOpenCreateDialog,
+  onResetFilters,
 }) => {
   const monthName = MONTH_NAMES[currentDate.getMonth()];
   const year = currentDate.getFullYear();
@@ -102,6 +99,23 @@ export const CalendarToolbar: React.FC<CalendarToolbarProps> = ({
     ];
   }, [courses]);
 
+  const hasActiveFilters =
+    !showAcademic ||
+    !showManual ||
+    !showFeedTasks ||
+    (Boolean(selectedCourse) && selectedCourse !== 'all');
+
+  const handleResetFilters = () => {
+    if (onResetFilters) {
+      onResetFilters();
+    } else {
+      if (!showAcademic) onToggleAcademic();
+      if (!showManual) onToggleManual();
+      if (!showFeedTasks) onToggleFeedTasks();
+      if (selectedCourse !== 'all') onCourseChange('all');
+    }
+  };
+
   return (
     <div className="bg-paper border-2 border-ink rounded-xl p-4 shadow-[4px_4px_0px_0px_var(--neo-shadow)] space-y-4">
       {/* Linha superior: Navegação de Mês/Ano + Alternador de Visão + Botão Novo Evento */}
@@ -114,7 +128,7 @@ export const CalendarToolbar: React.FC<CalendarToolbarProps> = ({
               onClick={onPrevMonth}
               title="Mês anterior"
               aria-label="Mês anterior"
-              className="p-2 hover:bg-neutral-200 dark:hover:bg-neutral-300 transition-colors text-black active:translate-y-[1px]"
+              className="p-2 hover:bg-neutral-200 dark:hover:bg-neutral-300 transition-colors text-black active:translate-y-[1px] cursor-pointer"
             >
               <ChevronLeft className="w-5 h-5 stroke-[2.5]" />
             </button>
@@ -128,7 +142,7 @@ export const CalendarToolbar: React.FC<CalendarToolbarProps> = ({
               onClick={onNextMonth}
               title="Próximo mês"
               aria-label="Próximo mês"
-              className="p-2 hover:bg-neutral-200 dark:hover:bg-neutral-300 transition-colors text-black active:translate-y-[1px]"
+              className="p-2 hover:bg-neutral-200 dark:hover:bg-neutral-300 transition-colors text-black active:translate-y-[1px] cursor-pointer"
             >
               <ChevronRight className="w-5 h-5 stroke-[2.5]" />
             </button>
@@ -139,7 +153,7 @@ export const CalendarToolbar: React.FC<CalendarToolbarProps> = ({
             variant="outline"
             size="sm"
             onClick={onGoToToday}
-            className="font-bold text-xs"
+            className="font-bold text-xs cursor-pointer"
             title="Voltar para o dia de hoje"
           >
             Hoje
@@ -160,7 +174,7 @@ export const CalendarToolbar: React.FC<CalendarToolbarProps> = ({
       </div>
 
       {/* Linha inferior: Filtros de Tipo e Barra de Busca */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 pt-2 border-t-2 border-ink/10 dark:border-white/10">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-3 pt-2 border-t-2 border-black/10">
         {/* Chips de filtro com visual de adesivos */}
         <div className="flex items-center gap-2 flex-wrap">
           <span className="text-xs font-black uppercase tracking-wider text-neutral-500 mr-1 flex items-center gap-1">
@@ -174,7 +188,7 @@ export const CalendarToolbar: React.FC<CalendarToolbarProps> = ({
             aria-pressed={showAcademic}
             className={`cursor-pointer inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-bold transition-all ${
               showAcademic
-                ? 'bg-pastel-blue text-[#1e40af] dark:text-[#BFDBFE] border-2 border-[#468AFB] shadow-[2px_2px_0px_0px_var(--neo-shadow)]'
+                ? 'bg-pastel-blue text-ink-disc-blue border-2 border-[#468AFB] shadow-[2px_2px_0px_0px_var(--neo-shadow)]'
                 : 'bg-paper text-neutral-600 border-2 border-dashed border-ink/30 hover:border-solid hover:text-black'
             }`}
           >
@@ -188,7 +202,7 @@ export const CalendarToolbar: React.FC<CalendarToolbarProps> = ({
             aria-pressed={showManual}
             className={`cursor-pointer inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-bold transition-all ${
               showManual
-                ? 'bg-pastel-green text-[#15803d] dark:text-[#BBF7D0] border-2 border-[#16A34A] shadow-[2px_2px_0px_0px_var(--neo-shadow)]'
+                ? 'bg-pastel-green text-ink-disc-green border-2 border-[#16A34A] shadow-[2px_2px_0px_0px_var(--neo-shadow)]'
                 : 'bg-paper text-neutral-600 border-2 border-dashed border-ink/30 hover:border-solid hover:text-black'
             }`}
           >
@@ -202,46 +216,34 @@ export const CalendarToolbar: React.FC<CalendarToolbarProps> = ({
             aria-pressed={showFeedTasks}
             className={`cursor-pointer inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-bold transition-all ${
               showFeedTasks
-                ? 'bg-pastel-yellow text-[#854d0e] dark:text-[#FEF08A] border-2 border-[#EAB308] shadow-[2px_2px_0px_0px_var(--neo-shadow)]'
+                ? 'bg-pastel-yellow text-ink-disc-yellow border-2 border-[#EAB308] shadow-[2px_2px_0px_0px_var(--neo-shadow)]'
                 : 'bg-paper text-neutral-600 border-2 border-dashed border-ink/30 hover:border-solid hover:text-black'
             }`}
           >
             <CheckSquare className="w-3.5 h-3.5 stroke-[2.5] text-[#EAB308]" />
             <span>Tarefas do Feed</span>
           </button>
+
+          {hasActiveFilters && (
+            <button
+              type="button"
+              onClick={handleResetFilters}
+              className="text-[11px] font-bold text-neutral-500 hover:text-black dark:hover:text-white underline cursor-pointer ml-1"
+            >
+              Limpar filtros
+            </button>
+          )}
         </div>
 
-        {/* Select de filtro por matérias do usuário */}
-        <div className="w-full sm:w-[260px] shrink-0">
-          <Select
+        {/* Select de filtro por matérias do usuário seguindo o padrão FilterSelect */}
+        <div className="w-full sm:w-[240px] shrink-0">
+          <FilterSelect
+            label="Matéria:"
             value={selectedCourse || 'all'}
-            items={courseOptions}
-            onValueChange={(val) => {
-              if (val) onCourseChange(val);
-            }}
-          >
-            <SelectTrigger
-              className={`h-[34px] w-full px-3 text-xs font-bold rounded-xl border-2 border-ink shadow-[2px_2px_0px_0px_var(--neo-shadow)] transition-all ${
-                selectedCourse && selectedCourse !== 'all'
-                  ? 'bg-pastel-blue text-[#1e40af] dark:text-[#BFDBFE] border-[#468AFB]'
-                  : 'bg-paper text-black'
-              }`}
-            >
-              <div className="flex items-center gap-1.5 truncate">
-                <BookOpen className="w-3.5 h-3.5 stroke-[2.5] text-neo-blue shrink-0" />
-                <SelectValue>
-                  {courseOptions.find((opt) => opt.value === (selectedCourse || 'all'))?.label ?? 'Todas as matérias'}
-                </SelectValue>
-              </div>
-            </SelectTrigger>
-            <SelectContent>
-              {courseOptions.map((opt) => (
-                <SelectItem key={opt.value} value={opt.value}>
-                  {opt.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+            options={courseOptions}
+            onChange={onCourseChange}
+            active={Boolean(selectedCourse && selectedCourse !== 'all')}
+          />
         </div>
       </div>
     </div>

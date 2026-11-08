@@ -9,6 +9,7 @@ import {
   CalendarAgendaView,
   CalendarEventDialog,
   CalendarDeleteDialog,
+  AcademicMilestoneBanner,
 } from '@/components/calendar';
 
 export const CalendarScreen: React.FC = () => {
@@ -23,6 +24,7 @@ export const CalendarScreen: React.FC = () => {
     academicCalendar,
     courses,
     monthGridDays,
+    academicMilestones,
     isSaving,
     // Filtros
     showAcademic,
@@ -85,7 +87,22 @@ export const CalendarScreen: React.FC = () => {
           selectedCourse={selectedCourse}
           onCourseChange={setSelectedCourse}
           onOpenCreateDialog={() => openCreateDialog()}
+          onResetFilters={() => {
+            setShowAcademic(true);
+            setShowManual(true);
+            setShowFeedTasks(true);
+            setSelectedCourse('all');
+          }}
         />
+
+        {/* Banner com Próximos Marcos Institucionais do Calendário Oficial */}
+        {showAcademic && academicMilestones.length > 0 && (
+          <AcademicMilestoneBanner
+            milestones={academicMilestones}
+            semesterLabel={academicCalendar?.semester || '2026.2'}
+            pdfUrl={academicCalendar?.pdfUrl}
+          />
+        )}
 
         {/* Conteúdo Principal do Calendário */}
         {viewMode === 'month' ? (
@@ -113,7 +130,7 @@ export const CalendarScreen: React.FC = () => {
           </div>
         ) : (
           /* Visão Completa de Linha do Tempo / Agenda */
-          <div className="max-w-4xl mx-auto">
+          <div className="w-full">
             <CalendarAgendaView
               events={filteredEvents}
               onAddEvent={() => openCreateDialog()}

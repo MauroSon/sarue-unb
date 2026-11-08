@@ -243,6 +243,16 @@ export const CalendarMonthGrid: React.FC<CalendarMonthGridProps> = ({
                   return (
                     <div
                       key={cell.date}
+                      role="button"
+                      tabIndex={0}
+                      aria-label={`Dia ${cell.dayNumber}`}
+                      onDoubleClick={() => onAddEventOnDate(cell.date, cell.date)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          onSelectDate(cell.date);
+                        }
+                      }}
                       onMouseDown={(e) => {
                         if (e.button !== 0) return;
                         setIsDragging(true);
@@ -256,7 +266,7 @@ export const CalendarMonthGrid: React.FC<CalendarMonthGridProps> = ({
                       }}
                       className={`group relative min-h-[86px] sm:min-h-[104px] p-1.5 sm:p-2 rounded-lg border-2 border-ink transition-all cursor-pointer flex flex-col justify-between ${
                         !cell.isCurrentMonth
-                          ? 'bg-neutral-100/60 dark:bg-neutral-900/40 opacity-50'
+                          ? 'bg-neutral-100 dark:bg-neutral-50-dark'
                           : 'bg-paper'
                       } ${
                         isInDrag
@@ -275,7 +285,7 @@ export const CalendarMonthGrid: React.FC<CalendarMonthGridProps> = ({
                         ) : (
                           <span
                             className={`font-black text-xs sm:text-sm ${
-                              cell.isCurrentMonth ? 'text-black' : 'text-neutral-400'
+                              cell.isCurrentMonth ? 'text-black' : 'text-neutral-500'
                             }`}
                           >
                             {cell.dayNumber}
@@ -290,7 +300,7 @@ export const CalendarMonthGrid: React.FC<CalendarMonthGridProps> = ({
                             onAddEventOnDate(cell.date, cell.date);
                           }}
                           title={`Adicionar evento em ${cell.date}`}
-                          className="opacity-0 group-hover:opacity-100 p-0.5 rounded-md border border-ink bg-chalk-green hover:bg-chalk-green-hover text-black shadow-[1px_1px_0px_0px_var(--neo-shadow)] transition-all hover:scale-105 active:scale-95"
+                          className="cursor-pointer opacity-0 group-hover:opacity-100 p-0.5 rounded-md border border-ink bg-chalk-green hover:bg-chalk-green-hover text-black shadow-[1px_1px_0px_0px_var(--neo-shadow)] transition-all hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none active:translate-x-[1px] active:translate-y-[1px] active:shadow-none"
                         >
                           <Plus className="w-3 h-3 stroke-[3]" />
                         </button>
@@ -302,9 +312,18 @@ export const CalendarMonthGrid: React.FC<CalendarMonthGridProps> = ({
                       {/* Rodapé da Célula: Overflow "+N mais" e indicador de prazo fatal */}
                       <div className="flex items-center justify-between min-h-[14px]">
                         {hiddenCount > 0 ? (
-                          <span className="text-[11px] font-extrabold text-neutral-600">
+                          <button
+                            type="button"
+                            onMouseDown={(e) => e.stopPropagation()}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onSelectDate(cell.date);
+                            }}
+                            title={`Ver eventos do dia ${cell.dayNumber}`}
+                            className="text-[11px] font-extrabold text-blue-ink hover:underline cursor-pointer leading-none text-left"
+                          >
                             +{hiddenCount} mais
-                          </span>
+                          </button>
                         ) : (
                           <span />
                         )}
@@ -371,7 +390,7 @@ export const CalendarMonthGrid: React.FC<CalendarMonthGridProps> = ({
                         e.stopPropagation();
                         onSelectDate(event.date);
                       }}
-                      className={`pointer-events-auto h-[22px] min-w-0 px-1.5 ${roundedClass} ${borderClass} ${marginClass} ${color.border} ${color.bg} ${color.text} flex items-center gap-1 text-[11px] font-extrabold tracking-tight shadow-[1px_1px_0px_0px_var(--neo-shadow)] cursor-pointer hover:brightness-105 active:translate-y-[0.5px] transition-all select-none overflow-hidden`}
+                      className={`pointer-events-auto h-[22px] min-w-0 px-1.5 ${roundedClass} ${borderClass} ${marginClass} ${color.border} ${color.bg} ${color.text} flex items-center gap-1 text-[11px] font-extrabold tracking-tight shadow-[1px_1px_0px_0px_var(--neo-shadow)] cursor-pointer hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none active:translate-x-[1px] active:translate-y-[1px] active:shadow-none transition-all select-none overflow-hidden`}
                       style={{
                         gridColumn: `${startCol + 1} / ${endCol + 2}`,
                         gridRow: `${track + 1}`,

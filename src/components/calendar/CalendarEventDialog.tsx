@@ -200,14 +200,14 @@ export const CalendarEventDialog: React.FC<CalendarEventDialogProps> = ({
             >
               Título do Evento <span className="text-correction-red-strong">*</span>
             </label>
-            <input
+            <textarea
               id="event-title-input"
-              type="text"
+              rows={2}
               required
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="Ex.: P1 de Algoritmos, Trabalho Final, Seminário..."
-              className="w-full min-w-0 px-3.5 py-2 text-sm font-medium rounded-xl border-2 border-ink bg-paper focus:outline-hidden focus:ring-2 focus:ring-neo-blue text-black"
+              className="w-full min-w-0 px-3.5 py-2 text-sm font-medium rounded-xl border-2 border-ink bg-paper focus:outline-hidden focus:ring-2 focus:ring-neo-blue text-black resize-none"
             />
           </div>
 
@@ -250,15 +250,11 @@ export const CalendarEventDialog: React.FC<CalendarEventDialogProps> = ({
                       current.code.length <= 12 &&
                       !current.name.startsWith(current.code)
                     );
+                    const label = hasValidCode
+                      ? `${current.code} - ${current.name}`
+                      : current.name;
                     return (
-                      <span className="flex items-center gap-2 truncate min-w-0 max-w-full">
-                        {hasValidCode && (
-                          <span className="px-1.5 py-0.5 rounded font-mono text-[11px] font-black border border-ink bg-white dark:bg-black/50 text-black dark:text-white shrink-0">
-                            {current.code}
-                          </span>
-                        )}
-                        <span className="font-bold text-xs truncate min-w-0">{current.name}</span>
-                      </span>
+                      <span className="font-bold text-xs truncate min-w-0">{label}</span>
                     );
                   })()}
                 </SelectValue>
@@ -276,20 +272,14 @@ export const CalendarEventDialog: React.FC<CalendarEventDialogProps> = ({
                     c.code.length <= 12 &&
                     !c.name.startsWith(c.code)
                   );
+                  const label = hasValidCode ? `${c.code} - ${c.name}` : c.name;
                   return (
                     <SelectItem
                       key={c.id}
                       value={c.id}
-                      label={hasValidCode ? `${c.code} • ${c.name}` : c.name}
+                      label={label}
                     >
-                      <div className="flex items-center gap-2 truncate min-w-0 max-w-full">
-                        {hasValidCode && (
-                          <span className="px-1.5 py-0.5 rounded font-mono text-[11px] font-black border border-ink bg-white dark:bg-black/50 text-black dark:text-white shrink-0">
-                            {c.code}
-                          </span>
-                        )}
-                        <span className="font-bold text-xs truncate min-w-0">{c.name}</span>
-                      </div>
+                      <span className="font-bold text-xs truncate min-w-0">{label}</span>
                     </SelectItem>
                   );
                 })}
