@@ -28,12 +28,103 @@ export function NumberFieldGroup({
 }
 
 /**
+ * Normaliza strings numéricas substituindo '.' por ',' para digitação transparente em pt-BR.
+ */
+export function normalizeDecimalSeparator(input: string): string {
+  return input.replace(/\./g, ",");
+}
+
+/**
+ * Converte string com '.' ou ',' para float válido no domínio de notas (0 a 10).
+ */
+export function parseGradeInput(input: string | number | null | undefined): number | null {
+  if (input === null || input === undefined) return null;
+  if (typeof input === "number") return Number.isFinite(input) ? input : null;
+  const trimmed = input.trim();
+  if (trimmed === "") return null;
+  // Suporta tanto 7.5 quanto 7,5
+  const normalized = trimmed.replace(/\s+/g, "").replace(",", ".");
+  const num = parseFloat(normalized);
+  return Number.isFinite(num) ? num : null;
+}
+
+type NumberFieldInputProps = React.ComponentProps<typeof NumberFieldPrimitive.Input>;
+
+/**
  * Input numérico de alto contraste sem os spinbuttons nativos quebrados do navegador.
+ * Suporta normalização transparente de '.' para ',' em teclados pt-BR.
  */
 export function NumberFieldInput({
   className,
+  onKeyDown,
+  onPaste,
   ...props
-}: React.ComponentProps<typeof NumberFieldPrimitive.Input>) {
+}: NumberFieldInputProps) {
+  const handleKeyDown: NumberFieldInputProps["onKeyDown"] = (e) => {
+    // Em pt-BR, usuários digitam tanto ',' quanto '.' (ex.: teclado numérico).
+    // Intercepta '.' para inserir ',' de forma nativa e evitar interpretação errônea.
+    if (e.key === ".") {
+      const input = e.currentTarget;
+      const val = input.value;
+      const start = input.selectionStart ?? 0;
+      const end = input.selectionEnd ?? 0;
+      const hasDecimal = val.includes(",") || val.includes(".");
+      const isReplacing =
+        start !== end &&
+        (val.slice(start, end).includes(",") || val.slice(start, end).includes("."));
+
+      if (!hasDecimal || isReplacing) {
+        e.preventDefault();
+        try {
+          if (!document.execCommand("insertText", false, ",")) {
+            const nextVal = val.slice(0, start) + "," + val.slice(end);
+            input.value = nextVal;
+            input.setSelectionRange(start + 1, start + 1);
+            input.dispatchEvent(new Event("input", { bubbles: true }));
+          }
+        } catch {
+          const nextVal = val.slice(0, start) + "," + val.slice(end);
+          input.value = nextVal;
+          input.setSelectionRange(start + 1, start + 1);
+          input.dispatchEvent(new Event("input", { bubbles: true }));
+        }
+        return;
+      }
+    }
+    onKeyDown?.(e);
+  };
+
+  const handlePaste: NumberFieldInputProps["onPaste"] = (e) => {
+    const text = e.clipboardData.getData("text");
+    if (text.includes(".")) {
+      e.preventDefault();
+      const normalized = normalizeDecimalSeparator(text);
+      try {
+        if (!document.execCommand("insertText", false, normalized)) {
+          const input = e.currentTarget;
+          const val = input.value;
+          const start = input.selectionStart ?? 0;
+          const end = input.selectionEnd ?? 0;
+          const nextVal = val.slice(0, start) + normalized + val.slice(end);
+          input.value = nextVal;
+          input.setSelectionRange(start + normalized.length, start + normalized.length);
+          input.dispatchEvent(new Event("input", { bubbles: true }));
+        }
+      } catch {
+        const input = e.currentTarget;
+        const val = input.value;
+        const start = input.selectionStart ?? 0;
+        const end = input.selectionEnd ?? 0;
+        const nextVal = val.slice(0, start) + normalized + val.slice(end);
+        input.value = nextVal;
+        input.setSelectionRange(start + normalized.length, start + normalized.length);
+        input.dispatchEvent(new Event("input", { bubbles: true }));
+      }
+      return;
+    }
+    onPaste?.(e);
+  };
+
   return (
     <NumberFieldPrimitive.Input
       data-slot="number-field-input"
@@ -43,6 +134,8 @@ export function NumberFieldInput({
         "[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none",
         className
       )}
+      onKeyDown={handleKeyDown}
+      onPaste={handlePaste}
       {...props}
     />
   );
@@ -101,6 +194,10 @@ export interface NumberInputProps {
   max?: number;
   step?: number;
   smallStep?: number;
+  /** Locale para formatação e parsing (padrão pt-BR) */
+  locale?: string;
+  /** Opções de formatação Intl (padrão: useGrouping: false) */
+  format?: Intl.NumberFormatOptions;
   placeholder?: string;
   disabled?: boolean;
   className?: string;
@@ -116,7 +213,7 @@ export interface NumberInputProps {
 
 /**
  * Componente pronto de Input Numérico Neobrutalista do Saruê UnB.
- * Resolve problemas de spinbutton nativo quebrado e suporte a decimais.
+ * Resolve problemas de spinbutton nativo quebrado e suporte a decimais em pt-BR.
  */
 export const NumberInput: React.FC<NumberInputProps> = ({
   id,
@@ -127,6 +224,8 @@ export const NumberInput: React.FC<NumberInputProps> = ({
   max = 10,
   step = 0.5,
   smallStep = 0.1,
+  locale = "pt-BR",
+  format = { useGrouping: false },
   placeholder = "Pendente",
   disabled = false,
   className,
@@ -139,6 +238,8 @@ export const NumberInput: React.FC<NumberInputProps> = ({
       id={id}
       value={value}
       defaultValue={defaultValue}
+      locale={locale}
+      format={format}
       onValueChange={(val) => {
         onValueChange?.(val);
       }}
