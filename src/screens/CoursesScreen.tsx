@@ -26,6 +26,11 @@ import {
   Folder,
 } from "lucide-react";
 import { UnmatchedCourseDialog } from "../components/UnmatchedCourseDialog";
+import {
+  AbsenceSection,
+  readAbsenceOverride,
+  writeAbsenceOverride,
+} from "../components/course";
 import { GradeFormulaSection } from "../components/course";
 import { FeedList } from "../components/feed/FeedList";
 import { FeedToolbar } from "../components/feed/FeedToolbar";
@@ -61,6 +66,11 @@ export const CoursesScreen: React.FC = () => {
   const [selectedDiscipline, setSelectedDiscipline] =
     useState<Discipline | null>(null);
   const [resolvingCourse, setResolvingCourse] = useState<Course | null>(null);
+  // Ajuste manual de faltas da disciplina aberta no drill-down (null = usar valor do SIGAA).
+  // Persistido em localStorage para sobreviver aos re-syncs do SIGAA.
+  const [absenceOverride, setAbsenceOverride] = useState<number | null>(null);
+  // Incrementa a cada ajuste para recomputar badges/notificações da lista que dependem do override
+  const [absenceOverridesVersion, setAbsenceOverridesVersion] = useState(0);
   const [drillSearchQuery, setDrillSearchQuery] = useState<string>("");
   const [drillCategory, setDrillCategory] = useState<FeedItemType | "all">(
     "all",
@@ -87,6 +97,30 @@ export const CoursesScreen: React.FC = () => {
   useEffect(() => {
     setDrillPlatform("all");
   }, [selectedDiscipline]);
+
+  const selectedDisciplineId = selectedDiscipline?.id;
+  // Trocou de disciplina: carrega o ajuste manual de faltas da persistência
+  useEffect(() => {
+    setAbsenceOverride(
+      selectedDisciplineId ? readAbsenceOverride(selectedDisciplineId) : null,
+    );
+  }, [selectedDisciplineId]);
+
+  // Ajuste manual editado: persiste e invalida os badges/notificações da lista
+  const handleAbsenceOverrideChange = (value: number | null) => {
+    if (selectedDisciplineId) {
+      writeAbsenceOverride(selectedDisciplineId, value);
+      setAbsenceOverridesVersion((v) => v + 1);
+    }
+    setAbsenceOverride(value);
+  };
+
+  // Faltas efetivas de uma disciplina: ajuste manual > SIGAA > 0 (se tem SIGAA)
+  const getEffectiveAbsences = (d: Discipline): number | undefined => {
+    const overrideValue = readAbsenceOverride(d.id);
+    if (overrideValue !== null) return overrideValue;
+    return d.absences ?? d.sigaaCourse?.absences ?? (d.sigaaCourse ? 0 : undefined);
+  };
 
   // Plataformas que a disciplina efetivamente tem (SIGAA / Aprender 3 / Teams)
   const drillPlatforms = useMemo(() => {
@@ -118,7 +152,7 @@ export const CoursesScreen: React.FC = () => {
   const atRiskDisciplines = useMemo(() => {
     return disciplines
       .map((d) => {
-        const abs = d.absences ?? d.sigaaCourse?.absences;
+        const abs = getEffectiveAbsences(d);
         if (abs === undefined && !d.sigaaCourse) return null;
         const status = calculateAbsenceRisk({
           absences: abs ?? 0,
@@ -135,7 +169,10 @@ export const CoursesScreen: React.FC = () => {
           status: ReturnType<typeof calculateAbsenceRisk>;
         } => Boolean(item && (item.status.isAtRisk || item.status.isExceeded)),
       );
-  }, [disciplines]);
+    // absenceOverridesVersion é dependência intencional: invalida o memo quando o ajuste
+    // manual de faltas muda (o valor vem de localStorage, não observável pelo React)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [disciplines, absenceOverridesVersion]);
 
   // Notificação do Sistema Operacional quando estiver prestes a atingir o limite de faltas (ou tiver excedido)
   useEffect(() => {
@@ -372,10 +409,9 @@ export const CoursesScreen: React.FC = () => {
 
   // Se o usuário selecionou uma disciplina para ver o feed exclusivo (Drill-Down)
   if (selectedDiscipline) {
-    const absencesCount =
-      selectedDiscipline.absences ??
-      selectedDiscipline.sigaaCourse?.absences ??
-      (selectedDiscipline.sigaaCourse ? 0 : undefined);
+    const absencesCount = getEffectiveAbsences(selectedDiscipline);
+    const hasManualAbsenceOverride =
+      readAbsenceOverride(selectedDiscipline.id) !== null;
     const maxAbsences =
       selectedDiscipline.maxAbsences ??
       selectedDiscipline.sigaaCourse?.maxAbsences;
@@ -462,18 +498,18 @@ export const CoursesScreen: React.FC = () => {
               {drillAbsenceStatus ? (
                 <Badge
                   variant={
-                    drillAbsenceStatus.isExceeded || drillAbsenceStatus.isCritical
+                    drillAbsenceStatus.absences === 0
+                      ? "success"
+                      : drillAbsenceStatus.isExceeded || drillAbsenceStatus.isCritical
                       ? "urgent"
                       : drillAbsenceStatus.isAtRisk
                       ? "yellow"
-                      : drillAbsenceStatus.absences === 0
-                      ? "success"
-                      : "yellow"
+                      : "success"
                   }
                   size="sm"
                   title={
                     drillAbsenceStatus.warningMessage ||
-                    `Faltas registradas no SIGAA: ${drillAbsenceStatus.absences} de ${drillAbsenceStatus.maxAbsences}h permitidas (limite de 25% da carga horária na UnB).`
+                    `Faltas registradas no SIGAA${hasManualAbsenceOverride ? " (ajustado manualmente)" : ""}: ${drillAbsenceStatus.absences} de ${drillAbsenceStatus.maxAbsences}h permitidas (limite de 25% da carga horária na UnB).`
                   }
                   className="font-black"
                 >
@@ -519,6 +555,13 @@ export const CoursesScreen: React.FC = () => {
 
         {/* Seção de Cálculo de Notas, Fórmula e Estimativa de Aprovação */}
         <GradeFormulaSection discipline={selectedDiscipline} />
+
+        {/* Seção de Controle de Faltas com ajuste manual (override persistido) */}
+        <AbsenceSection
+          discipline={selectedDiscipline}
+          override={absenceOverride}
+          onOverrideChange={handleAbsenceOverrideChange}
+        />
 
         {/* Barra de Filtros e Busca da Disciplina (expande para baixo no modo Selecionar) */}
         <FeedToolbar
@@ -681,13 +724,11 @@ export const CoursesScreen: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {disciplines.map((discipline) => {
             const hasAttendance =
-              discipline.absences !== undefined || Boolean(discipline.sigaaCourse);
+              getEffectiveAbsences(discipline) !== undefined ||
+              Boolean(discipline.sigaaCourse);
             const absenceStatus = hasAttendance
               ? calculateAbsenceRisk({
-                  absences:
-                    discipline.absences ??
-                    discipline.sigaaCourse?.absences ??
-                    (discipline.sigaaCourse ? 0 : undefined),
+                  absences: getEffectiveAbsences(discipline),
                   maxAbsences:
                     discipline.maxAbsences ?? discipline.sigaaCourse?.maxAbsences,
                   schedule:
@@ -736,13 +777,13 @@ export const CoursesScreen: React.FC = () => {
                     {absenceStatus ? (
                       <Badge
                         variant={
-                          absenceStatus.isExceeded || absenceStatus.isCritical
+                          absenceStatus.absences === 0
+                            ? "success"
+                            : absenceStatus.isExceeded || absenceStatus.isCritical
                             ? "urgent"
                             : absenceStatus.isAtRisk
                             ? "yellow"
-                            : absenceStatus.absences === 0
-                            ? "success"
-                            : "yellow"
+                            : "success"
                         }
                         title={
                           absenceStatus.warningMessage ||

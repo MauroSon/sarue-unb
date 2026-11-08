@@ -1,3 +1,4 @@
+export * from './AbsenceSection';
 export * from './CurrentlyEnrolledPanel';
 export * from './CurriculumSelectorDialog';
 export * from './FlowchartCard';
