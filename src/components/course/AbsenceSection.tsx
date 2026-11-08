@@ -124,7 +124,7 @@ export const AbsenceSection: React.FC<AbsenceSectionProps> = ({
 
   const Container = embedded ? "div" : Card;
   const containerProps = embedded
-    ? { className: "pt-4 border-t-2 border-black/10 space-y-4" }
+    ? { className: "pt-4 pb-3 border-t-2 border-black/10 space-y-4" }
     : { className: "p-4 bg-paper rounded-lg border-2 border-ink shadow-(--neo-card-shadow) space-y-4" };
 
   return (
@@ -189,7 +189,7 @@ export const AbsenceSection: React.FC<AbsenceSectionProps> = ({
 
       {/* Conteúdo Expandido */}
       {isExpanded && (
-        <div className="pt-3 border-t-2 border-ink/10 space-y-4">
+        <div className="pt-3 pb-3 border-t-2 border-ink/10 space-y-4">
           {/* Registro oficial do SIGAA */}
           <div className="flex items-start gap-1.5 text-xs font-semibold text-neutral-600">
             <Info className="w-3.5 h-3.5 shrink-0 stroke-[2.5] text-neutral-500" />

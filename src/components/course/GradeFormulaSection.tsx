@@ -173,7 +173,7 @@ export const GradeFormulaSection: React.FC<GradeFormulaSectionProps> = ({
 
   const Container = embedded ? "div" : Card;
   const containerProps = embedded
-    ? { className: "pt-4 border-t-2 border-black/10 space-y-4" }
+    ? { className: "pt-4 pb-3 border-t-2 border-black/10 space-y-4" }
     : { className: "p-4 bg-paper rounded-lg border-2 border-ink shadow-(--neo-card-shadow) space-y-4" };
 
   return (
@@ -228,7 +228,7 @@ export const GradeFormulaSection: React.FC<GradeFormulaSectionProps> = ({
 
       {/* Conteúdo Expandido */}
       {isExpanded && (
-        <div className="pt-3 border-t-2 border-ink/10 space-y-4">
+        <div className="pt-3 pb-3 border-t-2 border-ink/10 space-y-4">
           {/* Seletor de Presets Rápidos */}
           <div className="space-y-1.5">
             <div className="flex items-center gap-1.5 text-xs font-black text-black">

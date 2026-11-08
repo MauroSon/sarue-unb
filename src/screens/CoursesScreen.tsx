@@ -477,7 +477,7 @@ export const CoursesScreen: React.FC = () => {
         />
 
         {/* Card de detalhes da disciplina: badges de plataforma + meta SIGAA + Faltas UnB */}
-        <Card className="p-4">
+        <Card className="p-4 sm:p-5 space-y-3 pb-5">
           <div className="flex flex-wrap items-center gap-x-2 gap-y-1.5">
             <div className="flex flex-wrap items-center gap-1.5">
               {selectedDiscipline.sigaaCourse ? (

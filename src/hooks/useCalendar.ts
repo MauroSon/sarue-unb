@@ -3,6 +3,7 @@ import { useContainer } from '@/context/ContainerContext';
 import {
   type UnifiedCalendarEvent,
   type UserCalendarEvent,
+  type CalendarEventCategory,
   type AcademicCalendar,
   type Course,
   type CreateUserEventDTO,
@@ -55,7 +56,9 @@ export function useCalendar() {
 
   // Modal de criação/edição
   const [isEventDialogOpen, setIsEventDialogOpen] = useState(false);
-  const [editingEvent, setEditingEvent] = useState<UserCalendarEvent | null>(null);
+  const [editingEvent, setEditingEvent] = useState<
+    (UserCalendarEvent & { isReadOnly?: boolean }) | null
+  >(null);
   const [prefilledDate, setPrefilledDate] = useState<string | undefined>(undefined);
   const [prefilledEndDate, setPrefilledEndDate] = useState<string | undefined>(undefined);
 
@@ -174,16 +177,6 @@ export function useCalendar() {
     });
   }, [filteredEvents, selectedDate]);
 
-  // Marcos acadêmicos em destaque (próximos ou em andamento)
-  const academicMilestones = useMemo(() => {
-    const todayStr = new Date().toISOString().split('T')[0];
-    return events
-      .filter((e) => e.type === 'academic' && (e.isDeadline || e.id.includes('aulas') || e.id.includes('letivo')))
-      .sort((a, b) => a.date.localeCompare(b.date))
-      .filter((e) => (e.endDate ? e.endDate >= todayStr : e.date >= todayStr))
-      .slice(0, 3);
-  }, [events]);
-
   // Constrói as 42 células do mês para a grade de visualização
   const monthGridDays = useMemo<CalendarDayCell[]>(() => {
     const year = currentDate.getFullYear();
@@ -300,8 +293,29 @@ export function useCalendar() {
     [selectedDate]
   );
 
-  const openEditDialog = useCallback((event: UserCalendarEvent) => {
-    setEditingEvent(event);
+  const openEditDialog = useCallback((event: UserCalendarEvent | UnifiedCalendarEvent) => {
+    if ('type' in event && event.type === 'manual' && event.rawPayload) {
+      setEditingEvent(event.rawPayload as UserCalendarEvent);
+    } else if ('type' in event && event.type !== 'manual') {
+      setEditingEvent({
+        id: event.id,
+        title: event.title,
+        date: event.date,
+        endDate: event.endDate || event.date,
+        startTime: event.startTime,
+        endTime: event.endTime,
+        allDay: event.allDay,
+        category: (event.type === 'academic' ? 'academic' : 'personal') as CalendarEventCategory,
+        courseName: event.courseName,
+        courseCode: event.courseCode,
+        description: event.description,
+        createdAt: '',
+        updatedAt: '',
+        isReadOnly: true,
+      } as UserCalendarEvent & { isReadOnly?: boolean });
+    } else {
+      setEditingEvent(event as UserCalendarEvent);
+    }
     setPrefilledDate(undefined);
     setPrefilledEndDate(undefined);
     setIsEventDialogOpen(true);
@@ -398,7 +412,6 @@ export function useCalendar() {
     events,
     filteredEvents,
     eventsForSelectedDate,
-    academicMilestones,
     academicCalendar,
     courses,
     monthGridDays,

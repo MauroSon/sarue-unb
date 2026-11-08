@@ -26,7 +26,7 @@ import type {
 interface CalendarEventDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  event: UserCalendarEvent | null;
+  event: (UserCalendarEvent & { isReadOnly?: boolean }) | null;
   prefilledDate?: string;
   prefilledEndDate?: string;
   courses?: Course[];
@@ -120,8 +120,14 @@ export const CalendarEventDialog: React.FC<CalendarEventDialogProps> = ({
     }
   }, [open, event, prefilledDate, prefilledEndDate, uniqueCourses]);
 
+  const isReadOnly = Boolean(event?.isReadOnly);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isReadOnly) {
+      onOpenChange(false);
+      return;
+    }
     if (!title.trim()) {
       setError('Informe o título do evento.');
       return;
@@ -175,10 +181,16 @@ export const CalendarEventDialog: React.FC<CalendarEventDialogProps> = ({
       <DialogContent className="sm:max-w-lg min-w-0 max-w-[calc(100vw-2rem)] overflow-hidden">
         <DialogHeader>
           <DialogTitle>
-            {event ? 'Editar Evento' : 'Novo Evento no Calendário'}
+            {isReadOnly
+              ? 'Detalhes do Evento'
+              : event
+              ? 'Editar Evento'
+              : 'Novo Evento no Calendário'}
           </DialogTitle>
           <DialogDescription>
-            Defina o título, a matéria associada e o período do compromisso.
+            {isReadOnly
+              ? 'Informações do evento registradas no calendário.'
+              : 'Defina o título, a matéria associada e o período do compromisso.'}
           </DialogDescription>
         </DialogHeader>
 
@@ -198,16 +210,17 @@ export const CalendarEventDialog: React.FC<CalendarEventDialogProps> = ({
               htmlFor="event-title-input"
               className="text-xs font-black uppercase tracking-wider text-black block"
             >
-              Título do Evento <span className="text-correction-red-strong">*</span>
+              Título do Evento {!isReadOnly && <span className="text-correction-red-strong">*</span>}
             </label>
             <textarea
               id="event-title-input"
               rows={2}
-              required
+              required={!isReadOnly}
+              disabled={isReadOnly}
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="Ex.: P1 de Algoritmos, Trabalho Final, Seminário..."
-              className="w-full min-w-0 px-3.5 py-2 text-sm font-medium rounded-xl border-2 border-ink bg-paper focus:outline-hidden focus:ring-2 focus:ring-neo-blue text-black resize-none"
+              className="w-full min-w-0 px-3.5 py-2 text-sm font-medium rounded-xl border-2 border-ink bg-paper focus:outline-hidden focus:ring-2 focus:ring-neo-blue text-black resize-none disabled:opacity-75 disabled:cursor-not-allowed"
             />
           </div>
 
@@ -222,11 +235,12 @@ export const CalendarEventDialog: React.FC<CalendarEventDialogProps> = ({
             <Select
               value={selectedCourseId}
               items={courseSelectItems}
+              disabled={isReadOnly}
               onValueChange={(val) => {
                 if (val) setSelectedCourseId(val);
               }}
             >
-              <SelectTrigger id="event-course-select" className="w-full min-w-0 bg-paper">
+              <SelectTrigger id="event-course-select" className="w-full min-w-0 bg-paper disabled:opacity-75 disabled:cursor-not-allowed">
                 <SelectValue placeholder="Selecione a matéria">
                   {(() => {
                     if (selectedCourseId === '__none__') {
@@ -290,7 +304,7 @@ export const CalendarEventDialog: React.FC<CalendarEventDialogProps> = ({
           {/* Período (Date Range) */}
           <div className="space-y-1.5 min-w-0">
             <label className="text-xs font-black uppercase tracking-wider text-black block">
-              Período do Evento <span className="text-correction-red-strong">*</span>
+              Período do Evento {!isReadOnly && <span className="text-correction-red-strong">*</span>}
             </label>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 items-center min-w-0">
               <div className="space-y-1 min-w-0">
@@ -303,7 +317,8 @@ export const CalendarEventDialog: React.FC<CalendarEventDialogProps> = ({
                 <input
                   id="event-start-date"
                   type="date"
-                  required
+                  required={!isReadOnly}
+                  disabled={isReadOnly}
                   value={startDate}
                   onChange={(e) => {
                     const newStart = e.target.value;
@@ -312,7 +327,7 @@ export const CalendarEventDialog: React.FC<CalendarEventDialogProps> = ({
                       setEndDate(newStart);
                     }
                   }}
-                  className="w-full min-w-0 px-3 py-2 text-sm font-medium rounded-xl border-2 border-ink bg-paper focus:outline-hidden focus:ring-2 focus:ring-neo-blue text-black"
+                  className="w-full min-w-0 px-3 py-2 text-sm font-medium rounded-xl border-2 border-ink bg-paper focus:outline-hidden focus:ring-2 focus:ring-neo-blue text-black disabled:opacity-75 disabled:cursor-not-allowed"
                 />
               </div>
 
@@ -326,52 +341,81 @@ export const CalendarEventDialog: React.FC<CalendarEventDialogProps> = ({
                 <input
                   id="event-end-date"
                   type="date"
-                  required
+                  required={!isReadOnly}
+                  disabled={isReadOnly}
                   value={endDate}
                   min={startDate}
                   onChange={(e) => setEndDate(e.target.value)}
-                  className="w-full min-w-0 px-3 py-2 text-sm font-medium rounded-xl border-2 border-ink bg-paper focus:outline-hidden focus:ring-2 focus:ring-neo-blue text-black"
+                  className="w-full min-w-0 px-3 py-2 text-sm font-medium rounded-xl border-2 border-ink bg-paper focus:outline-hidden focus:ring-2 focus:ring-neo-blue text-black disabled:opacity-75 disabled:cursor-not-allowed"
                 />
               </div>
             </div>
           </div>
 
+          {/* Descrição oficial (quando disponível) */}
+          {event?.description && (
+            <div className="space-y-1 min-w-0">
+              <span className="text-xs font-black uppercase tracking-wider text-black block">
+                Descrição
+              </span>
+              <p className="text-xs text-neutral-800 leading-relaxed font-medium bg-neutral-100 dark:bg-neutral-800 p-2.5 rounded-xl border border-ink/15 whitespace-pre-wrap">
+                {event.description}
+              </p>
+            </div>
+          )}
+
           {/* Opção de Notificação */}
-          <div className="flex items-center gap-2.5 pt-1">
-            <Checkbox
-              id="event-notify-checkbox"
-              checked={notify}
-              onCheckedChange={(checked) => setNotify(Boolean(checked))}
-              className="data-checked:bg-neo-blue data-checked:text-white"
-            />
-            <label
-              htmlFor="event-notify-checkbox"
-              className="cursor-pointer text-xs font-bold text-black select-none flex items-center gap-1.5"
-            >
-              <Bell className="w-3.5 h-3.5 stroke-[2.5] text-neo-blue" />
-              <span>Notificar sobre este evento</span>
-            </label>
-          </div>
+          {!isReadOnly && (
+            <div className="flex items-center gap-2.5 pt-1">
+              <Checkbox
+                id="event-notify-checkbox"
+                checked={notify}
+                onCheckedChange={(checked) => setNotify(Boolean(checked))}
+                className="data-checked:bg-neo-blue data-checked:text-white"
+              />
+              <label
+                htmlFor="event-notify-checkbox"
+                className="cursor-pointer text-xs font-bold text-black select-none flex items-center gap-1.5"
+              >
+                <Bell className="w-3.5 h-3.5 stroke-[2.5] text-neo-blue" />
+                <span>Notificar sobre este evento</span>
+              </label>
+            </div>
+          )}
 
           <DialogFooter className="pt-3">
-            <Button
-              type="button"
-              variant="outline"
-              size="md"
-              onClick={() => onOpenChange(false)}
-              disabled={isSaving}
-            >
-              Cancelar
-            </Button>
-            <Button
-              type="submit"
-              variant="primary"
-              size="md"
-              disabled={isSaving}
-              className="min-w-[120px]"
-            >
-              {isSaving ? 'Salvando...' : event ? 'Salvar Alterações' : 'Criar Evento'}
-            </Button>
+            {isReadOnly ? (
+              <Button
+                type="button"
+                variant="primary"
+                size="md"
+                onClick={() => onOpenChange(false)}
+                className="cursor-pointer font-bold"
+              >
+                Fechar
+              </Button>
+            ) : (
+              <>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="md"
+                  onClick={() => onOpenChange(false)}
+                  disabled={isSaving}
+                >
+                  Cancelar
+                </Button>
+                <Button
+                  type="submit"
+                  variant="primary"
+                  size="md"
+                  disabled={isSaving}
+                  className="min-w-[120px]"
+                >
+                  {isSaving ? 'Salvando...' : event ? 'Salvar Alterações' : 'Criar Evento'}
+                </Button>
+              </>
+            )}
           </DialogFooter>
         </form>
       </DialogContent>

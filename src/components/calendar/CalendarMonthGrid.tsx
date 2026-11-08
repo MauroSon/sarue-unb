@@ -9,6 +9,7 @@ interface CalendarMonthGridProps {
   selectedDate: string;
   onSelectDate: (date: string) => void;
   onAddEventOnDate: (startDate: string, endDate?: string) => void;
+  onEventClick?: (event: UnifiedCalendarEvent) => void;
 }
 
 const WEEKDAYS = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
@@ -36,6 +37,7 @@ export const CalendarMonthGrid: React.FC<CalendarMonthGridProps> = ({
   selectedDate,
   onSelectDate,
   onAddEventOnDate,
+  onEventClick,
 }) => {
   // Estado para arrastar e selecionar período entre datas (drag-to-select range)
   const [isDragging, setIsDragging] = useState(false);
@@ -389,6 +391,7 @@ export const CalendarMonthGrid: React.FC<CalendarMonthGridProps> = ({
                       onClick={(e) => {
                         e.stopPropagation();
                         onSelectDate(event.date);
+                        onEventClick?.(event);
                       }}
                       className={`pointer-events-auto h-[22px] min-w-0 px-1.5 ${roundedClass} ${borderClass} ${marginClass} ${color.border} ${color.bg} ${color.text} flex items-center gap-1 text-[11px] font-extrabold tracking-tight shadow-[1px_1px_0px_0px_var(--neo-shadow)] cursor-pointer hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none active:translate-x-[1px] active:translate-y-[1px] active:shadow-none transition-all select-none overflow-hidden`}
                       style={{

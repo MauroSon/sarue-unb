@@ -7,7 +7,7 @@ import { CalendarEventCard } from './CalendarEventCard';
 interface CalendarAgendaViewProps {
   events: UnifiedCalendarEvent[];
   onAddEvent: () => void;
-  onEditEvent: (event: UserCalendarEvent) => void;
+  onEditEvent: (event: UserCalendarEvent | UnifiedCalendarEvent) => void;
   onDeleteEvent: (event: UnifiedCalendarEvent) => void;
 }
 
@@ -76,9 +76,7 @@ export const CalendarAgendaView: React.FC<CalendarAgendaViewProps> = ({
     return (
       <div
         key={dateStr}
-        className={`bg-paper border-2 border-ink rounded-xl p-4 sm:p-5 shadow-[4px_4px_0px_0px_var(--neo-shadow)] transition-all ${
-          isToday ? 'ring-2 ring-neo-blue ring-offset-2 ring-offset-paper' : ''
-        }`}
+        className="bg-paper border-2 border-ink rounded-xl p-4 sm:p-5 shadow-[4px_4px_0px_0px_var(--neo-shadow)] transition-all"
       >
         {/* Header da Data */}
         <div className="flex items-center justify-between pb-3 border-b-2 border-black/10 mb-3">

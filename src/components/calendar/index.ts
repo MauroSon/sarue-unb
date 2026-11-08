@@ -1,5 +1,4 @@
 export * from './CalendarToolbar';
-export * from './AcademicMilestoneBanner';
 export * from './CalendarMonthGrid';
 export * from './CalendarDayAgenda';
 export * from './CalendarAgendaView';

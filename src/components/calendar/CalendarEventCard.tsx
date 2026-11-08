@@ -6,7 +6,7 @@ import { getCalendarEventColors } from './calendar-colors';
 
 export interface CalendarEventCardProps {
   event: UnifiedCalendarEvent;
-  onEditEvent?: (event: UserCalendarEvent) => void;
+  onEditEvent?: (event: UserCalendarEvent | UnifiedCalendarEvent) => void;
   onDeleteEvent?: (event: UnifiedCalendarEvent) => void;
   /** Exibe a linha de data (DD/MM). Omitir no painel lateral do dia selecionado para evitar ruído. */
   showDate?: boolean;
@@ -40,9 +40,16 @@ export const CalendarEventCard: React.FC<CalendarEventCardProps> = ({
 
   return (
     <div
+      onClick={() => {
+        if (onEditEvent) {
+          onEditEvent(isManual && event.rawPayload ? (event.rawPayload as UserCalendarEvent) : event);
+        }
+      }}
       className={`p-3 rounded-lg border-2 ${color.border} ${color.bg} transition-all ${
-        hasShadow ? 'shadow-[2px_2px_0px_0px_var(--neo-shadow)]' : ''
-      } ${isCompleted ? 'opacity-50' : ''}`}
+        onEditEvent ? 'cursor-pointer hover:border-black/50' : ''
+      } ${hasShadow ? 'shadow-[2px_2px_0px_0px_var(--neo-shadow)]' : ''} ${
+        isCompleted ? 'opacity-50' : ''
+      }`}
     >
       {/* Linha de Badges e Ações */}
       <div className="flex items-center justify-between gap-2 mb-2">
@@ -70,7 +77,10 @@ export const CalendarEventCard: React.FC<CalendarEventCardProps> = ({
             {onEditEvent && (
               <button
                 type="button"
-                onClick={() => onEditEvent(event.rawPayload as UserCalendarEvent)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onEditEvent(event.rawPayload as UserCalendarEvent);
+                }}
                 title="Editar evento"
                 className="cursor-pointer p-1 rounded-md border border-ink bg-paper hover:bg-neutral-100 text-black shadow-[1px_1px_0px_0px_var(--neo-shadow)] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none active:translate-x-[1px] active:translate-y-[1px] active:shadow-none transition-all"
               >
@@ -80,7 +90,10 @@ export const CalendarEventCard: React.FC<CalendarEventCardProps> = ({
             {onDeleteEvent && (
               <button
                 type="button"
-                onClick={() => onDeleteEvent(event)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onDeleteEvent(event);
+                }}
                 title="Excluir evento"
                 className="cursor-pointer p-1 rounded-md border border-ink bg-paper hover:bg-correction-red/20 text-neutral-800 hover:text-correction-red-strong shadow-[1px_1px_0px_0px_var(--neo-shadow)] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none active:translate-x-[1px] active:translate-y-[1px] active:shadow-none transition-all"
               >

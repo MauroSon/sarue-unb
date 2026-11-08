@@ -3,7 +3,6 @@ import {
   ChevronLeft,
   ChevronRight,
   Calendar as CalendarIcon,
-  ListFilter,
   GraduationCap,
   CheckSquare,
 } from 'lucide-react';
@@ -175,64 +174,62 @@ export const CalendarToolbar: React.FC<CalendarToolbarProps> = ({
 
       {/* Linha inferior: Filtros de Tipo e Barra de Busca */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-3 pt-2 border-t-2 border-black/10">
-        {/* Chips de filtro com visual de adesivos */}
-        <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-xs font-black uppercase tracking-wider text-neutral-500 mr-1 flex items-center gap-1">
-            <ListFilter className="w-3.5 h-3.5 stroke-[2.5]" />
-            Filtros:
-          </span>
-
-          <button
-            type="button"
-            onClick={onToggleAcademic}
-            aria-pressed={showAcademic}
-            className={`cursor-pointer inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-bold transition-all ${
-              showAcademic
-                ? 'bg-pastel-blue text-ink-disc-blue border-2 border-[#468AFB] shadow-[2px_2px_0px_0px_var(--neo-shadow)]'
-                : 'bg-paper text-neutral-600 border-2 border-dashed border-ink/30 hover:border-solid hover:text-black'
-            }`}
-          >
-            <GraduationCap className="w-3.5 h-3.5 stroke-[2.5] text-[#468AFB]" />
-            <span>Calendário Acadêmico (UnB)</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={onToggleManual}
-            aria-pressed={showManual}
-            className={`cursor-pointer inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-bold transition-all ${
-              showManual
-                ? 'bg-pastel-green text-ink-disc-green border-2 border-[#16A34A] shadow-[2px_2px_0px_0px_var(--neo-shadow)]'
-                : 'bg-paper text-neutral-600 border-2 border-dashed border-ink/30 hover:border-solid hover:text-black'
-            }`}
-          >
-            <CalendarIcon className="w-3.5 h-3.5 stroke-[2.5] text-[#16A34A]" />
-            <span>Meus Eventos</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={onToggleFeedTasks}
-            aria-pressed={showFeedTasks}
-            className={`cursor-pointer inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-bold transition-all ${
-              showFeedTasks
-                ? 'bg-pastel-yellow text-ink-disc-yellow border-2 border-[#EAB308] shadow-[2px_2px_0px_0px_var(--neo-shadow)]'
-                : 'bg-paper text-neutral-600 border-2 border-dashed border-ink/30 hover:border-solid hover:text-black'
-            }`}
-          >
-            <CheckSquare className="w-3.5 h-3.5 stroke-[2.5] text-[#EAB308]" />
-            <span>Tarefas do Feed</span>
-          </button>
-
-          {hasActiveFilters && (
+        {/* Chips de filtro com visual de adesivos seguindo o padrão com rótulo acima */}
+        <div className="flex flex-col gap-1.5">
+          <span className="text-xs font-bold text-neutral-700">Filtros:</span>
+          <div className="flex items-center gap-2 flex-wrap">
             <button
               type="button"
-              onClick={handleResetFilters}
-              className="text-[11px] font-bold text-neutral-500 hover:text-black dark:hover:text-white underline cursor-pointer ml-1"
+              onClick={onToggleAcademic}
+              aria-pressed={showAcademic}
+              className={`cursor-pointer inline-flex items-center gap-1.5 px-3 h-[34px] rounded-xl text-xs font-bold transition-all ${
+                showAcademic
+                  ? 'bg-pastel-blue text-ink-disc-blue border-2 border-[#468AFB] shadow-[2px_2px_0px_0px_var(--neo-shadow)]'
+                  : 'bg-paper text-neutral-600 border-2 border-dashed border-ink/30 hover:border-solid hover:text-black'
+              }`}
             >
-              Limpar filtros
+              <GraduationCap className="w-3.5 h-3.5 stroke-[2.5] text-[#468AFB]" />
+              <span>Calendário Acadêmico (UnB)</span>
             </button>
-          )}
+
+            <button
+              type="button"
+              onClick={onToggleManual}
+              aria-pressed={showManual}
+              className={`cursor-pointer inline-flex items-center gap-1.5 px-3 h-[34px] rounded-xl text-xs font-bold transition-all ${
+                showManual
+                  ? 'bg-pastel-green text-ink-disc-green border-2 border-[#16A34A] shadow-[2px_2px_0px_0px_var(--neo-shadow)]'
+                  : 'bg-paper text-neutral-600 border-2 border-dashed border-ink/30 hover:border-solid hover:text-black'
+              }`}
+            >
+              <CalendarIcon className="w-3.5 h-3.5 stroke-[2.5] text-[#16A34A]" />
+              <span>Meus Eventos</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={onToggleFeedTasks}
+              aria-pressed={showFeedTasks}
+              className={`cursor-pointer inline-flex items-center gap-1.5 px-3 h-[34px] rounded-xl text-xs font-bold transition-all ${
+                showFeedTasks
+                  ? 'bg-pastel-yellow text-ink-disc-yellow border-2 border-[#EAB308] shadow-[2px_2px_0px_0px_var(--neo-shadow)]'
+                  : 'bg-paper text-neutral-600 border-2 border-dashed border-ink/30 hover:border-solid hover:text-black'
+              }`}
+            >
+              <CheckSquare className="w-3.5 h-3.5 stroke-[2.5] text-[#EAB308]" />
+              <span>Tarefas do Feed</span>
+            </button>
+
+            {hasActiveFilters && (
+              <button
+                type="button"
+                onClick={handleResetFilters}
+                className="text-[11px] font-bold text-neutral-500 hover:text-black dark:hover:text-white underline cursor-pointer ml-1"
+              >
+                Limpar filtros
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Select de filtro por matérias do usuário seguindo o padrão FilterSelect */}

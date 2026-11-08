@@ -8,7 +8,7 @@ interface CalendarDayAgendaProps {
   selectedDate: string; // ISO "YYYY-MM-DD"
   events: UnifiedCalendarEvent[];
   onAddEvent: (date: string) => void;
-  onEditEvent: (event: UserCalendarEvent) => void;
+  onEditEvent: (event: UserCalendarEvent | UnifiedCalendarEvent) => void;
   onDeleteEvent: (event: UnifiedCalendarEvent) => void;
 }
 
