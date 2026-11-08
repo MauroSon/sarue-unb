@@ -20,11 +20,9 @@ export const CalendarScreen: React.FC = () => {
     setViewMode,
     filteredEvents,
     eventsForSelectedDate,
-    academicMilestones,
     academicCalendar,
     courses,
     monthGridDays,
-    isLoading,
     isSaving,
     // Filtros
     showAcademic,
@@ -51,7 +49,6 @@ export const CalendarScreen: React.FC = () => {
     eventToDelete,
     setEventToDelete,
     deleteManualEvent,
-    toggleEventCompleted,
   } = useCalendar();
 
   return (

@@ -3,7 +3,6 @@ import {
   ManageUserEventsUseCase,
   GetUnifiedCalendarEventsUseCase,
   GetAcademicCalendarUseCase,
-  type UserCalendarEvent,
   type AcademicCalendar,
 } from '@/core';
 import { InMemoryUserEventsRepository } from '../infrastructure/in-memory-user-events.repo';

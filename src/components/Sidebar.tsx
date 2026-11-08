@@ -2,7 +2,6 @@ import React from "react";
 import {
   Home,
   BookOpen,
-  Calendar,
   CalendarDays,
   CalendarRange,
   Settings,

@@ -161,7 +161,7 @@ export function useCalendar() {
 
       return true;
     });
-  }, [events, showAcademic, showManual, showFeedTasks, selectedCourse, searchQuery]);
+  }, [events, showAcademic, showManual, showFeedTasks, selectedCourse, searchQuery, courses]);
 
   // Eventos para o dia selecionado (para o painel lateral)
   const eventsForSelectedDate = useMemo(() => {
@@ -335,11 +335,12 @@ export function useCalendar() {
         }
         closeEventDialog();
         await loadData();
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error('Falha ao salvar evento manual:', err);
+        const message = err instanceof Error ? err.message : 'Verifique as informações e tente novamente.';
         toast.add({
           title: 'Erro ao salvar',
-          description: err.message || 'Verifique as informações e tente novamente.',
+          description: message,
           type: 'error',
         });
       } finally {
@@ -361,11 +362,12 @@ export function useCalendar() {
         });
         setEventToDelete(null);
         await loadData();
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error('Falha ao excluir evento:', err);
+        const message = err instanceof Error ? err.message : 'Não foi possível excluir o evento.';
         toast.add({
           title: 'Erro ao excluir',
-          description: err.message || 'Não foi possível excluir o evento.',
+          description: message,
           type: 'error',
         });
       } finally {

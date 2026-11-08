@@ -76,7 +76,7 @@ export const CalendarToolbar: React.FC<CalendarToolbarProps> = ({
   courses,
   selectedCourse,
   onCourseChange,
-  onOpenCreateDialog,
+  onOpenCreateDialog: _onOpenCreateDialog,
 }) => {
   const monthName = MONTH_NAMES[currentDate.getMonth()];
   const year = currentDate.getFullYear();

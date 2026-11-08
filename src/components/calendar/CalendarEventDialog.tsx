@@ -164,8 +164,9 @@ export const CalendarEventDialog: React.FC<CalendarEventDialogProps> = ({
       } else {
         await onSave(dtoData);
       }
-    } catch (err: any) {
-      setError(err.message || 'Falha ao salvar evento.');
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Falha ao salvar evento.';
+      setError(message);
     }
   };
 
