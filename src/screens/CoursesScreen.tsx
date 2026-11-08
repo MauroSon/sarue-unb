@@ -4,6 +4,7 @@ import { useContainer } from "../context/ContainerContext";
 import {
   Card,
   Badge,
+  Alert,
   PageContainer,
   PageHeader,
   Button,
@@ -115,11 +116,11 @@ export const CoursesScreen: React.FC = () => {
     setAbsenceOverride(value);
   };
 
-  // Faltas efetivas de uma disciplina: ajuste manual > SIGAA > 0 (se tem SIGAA)
+  // Faltas efetivas de uma disciplina: ajuste manual > SIGAA > undefined
   const getEffectiveAbsences = (d: Discipline): number | undefined => {
     const overrideValue = readAbsenceOverride(d.id);
     if (overrideValue !== null) return overrideValue;
-    return d.absences ?? d.sigaaCourse?.absences ?? (d.sigaaCourse ? 0 : undefined);
+    return d.absences ?? d.sigaaCourse?.absences ?? undefined;
   };
 
   // Plataformas que a disciplina efetivamente tem (SIGAA / Aprender 3 / Teams)
@@ -153,9 +154,9 @@ export const CoursesScreen: React.FC = () => {
     return disciplines
       .map((d) => {
         const abs = getEffectiveAbsences(d);
-        if (abs === undefined && !d.sigaaCourse) return null;
+        if (abs === undefined) return null;
         const status = calculateAbsenceRisk({
-          absences: abs ?? 0,
+          absences: abs,
           maxAbsences: d.maxAbsences ?? d.sigaaCourse?.maxAbsences,
           schedule: d.schedule || d.sigaaCourse?.schedule,
         });
@@ -495,7 +496,7 @@ export const CoursesScreen: React.FC = () => {
                   Teams
                 </Badge>
               ) : null}
-              {drillAbsenceStatus ? (
+              {drillAbsenceStatus && getEffectiveAbsences(selectedDiscipline) !== undefined ? (
                 <Badge
                   variant={
                     drillAbsenceStatus.absences === 0
@@ -514,6 +515,10 @@ export const CoursesScreen: React.FC = () => {
                   className="font-black"
                 >
                   {drillAbsenceStatus.absences}/{drillAbsenceStatus.maxAbsences} faltas
+                </Badge>
+              ) : selectedDiscipline.sigaaCourse ? (
+                <Badge variant="neutral" size="sm" className="font-bold">
+                  Sem registro no SIGAA
                 </Badge>
               ) : null}
             </div>
@@ -551,17 +556,18 @@ export const CoursesScreen: React.FC = () => {
               )}
             </div>
           )}
+
+          {/* Seção de Cálculo de Notas, Fórmula e Estimativa de Aprovação */}
+          <GradeFormulaSection discipline={selectedDiscipline} embedded />
+
+          {/* Seção de Controle de Faltas com ajuste manual (override persistido) */}
+          <AbsenceSection
+            discipline={selectedDiscipline}
+            override={absenceOverride}
+            onOverrideChange={handleAbsenceOverrideChange}
+            embedded
+          />
         </Card>
-
-        {/* Seção de Cálculo de Notas, Fórmula e Estimativa de Aprovação */}
-        <GradeFormulaSection discipline={selectedDiscipline} />
-
-        {/* Seção de Controle de Faltas com ajuste manual (override persistido) */}
-        <AbsenceSection
-          discipline={selectedDiscipline}
-          override={absenceOverride}
-          onOverrideChange={handleAbsenceOverrideChange}
-        />
 
         {/* Barra de Filtros e Busca da Disciplina (expande para baixo no modo Selecionar) */}
         <FeedToolbar
@@ -662,57 +668,42 @@ export const CoursesScreen: React.FC = () => {
 
       {/* Alerta caso haja disciplinas próximas do limite de faltas ou reprovadas */}
       {atRiskDisciplines.length > 0 ? (
-        <div className="bg-pastel-red/30 border-2 border-ink rounded-lg p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-(--neo-card-shadow)">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-pastel-red border-2 border-ink flex items-center justify-center shrink-0 shadow-[2px_2px_0px_0px_var(--neo-shadow)]">
-              <AlertTriangle className="w-4 h-4 stroke-[2.5] text-ink-urgent" />
-            </div>
-            <div>
-              <p className="text-xs font-black text-black">
-                {atRiskDisciplines.length === 1
-                  ? "1 disciplina em situação crítica de faltas (regra 25% UnB)"
-                  : `${atRiskDisciplines.length} disciplinas em situação crítica de faltas (regra 25% UnB)`}
-              </p>
-              <p className="text-[11px] font-medium text-neutral-700">
-                Acompanhe a estimativa de aulas restantes para reprovação nos cards abaixo para não perder matérias por infrequência.
-              </p>
-            </div>
-          </div>
-        </div>
+        <Alert
+          variant="destructive"
+          icon={AlertTriangle}
+          title={
+            atRiskDisciplines.length === 1
+              ? "1 disciplina em situação crítica de faltas (regra 25% UnB)"
+              : `${atRiskDisciplines.length} disciplinas em situação crítica de faltas (regra 25% UnB)`
+          }
+          description="Acompanhe a estimativa de aulas restantes para reprovação nos cards abaixo para não perder matérias por infrequência."
+        />
       ) : null}
 
       {/* Alerta caso haja turmas do Aprender 3 ou Teams não associadas */}
       {unmatchedCourses.length > 0 ? (
-        <div className="bg-neo-yellow/20 border-2 border-ink rounded-lg p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-(--neo-card-shadow)">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-neo-yellow border-2 border-ink flex items-center justify-center shrink-0 shadow-[2px_2px_0px_0px_var(--neo-shadow)]">
-              <AlertCircle className="w-4 h-4 stroke-[2.5] text-black" />
-            </div>
-            <div>
-              <p className="text-xs font-black text-black">
-                {unmatchedCourses.length}{" "}
-                {unmatchedCourses.length === 1
-                  ? "turma externa aguarda associação"
-                  : "turmas externas aguardam associação"}
-              </p>
-              <p className="text-[11px] font-medium text-neutral-700">
-                Associe para exibir os comunicados e tarefas na matéria
-                oficial do SIGAA ou direcione para a seção Outros.
-              </p>
-            </div>
-          </div>
-
-          <Button
-            type="button"
-            variant="default"
-            size="sm"
-            onClick={() => setResolvingCourse(unmatchedCourses[0])}
-            className="cursor-pointer shrink-0 flex items-center gap-1.5 text-xs bg-neo-blue text-white hover:bg-neo-blueHover"
-          >
-            <Link2 className="w-3.5 h-3.5 stroke-[2.5]" />
-            <span>Associar Turma</span>
-          </Button>
-        </div>
+        <Alert
+          variant="yellow"
+          icon={AlertCircle}
+          title={
+            unmatchedCourses.length === 1
+              ? "1 turma externa aguarda associação"
+              : `${unmatchedCourses.length} turmas externas aguardam associação`
+          }
+          description="Associe para exibir os comunicados e tarefas na matéria oficial do SIGAA ou direcione para a seção Outros."
+          aside={
+            <Button
+              type="button"
+              variant="default"
+              size="sm"
+              onClick={() => setResolvingCourse(unmatchedCourses[0])}
+              className="cursor-pointer shrink-0 flex items-center gap-1.5 text-xs bg-neo-blue text-white hover:bg-neo-blueHover"
+            >
+              <Link2 className="w-3.5 h-3.5 stroke-[2.5]" />
+              <span>Associar Turma</span>
+            </Button>
+          }
+        />
       ) : null}
 
       {disciplines.length === 0 ? (
@@ -723,18 +714,17 @@ export const CoursesScreen: React.FC = () => {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {disciplines.map((discipline) => {
-            const hasAttendance =
-              getEffectiveAbsences(discipline) !== undefined ||
-              Boolean(discipline.sigaaCourse);
-            const absenceStatus = hasAttendance
-              ? calculateAbsenceRisk({
-                  absences: getEffectiveAbsences(discipline),
-                  maxAbsences:
-                    discipline.maxAbsences ?? discipline.sigaaCourse?.maxAbsences,
-                  schedule:
-                    discipline.schedule || discipline.sigaaCourse?.schedule,
-                })
-              : null;
+            const effectiveAbs = getEffectiveAbsences(discipline);
+            const absenceStatus =
+              effectiveAbs !== undefined
+                ? calculateAbsenceRisk({
+                    absences: effectiveAbs,
+                    maxAbsences:
+                      discipline.maxAbsences ?? discipline.sigaaCourse?.maxAbsences,
+                    schedule:
+                      discipline.schedule || discipline.sigaaCourse?.schedule,
+                  })
+                : null;
 
             return (
               <Card
@@ -792,6 +782,10 @@ export const CoursesScreen: React.FC = () => {
                         className="font-black"
                       >
                         {absenceStatus.absences}/{absenceStatus.maxAbsences} faltas
+                      </Badge>
+                    ) : discipline.sigaaCourse ? (
+                      <Badge variant="neutral" className="font-bold">
+                        Sem registro no SIGAA
                       </Badge>
                     ) : null}
                   </div>

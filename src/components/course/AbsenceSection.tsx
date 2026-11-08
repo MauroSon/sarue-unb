@@ -47,6 +47,8 @@ interface AbsenceSectionProps {
   /** Ajuste manual atual (null = sem ajuste, usa valor do SIGAA) */
   override: number | null;
   onOverrideChange: (value: number | null) => void;
+  /** Quando embutido dentro de outro Card (evita sombras empilhadas) */
+  embedded?: boolean;
 }
 
 /**
@@ -58,6 +60,7 @@ export const AbsenceSection: React.FC<AbsenceSectionProps> = ({
   discipline,
   override,
   onOverrideChange,
+  embedded = false,
 }) => {
   const expandedStorageKey = `sarue:discipline_absences:${discipline.id}:expanded`;
 
@@ -88,6 +91,7 @@ export const AbsenceSection: React.FC<AbsenceSectionProps> = ({
     discipline.maxAbsences ?? discipline.sigaaCourse?.maxAbsences ?? null;
 
   // Valor efetivo: ajuste manual tem precedência sobre o registro do SIGAA
+  const hasAbsenceData = override !== null || sigaaAbsences !== null;
   const effectiveAbsences = override ?? sigaaAbsences ?? 0;
   const hasOverride = override !== null;
 
@@ -118,8 +122,13 @@ export const AbsenceSection: React.FC<AbsenceSectionProps> = ({
     onOverrideChange(Math.max(0, Math.floor(val)));
   };
 
+  const Container = embedded ? "div" : Card;
+  const containerProps = embedded
+    ? { className: "pt-4 border-t-2 border-black/10 space-y-4" }
+    : { className: "p-4 bg-paper rounded-lg border-2 border-ink shadow-(--neo-card-shadow) space-y-4" };
+
   return (
-    <Card className="p-4 bg-paper rounded-lg border-2 border-ink shadow-(--neo-card-shadow) space-y-4">
+    <Container {...containerProps}>
       {/* Topo / Cabeçalho da Seção com Botão de Expansão */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div
@@ -135,7 +144,7 @@ export const AbsenceSection: React.FC<AbsenceSectionProps> = ({
             }
           }}
         >
-          <div className="w-9 h-9 rounded-xl bg-blue-ink/10 border-2 border-ink flex items-center justify-center text-blue-ink shrink-0 group-hover:bg-blue-ink/20 transition-colors shadow-neo-xs">
+          <div className="w-9 h-9 rounded-xl bg-blue-ink/10 border-2 border-ink flex items-center justify-center text-blue-ink shrink-0 group-hover:bg-blue-ink/20 transition-colors">
             <CalendarX2 className="w-5 h-5 stroke-[2.5]" />
           </div>
           <div>
@@ -143,10 +152,16 @@ export const AbsenceSection: React.FC<AbsenceSectionProps> = ({
               <h3 className="text-sm font-black text-black group-hover:text-blue-ink transition-colors">
                 Controle de Faltas
               </h3>
-              <Badge variant={statusBadgeVariant} size="sm" className="font-black">
-                {status.absences}/{status.maxAbsences} faltas
-                {hasOverride ? " (manual)" : ""}
-              </Badge>
+              {hasAbsenceData ? (
+                <Badge variant={statusBadgeVariant} size="sm" className="font-black">
+                  {status.absences}/{status.maxAbsences} faltas
+                  {hasOverride ? " (manual)" : ""}
+                </Badge>
+              ) : (
+                <Badge variant="neutral" size="sm" className="font-bold">
+                  Sem registro no SIGAA
+                </Badge>
+              )}
             </div>
             <p className="text-xs text-neutral-600 font-medium">
               Acompanhe o limite da UnB (25% da carga horária) e ajuste as faltas
@@ -257,6 +272,6 @@ export const AbsenceSection: React.FC<AbsenceSectionProps> = ({
           </div>
         </div>
       )}
-    </Card>
+    </Container>
   );
 };
